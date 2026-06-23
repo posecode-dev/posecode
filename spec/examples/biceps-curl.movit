@@ -1,0 +1,13 @@
+movit exercise "Biceps curl"
+  rig humanoid
+  pose start = standing
+
+  step "Curl" 1.1s ease-out:
+    elbows: flex 135
+    cue "Curl up, keep the elbows tucked at your sides"
+
+  step "Lower" 1.4s ease-in:
+    elbows: flex 15
+    cue "Lower under control — don't swing"
+
+  repeat 10

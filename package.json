@@ -1,0 +1,25 @@
+{
+  "name": "movit-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Movit — a kinematic motion protocol for LLMs. Describe 3D human movement as text; render it in the browser.",
+  "license": "MIT",
+  "workspaces": [
+    "packages/*",
+    "playground",
+    "editors/*"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "dev": "npm run dev -w playground",
+    "build": "npm run build -w playground",
+    "typecheck": "tsc -b --pretty"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^2.1.8",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

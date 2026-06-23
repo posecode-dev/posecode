@@ -1,0 +1,45 @@
+{
+  "name": "movit-vscode",
+  "private": true,
+  "displayName": "Movit",
+  "description": "Language support for the Movit (.movit) kinematic motion DSL — syntax highlighting, range-of-motion diagnostics, completion, and hover.",
+  "version": "0.1.0",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Programming Languages"],
+  "activationEvents": ["onLanguage:movit"],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "movit",
+        "aliases": ["Movit", "movit"],
+        "extensions": [".movit"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "movit",
+        "scopeName": "source.movit",
+        "path": "./syntaxes/movit.tmLanguage.json"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "bundle-server": "esbuild ../../packages/movit-lsp/src/server.ts --bundle --platform=node --format=cjs --outfile=dist/server.cjs",
+    "build": "npm run compile && npm run bundle-server"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/vscode": "^1.85.0",
+    "esbuild": "^0.24.2",
+    "typescript": "^5.7.2"
+  }
+}

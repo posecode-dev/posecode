@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Movit Playground — kinematic motion as text</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3 29 16 16 29 3 16Z' fill='%23c6f24a'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <!-- Ambient studio backdrop: layered glow + grain, purely decorative -->
+    <div class="bg-fx" aria-hidden="true"></div>
+
+    <header class="topbar">
+      <a class="brand" href="./index.html" aria-label="Movit home">
+        <span class="logo" aria-hidden="true">◆</span>
+        <span class="wordmark">Movit</span>
+        <span class="tag">playground</span>
+      </a>
+      <div class="topbar-actions">
+        <label class="field">
+          <span>Example</span>
+          <div class="select-wrap">
+            <select id="preset"></select>
+          </div>
+        </label>
+        <button id="how-to" class="btn ghost" aria-label="How to use">
+          <span class="ico-help" aria-hidden="true"></span><span class="lbl">How to use</span>
+        </button>
+        <button
+          id="share"
+          class="btn ghost"
+          aria-label="Share"
+          title="Copy a shareable link that renders this exact movement"
+        >
+          <span class="ico-link" aria-hidden="true"></span><span class="lbl">Share</span>
+        </button>
+        <button
+          id="copy-prompt"
+          class="btn primary"
+          title="Copy a system prompt that teaches an LLM to write .movit"
+        >
+          <span class="lbl">Copy LLM prompt</span>
+        </button>
+      </div>
+    </header>
+
+    <div id="intro" class="intro">
+      <span class="intro-text">
+        <b>New here?</b> Movit turns text into 3D movement. Copy the LLM prompt,
+        ask any AI for an exercise, paste the result on the left.
+      </span>
+      <button id="intro-open" class="link">Show me how →</button>
+      <button id="intro-dismiss" class="x" aria-label="Dismiss">×</button>
+    </div>
+
+    <!-- Mobile-only: swap between the editor and the 3D viewer (each full-height) -->
+    <nav class="mobile-tabs" aria-label="Panel">
+      <button id="tab-editor" class="mtab" type="button" aria-selected="false">
+        Editor
+      </button>
+      <button id="tab-viewer" class="mtab" type="button" aria-selected="true">
+        Viewer
+      </button>
+    </nav>
+
+    <main class="layout">
+      <section class="editor-pane">
+        <div class="pane-head">
+          <span class="traffic" aria-hidden="true"></span>
+          <span class="file-name">movement.movit</span>
+          <span class="live" aria-hidden="true"><i></i>live</span>
+        </div>
+        <div class="editor-wrap">
+          <div id="editor"></div>
+        </div>
+        <div id="warnings" class="warnings" aria-live="polite"></div>
+      </section>
+
+      <section class="viewer-pane">
+        <canvas id="canvas"></canvas>
+        <div class="viewer-veil" aria-hidden="true"></div>
+
+        <div class="hud">
+          <div id="phase" class="phase"></div>
+          <div id="cue" class="cue"></div>
+        </div>
+        <div id="reps" class="reps"></div>
+
+        <div id="ribbon" class="ribbon"></div>
+
+        <div class="transport">
+          <button id="playpause" class="btn-play" data-playing="false">
+            <span class="ico" aria-hidden="true"></span>
+            <span class="lbl">Play</span>
+          </button>
+          <div class="scrub-wrap">
+            <input id="scrub" type="range" min="0" max="1000" value="0" />
+            <div id="markers" class="markers"></div>
+          </div>
+          <span id="clock" class="clock">0.0s</span>
+          <label class="loop"
+            ><input id="loop" type="checkbox" checked /><span>loop</span></label
+          >
+          <label class="speed">
+            <span>speed</span>
+            <div class="select-wrap sm">
+              <select id="speed">
+                <option value="0.5">0.5×</option>
+                <option value="1" selected>1×</option>
+                <option value="2">2×</option>
+              </select>
+            </div>
+          </label>
+        </div>
+      </section>
+    </main>
+
+    <!-- How-to slide-over -->
+    <div id="scrim" class="scrim" hidden></div>
+    <aside id="howto" class="slideover" hidden aria-label="How to use Movit">
+      <header class="slideover-head">
+        <h2>How to use Movit</h2>
+        <button id="howto-close" class="x" aria-label="Close">×</button>
+      </header>
+      <div class="slideover-body">
+        <ol class="steps">
+          <li>
+            <span class="step-n">1</span>
+            <div>
+              <b>Copy the prompt.</b> Click <em>Copy LLM prompt</em> (top right). It teaches
+              any model — ChatGPT, Claude, Gemini — to write the Movit language.
+            </div>
+          </li>
+          <li>
+            <span class="step-n">2</span>
+            <div>
+              <b>Ask an LLM for a movement.</b> Paste the prompt, then ask for what you want:
+              <em>“write a deadlift”</em>, <em>“a hamstring stretch”</em>, <em>“cat-cow”</em>.
+              It replies with a <code>.movit</code> block.
+            </div>
+          </li>
+          <li>
+            <span class="step-n">3</span>
+            <div>
+              <b>Paste it here.</b> Drop the <code>.movit</code> text into the editor on the
+              left and watch it animate. Out-of-range angles are clamped automatically and
+              flagged below the editor.
+            </div>
+          </li>
+        </ol>
+
+        <div class="prompt-block">
+          <div class="prompt-head">
+            <span>The prompt you’ll paste into the LLM</span>
+            <button id="howto-copy" class="btn ghost sm">Copy</button>
+          </div>
+          <pre id="prompt-text"></pre>
+        </div>
+      </div>
+    </aside>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

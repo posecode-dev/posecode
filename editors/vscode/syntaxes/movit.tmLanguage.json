@@ -1,0 +1,55 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Movit",
+  "scopeName": "source.movit",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#keywords" },
+    { "include": "#kinds" },
+    { "include": "#actions" },
+    { "include": "#joints" },
+    { "include": "#constants" },
+    { "include": "#numbers" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        { "name": "comment.line.number-sign.movit", "match": "#.*$" },
+        { "name": "comment.line.double-slash.movit", "match": "//.*$" }
+      ]
+    },
+    "strings": {
+      "name": "string.quoted.double.movit",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        { "name": "constant.character.escape.movit", "match": "\\\\." }
+      ]
+    },
+    "keywords": {
+      "name": "keyword.control.movit",
+      "match": "\\b(movit|rig|pose|start|step|repeat|ground-lock|cue|hold)\\b"
+    },
+    "kinds": {
+      "name": "storage.type.movit",
+      "match": "\\b(exercise|stretch|posture)\\b"
+    },
+    "actions": {
+      "name": "keyword.operator.movit",
+      "match": "\\b(flex|extend|abduct|adduct|rotate-in|rotate-out|supinate|pronate|dorsiflex|plantarflex)\\b"
+    },
+    "joints": {
+      "name": "variable.other.movit",
+      "match": "\\b(shoulders|elbows|wrists|hips|knees|ankles|pelvis|spine|chest|neck|head|shoulder_left|shoulder_right|elbow_left|elbow_right|wrist_left|wrist_right|hip_left|hip_right|knee_left|knee_right|ankle_left|ankle_right)\\b"
+    },
+    "constants": {
+      "name": "constant.language.movit",
+      "match": "\\b(ease-in-out|ease-in|ease-out|linear|neutral|standing|plank|hands|feet|humanoid)\\b"
+    },
+    "numbers": {
+      "name": "constant.numeric.movit",
+      "match": "\\b[0-9]+(\\.[0-9]+)?s?\\b"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+movit exercise "Push-up"
+  rig humanoid
+  pose start = plank
+
+  step "Lower" 1.6s ease-in:
+    elbows: flex 90
+    spine: hold neutral
+    hips: hold neutral
+    ground-lock: hands, feet
+    cue "Lower in one straight line from head to heels"
+
+  step "Press" 1.2s ease-out:
+    elbows: flex 5
+    ground-lock: hands, feet
+    cue "Push the floor away and exhale"
+
+  repeat 8

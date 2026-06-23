@@ -1,0 +1,26 @@
+{
+  "name": "movit-mcp",
+  "version": "0.1.0",
+  "description": "Model Context Protocol server for Movit — let any LLM agent validate, ROM-check, and get a render link for a .movit movement, natively.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "start": "tsx src/stdio.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "movit-parser": "0.1.0",
+    "movit-share": "0.1.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2"
+  }
+}

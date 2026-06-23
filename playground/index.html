@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Movit — describe human movement as text</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3 29 16 16 29 3 16Z' fill='%23c6f24a'/%3E%3C/svg%3E"
+    />
+    <meta
+      name="description"
+      content="Movit is a tiny language LLMs can write to describe human movement — exercises, stretches, posture — rendered as an animated 3D figure in the browser, with every joint clamped to a safe range of motion."
+    />
+    <meta property="og:title" content="Movit — human movement, written as text" />
+    <meta
+      property="og:description"
+      content="A Mermaid-style language for kinematic motion. LLMs write it; the browser renders an animated, anatomically-safe 3D figure."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./src/landing.css" />
+  </head>
+  <body>
+    <div class="bg-fx" aria-hidden="true"></div>
+
+    <!-- Nav -->
+    <header class="nav">
+      <a class="brand" href="./index.html" aria-label="Movit home">
+        <span class="logo" aria-hidden="true">◆</span>
+        <span class="wordmark">Movit</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#how">How it works</a>
+        <a href="#examples">Examples</a>
+        <a href="#developers">Developers</a>
+        <a href="https://github.com/a-baran-orhan/movit" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+      <a class="btn primary nav-cta" href="./play.html">Open playground&nbsp;→</a>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-copy reveal">
+        <p class="eyebrow">Open kinematic-motion protocol</p>
+        <h1 class="headline">
+          Human movement,<br />written as <span class="hl">text</span>.
+        </h1>
+        <p class="subhead">
+          Movit is a tiny language an LLM can write — exercises, stretches, posture —
+          that renders to an animated 3D figure in the browser. Every joint is clamped
+          to a safe range of motion, so the result is always anatomically plausible.
+        </p>
+        <div class="hero-cta">
+          <a class="btn primary lg" href="./play.html">Open the playground&nbsp;→</a>
+          <button id="copy-prompt" class="btn ghost lg">
+            <span class="lbl">Copy LLM prompt</span>
+          </button>
+        </div>
+        <p class="hero-meta">
+          Open source · MIT &nbsp;•&nbsp; 60&nbsp;fps in the browser &nbsp;•&nbsp; no GPU, no diffusion
+        </p>
+      </div>
+
+      <div class="hero-stage reveal" aria-label="Live 3D preview of a Movit movement">
+        <div class="studio">
+          <div class="studio-bar" aria-hidden="true">
+            <span class="dots"></span>
+            <span class="studio-title">squat.movit</span>
+            <span class="studio-live"><i></i>live</span>
+          </div>
+          <canvas id="hero-canvas"></canvas>
+          <div class="studio-hud"><span id="hero-phase">Descend</span></div>
+        </div>
+
+        <!-- Overlapping code chip: the text that produces the motion -->
+        <pre class="code-chip" aria-hidden="true"><span class="t-kw">movit</span> <span class="t-kind">exercise</span> <span class="t-str">"Body-weight squat"</span>
+  <span class="t-kw">pose</span> start <span class="t-punct">=</span> <span class="t-atom">standing</span>
+
+  <span class="t-kw">step</span> <span class="t-str">"Descend"</span> <span class="t-num">1.6s</span> <span class="t-atom">ease-in-out</span><span class="t-punct">:</span>
+    <span class="t-joint">hips</span><span class="t-punct">:</span> <span class="t-act">flex</span> <span class="t-num">80</span>
+    <span class="t-joint">knees</span><span class="t-punct">:</span> <span class="t-act">flex</span> <span class="t-num">95</span>
+    <span class="t-kw">ground-lock</span><span class="t-punct">:</span> <span class="t-atom">feet</span></pre>
+      </div>
+    </section>
+
+    <!-- Value props -->
+    <section class="props">
+      <article class="prop reveal">
+        <div class="prop-mark">⌁</div>
+        <h3>Semantic, not matrices</h3>
+        <p>
+          Models write phases and joint angles — <code>knees: flex 95</code> — not 3D
+          transforms. It's the biomechanics an LLM already knows, given a syntax.
+        </p>
+      </article>
+      <article class="prop reveal">
+        <div class="prop-mark">⛨</div>
+        <h3>Anatomically safe</h3>
+        <p>
+          Every angle is hard-clamped to a clinical range of motion. A hallucinated
+          “knee flex 200°” can't produce an impossible joint — it's pinned to 144°.
+        </p>
+      </article>
+      <article class="prop reveal">
+        <div class="prop-mark">◴</div>
+        <h3>Cheap &amp; client-side</h3>
+        <p>
+          Generation is a fraction of a cent of text. Rendering is forward kinematics in
+          Three.js — 60fps on a phone, no diffusion model, no GPU farm.
+        </p>
+      </article>
+    </section>
+
+    <!-- Examples -->
+    <section id="examples" class="examples">
+      <header class="section-head reveal">
+        <p class="eyebrow">See it move</p>
+        <h2>Six movements, one click away</h2>
+        <p class="section-sub">
+          Each opens in the playground — editable, shareable, rendered live.
+        </p>
+      </header>
+      <div id="examples-grid" class="examples-grid"></div>
+    </section>
+
+    <!-- How it works -->
+    <section id="how" class="how">
+      <header class="section-head reveal">
+        <p class="eyebrow">How it works</p>
+        <h2>From a sentence to a moving figure</h2>
+      </header>
+      <ol class="how-steps">
+        <li class="reveal">
+          <span class="how-n">1</span>
+          <h3>An LLM writes <code>.movit</code></h3>
+          <p>Paste the Movit prompt into any model and ask for a movement. It replies with a small, readable document.</p>
+        </li>
+        <li class="reveal">
+          <span class="how-n">2</span>
+          <h3>The parser validates &amp; clamps</h3>
+          <p>A pure-TypeScript parser turns the text into a typed IR and pins every angle to its safe range of motion.</p>
+        </li>
+        <li class="reveal">
+          <span class="how-n">3</span>
+          <h3>Three.js renders it</h3>
+          <p>Forward kinematics plus ground-lock IK animate a low-poly figure — live, in the browser, at 60fps.</p>
+        </li>
+      </ol>
+    </section>
+
+    <!-- Developers -->
+    <section id="developers" class="developers">
+      <header class="section-head reveal">
+        <p class="eyebrow">For developers</p>
+        <h2>An open core you can build on</h2>
+      </header>
+      <div class="dev-grid">
+        <a class="dev-card reveal" href="./play.html">
+          <h3>Playground →</h3>
+          <p>Live editor, 3D viewport, syntax highlighting, inline range-of-motion diagnostics.</p>
+        </a>
+        <div class="dev-card reveal">
+          <h3>MCP server</h3>
+          <p>Let any agent validate a movement and get back a render link, natively.</p>
+          <code class="dev-code">npx tsx movit-mcp</code>
+        </div>
+        <div class="dev-card reveal">
+          <h3>VS Code extension</h3>
+          <p>Highlighting, completion, hover docs, and ROM diagnostics for <code>.movit</code> files.</p>
+        </div>
+        <a class="dev-card reveal" href="https://github.com/a-baran-orhan/movit" target="_blank" rel="noopener">
+          <h3>MIT libraries</h3>
+          <p><code>movit-parser</code>, <code>movit-render</code>, <code>movit-share</code> — framework-agnostic, on GitHub.</p>
+        </a>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-brand">
+        <span class="logo" aria-hidden="true">◆</span> Movit
+        <span class="footer-tag">kinematic motion as text</span>
+      </div>
+      <p class="footer-note">
+        Range-of-motion values are general literature data, not medical advice.
+        Consult a qualified professional for physiotherapy or exercise prescription.
+      </p>
+      <p class="footer-legal">MIT-licensed open core · v0.1</p>
+    </footer>
+
+    <script type="module" src="./src/landing.ts"></script>
+  </body>
+</html>

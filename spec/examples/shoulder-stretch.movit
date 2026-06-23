@@ -1,0 +1,15 @@
+movit stretch "Standing shoulder flexion"
+  rig humanoid
+  pose start = standing
+
+  step "Raise" 3s ease-in-out:
+    shoulders: flex 170
+    ground-lock: feet
+    cue "Reach overhead, keep the ribs down"
+
+  step "Lower" 3s ease-in-out:
+    shoulders: flex 0
+    ground-lock: feet
+    cue "Control the descent back to the sides"
+
+  repeat 5
