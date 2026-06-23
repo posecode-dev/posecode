@@ -167,12 +167,20 @@ function recompile(): void {
   }
 }
 
-// --- Presets ---
+// --- Presets (grouped by domain so the dropdown shows the breadth) ---
+const presetGroups = new Map<string, HTMLOptGroupElement>();
 for (const p of PRESETS) {
+  let group = presetGroups.get(p.domain);
+  if (!group) {
+    group = document.createElement("optgroup");
+    group.label = p.domain;
+    presetGroups.set(p.domain, group);
+    presetSel.append(group);
+  }
   const opt = document.createElement("option");
   opt.value = p.id;
   opt.textContent = p.label;
-  presetSel.append(opt);
+  group.append(opt);
 }
 presetSel.addEventListener("change", () => {
   const preset = PRESETS.find((p) => p.id === presetSel.value);

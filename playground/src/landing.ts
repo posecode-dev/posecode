@@ -49,12 +49,11 @@ if ("requestIdleCallback" in window) {
 const grid = document.getElementById("examples-grid");
 if (grid) {
   for (const preset of PRESETS) {
-    const kind = parse(preset.source).ir?.kind ?? "movement";
     const card = document.createElement("a");
     card.className = "example-card";
     card.href = `play.html${buildShareHash(preset.source)}`;
     card.innerHTML = `
-      <span class="example-kind">${kind}</span>
+      <span class="example-kind">${preset.domain}</span>
       <span class="example-name">${preset.label}</span>
       <span class="example-go">Open in playground →</span>`;
     grid.append(card);
