@@ -39,10 +39,38 @@ const PLANK: PoseSpec = {
 // Standing, ready position (alias of neutral for now).
 const STANDING: PoseSpec = NEUTRAL;
 
+// Lying face-up. Rotating the standing figure -90° about X lays it on its back:
+// the original front (+Z) ends up facing the ceiling (+Y) and the head points
+// toward -Z. groundFigure() (bounding-box drop) then rests the back on the floor.
+const SUPINE: PoseSpec = {
+  root: { position: [0, 0.5, 0], rotationDeg: [-90, 0, 0] },
+  joints: {},
+};
+
+// Lying face-down (+90° about X): the front faces the floor, head toward +Z.
+const PRONE: PoseSpec = {
+  root: { position: [0, 0.5, 0], rotationDeg: [90, 0, 0] },
+  joints: {},
+};
+
+// Long-sit on the floor: torso upright, hips flexed 90° so the legs extend
+// forward, knees straight. (Hip flexion resolves to -X in the rig, matching the
+// parser's flexion sign.) groundFigure() drops the glutes/legs to the floor.
+const SEATED: PoseSpec = {
+  root: { position: [0, 0.5, 0], rotationDeg: [0, 0, 0] },
+  joints: {
+    hip_left: [-90, 0, 0],
+    hip_right: [-90, 0, 0],
+  },
+};
+
 const POSES: Record<string, PoseSpec> = {
   neutral: NEUTRAL,
   standing: STANDING,
   plank: PLANK,
+  supine: SUPINE,
+  prone: PRONE,
+  seated: SEATED,
 };
 
 export function poseFor(name: string | undefined): PoseSpec {

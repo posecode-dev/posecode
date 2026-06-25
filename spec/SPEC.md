@@ -23,15 +23,17 @@ Movit is line- and indentation-oriented. Comments start with `#` or `//`.
 document   = header { directive } ;
 header     = "movit" kind STRING ;
 kind       = "exercise" | "stretch" | "posture" ;       (* free-form word *)
-directive  = rig | pose | step | repeat ;
+directive  = rig | prop | pose | step | repeat ;
 rig        = "rig" WORD ;
-pose       = "pose" "start" "=" WORD ;                  (* neutral|standing|plank *)
+prop       = "prop" WORD ;                              (* chair|wall|bar, repeatable *)
+pose       = "pose" "start" "=" WORD ;                  (* neutral|standing|plank|supine|prone|seated *)
 repeat     = "repeat" NUMBER ;
 step       = "step" STRING DURATION easing ":" { child } ;
 easing     = "linear" | "ease-in" | "ease-out" | "ease-in-out" ;
-child      = jointTarget | groundLock | cue ;
+child      = jointTarget | groundLock | reach | cue ;
 jointTarget= joint ":" action [ NUMBER ] ;
 groundLock = "ground-lock" ":" effector { "," effector } ;
+reach      = "reach" ":" effector target ;             (* effector → world target via IK *)
 cue        = "cue" STRING ;
 DURATION   = NUMBER "s" ;                                (* e.g. 2s, 1.5s *)
 ```
@@ -52,9 +54,11 @@ phase, all joint targets apply concurrently.
 | `knees` | `knee_left`, `knee_right` | yes |
 | `ankles` | `ankle_left`, `ankle_right` | yes |
 | axial | `pelvis`, `spine`, `chest`, `neck`, `head` | — |
+| `fingers` (or `fingers_left` / `fingers_right`) | `thumb_*`, `index_*`, `middle_*`, `ring_*`, `pinky_*` | yes |
 
 Plural names move both sides symmetrically (left-side bones mirror the Y and Z
-axes). Use a singular `*_left` / `*_right` name to move one side.
+axes). Use a singular `*_left` / `*_right` name to move one side. Each finger is a
+single curl (`flex`) joint; the thumb also takes `abduct`/`adduct`.
 
 ---
 
@@ -99,6 +103,8 @@ research §5.1 normative tables. Selected ceilings (degrees):
 | knee | 144 | 5 | — | — |
 | ankle | — | — | — | dorsiflex 15 / plantarflex 50 |
 | pelvis | — | — | — | hinge 120 |
+| finger | 100 | 20 | — | — |
+| thumb | 80 | 20 | 50 | adduct 30 |
 | spine | 90 | 30 | 35 | rotate 45 |
 | neck | 50 | 60 | 45 | rotate 80 |
 
@@ -111,17 +117,27 @@ research §5.1 normative tables. Selected ceilings (degrees):
 
 1. **Forward kinematics** — each phase sets joint angles; the renderer slerps
    bone rotations between phases with the phase's easing.
-2. **Ground-lock IK** — effectors listed in `ground-lock` (`hands`, `feet`) are
-   pinned to their planted floor position via Cyclic Coordinate Descent (CCD)
-   so they stay put while the body moves.
-3. **Looping** — the timeline loops base → phases → base; `repeat` is the rep
+2. **Grounding** — the figure is dropped so its lowest point rests on the floor
+   (a bounding-box drop), which grounds standing, plank, and the lying/seated
+   poses alike.
+3. **Ground-lock IK** — effectors listed in `ground-lock` (`hands`, `feet`) are
+   pinned to their planted floor position so they stay put while the body moves.
+4. **Reach-IK** — a `reach:` line drives an effector (`hand_left|hand_right|
+   foot_left|foot_right`) to a world **target** via Cyclic Coordinate Descent
+   (CCD) over the arm/leg chain. A target is a body landmark bone (e.g.
+   `ankle_left`), the keyword `floor`, or a prop anchor (`bar`, `seat`, `wall`).
+5. **Props** — `prop chair|wall|bar` adds a scene object at a fixed default
+   placement; its named anchors become reach targets.
+6. **Looping** — the timeline loops base → phases → base; `repeat` is the rep
    count surfaced to the UI.
 
-**v0.1 IK note:** Three.js's bundled `CCDIKSolver` targets `SkinnedMesh`; the
-Movit mannequin is rigid capsule segments, so Movit implements the same CCD
-algorithm directly over the Object3D bone hierarchy (`movit-render/ik.ts`).
-Reach-IK, two-person/dual-IK, and collision detection are deferred (research
-§5.2, §6.2).
+**Start poses:** `neutral`, `standing`, `plank`, `supine` (face-up), `prone`
+(face-down), `seated` (long-sit on the floor).
+
+**IK note:** Three.js's bundled `CCDIKSolver` targets `SkinnedMesh`; the Movit
+mannequin is rigid capsule segments, so Movit implements CCD directly over the
+Object3D bone hierarchy (`movit-render/ik.ts`) for both ground-lock and reach.
+Two-person/dual-IK and collision detection remain deferred (research §5.2, §6.2).
 
 ---
 

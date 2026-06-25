@@ -26,14 +26,26 @@ export interface JointTarget {
   euler: EulerDeg;
 }
 
+/**
+ * A reach-to-target goal for a phase: drive an effector to a world point solved
+ * by inverse kinematics. `target` is a body landmark bone id (e.g. `ankle_left`),
+ * the keyword `floor`, or a prop anchor name (e.g. `bar`).
+ */
+export interface ReachTarget {
+  effector: string;
+  target: string;
+}
+
 /** One concurrent phase of a movement (e.g. "Lower" in a push-up). */
 export interface Phase {
   name: string;
   durationSec: number;
   easing: Easing;
   targets: JointTarget[];
-  /** Effector groups pinned to the floor for this phase, e.g. ["hands", "feet"]. */
+  /** Effector groups / prop anchors pinned for this phase, e.g. ["hands", "feet"]. */
   groundLock: string[];
+  /** Reach-IK goals active during this phase. */
+  reaches: ReachTarget[];
   cue?: string;
 }
 
@@ -45,6 +57,8 @@ export interface MovitIR {
   name: string;
   rig: string;
   startPose?: string;
+  /** Scene props declared with `prop <type>`, e.g. ["chair", "bar"]. */
+  props: string[];
   repeat: number;
   phases: Phase[];
 }

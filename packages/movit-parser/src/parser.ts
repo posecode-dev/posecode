@@ -16,12 +16,18 @@ export interface AstJointTarget {
   line: number;
 }
 
+export interface AstReach {
+  effector: string;
+  target: string;
+}
+
 export interface AstStep {
   name: string;
   durationSec: number;
   easing: string;
   targets: AstJointTarget[];
   groundLock: string[];
+  reaches: AstReach[];
   cue?: string;
   line: number;
 }
@@ -31,6 +37,7 @@ export interface AstDoc {
   name: string;
   rig: string;
   startPose?: string;
+  props: string[];
   repeat: number;
   steps: AstStep[];
 }
@@ -79,6 +86,7 @@ export function parseToAst(source: string): ParseAstResult {
     kind: ht[1].value,
     name: ht[2].value,
     rig: "humanoid",
+    props: [],
     repeat: 1,
     steps: [],
   };
@@ -95,6 +103,13 @@ export function parseToAst(source: string): ParseAstResult {
         const r = word(t[1]);
         if (!r) errors.push({ line: ln.line, message: "rig requires a name" });
         else doc.rig = r;
+        break;
+      }
+      case "prop": {
+        // `prop <type>` — a scene object (chair | wall | bar), repeatable.
+        const p = word(t[1]);
+        if (!p) errors.push({ line: ln.line, message: "prop requires a type" });
+        else doc.props.push(p);
         break;
       }
       case "pose": {
@@ -136,6 +151,7 @@ export function parseToAst(source: string): ParseAstResult {
           easing,
           targets: [],
           groundLock: [],
+          reaches: [],
           line: ln.line,
         };
         doc.steps.push(current);
@@ -174,6 +190,18 @@ function parseStepChild(ln: Line, current: AstStep | null): ParseError | null {
       .filter((tok) => tok.type === "word")
       .map((tok) => tok.value);
     current.groundLock = effectors;
+    return null;
+  }
+
+  if (head === "reach") {
+    // `reach: <effector> <target>` — drive an effector to a world target via IK.
+    if (!current) return { line: ln.line, message: "`reach` outside of a step" };
+    const effector = t[2]?.type === "word" ? t[2].value : null;
+    const target = t[3]?.type === "word" ? t[3].value : null;
+    if (t[1]?.type !== "colon" || !effector || !target) {
+      return { line: ln.line, message: "expected `reach: <effector> <target>`" };
+    }
+    current.reaches.push({ effector, target });
     return null;
   }
 

@@ -1,0 +1,27 @@
+movit stretch "Cross-body reach"
+  rig humanoid
+  pose start = standing
+
+  step "Reach across right" 2s ease-in-out:
+    spine: rotate-in 20
+    reach: hand_right knee_left
+    ground-lock: feet
+    cue "Rotate gently and reach the right hand toward the left knee"
+
+  step "Return" 1.4s ease-out:
+    spine: rotate-in 0
+    ground-lock: feet
+    cue "Unwind back to standing tall"
+
+  step "Reach across left" 2s ease-in-out:
+    spine: rotate-out 20
+    reach: hand_left knee_right
+    ground-lock: feet
+    cue "Reach the left hand toward the right knee"
+
+  step "Center" 1.4s ease-out:
+    spine: rotate-out 0
+    ground-lock: feet
+    cue "Return to center"
+
+  repeat 2

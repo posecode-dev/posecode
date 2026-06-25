@@ -48,6 +48,29 @@ import tendu from "../../spec/examples/tendu.movit?raw";
 import portDeBras from "../../spec/examples/port-de-bras.movit?raw";
 import dancePhrase from "../../spec/examples/dance-phrase.movit?raw";
 
+// Reach-to-target IK.
+import touchToes from "../../spec/examples/touch-toes.movit?raw";
+import crossBodyReach from "../../spec/examples/cross-body-reach.movit?raw";
+
+// Lying & seated base poses.
+import gluteBridge from "../../spec/examples/glute-bridge.movit?raw";
+import deadBug from "../../spec/examples/dead-bug.movit?raw";
+import cobra from "../../spec/examples/cobra.movit?raw";
+import seatedForwardFold from "../../spec/examples/seated-forward-fold.movit?raw";
+
+// Scene props + contact anchors.
+import sitToStand from "../../spec/examples/chair-sit-to-stand.movit?raw";
+import boxSquat from "../../spec/examples/box-squat.movit?raw";
+import wallSit from "../../spec/examples/wall-sit.movit?raw";
+import deadHang from "../../spec/examples/dead-hang.movit?raw";
+import hangingKneeRaise from "../../spec/examples/hanging-knee-raise.movit?raw";
+
+// Hand / finger rig.
+import makeAFist from "../../spec/examples/make-a-fist.movit?raw";
+import fingerSpell from "../../spec/examples/finger-spell-demo.movit?raw";
+import handWave from "../../spec/examples/hand-wave.movit?raw";
+import pinchGrip from "../../spec/examples/pinch-grip.movit?raw";
+
 export interface Preset {
   id: string;
   label: string;
@@ -109,4 +132,27 @@ export const PRESETS: Preset[] = [
   { id: "fold", label: "Standing roll-down", domain: "Mobility", source: fold },
   { id: "chair", label: "Chair pose", domain: "Yoga", source: chair },
   { id: "sidebend", label: "Standing side bend", domain: "Yoga", source: sideBend },
+
+  // --- Reach-to-target IK ---
+  { id: "touch-toes", label: "Touch your toes", domain: "Mobility", source: touchToes },
+  { id: "cross-body-reach", label: "Cross-body reach", domain: "Physiotherapy", source: crossBodyReach },
+
+  // --- Lying & seated poses ---
+  { id: "glute-bridge", label: "Glute bridge", domain: "Physiotherapy", source: gluteBridge },
+  { id: "dead-bug", label: "Dead bug", domain: "Physiotherapy", source: deadBug },
+  { id: "cobra", label: "Cobra", domain: "Yoga", source: cobra },
+  { id: "seated-forward-fold", label: "Seated forward fold", domain: "Yoga", source: seatedForwardFold },
+
+  // --- Props: chair / wall / bar ---
+  { id: "sit-to-stand", label: "Sit to stand (chair)", domain: "Functional", source: sitToStand },
+  { id: "box-squat", label: "Box squat (chair)", domain: "Fitness", source: boxSquat },
+  { id: "wall-sit", label: "Wall sit (wall)", domain: "Fitness", source: wallSit },
+  { id: "dead-hang", label: "Dead hang (bar)", domain: "Fitness", source: deadHang },
+  { id: "hanging-knee-raise", label: "Hanging knee raise (bar)", domain: "Fitness", source: hangingKneeRaise },
+
+  // --- Hand / finger rig ---
+  { id: "make-a-fist", label: "Make a fist", domain: "Hand therapy", source: makeAFist },
+  { id: "pinch-grip", label: "Pinch grip", domain: "Hand therapy", source: pinchGrip },
+  { id: "finger-spell", label: "Finger-spelling (approx.)", domain: "Sign language", source: fingerSpell },
+  { id: "hand-wave", label: "Hand wave", domain: "Sign language", source: handWave },
 ];

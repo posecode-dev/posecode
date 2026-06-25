@@ -1,0 +1,24 @@
+movit exercise "Sit to stand"
+  rig humanoid
+  prop chair
+  pose start = standing
+
+  step "Sit" 2s ease-in-out:
+    hips: flex 90
+    knees: flex 95
+    ankles: dorsiflex 14
+    spine: flex 12
+    shoulders: flex 60
+    ground-lock: feet
+    cue "Hinge the hips back and lower with control to sit on the chair"
+
+  step "Stand" 1.8s ease-out:
+    hips: flex 0
+    knees: flex 0
+    ankles: dorsiflex 0
+    spine: flex 0
+    shoulders: flex 0
+    ground-lock: feet
+    cue "Drive through the heels and reach tall to stand"
+
+  repeat 8

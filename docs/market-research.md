@@ -141,18 +141,20 @@ expressive, and social — exactly the content people share.
 
 From [`../ROADMAP.md`](../ROADMAP.md), in rough order of leverage:
 
-| Unlock | Domains it opens / deepens |
-| --- | --- |
-| **Hip-hinge** ✅ *shipped* | Fitness (deadlift, row, good-morning), back-health physio, martial-arts bow |
-| **Reach-to-target IK** | Big share of physio (touch toes, hand-to-knee), yoga, prop interaction |
-| **Scene props + contact anchors** | Loaded strength, pull-ups/rings, wall/chair work, bands |
-| **Lying / seated base poses** | Floor yoga, mat Pilates, bed-based rehab, true seated desk work |
-| **Hand / finger rig** | Sign language, grip, expressive gesture |
-| **Two-person + collision** | Partner stretches, assisted rehab, contact sports |
+| Unlock | Domains it opens / deepens | Status |
+| --- | --- | --- |
+| **Hip-hinge** | Fitness (deadlift, row, good-morning), back-health physio, martial-arts bow | ✅ shipped |
+| **Reach-to-target IK** | Big share of physio (touch toes, cross-body), yoga, prop interaction | ✅ shipped |
+| **Scene props + anchors** | Sit-to-stand, box squat, wall sit, dead hang / hanging knee raise | ✅ shipped (chair / wall / bar) |
+| **Lying / seated base poses** | Floor yoga, mat Pilates, bed-based rehab (glute bridge, dead bug, cobra) | ✅ shipped |
+| **Hand / finger rig** | Grip rehab, expressive gesture, rough finger-spelling | ✅ shipped (single-DOF) |
+| **Two-person + collision** | Partner stretches, assisted rehab, contact sports | ⏳ deferred |
 
-The strategic read: **education + physio + desk + dance** monetize the rig as it
-exists today and build the catalog/virality flywheel; **reach-IK and props** are
-the next investments that convert the 🟡 domains in the roadmap into ✅.
+The strategic read: **education + physio + desk + dance** monetize the rig and
+build the catalog/virality flywheel. With reach-IK, props, lying/seated poses, and
+a hand rig now shipped, the roadmap's 🟡 domains (functional/elderly care, floor
+yoga, loaded strength, gesture) are reachable today; the remaining frontier is
+deeper props (load, bands, rings), ROM-constrained reach, and two-person work.
 
 > ⚠️ Movit's range-of-motion values are general literature data, not medical
 > advice. Consult a qualified professional for physiotherapy or exercise

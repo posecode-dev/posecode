@@ -1,0 +1,16 @@
+movit exercise "Dead hang"
+  rig humanoid
+  prop bar
+  pose start = standing
+
+  step "Hang" 3s ease-in-out:
+    knees: flex 20
+    reach: hand_left bar
+    reach: hand_right bar
+    cue "Reach up, grip the bar, and let the shoulders relax into a long hang"
+
+  step "Down" 1.5s ease-out:
+    knees: flex 0
+    cue "Set the feet down and shake out the arms"
+
+  repeat 3

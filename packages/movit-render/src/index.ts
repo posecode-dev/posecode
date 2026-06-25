@@ -10,9 +10,11 @@
 
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import type { MovitIR } from "movit-parser";
+import type { MovitIR, ReachTarget } from "movit-parser";
 import { buildMannequin, type Mannequin } from "./mannequin.js";
 import { buildTimeline, type BuiltTimeline, type PhaseSegment } from "./timeline.js";
+import { solveCCD } from "./ik.js";
+import { buildProps, type PropScene } from "./props.js";
 
 const DEG = Math.PI / 180;
 
@@ -126,6 +128,10 @@ export function createViewer(
 
   let timeline: BuiltTimeline | null = null;
   let groundTargets = new Map<string, THREE.Vector3>();
+  // World-space anchor points contributed by scene props (chair seat, bar grip,
+  // wall surface). Populated when a doc declares props; empty otherwise.
+  let propAnchors = new Map<string, THREE.Vector3>();
+  let propScene: PropScene | null = null;
   let time = 0;
   let speed = 1;
   let playing = false;
@@ -160,15 +166,14 @@ export function createViewer(
   }
 
   function groundFigure(): void {
+    // Drop the whole figure so its lowest point rests on the floor. Using the
+    // mesh bounding-box min (not just hand/foot joints) means ANY pose grounds
+    // correctly — standing/plank rest on feet/hands, while supine/prone/seated
+    // poses rest on the back, chest, or glutes.
     mannequin.root.updateMatrixWorld(true);
-    let minY = Infinity;
-    for (const id of ["wrist_left", "wrist_right", "ankle_left", "ankle_right"]) {
-      const node = mannequin.bones.get(id);
-      if (!node) continue;
-      minY = Math.min(minY, node.getWorldPosition(new THREE.Vector3()).y);
-    }
-    if (Number.isFinite(minY)) {
-      mannequin.root.position.y -= minY;
+    const box = new THREE.Box3().setFromObject(mannequin.root);
+    if (Number.isFinite(box.min.y)) {
+      mannequin.root.position.y -= box.min.y;
       mannequin.root.updateMatrixWorld(true);
     }
   }
@@ -262,6 +267,64 @@ export function createViewer(
     }
   }
 
+  // Friendly DSL effector aliases → the distal bone whose world position is
+  // driven to the reach target.
+  const EFFECTOR_BONE: Record<string, string> = {
+    hand_left: "wrist_left",
+    hand_right: "wrist_right",
+    foot_left: "ankle_left",
+    foot_right: "ankle_right",
+  };
+
+  /** The rotatable joint chain (proximal → distal) that moves an effector. */
+  function reachChain(effectorBone: string): THREE.Object3D[] {
+    const side = effectorBone.endsWith("_left") ? "left" : "right";
+    const ids = effectorBone.startsWith("wrist")
+      ? [`shoulder_${side}`, `elbow_${side}`]
+      : effectorBone.startsWith("ankle")
+        ? [`hip_${side}`, `knee_${side}`]
+        : [];
+    return ids
+      .map((id) => mannequin.bones.get(id))
+      .filter((n): n is THREE.Object3D => !!n);
+  }
+
+  /** Resolve a reach target name to a world point: floor / prop anchor / landmark. */
+  function resolveReachTarget(
+    target: string,
+    effector: THREE.Object3D,
+  ): THREE.Vector3 | null {
+    if (target === "floor") {
+      const p = effector.getWorldPosition(new THREE.Vector3());
+      p.y = 0;
+      return p;
+    }
+    const anchor = propAnchors.get(target);
+    if (anchor) return anchor.clone();
+    const bone = mannequin.bones.get(target);
+    if (bone) return bone.getWorldPosition(new THREE.Vector3());
+    return null;
+  }
+
+  /**
+   * Reach-IK: drive each active effector to its world target with CCD. Runs
+   * AFTER ground-lock so landmark/floor targets are resolved against the final
+   * root placement. The chain is the arm (hand) or the leg (foot); other joints
+   * keep their authored FK pose.
+   */
+  function applyReaches(reaches: ReachTarget[]): void {
+    for (const r of reaches) {
+      const effectorBone = EFFECTOR_BONE[r.effector] ?? r.effector;
+      const effector = mannequin.bones.get(effectorBone);
+      if (!effector) continue;
+      const target = resolveReachTarget(r.target, effector);
+      if (!target) continue;
+      const joints = reachChain(effectorBone);
+      if (joints.length === 0) continue;
+      solveCCD({ joints, effector, target }, 12);
+    }
+  }
+
   function frameCamera(): void {
     // Auto-frame the figure: fit its bounding box, keep a pleasant angle.
     const box = new THREE.Box3().setFromObject(mannequin.root);
@@ -288,6 +351,7 @@ export function createViewer(
       const info = timeline.sample(time, mannequin.bones);
       mannequin.root.updateMatrixWorld(true);
       applyGroundLock(info.groundLock);
+      applyReaches(info.reaches);
       if (info.phaseName !== lastPhaseName) {
         lastPhaseName = info.phaseName;
         phaseCb({ phaseName: info.phaseName, ...(info.cue ? { cue: info.cue } : {}) });
@@ -331,6 +395,18 @@ export function createViewer(
       timeline = buildTimeline(ir);
       time = 0;
       lastPhaseName = "";
+      // Scene props: tear down any previous set, build the declared ones, and
+      // expose their anchors to reach-IK.
+      if (propScene) {
+        scene.remove(propScene.group);
+        disposeTree(propScene.group);
+      }
+      propScene = ir.props.length > 0 ? buildProps(ir.props) : null;
+      propAnchors = propScene?.anchors ?? new Map();
+      if (propScene) {
+        enableShadows(propScene.group);
+        scene.add(propScene.group);
+      }
       // Reset every bone to rest — otherwise joints from a previous movement
       // that this document doesn't touch would persist (e.g. bent legs from a
       // squat showing under a biceps curl).
@@ -408,7 +484,21 @@ function enableShadows(root: THREE.Object3D): void {
   });
 }
 
+/** Free GPU resources for a discarded subtree (prop set swapped on reload). */
+function disposeTree(root: THREE.Object3D): void {
+  root.traverse((obj) => {
+    const mesh = obj as THREE.Mesh;
+    if (mesh.isMesh) {
+      mesh.geometry?.dispose();
+      const mat = mesh.material;
+      if (Array.isArray(mat)) mat.forEach((m) => m.dispose());
+      else mat?.dispose();
+    }
+  });
+}
+
 export { buildMannequin } from "./mannequin.js";
 export { buildTimeline } from "./timeline.js";
 export { solveCCD } from "./ik.js";
+export { buildProps, type PropScene } from "./props.js";
 export type { PhaseSegment } from "./timeline.js";

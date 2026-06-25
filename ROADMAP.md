@@ -29,16 +29,22 @@ These are the unlocks, roughly in order of leverage:
    tips the torso forward over the hips while the legs stay planted (the renderer
    counter-rotates the hips). Powers `deadlift`, `bent-over-row`, `good-morning`,
    and `bow`. Next: hinge with a loaded-bar prop.
-2. **Reach-IK (reach a world target)** — touch your toes, hand-to-opposite-knee,
-   grab a bar, place a hand on a wall. Unlocks a huge share of physio, yoga, and any
-   prop interaction.
-3. **Scene props with contact anchors** — objects the figure can stand on, sit on,
-   hang from, or push against, plus ground-lock-style anchors to them.
-4. **Lying & seated base poses** — supine / prone / quadruped / seated starting poses
-   (for floor yoga, mat Pilates, bed-based rehab, sit-to-stand on a real seat).
-5. **Hand / finger articulation** — grip and gesture (sign language, grasping props).
+2. ~~**Reach-IK (reach a world target)**~~ — ✅ **shipped.** `reach: <effector>
+   <target>` drives a hand/foot to a body landmark, the `floor`, or a prop anchor
+   via CCD. Powers `touch-toes`, `cross-body-reach`, `seated-forward-fold`, and
+   prop grips. Next: ROM-constrained reach + dual-hand targets.
+3. ~~**Scene props with contact anchors**~~ — ✅ **shipped (starter set).** `prop
+   chair|wall|bar` adds a scene object with named anchors (`seat`, `wall`, `bar`).
+   Powers `sit-to-stand`, `box-squat`, `wall-sit`, `dead-hang`, `hanging-knee-raise`.
+   Next: more props (bench, rings, bands), load cues, anchor-aware ground-lock.
+4. ~~**Lying & seated base poses**~~ — ✅ **shipped.** `supine | prone | seated`
+   start poses (grounded by a bounding-box drop). Powers `glute-bridge`,
+   `dead-bug`, `cobra`, `seated-forward-fold`. Next: quadruped + chair-seated.
+5. ~~**Hand / finger articulation**~~ — ✅ **shipped (single-DOF).** Per-finger
+   curl bones + `fingers` group. Powers `make-a-fist`, `pinch-grip`, `hand-wave`,
+   `finger-spell-demo`. Next: multi-joint fingers for accurate sign language.
 6. **Two-person + collision** — partner stretches, assisted rehab, contact sports
-   (already noted as deferred in the spec).
+   (still deferred in the spec).
 
 ## Prop / equipment library (future)
 
@@ -61,9 +67,13 @@ Each prop is a small scene object + an anchor type; movements then reference it
 
 ## Current limitations (honest)
 
-- One figure only; no props or external objects yet.
-- Forward kinematics + ground-locked hands/feet; **no reach-to-target IK**.
-- Rig ends at the wrist (no fingers) and the head (no facial articulation).
+- One figure only; partner work and collision are still deferred.
+- A **starter** prop set (chair / wall / bar) — no bench, rings, bands, or loaded
+  implements yet, and props sit at fixed default placements.
+- Reach-IK is **unconstrained** (no ROM limits on the solved chain) and props are
+  visual + reach anchors (no physical sit/lean solve).
+- Fingers are **single-DOF** curls — good for grip and rough gesture, not exact
+  sign language. The head has no facial articulation.
 
 > Range-of-motion values are general literature data, not medical advice.
 

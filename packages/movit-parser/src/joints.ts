@@ -31,6 +31,18 @@ export const BONES = [
   "knee_right",
   "ankle_left",
   "ankle_right",
+
+  // Hand rig: one curl bone per finger (single DOF), off each wrist.
+  "thumb_left",
+  "index_left",
+  "middle_left",
+  "ring_left",
+  "pinky_left",
+  "thumb_right",
+  "index_right",
+  "middle_right",
+  "ring_right",
+  "pinky_right",
 ] as const;
 
 export type BoneId = (typeof BONES)[number];
@@ -38,6 +50,21 @@ export type BoneId = (typeof BONES)[number];
 const BONE_SET = new Set<string>(BONES);
 
 /** Symmetric DSL group names → the bones they expand to. */
+const FINGERS_LEFT: BoneId[] = [
+  "thumb_left",
+  "index_left",
+  "middle_left",
+  "ring_left",
+  "pinky_left",
+];
+const FINGERS_RIGHT: BoneId[] = [
+  "thumb_right",
+  "index_right",
+  "middle_right",
+  "ring_right",
+  "pinky_right",
+];
+
 const GROUPS: Record<string, BoneId[]> = {
   shoulders: ["shoulder_left", "shoulder_right"],
   elbows: ["elbow_left", "elbow_right"],
@@ -45,6 +72,10 @@ const GROUPS: Record<string, BoneId[]> = {
   hips: ["hip_left", "hip_right"],
   knees: ["knee_left", "knee_right"],
   ankles: ["ankle_left", "ankle_right"],
+  // Finger groups: curl one hand, or both with `fingers`.
+  fingers_left: FINGERS_LEFT,
+  fingers_right: FINGERS_RIGHT,
+  fingers: [...FINGERS_LEFT, ...FINGERS_RIGHT],
 };
 
 /** Symmetric group names usable as joints in the DSL (e.g. "shoulders"). */

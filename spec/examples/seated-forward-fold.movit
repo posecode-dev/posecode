@@ -1,0 +1,17 @@
+movit stretch "Seated forward fold"
+  rig humanoid
+  pose start = seated
+
+  step "Fold" 3s ease-in-out:
+    pelvis: hinge 70
+    neck: flex 10
+    reach: hand_left ankle_left
+    reach: hand_right ankle_right
+    cue "Hinge forward over the legs and reach toward the feet"
+
+  step "Rise" 2.5s ease-in-out:
+    pelvis: hinge 0
+    neck: flex 0
+    cue "Roll back up to a tall seated spine"
+
+  repeat 3

@@ -51,6 +51,20 @@ const SKELETON: BoneSpec[] = [
   { id: "hip_right", parent: "pelvis", offset: [-0.1, -0.06, 0], radius: 0.06 },
   { id: "knee_right", parent: "hip_right", offset: [0, -0.45, 0], radius: 0.05 },
   { id: "ankle_right", parent: "knee_right", offset: [0, -0.43, 0], radius: 0.04 },
+
+  // Fingers — short single-segment digits off each wrist, splayed in X and
+  // angled slightly forward (+Z, palm-side). One curl DOF each (flex).
+  { id: "thumb_left", parent: "wrist_left", offset: [0.035, -0.04, 0.025], radius: 0.014 },
+  { id: "index_left", parent: "wrist_left", offset: [0.025, -0.085, 0.012], radius: 0.013 },
+  { id: "middle_left", parent: "wrist_left", offset: [0.008, -0.092, 0.012], radius: 0.013 },
+  { id: "ring_left", parent: "wrist_left", offset: [-0.01, -0.088, 0.012], radius: 0.013 },
+  { id: "pinky_left", parent: "wrist_left", offset: [-0.028, -0.075, 0.012], radius: 0.012 },
+
+  { id: "thumb_right", parent: "wrist_right", offset: [-0.035, -0.04, 0.025], radius: 0.014 },
+  { id: "index_right", parent: "wrist_right", offset: [-0.025, -0.085, 0.012], radius: 0.013 },
+  { id: "middle_right", parent: "wrist_right", offset: [-0.008, -0.092, 0.012], radius: 0.013 },
+  { id: "ring_right", parent: "wrist_right", offset: [0.01, -0.088, 0.012], radius: 0.013 },
+  { id: "pinky_right", parent: "wrist_right", offset: [0.028, -0.075, 0.012], radius: 0.012 },
 ];
 
 /** Build the mannequin. `material` lets the playground theme it. */

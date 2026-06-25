@@ -12,26 +12,32 @@ export { JOINT_NAMES, ACTION_NAMES, EASINGS };
 export const KINDS = ["exercise", "stretch", "posture"];
 
 /** Recognised start poses (`pose start = ...`). */
-export const POSES = ["neutral", "standing", "plank"];
+export const POSES = ["neutral", "standing", "plank", "supine", "prone", "seated"];
 
 /** Effectors that can be ground-locked. */
 export const EFFECTORS = ["hands", "feet"];
 
+/** Reach effectors (friendly aliases) and the scene props that supply anchors. */
+export const REACH_EFFECTORS = ["hand_left", "hand_right", "foot_left", "foot_right"];
+export const PROPS = ["chair", "wall", "bar"];
+
 /** Top-level directives (excluding the `movit` header keyword). */
-export const TOP_KEYWORDS = ["rig", "pose", "step", "repeat"];
+export const TOP_KEYWORDS = ["rig", "prop", "pose", "step", "repeat"];
 
 /** Keywords valid as step children. */
-export const CHILD_KEYWORDS = ["ground-lock", "cue"];
+export const CHILD_KEYWORDS = ["ground-lock", "reach", "cue"];
 
 /** Short docs surfaced on hover and as completion detail. */
 export const KEYWORD_DOCS: Record<string, string> = {
   movit: 'Document header — `movit <kind> "<name>"`.',
   rig: "Selects the rig (currently `humanoid`).",
-  pose: "Sets the starting pose — `pose start = standing | neutral | plank`.",
+  prop: "Adds a scene object — `prop chair | wall | bar`. Supplies reach anchors.",
+  pose: "Sets the starting pose — `pose start = standing | neutral | plank | supine | prone | seated`.",
   start: "Used in `pose start = <pose>`.",
   step: 'A movement phase — `step "<name>" <Ns> <easing>:`.',
   repeat: "How many times the movement loops.",
   "ground-lock": "Pins effectors (hands / feet) to the floor for this phase.",
+  reach: "Drives an effector to a target via IK — `reach: hand_left ankle_left`.",
   cue: "A short coaching cue shown while this phase plays.",
   hold: "Keep the joint at its neutral / rest angle.",
 };

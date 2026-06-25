@@ -36,6 +36,7 @@ export type {
   Easing,
   EulerDeg,
   JointTarget,
+  ReachTarget,
   Phase,
   MovitIR,
   Warning,

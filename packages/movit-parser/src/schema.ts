@@ -20,12 +20,18 @@ const jointTargetSchema = z.object({
   line: z.number(),
 });
 
+const reachSchema = z.object({
+  effector: z.string().min(1),
+  target: z.string().min(1),
+});
+
 const stepSchema = z.object({
   name: z.string(),
   durationSec: z.number().positive(),
   easing: z.enum(EASINGS),
   targets: z.array(jointTargetSchema),
   groundLock: z.array(z.string()),
+  reaches: z.array(reachSchema),
   cue: z.string().optional(),
   line: z.number(),
 });
@@ -35,6 +41,7 @@ const docSchema = z.object({
   name: z.string().min(1),
   rig: z.string().min(1),
   startPose: z.string().optional(),
+  props: z.array(z.string()),
   repeat: z.number().int().positive(),
   steps: z.array(stepSchema),
 });

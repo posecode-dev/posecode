@@ -1,0 +1,32 @@
+movit exercise "Dead bug"
+  rig humanoid
+  pose start = supine
+
+  step "Set" 1s ease-in-out:
+    shoulders: flex 90
+    hips: flex 90
+    knees: flex 90
+    cue "Arms reach to the ceiling, knees stacked over the hips"
+
+  step "Extend right arm & left leg" 1.2s ease-in-out:
+    shoulder_right: flex 150
+    hip_left: flex 25
+    knee_left: flex 30
+    cue "Lower the right arm overhead and the left leg toward the floor"
+
+  step "Switch" 1.2s ease-in-out:
+    shoulder_right: flex 90
+    hip_left: flex 90
+    knee_left: flex 90
+    shoulder_left: flex 150
+    hip_right: flex 25
+    knee_right: flex 30
+    cue "Return and switch — left arm and right leg reach out"
+
+  step "Return" 1s ease-out:
+    shoulder_left: flex 90
+    hip_right: flex 90
+    knee_right: flex 90
+    cue "Bring everything back to the start position"
+
+  repeat 4

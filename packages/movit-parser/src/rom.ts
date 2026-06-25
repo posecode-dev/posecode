@@ -85,6 +85,17 @@ const ROM: Record<string, ActionLimits> = {
     "rotate-in": { min: 0, max: 80 },
     "rotate-out": { min: 0, max: 80 },
   },
+  // --- Hand / fingers (single-DOF curl per finger) ---
+  index: { flex: { min: 0, max: 100 }, extend: { min: 0, max: 20 } },
+  middle: { flex: { min: 0, max: 100 }, extend: { min: 0, max: 20 } },
+  ring: { flex: { min: 0, max: 100 }, extend: { min: 0, max: 20 } },
+  pinky: { flex: { min: 0, max: 100 }, extend: { min: 0, max: 20 } },
+  thumb: {
+    flex: { min: 0, max: 80 },
+    extend: { min: 0, max: 20 },
+    abduct: { min: 0, max: 50 },
+    adduct: { min: 0, max: 30 },
+  },
 };
 
 import { boneType } from "./joints.js";

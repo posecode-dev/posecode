@@ -15,9 +15,11 @@ code block — no prose.
 ```
 movit <kind> "<Name>"          # kind = exercise | stretch | posture
   rig humanoid
-  pose start = <pose>          # neutral | standing | plank
+  prop <type>                  # optional: chair | wall | bar (repeatable)
+  pose start = <pose>          # neutral | standing | plank | supine | prone | seated
   step "<Phase name>" <Ns> <easing>:   # easing = linear | ease-in | ease-out | ease-in-out
     <joint>: <action> <degrees>
+    reach: <effector> <target> # optional: drive a hand/foot to a target via IK
     ground-lock: <effectors>   # hands and/or feet pinned to the floor this phase
     cue "<short coaching cue>"
   repeat <count>
@@ -27,7 +29,8 @@ movit <kind> "<Name>"          # kind = exercise | stretch | posture
 
 `neck head spine chest pelvis` and (singular or plural) `shoulders elbows
 wrists hips knees ankles`. Plural names move both sides symmetrically; use
-`elbow_left` etc. for one side.
+`elbow_left` etc. for one side. Fingers: `fingers` (or `fingers_left` /
+`fingers_right`), and individually `thumb_* index_* middle_* ring_* pinky_*`.
 
 ## Actions (degrees are absolute targets)
 
@@ -102,6 +105,33 @@ movit exercise "Deadlift"
 
   repeat 8
 ```
+
+## Reaching, props, lying poses & hands
+
+- **Reach a target** — `reach: <effector> <target>` drives a hand or foot to a
+  world point via IK. Effectors: `hand_left hand_right foot_left foot_right`.
+  Targets: a body landmark bone (`ankle_left`, `knee_right`…), `floor`, or a prop
+  anchor (`bar`, `seat`, `wall`). Author the gross pose (e.g. a `pelvis: hinge`),
+  then let `reach` finish the hand placement. Example — touch your toes:
+
+  ```movit
+  step "Fold" 2.5s ease-in-out:
+    pelvis: hinge 95
+    knees: flex 12
+    reach: hand_left ankle_left
+    reach: hand_right ankle_right
+    ground-lock: feet
+    cue "Hinge and reach toward the ankles"
+  ```
+
+- **Props** — `prop chair | wall | bar` (top level). The chair sits behind the
+  figure (sit-to-stand, box squat), the wall behind that (wall sit), the bar
+  overhead (dead hang, hanging knee raise — `reach: hand_left bar`).
+- **Lying / seated** — `pose start = supine | prone | seated` for floor and mat
+  work (glute bridge, dead bug, cobra, seated forward fold).
+- **Hands** — `fingers: flex 80` makes a fist; curl individual fingers for shapes
+  (`index_right: flex 95`). Single-DOF per finger — good for grip and rough
+  gesture, not exact sign language.
 
 ## Authoring by domain
 

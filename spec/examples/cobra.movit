@@ -1,0 +1,21 @@
+movit stretch "Cobra"
+  rig humanoid
+  pose start = prone
+
+  step "Lift" 2.5s ease-in-out:
+    spine: extend 25
+    chest: extend 18
+    neck: extend 30
+    shoulders: extend 30
+    elbows: flex 40
+    cue "Press into the hands and lift the chest, rolling the shoulders back"
+
+  step "Lower" 2.5s ease-in-out:
+    spine: flex 0
+    chest: flex 0
+    neck: flex 0
+    shoulders: extend 0
+    elbows: flex 0
+    cue "Lower the chest back to the floor with control"
+
+  repeat 4

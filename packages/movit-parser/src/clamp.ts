@@ -42,6 +42,7 @@ export function resolve(ast: AstDoc): ResolveResult {
     name: ast.name,
     rig: ast.rig,
     ...(ast.startPose ? { startPose: ast.startPose } : {}),
+    props: ast.props,
     repeat: ast.repeat,
     phases,
   };
@@ -119,6 +120,7 @@ function resolveStep(
     easing: step.easing as Phase["easing"],
     targets,
     groundLock: step.groundLock,
+    reaches: step.reaches,
     ...(step.cue ? { cue: step.cue } : {}),
   };
 }
