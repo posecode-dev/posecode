@@ -1,0 +1,41 @@
+movit exercise "Dance phrase (8-count)"
+  rig humanoid
+  pose start = standing
+
+  step "1-2 - breath, arms to second" 2s ease-in-out:
+    hips: rotate-out 25
+    shoulders: abduct 80
+    elbows: flex 16
+    spine: extend 4
+    ground-lock: feet
+    cue "Turn out, open the arms to second, lift through the crown"
+
+  step "3-4 - demi-plié" 2s ease-in-out:
+    hips: flex 18
+    knees: flex 50
+    ankles: dorsiflex 12
+    shoulders: flex 28
+    elbows: flex 30
+    ground-lock: feet
+    cue "Bend the knees over the toes, arms round down through first"
+
+  step "5-6 - relevé, arms en haut" 2s ease-in-out:
+    hips: flex 0
+    knees: flex 0
+    ankles: plantarflex 28
+    shoulders: flex 155
+    elbows: flex 20
+    spine: extend 5
+    ground-lock: feet
+    cue "Press up to relevé and lift the arms into a frame overhead"
+
+  step "7-8 - close" 2s ease-out:
+    ankles: plantarflex 0
+    hips: rotate-out 0
+    shoulders: flex 0
+    elbows: flex 0
+    spine: flex 0
+    ground-lock: feet
+    cue "Lower the heels and resolve, arms floating back to the sides"
+
+  repeat 2

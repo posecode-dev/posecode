@@ -71,7 +71,13 @@ where the previous phase left it).
 | `rotate-in` / `rotate-out` | Y (longitudinal) | internal / external rotation |
 | `supinate` / `pronate` | Y | forearm turn |
 | `dorsiflex` / `plantarflex` | X | ankle up / down |
+| `hinge` | X | tip the torso forward over the hips (`pelvis` only) |
 | `hold neutral` | — | keep at rest |
+
+`hinge` is a **hip hinge**: applied to the `pelvis`, it pivots the torso forward
+over the hip line while the legs stay planted and vertical (the renderer
+counter-rotates the hips). Use it — not spinal `flex` — for a flat-back forward
+bend: deadlift, bent-over row, good-morning, or a bow.
 
 **Coordinate convention:** rest pose is standing, arms at sides, facing +Z. The
 renderer's mannequin is built in this same convention so the parser's resolved
@@ -92,6 +98,7 @@ research §5.1 normative tables. Selected ceilings (degrees):
 | hip | 135 | 20 | 45 | — |
 | knee | 144 | 5 | — | — |
 | ankle | — | — | — | dorsiflex 15 / plantarflex 50 |
+| pelvis | — | — | — | hinge 120 |
 | spine | 90 | 30 | 35 | rotate 45 |
 | neck | 50 | 60 | 45 | rotate 80 |
 

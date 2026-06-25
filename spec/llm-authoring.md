@@ -34,7 +34,11 @@ wrists hips knees ankles`. Plural names move both sides symmetrically; use
 - `flex` / `extend` — bend / straighten (sagittal)
 - `abduct` / `adduct` — away from / toward midline (frontal)
 - `rotate-in` / `rotate-out` — internal / external rotation
+- `supinate` / `pronate` — forearm turn (palm up / down)
 - `dorsiflex` / `plantarflex` — ankle up / down
+- `hinge` — **hip hinge** (on `pelvis` only): tip the torso forward over the
+  hips with a flat back, legs staying planted. Use this — not spinal `flex` —
+  for a deadlift, bent-over row, good-morning, or a bow.
 - `hold neutral` — keep the joint at rest
 
 ## Rules
@@ -71,3 +75,61 @@ movit exercise "Body-weight squat"
 
   repeat 8
 ```
+
+## Hip-hinge example
+
+A flat-back hinge bends at the **hips**, not the spine. Hinge the `pelvis` and
+let the arms hang; `ground-lock: feet`.
+
+```movit
+movit exercise "Deadlift"
+  rig humanoid
+  pose start = standing
+
+  step "Lower" 1.8s ease-in-out:
+    pelvis: hinge 95
+    knees: flex 25
+    shoulders: flex 90
+    ground-lock: feet
+    cue "Hips back, flat back — let the arms hang to the bar"
+
+  step "Lift" 1.4s ease-out:
+    pelvis: hinge 0
+    knees: flex 0
+    shoulders: flex 0
+    ground-lock: feet
+    cue "Drive the hips forward to stand tall"
+
+  repeat 8
+```
+
+## Authoring by domain
+
+The same grammar covers many fields. A few patterns that read well:
+
+- **Anatomy / education** — isolate one joint and sweep it through its range
+  (`shoulders: abduct 160` → `0`). Name the plane in the cue. Great for teaching.
+- **Physiotherapy** — gentle, single-joint reps; for one-sided work use a
+  singular joint (`knee_right: flex 95`) and skip `ground-lock` so the standing
+  leg stays planted.
+- **Desk / posture** — slow `stretch` documents with `ground-lock: feet`;
+  contrast a "collapsed" phase with a "tall" reset.
+- **Sports / martial arts** — short, snappy phases (0.3–0.6s) with `ease-out`
+  on the strike; chamber → extend → re-chamber → return.
+
+### Dance / choreography
+
+Movit shines for **showing the movement in your head**. Build a phrase as a
+sequence of phases, one per count or musical beat, and let later phases inherit
+unset joints:
+
+- **Turnout:** `hips: rotate-out 25–30`.
+- **Port de bras (arm positions):** first `shoulders: flex 30, elbows: flex 35`;
+  second `shoulders: abduct 85, elbows: flex 16`; fifth/en haut
+  `shoulders: flex 160, elbows: flex 20`. Move between them across phases.
+- **Plié:** `hips: flex 18, knees: flex 50, ankles: dorsiflex 12`.
+- **Relevé:** `ankles: plantarflex 28` (rise onto the balls of the feet).
+
+Name each step by its count (`"5-6 - relevé, arms en haut"`) so the phrase reads
+like choreography. To extend a phrase, append more steps — the figure carries
+its pose forward. Use `ground-lock: feet` for grounded phrases.

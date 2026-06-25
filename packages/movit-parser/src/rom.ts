@@ -55,6 +55,13 @@ const ROM: Record<string, ActionLimits> = {
     dorsiflex: { min: 0, max: 15 },
     plantarflex: { min: 0, max: 50 },
   },
+  // --- Pelvis / hip-hinge (trunk-on-thigh angle) ---
+  // The hinge pivots the torso forward over the hip line while the legs stay
+  // vertical. ~120° is a deep hip-dominant fold (athletic deadlift / forward
+  // fold); beyond that the movement is spinal flexion, not a hinge.
+  pelvis: {
+    hinge: { min: 0, max: 120 },
+  },
   // --- Axial (conservative literature values) ---
   spine: {
     flex: { min: 0, max: 90 },

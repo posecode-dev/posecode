@@ -81,6 +81,11 @@ const ACTIONS: Record<string, ActionAxis> = {
   pronate: { axis: "y", sign: -1 },
   dorsiflex: { axis: "x", sign: 1 },
   plantarflex: { axis: "x", sign: -1 },
+  // Hip hinge: tip the torso forward over the hip line (deadlift, row, bow,
+  // good-morning). Applied to the `pelvis`; sign -1 tips the figure forward
+  // (same sagittal direction as spine flex). The renderer counter-rotates the
+  // hips so the legs stay planted — see movit-render/src/timeline.ts.
+  hinge: { axis: "x", sign: -1 },
 };
 
 /** Every semantic action name the DSL accepts (e.g. "flex", "abduct"). */

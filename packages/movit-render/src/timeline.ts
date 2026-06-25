@@ -161,5 +161,19 @@ export function buildTimeline(ir: MovitIR): BuiltTimeline {
 function snapshot(curr: Map<string, EulerDegTuple>): Map<string, THREE.Quaternion> {
   const out = new Map<string, THREE.Quaternion>();
   for (const [bone, euler] of curr) out.set(bone, eulerToQuat(euler));
+
+  // Hip-hinge coupling. The `pelvis` is the shared parent of both the torso and
+  // the legs, so a pelvis X-rotation tips the WHOLE figure forward — torso and
+  // legs alike. A real hip hinge keeps the legs planted and pivots only the
+  // torso over the hip line, so counter-rotate the hips by the same X angle:
+  // the thighs (hence shins and feet) stay world-vertical while the torso tips.
+  // The feet ground-lock (index.ts) then drops the figure so the feet rest flat.
+  const pelvisX = curr.get("pelvis")?.[0] ?? 0;
+  if (pelvisX !== 0) {
+    for (const hip of ["hip_left", "hip_right"]) {
+      const [hx, hy, hz] = curr.get(hip) ?? [0, 0, 0];
+      out.set(hip, eulerToQuat([hx - pelvisX, hy, hz]));
+    }
+  }
   return out;
 }

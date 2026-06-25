@@ -25,9 +25,10 @@ domain needs — so contributions land where they unlock the most.
 
 These are the unlocks, roughly in order of leverage:
 
-1. **Hip / waist hinge primitive** — today deadlift / forward-fold are faked as a
-   spinal roll-down. A true hip hinge unlocks deadlift, row, good-morning, hinge-based
-   yoga, and bending to interact with props.
+1. ~~**Hip / waist hinge primitive**~~ — ✅ **shipped (v0.1).** `pelvis: hinge <deg>`
+   tips the torso forward over the hips while the legs stay planted (the renderer
+   counter-rotates the hips). Powers `deadlift`, `bent-over-row`, `good-morning`,
+   and `bow`. Next: hinge with a loaded-bar prop.
 2. **Reach-IK (reach a world target)** — touch your toes, hand-to-opposite-knee,
    grab a bar, place a hand on a wall. Unlocks a huge share of physio, yoga, and any
    prop interaction.
@@ -62,8 +63,12 @@ Each prop is a small scene object + an anchor type; movements then reference it
 
 - One figure only; no props or external objects yet.
 - Forward kinematics + ground-locked hands/feet; **no reach-to-target IK**.
-- Hip/waist hinge is approximated by spinal flexion (so deadlift-class moves look
-  like a roll-down — curate around this until the hinge primitive lands).
 - Rig ends at the wrist (no fingers) and the head (no facial articulation).
 
 > Range-of-motion values are general literature data, not medical advice.
+
+---
+
+See [`docs/market-research.md`](docs/market-research.md) for where Movit spreads
+fastest, the per-domain go-to-market briefs, and which engine unlock opens which
+locked domain.

@@ -1,0 +1,26 @@
+movit exercise "Bent-over row"
+  rig humanoid
+  pose start = standing
+
+  step "Set the hinge" 1.6s ease-in-out:
+    pelvis: hinge 80
+    knees: flex 20
+    shoulders: flex 70
+    elbows: flex 10
+    neck: extend 12
+    ground-lock: feet
+    cue "Hinge to a flat back, let the arms hang straight down"
+
+  step "Row" 0.9s ease-out:
+    shoulders: flex 35
+    elbows: flex 95
+    ground-lock: feet
+    cue "Drive the elbows up past the ribs, squeeze the shoulder blades"
+
+  step "Lower" 1s ease-in:
+    shoulders: flex 70
+    elbows: flex 10
+    ground-lock: feet
+    cue "Lower the bar under control, keep the back flat"
+
+  repeat 8

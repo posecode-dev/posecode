@@ -69,6 +69,9 @@ write Movit for you.
 The protocol and both libraries are **MIT-licensed** — the open core. See
 [`spec/SPEC.md`](spec/SPEC.md) for the full language and
 [`spec/llm-authoring.md`](spec/llm-authoring.md) for the authoring prompt.
+For where Movit spreads fastest and the per-domain go-to-market plan, see
+[`docs/market-research.md`](docs/market-research.md); for the engine roadmap,
+[`ROADMAP.md`](ROADMAP.md).
 
 ## Scope (v0.1)
 

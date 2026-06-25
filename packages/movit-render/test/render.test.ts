@@ -55,6 +55,45 @@ describe("timeline", () => {
   });
 });
 
+describe("hip-hinge coupling", () => {
+  const DEADLIFT = [
+    'movit exercise "Hinge"',
+    "  rig humanoid",
+    "  pose start = standing",
+    '  step "Lower" 2s ease-in-out:',
+    "    pelvis: hinge 90",
+    "    ground-lock: feet",
+    "  repeat 2",
+  ].join("\n");
+
+  it("keeps the thighs world-vertical when the pelvis hinges", () => {
+    const { ir } = parse(DEADLIFT);
+    const tl = buildTimeline(ir!);
+    const m = buildMannequin();
+    const root = m.root;
+
+    // Sample the bottom of the hinge (end of the 2s Lower phase).
+    tl.sample(2, m.bones);
+    root.updateMatrixWorld(true);
+
+    // The torso (chest) should have tipped forward toward horizontal: its rest
+    // down-axis (0,-1,0) pitches away from vertical, so |y| collapses toward 0.
+    const chestDir = new THREE.Vector3(0, -1, 0).applyQuaternion(
+      m.bones.get("chest")!.getWorldQuaternion(new THREE.Quaternion()),
+    );
+    expect(Math.abs(chestDir.y)).toBeLessThan(0.4);
+
+    // ...while the thigh (hip → knee) stays essentially vertical, because the
+    // renderer counter-rotates the hips against the pelvis hinge.
+    const hipPos = m.bones.get("hip_left")!.getWorldPosition(new THREE.Vector3());
+    const kneePos = m.bones
+      .get("knee_left")!
+      .getWorldPosition(new THREE.Vector3());
+    const thigh = kneePos.sub(hipPos).normalize();
+    expect(thigh.y).toBeLessThan(-0.95); // points almost straight down
+  });
+});
+
 describe("ccd ik", () => {
   it("brings an effector close to its target", () => {
     const root = new THREE.Object3D();
