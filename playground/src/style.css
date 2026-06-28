@@ -259,6 +259,14 @@ select:hover {
   text-transform: uppercase;
   color: var(--muted);
 }
+/* Compact gallery filters (Area / Gear / Level). */
+.topbar-actions .field.filter .select-wrap select {
+  min-width: 96px;
+}
+.count {
+  color: var(--accent);
+  font-weight: 700;
+}
 
 /* --- Intro strip ---------------------------------------------------------- */
 .intro {

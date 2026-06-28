@@ -167,21 +167,77 @@ function recompile(): void {
   }
 }
 
-// --- Presets (grouped by domain so the dropdown shows the breadth) ---
-const presetGroups = new Map<string, HTMLOptGroupElement>();
-for (const p of PRESETS) {
-  let group = presetGroups.get(p.domain);
-  if (!group) {
-    group = document.createElement("optgroup");
-    group.label = p.domain;
-    presetGroups.set(p.domain, group);
-    presetSel.append(group);
+// --- Presets: a filterable gallery (body part / equipment / difficulty) ---
+// The catalogue is tagged like a standard exercise DB, so the dropdown can be
+// narrowed the way an exercise explorer would. Options for each filter are
+// derived from the data so they never drift.
+const fBody = $<HTMLSelectElement>("f-body");
+const fEquip = $<HTMLSelectElement>("f-equip");
+const fLevel = $<HTMLSelectElement>("f-level");
+const presetCount = $<HTMLSpanElement>("preset-count");
+
+function fillFilter(sel: HTMLSelectElement, values: string[], allLabel: string): void {
+  sel.innerHTML = "";
+  const all = document.createElement("option");
+  all.value = "";
+  all.textContent = allLabel;
+  sel.append(all);
+  for (const v of [...new Set(values)].sort()) {
+    const opt = document.createElement("option");
+    opt.value = v;
+    opt.textContent = v;
+    sel.append(opt);
   }
-  const opt = document.createElement("option");
-  opt.value = p.id;
-  opt.textContent = p.label;
-  group.append(opt);
 }
+fillFilter(fBody, PRESETS.map((p) => p.bodyPart), "All areas");
+fillFilter(fEquip, PRESETS.map((p) => p.equipment), "All gear");
+fillFilter(fLevel, PRESETS.map((p) => p.difficulty), "All levels");
+
+/** Rebuild the Example dropdown from the presets matching the active filters. */
+function rebuildPresetOptions(): void {
+  const matches = PRESETS.filter(
+    (p) =>
+      (!fBody.value || p.bodyPart === fBody.value) &&
+      (!fEquip.value || p.equipment === fEquip.value) &&
+      (!fLevel.value || p.difficulty === fLevel.value),
+  );
+  presetSel.innerHTML = "";
+  const groups = new Map<string, HTMLOptGroupElement>();
+  for (const p of matches) {
+    let group = groups.get(p.domain);
+    if (!group) {
+      group = document.createElement("optgroup");
+      group.label = p.domain;
+      groups.set(p.domain, group);
+      presetSel.append(group);
+    }
+    const opt = document.createElement("option");
+    opt.value = p.id;
+    opt.textContent = `${p.label} · ${p.target}`;
+    group.append(opt);
+  }
+  presetCount.textContent = `(${matches.length})`;
+  if (matches.length === 0) {
+    const opt = document.createElement("option");
+    opt.textContent = "No matches — clear filters";
+    opt.disabled = true;
+    presetSel.append(opt);
+  }
+}
+rebuildPresetOptions();
+
+for (const f of [fBody, fEquip, fLevel]) {
+  f.addEventListener("change", () => {
+    rebuildPresetOptions();
+    // Auto-load the first match so the viewer always reflects the filter.
+    const first = PRESETS.find((p) => p.id === presetSel.value);
+    if (first) {
+      editorApi.setValue(first.source);
+      recompile();
+    }
+  });
+}
+
 presetSel.addEventListener("change", () => {
   const preset = PRESETS.find((p) => p.id === presetSel.value);
   if (preset) {

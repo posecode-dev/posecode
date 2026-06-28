@@ -1,0 +1,20 @@
+movit exercise "Crunch"
+  rig humanoid
+  pose start = supine
+
+  step "Curl up" 1s ease-out:
+    knees: flex 90
+    spine: flex 30
+    chest: flex 20
+    neck: flex 20
+    shoulders: flex 45
+    cue "Curl the shoulders off the floor, ribs toward the hips"
+
+  step "Lower" 1.2s ease-in:
+    spine: flex 0
+    chest: flex 0
+    neck: flex 0
+    shoulders: flex 0
+    cue "Lower the upper back down with control"
+
+  repeat 12

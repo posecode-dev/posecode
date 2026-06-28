@@ -1,0 +1,16 @@
+movit stretch "Standing quad stretch"
+  rig humanoid
+  pose start = standing
+
+  step "Catch the foot" 3s ease-in-out:
+    knee_right: flex 120
+    hip_right: extend 10
+    reach: hand_right ankle_right
+    cue "Bend the right knee back and reach the hand for the ankle"
+
+  step "Release" 2s ease-out:
+    knee_right: flex 0
+    hip_right: extend 0
+    cue "Release the foot and return to standing"
+
+  repeat 2

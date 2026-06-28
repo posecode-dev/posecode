@@ -1,0 +1,14 @@
+movit exercise "Lying leg raise"
+  rig humanoid
+  pose start = supine
+
+  step "Raise" 1.2s ease-out:
+    hips: flex 90
+    knees: flex 0
+    cue "Lift the straight legs toward vertical, low back pressed down"
+
+  step "Lower" 1.4s ease-in:
+    hips: flex 20
+    cue "Lower the legs slowly without arching the back"
+
+  repeat 10

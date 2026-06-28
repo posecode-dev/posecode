@@ -1,0 +1,15 @@
+movit exercise "Single-leg calf raise"
+  rig humanoid
+  pose start = standing
+
+  step "Rise" 1.1s ease-out:
+    ankle_right: plantarflex 40
+    knee_left: flex 90
+    cue "Balance on the right foot and rise onto the ball of the foot"
+
+  step "Lower" 1.3s ease-in:
+    ankle_right: plantarflex 0
+    knee_left: flex 90
+    cue "Lower the right heel slowly under control"
+
+  repeat 10
