@@ -41,16 +41,21 @@ Ordered by gap size × how cleanly the engine renders it:
 
 1. **Core** — `plank-hold`, `mountain-climber` (plank pose), `crunch`,
    `bicycle-crunch`, `supine-leg-raise` (supine pose). Highest-value, cleanest.
-2. **Chest** — register the existing `push-up`, add `wall-pushup` (wall prop).
+2. **Chest** — register the existing `push-up`.
 3. **Back** — `superman` (prone pose).
-4. **Upper legs** — `forward-lunge`, `step-up` (chair prop).
-5. **Upper arms** — `triceps-dips` (chair/bar prop).
-6. **Lower legs** — `single-leg-calf-raise`.
-7. **Conditioning / mobility** — `jumping-jacks`, `standing-quad-stretch`
+4. **Upper legs** — `forward-lunge` (FK split stance, feet leveled).
+5. **Lower legs** — `single-leg-calf-raise`.
+6. **Conditioning / mobility** — `jumping-jacks`, `standing-quad-stretch`
    (single-leg + reach-IK).
 
-These 13–14 movements roughly **double our chest/core/back coverage** and close the
-most glaring holes — all on today's engine, no new primitives required.
+These ~10 movements roughly **double our chest/core/back coverage** — all on
+today's engine, no new primitives required.
+
+**Deferred (need a front-facing prop we don't have):** `step-up` and
+`triceps-dips`. Our only box/bench prop (the chair) is placed *behind* the figure
+for sit-back moves, so a step-up's lead foot and a dip's hands land in empty space.
+These return once we add a front-placed box / dip-station prop (and anchor-aware
+ground-lock) — a clean roadmap item rather than a forced, low-fidelity render.
 
 ## Metadata gap (drives the catalogue work)
 

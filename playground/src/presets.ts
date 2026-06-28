@@ -80,9 +80,7 @@ import bicycleCrunch from "../../spec/examples/bicycle-crunch.movit?raw";
 import supineLegRaise from "../../spec/examples/supine-leg-raise.movit?raw";
 import superman from "../../spec/examples/superman.movit?raw";
 import forwardLunge from "../../spec/examples/forward-lunge.movit?raw";
-import stepUp from "../../spec/examples/step-up.movit?raw";
 import calfRaise from "../../spec/examples/single-leg-calf-raise.movit?raw";
-import tricepsDips from "../../spec/examples/triceps-dips.movit?raw";
 import jumpingJacks from "../../spec/examples/jumping-jacks.movit?raw";
 import quadStretch from "../../spec/examples/standing-quad-stretch.movit?raw";
 
@@ -124,9 +122,7 @@ export const PRESETS: Preset[] = [
   { id: "supine-leg-raise", label: "Lying leg raise", domain: "Fitness", bodyPart: "Core", target: "Abdominals", equipment: "Body weight", difficulty: "Beginner", source: supineLegRaise },
   { id: "superman", label: "Superman", domain: "Fitness", bodyPart: "Back", target: "Spinal erectors", equipment: "Body weight", difficulty: "Beginner", source: superman },
   { id: "forward-lunge", label: "Forward lunge", domain: "Fitness", bodyPart: "Upper legs", target: "Quadriceps", equipment: "Body weight", difficulty: "Intermediate", source: forwardLunge },
-  { id: "step-up", label: "Step-up (box)", domain: "Functional", bodyPart: "Upper legs", target: "Quadriceps", equipment: "Chair", difficulty: "Beginner", source: stepUp },
   { id: "calf-raise", label: "Single-leg calf raise", domain: "Fitness", bodyPart: "Lower legs", target: "Calves", equipment: "Body weight", difficulty: "Intermediate", source: calfRaise },
-  { id: "triceps-dips", label: "Triceps dips (box)", domain: "Fitness", bodyPart: "Upper arms", target: "Triceps", equipment: "Chair", difficulty: "Intermediate", source: tricepsDips },
   { id: "jumping-jacks", label: "Jumping jacks", domain: "Warm-up", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", source: jumpingJacks },
   { id: "quad-stretch", label: "Standing quad stretch", domain: "Mobility", bodyPart: "Upper legs", target: "Quadriceps", equipment: "Body weight", difficulty: "Beginner", source: quadStretch },
 

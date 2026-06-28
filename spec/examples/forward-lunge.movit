@@ -3,11 +3,11 @@ movit exercise "Forward lunge"
   pose start = standing
 
   step "Lunge" 1.6s ease-in-out:
-    hip_right: flex 50
-    knee_right: flex 85
-    hip_left: extend 18
-    knee_left: flex 80
-    ankle_right: dorsiflex 12
+    hip_right: flex 45
+    knee_right: flex 95
+    hip_left: extend 15
+    knee_left: flex 45
+    ankle_right: dorsiflex 14
     spine: extend 4
     ground-lock: feet
     cue "Step forward and lower the back knee toward the floor"
