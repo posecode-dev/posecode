@@ -126,8 +126,9 @@ research §5.1 normative tables. Selected ceilings (degrees):
    foot_left|foot_right`) to a world **target** via Cyclic Coordinate Descent
    (CCD) over the arm/leg chain. A target is a body landmark bone (e.g.
    `ankle_left`), the keyword `floor`, or a prop anchor (`bar`, `seat`, `wall`).
-5. **Props** — `prop chair|wall|bar` adds a scene object at a fixed default
-   placement; its named anchors become reach targets.
+5. **Props** — `prop chair|wall|bar|box` adds a scene object at a fixed default
+   placement (chair/wall behind, bar overhead, box in front); its named anchors
+   become reach targets.
 6. **Looping** — the timeline loops base → phases → base; `repeat` is the rep
    count surfaced to the UI.
 

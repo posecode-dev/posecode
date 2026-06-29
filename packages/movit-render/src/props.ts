@@ -53,6 +53,15 @@ export function buildProps(types: string[], material?: THREE.Material): PropScen
       wall.position.set(0, 1.3, -0.34);
       group.add(wall);
       anchors.set("wall", new THREE.Vector3(0, 0.9, -0.29));
+    } else if (type === "box") {
+      // A low step/plateau placed IN FRONT of the figure (+Z) — the lead foot
+      // steps forward and up onto it. Top surface at ~0.30 m; `box` anchor sits
+      // on top where the foot lands.
+      const topH = 0.3;
+      const plat = box(0.5, topH, 0.42, mat);
+      plat.position.set(0, topH / 2, 0.32);
+      group.add(plat);
+      anchors.set("box", new THREE.Vector3(0, topH, 0.3));
     }
   }
 
