@@ -83,6 +83,7 @@ import forwardLunge from "../../spec/examples/forward-lunge.movit?raw";
 import calfRaise from "../../spec/examples/single-leg-calf-raise.movit?raw";
 import jumpingJacks from "../../spec/examples/jumping-jacks.movit?raw";
 import quadStretch from "../../spec/examples/standing-quad-stretch.movit?raw";
+import boxStepTaps from "../../spec/examples/box-step-taps.movit?raw";
 
 export type Difficulty = "Beginner" | "Intermediate" | "Advanced";
 
@@ -124,6 +125,7 @@ export const PRESETS: Preset[] = [
   { id: "forward-lunge", label: "Forward lunge", domain: "Fitness", bodyPart: "Upper legs", target: "Quadriceps", equipment: "Body weight", difficulty: "Intermediate", source: forwardLunge },
   { id: "calf-raise", label: "Single-leg calf raise", domain: "Fitness", bodyPart: "Lower legs", target: "Calves", equipment: "Body weight", difficulty: "Intermediate", source: calfRaise },
   { id: "jumping-jacks", label: "Jumping jacks", domain: "Warm-up", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", source: jumpingJacks },
+  { id: "box-step-taps", label: "Box step taps", domain: "Warm-up", bodyPart: "Upper legs", target: "Hip flexors", equipment: "Box", difficulty: "Beginner", source: boxStepTaps },
   { id: "quad-stretch", label: "Standing quad stretch", domain: "Mobility", bodyPart: "Upper legs", target: "Quadriceps", equipment: "Body weight", difficulty: "Beginner", source: quadStretch },
 
   // --- Education / anatomy: single-joint ROM demos ---

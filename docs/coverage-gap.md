@@ -51,11 +51,15 @@ Ordered by gap size × how cleanly the engine renders it:
 These ~10 movements roughly **double our chest/core/back coverage** — all on
 today's engine, no new primitives required.
 
-**Deferred (need a front-facing prop we don't have):** `step-up` and
-`triceps-dips`. Our only box/bench prop (the chair) is placed *behind* the figure
-for sit-back moves, so a step-up's lead foot and a dip's hands land in empty space.
-These return once we add a front-placed box / dip-station prop (and anchor-aware
-ground-lock) — a clean roadmap item rather than a forced, low-fidelity render.
+**Front box prop (added):** a `prop box` placed in front of the figure now powers
+`box-step-taps` (the lead foot taps the box top — verified landing on the anchor).
+
+**Still deferred:** a true `step-up` and `triceps-dips`. Beyond prop placement,
+both need the figure's whole body to **translate vertically** (rise onto the box /
+lower into the dip), and the rig has no authorable root-height channel yet — the
+pelvis is fixed and only ground-lock nudges it. So a step-up reads as a step-*tap*
+and a dip can't lower. These return with a root-translation primitive (a `lift` /
+body-height channel) — a clean roadmap item, not a forced low-fidelity render.
 
 ## Metadata gap (drives the catalogue work)
 
