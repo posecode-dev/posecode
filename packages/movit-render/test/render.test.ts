@@ -186,6 +186,80 @@ describe("hand rig", () => {
   });
 });
 
+describe("contact pins", () => {
+  // Replicate the viewer's applyPins: translate the root so the pinned effector
+  // sits on the anchor, then read the pelvis height.
+  const BONE: Record<string, string> = {
+    hand_left: "wrist_left",
+    hand_right: "wrist_right",
+    foot_left: "ankle_left",
+    foot_right: "ankle_right",
+  };
+  function pelvisYPinned(
+    source: string,
+    t: number,
+    anchors: Map<string, THREE.Vector3>,
+  ): number {
+    const { ir } = parse(source);
+    const tl = buildTimeline(ir!);
+    const m = buildMannequin();
+    const info = tl.sample(t, m.bones);
+    m.root.updateMatrixWorld(true);
+    const delta = new THREE.Vector3();
+    let n = 0;
+    for (const p of info.pins) {
+      const eff = m.bones.get(BONE[p.effector] ?? p.effector);
+      const a = anchors.get(p.anchor);
+      if (!eff || !a) continue;
+      delta.add(a.clone().sub(eff.getWorldPosition(new THREE.Vector3())));
+      n++;
+    }
+    if (n > 0) {
+      m.root.position.add(delta.multiplyScalar(1 / n));
+      m.root.updateMatrixWorld(true);
+    }
+    return m.bones.get("pelvis")!.getWorldPosition(new THREE.Vector3()).y;
+  }
+
+  const PULLUP = [
+    'movit exercise "Pull-up"',
+    "  rig humanoid",
+    "  prop bar",
+    "  pose start = standing",
+    '  step "Hang" 1.5s ease-in-out:',
+    "    shoulders: flex 175",
+    "    elbows: flex 5",
+    "    pin: hand_left bar",
+    "    pin: hand_right bar",
+    '  step "Pull up" 1.2s ease-out:',
+    "    shoulders: flex 150",
+    "    elbows: flex 130",
+    "    pin: hand_left bar",
+    "    pin: hand_right bar",
+    "  repeat 2",
+  ].join("\n");
+
+  it("parses pins into the IR", () => {
+    const { ir, errors, warnings } = parse(PULLUP);
+    expect(errors).toEqual([]);
+    expect(warnings).toEqual([]);
+    expect(ir!.props).toContain("bar");
+    expect(ir!.phases[0]!.pins).toEqual([
+      { effector: "hand_left", anchor: "bar" },
+      { effector: "hand_right", anchor: "bar" },
+    ]);
+  });
+
+  it("raises the body when pinned to the bar and the elbows flex", () => {
+    const anchors = buildProps(["bar"]).anchors;
+    // Sample inside each phase (not on the boundary, where sample() returns the
+    // next keyframe's empty pins).
+    const hang = pelvisYPinned(PULLUP, 1.49, anchors); // straight-arm hang
+    const top = pelvisYPinned(PULLUP, 2.69, anchors); // elbows flexed → pulled up
+    expect(top).toBeGreaterThan(hang + 0.2); // pelvis climbs toward the bar
+  });
+});
+
 describe("props", () => {
   it("exposes named anchors for declared props", () => {
     const { anchors, group } = buildProps(["chair", "bar", "wall"]);
@@ -196,26 +270,6 @@ describe("props", () => {
     expect(group.children.length).toBeGreaterThan(0);
   });
 
-  it("drives a wrist to a prop anchor with reach-IK", () => {
-    const m = buildMannequin();
-    m.root.updateMatrixWorld(true);
-    const { anchors } = buildProps(["bar"]);
-    const target = anchors.get("bar")!.clone();
-
-    const wrist = m.bones.get("wrist_right")!;
-    solveCCD(
-      {
-        joints: [m.bones.get("shoulder_right")!, m.bones.get("elbow_right")!],
-        effector: wrist,
-        target,
-      },
-      20,
-    );
-    m.root.updateMatrixWorld(true);
-    // The bar sits at the edge of arm reach; the hand should come up close to it.
-    const d = wrist.getWorldPosition(new THREE.Vector3()).distanceTo(target);
-    expect(d).toBeLessThan(0.2);
-  });
 });
 
 describe("ccd ik", () => {

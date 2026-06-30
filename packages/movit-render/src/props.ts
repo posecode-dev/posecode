@@ -39,7 +39,8 @@ export function buildProps(types: string[], material?: THREE.Material): PropScen
       group.add(seat, back, leg(mat, 0.18, -0.0), leg(mat, -0.18, -0.0), leg(mat, 0.18, -0.32), leg(mat, -0.18, -0.32));
       anchors.set("seat", new THREE.Vector3(0, seatH + 0.03, -0.12));
     } else if (type === "bar") {
-      const barH = 1.95;
+      // Above standing reach, so a pinned grip genuinely hangs the body below it.
+      const barH = 2.3;
       const bar = new THREE.Mesh(
         new THREE.CylinderGeometry(0.025, 0.025, 1.2, 12),
         mat,
@@ -47,6 +48,12 @@ export function buildProps(types: string[], material?: THREE.Material): PropScen
       bar.rotation.z = Math.PI / 2; // horizontal, along X
       bar.position.set(0, barH, 0);
       group.add(bar);
+      // Posts down to the floor so the bar reads as a pull-up frame.
+      for (const x of [-0.55, 0.55]) {
+        const post = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, barH, 10), mat);
+        post.position.set(x, barH / 2, 0);
+        group.add(post);
+      }
       anchors.set("bar", new THREE.Vector3(0, barH, 0));
     } else if (type === "wall") {
       const wall = box(2.2, 2.6, 0.1, mat);

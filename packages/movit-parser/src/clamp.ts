@@ -121,6 +121,7 @@ function resolveStep(
     targets,
     groundLock: step.groundLock,
     reaches: step.reaches,
+    pins: step.pins,
     ...(step.cue ? { cue: step.cue } : {}),
   };
 }

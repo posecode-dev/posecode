@@ -8,7 +8,7 @@
  */
 
 import * as THREE from "three";
-import type { MovitIR, ReachTarget } from "movit-parser";
+import type { MovitIR, ReachTarget, PinTarget } from "movit-parser";
 import { poseFor, type PoseSpec } from "./poses.js";
 
 const DEG = Math.PI / 180;
@@ -24,6 +24,7 @@ interface Keyframe {
   quats: Map<string, THREE.Quaternion>;
   groundLock: string[];
   reaches: ReachTarget[];
+  pins: PinTarget[];
 }
 
 /** A phase as a time span on the timeline, for scrubber markers / ribbon. */
@@ -45,7 +46,13 @@ export interface BuiltTimeline {
   sample(
     t: number,
     bones: Map<string, THREE.Object3D>,
-  ): { phaseName: string; cue?: string; groundLock: string[]; reaches: ReachTarget[] };
+  ): {
+    phaseName: string;
+    cue?: string;
+    groundLock: string[];
+    reaches: ReachTarget[];
+    pins: PinTarget[];
+  };
 }
 
 function eulerToQuat([x, y, z]: EulerDegTuple): THREE.Quaternion {
@@ -78,6 +85,7 @@ export function buildTimeline(ir: MovitIR): BuiltTimeline {
     quats: snapshot(curr),
     groundLock: [],
     reaches: [],
+    pins: [],
   });
 
   let t = 0;
@@ -94,6 +102,7 @@ export function buildTimeline(ir: MovitIR): BuiltTimeline {
       quats: snapshot(curr),
       groundLock: phase.groundLock,
       reaches: phase.reaches,
+      pins: phase.pins,
     });
   }
 
@@ -107,6 +116,7 @@ export function buildTimeline(ir: MovitIR): BuiltTimeline {
     quats: snapshot(new Map(baseJoints)),
     groundLock: [],
     reaches: [],
+    pins: [],
   });
 
   // Fill every keyframe with the full bone set (missing → identity).
@@ -162,6 +172,7 @@ export function buildTimeline(ir: MovitIR): BuiltTimeline {
         ...(b.cue ? { cue: b.cue } : {}),
         groundLock: b.groundLock,
         reaches: b.reaches,
+        pins: b.pins,
       };
     },
   };

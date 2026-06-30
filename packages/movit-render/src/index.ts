@@ -10,7 +10,7 @@
 
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import type { MovitIR, ReachTarget } from "movit-parser";
+import type { MovitIR, ReachTarget, PinTarget } from "movit-parser";
 import { buildMannequin, type Mannequin } from "./mannequin.js";
 import { buildTimeline, type BuiltTimeline, type PhaseSegment } from "./timeline.js";
 import { solveCCD } from "./ik.js";
@@ -132,6 +132,11 @@ export function createViewer(
   // wall surface). Populated when a doc declares props; empty otherwise.
   let propAnchors = new Map<string, THREE.Vector3>();
   let propScene: PropScene | null = null;
+  // The grounded base transform captured at load. Each frame resets the root to
+  // this before ground-lock / pins / reach recompute, so those root adjustments
+  // never accumulate across frames (and the body returns to base when a pin ends).
+  const baseRootPos = new THREE.Vector3();
+  const baseRootQuat = new THREE.Quaternion();
   let time = 0;
   let speed = 1;
   let playing = false;
@@ -325,6 +330,33 @@ export function createViewer(
     }
   }
 
+  /**
+   * Contact pins: translate the WHOLE figure so each pinned effector sits on its
+   * anchor. Where ground-lock keeps a planted foot on the floor, a pin keeps a
+   * hand on the bar or a foot on the box while the body moves relative to it —
+   * so the figure hangs from a bar, pulls up toward it, rises onto a box, or
+   * lowers into a dip as the limb joints work. Applied after ground-lock (which
+   * pinned movements normally omit) and before reach-IK.
+   */
+  function applyPins(pins: PinTarget[]): void {
+    if (pins.length === 0) return;
+    const delta = new THREE.Vector3();
+    let n = 0;
+    for (const p of pins) {
+      const effectorBone = EFFECTOR_BONE[p.effector] ?? p.effector;
+      const effector = mannequin.bones.get(effectorBone);
+      if (!effector) continue;
+      const anchor = resolveReachTarget(p.anchor, effector);
+      if (!anchor) continue;
+      delta.add(anchor.sub(effector.getWorldPosition(new THREE.Vector3())));
+      n++;
+    }
+    if (n > 0) {
+      mannequin.root.position.add(delta.multiplyScalar(1 / n));
+      mannequin.root.updateMatrixWorld(true);
+    }
+  }
+
   function frameCamera(): void {
     // Auto-frame the figure: fit its bounding box, keep a pleasant angle.
     const box = new THREE.Box3().setFromObject(mannequin.root);
@@ -349,8 +381,12 @@ export function createViewer(
   function frame(): void {
     if (timeline) {
       const info = timeline.sample(time, mannequin.bones);
+      // Recompute root contact from the grounded base each frame (no drift).
+      mannequin.root.position.copy(baseRootPos);
+      mannequin.root.quaternion.copy(baseRootQuat);
       mannequin.root.updateMatrixWorld(true);
       applyGroundLock(info.groundLock);
+      applyPins(info.pins);
       applyReaches(info.reaches);
       if (info.phaseName !== lastPhaseName) {
         lastPhaseName = info.phaseName;
@@ -416,6 +452,8 @@ export function createViewer(
       mannequin.root.updateMatrixWorld(true);
       groundFigure();
       captureGroundTargets();
+      baseRootPos.copy(mannequin.root.position);
+      baseRootQuat.copy(mannequin.root.quaternion);
       frameCamera();
     },
     play() {

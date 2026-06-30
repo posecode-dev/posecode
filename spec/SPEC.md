@@ -30,10 +30,11 @@ pose       = "pose" "start" "=" WORD ;                  (* neutral|standing|plan
 repeat     = "repeat" NUMBER ;
 step       = "step" STRING DURATION easing ":" { child } ;
 easing     = "linear" | "ease-in" | "ease-out" | "ease-in-out" ;
-child      = jointTarget | groundLock | reach | cue ;
+child      = jointTarget | groundLock | reach | pin | cue ;
 jointTarget= joint ":" action [ NUMBER ] ;
 groundLock = "ground-lock" ":" effector { "," effector } ;
 reach      = "reach" ":" effector target ;             (* effector → world target via IK *)
+pin        = "pin" ":" effector anchor ;               (* move the BODY so effector sits on anchor *)
 cue        = "cue" STRING ;
 DURATION   = NUMBER "s" ;                                (* e.g. 2s, 1.5s *)
 ```
@@ -128,7 +129,12 @@ research §5.1 normative tables. Selected ceilings (degrees):
    `ankle_left`), the keyword `floor`, or a prop anchor (`bar`, `seat`, `wall`).
 5. **Props** — `prop chair|wall|bar|box` adds a scene object at a fixed default
    placement (chair/wall behind, bar overhead, box in front); its named anchors
-   become reach targets.
+   become reach/pin targets.
+6. **Pins** — `pin: <effector> <anchor>` translates the whole figure so the
+   effector sits on the anchor. Where ground-lock keeps a foot on the floor and
+   reach moves a limb to a target, a **pin moves the body** while the contact
+   stays put — so the figure hangs from a bar, pulls up toward it, rises onto a
+   box, or lowers into a dip as the joints work.
 6. **Looping** — the timeline loops base → phases → base; `repeat` is the rep
    count surfaced to the UI.
 

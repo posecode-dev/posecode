@@ -21,6 +21,11 @@ export interface AstReach {
   target: string;
 }
 
+export interface AstPin {
+  effector: string;
+  anchor: string;
+}
+
 export interface AstStep {
   name: string;
   durationSec: number;
@@ -28,6 +33,7 @@ export interface AstStep {
   targets: AstJointTarget[];
   groundLock: string[];
   reaches: AstReach[];
+  pins: AstPin[];
   cue?: string;
   line: number;
 }
@@ -152,6 +158,7 @@ export function parseToAst(source: string): ParseAstResult {
           targets: [],
           groundLock: [],
           reaches: [],
+          pins: [],
           line: ln.line,
         };
         doc.steps.push(current);
@@ -202,6 +209,18 @@ function parseStepChild(ln: Line, current: AstStep | null): ParseError | null {
       return { line: ln.line, message: "expected `reach: <effector> <target>`" };
     }
     current.reaches.push({ effector, target });
+    return null;
+  }
+
+  if (head === "pin") {
+    // `pin: <effector> <anchor>` — translate the body so the effector sits there.
+    if (!current) return { line: ln.line, message: "`pin` outside of a step" };
+    const effector = t[2]?.type === "word" ? t[2].value : null;
+    const anchor = t[3]?.type === "word" ? t[3].value : null;
+    if (t[1]?.type !== "colon" || !effector || !anchor) {
+      return { line: ln.line, message: "expected `pin: <effector> <anchor>`" };
+    }
+    current.pins.push({ effector, anchor });
     return null;
   }
 

@@ -1,0 +1,27 @@
+movit exercise "Triceps dips"
+  rig humanoid
+  prop chair
+  pose start = standing
+
+  step "Support" 1s ease-in-out:
+    shoulders: extend 25
+    elbows: flex 10
+    hips: flex 80
+    knees: flex 80
+    pin: hand_left seat
+    pin: hand_right seat
+    cue "Hands on the edge behind you, hips just off the seat, knees bent"
+
+  step "Lower" 1.1s ease-in-out:
+    elbows: flex 95
+    pin: hand_left seat
+    pin: hand_right seat
+    cue "Bend the elbows to lower the hips toward the floor"
+
+  step "Press" 1s ease-out:
+    elbows: flex 10
+    pin: hand_left seat
+    pin: hand_right seat
+    cue "Press through the palms to straighten the arms"
+
+  repeat 8

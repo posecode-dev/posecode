@@ -51,15 +51,24 @@ Ordered by gap size × how cleanly the engine renders it:
 These ~10 movements roughly **double our chest/core/back coverage** — all on
 today's engine, no new primitives required.
 
-**Front box prop (added):** a `prop box` placed in front of the figure now powers
+**Front box prop (added):** a `prop box` placed in front of the figure powers
 `box-step-taps` (the lead foot taps the box top — verified landing on the anchor).
 
-**Still deferred:** a true `step-up` and `triceps-dips`. Beyond prop placement,
-both need the figure's whole body to **translate vertically** (rise onto the box /
-lower into the dip), and the rig has no authorable root-height channel yet — the
-pelvis is fixed and only ground-lock nudges it. So a step-up reads as a step-*tap*
-and a dip can't lower. These return with a root-translation primitive (a `lift` /
-body-height channel) — a clean roadmap item, not a forced low-fidelity render.
+**Contact pins (added) — the root-translation primitive.** `pin: <effector>
+<anchor>` translates the whole body so a pinned hand/foot stays on its anchor
+while the limbs work, which is exactly the vertical body motion that was missing.
+This unlocked, all verified through the real rig:
+
+- `pull-up` — hang from the bar (feet ~0.38 m off the floor), elbows flex → pelvis
+  climbs ~0.34 m toward the bar.
+- `step-up` — lead foot pinned to the box top; the leg straightens → the body
+  rises ~0.32 m onto the box, trailing foot lifting off.
+- `triceps-dips` — hands pinned to the chair seat; elbows bend → hips lower.
+- `dead-hang` / `hanging-knee-raise` — now genuinely suspended from the bar.
+
+**Still deferred:** free-flight moves (jumps, burpees) where the body leaves *all*
+contacts — those want an authored whole-body `lift` channel (no anchor), a small
+follow-on to the pin work.
 
 ## Metadata gap (drives the catalogue work)
 

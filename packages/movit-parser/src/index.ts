@@ -37,6 +37,7 @@ export type {
   EulerDeg,
   JointTarget,
   ReachTarget,
+  PinTarget,
   Phase,
   MovitIR,
   Warning,
