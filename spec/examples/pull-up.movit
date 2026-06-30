@@ -1,0 +1,27 @@
+movit exercise "Pull-up"
+  rig humanoid
+  prop bar
+  pose start = standing
+
+  step "Hang" 1.5s ease-in-out:
+    shoulders: flex 175
+    elbows: flex 5
+    pin: hand_left bar
+    pin: hand_right bar
+    cue "Hang from the bar, arms long, shoulders active"
+
+  step "Pull up" 1.2s ease-out:
+    shoulders: flex 150
+    elbows: flex 130
+    pin: hand_left bar
+    pin: hand_right bar
+    cue "Pull the chest toward the bar, driving the elbows down"
+
+  step "Lower" 1.4s ease-in:
+    shoulders: flex 175
+    elbows: flex 5
+    pin: hand_left bar
+    pin: hand_right bar
+    cue "Lower under control back to a full hang"
+
+  repeat 6

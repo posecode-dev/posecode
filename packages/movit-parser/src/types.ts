@@ -36,6 +36,17 @@ export interface ReachTarget {
   target: string;
 }
 
+/**
+ * A contact pin: translate the whole figure so `effector` sits on a fixed
+ * `anchor` (a prop anchor, a landmark, or `floor`). Unlike a reach (which moves
+ * the limb to a target) a pin moves the BODY, so the figure can hang from a bar,
+ * rise onto a box, or lower into a dip while the contact stays put.
+ */
+export interface PinTarget {
+  effector: string;
+  anchor: string;
+}
+
 /** One concurrent phase of a movement (e.g. "Lower" in a push-up). */
 export interface Phase {
   name: string;
@@ -46,6 +57,8 @@ export interface Phase {
   groundLock: string[];
   /** Reach-IK goals active during this phase. */
   reaches: ReachTarget[];
+  /** Contact pins active during this phase (translate the body to the anchor). */
+  pins: PinTarget[];
   cue?: string;
 }
 

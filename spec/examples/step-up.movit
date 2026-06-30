@@ -1,0 +1,28 @@
+movit exercise "Step-up"
+  rig humanoid
+  prop box
+  pose start = standing
+
+  step "Plant the foot" 1s ease-in-out:
+    hip_right: flex 70
+    knee_right: flex 90
+    pin: foot_right box
+    cue "Plant the right foot up on top of the box"
+
+  step "Drive up" 1.2s ease-out:
+    hip_right: flex 8
+    knee_right: flex 8
+    hip_left: flex 35
+    knee_left: flex 45
+    pin: foot_right box
+    cue "Drive through the top foot to stand tall on the box"
+
+  step "Step down" 1.4s ease-in:
+    hip_right: flex 70
+    knee_right: flex 90
+    hip_left: flex 0
+    knee_left: flex 0
+    pin: foot_right box
+    cue "Lower the trailing foot back to the floor"
+
+  repeat 6

@@ -25,6 +25,11 @@ const reachSchema = z.object({
   target: z.string().min(1),
 });
 
+const pinSchema = z.object({
+  effector: z.string().min(1),
+  anchor: z.string().min(1),
+});
+
 const stepSchema = z.object({
   name: z.string(),
   durationSec: z.number().positive(),
@@ -32,6 +37,7 @@ const stepSchema = z.object({
   targets: z.array(jointTargetSchema),
   groundLock: z.array(z.string()),
   reaches: z.array(reachSchema),
+  pins: z.array(pinSchema),
   cue: z.string().optional(),
   line: z.number(),
 });

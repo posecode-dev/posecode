@@ -85,6 +85,11 @@ import jumpingJacks from "../../spec/examples/jumping-jacks.movit?raw";
 import quadStretch from "../../spec/examples/standing-quad-stretch.movit?raw";
 import boxStepTaps from "../../spec/examples/box-step-taps.movit?raw";
 
+// Contact-pin movements (the body moves relative to a pinned hand/foot).
+import pullUp from "../../spec/examples/pull-up.movit?raw";
+import stepUp from "../../spec/examples/step-up.movit?raw";
+import tricepsDips from "../../spec/examples/triceps-dips.movit?raw";
+
 export type Difficulty = "Beginner" | "Intermediate" | "Advanced";
 
 export interface Preset {
@@ -126,6 +131,9 @@ export const PRESETS: Preset[] = [
   { id: "calf-raise", label: "Single-leg calf raise", domain: "Fitness", bodyPart: "Lower legs", target: "Calves", equipment: "Body weight", difficulty: "Intermediate", source: calfRaise },
   { id: "jumping-jacks", label: "Jumping jacks", domain: "Warm-up", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", source: jumpingJacks },
   { id: "box-step-taps", label: "Box step taps", domain: "Warm-up", bodyPart: "Upper legs", target: "Hip flexors", equipment: "Box", difficulty: "Beginner", source: boxStepTaps },
+  { id: "pull-up", label: "Pull-up", domain: "Fitness", bodyPart: "Back", target: "Lats", equipment: "Bar", difficulty: "Advanced", source: pullUp },
+  { id: "step-up", label: "Step-up (box)", domain: "Functional", bodyPart: "Upper legs", target: "Quadriceps", equipment: "Box", difficulty: "Intermediate", source: stepUp },
+  { id: "triceps-dips", label: "Triceps dips (chair)", domain: "Fitness", bodyPart: "Upper arms", target: "Triceps", equipment: "Chair", difficulty: "Intermediate", source: tricepsDips },
   { id: "quad-stretch", label: "Standing quad stretch", domain: "Mobility", bodyPart: "Upper legs", target: "Quadriceps", equipment: "Body weight", difficulty: "Beginner", source: quadStretch },
 
   // --- Education / anatomy: single-joint ROM demos ---
