@@ -3,13 +3,13 @@ movit stretch "Touch your toes"
   pose start = standing
 
   step "Fold" 2.5s ease-in-out:
-    pelvis: hinge 95
-    knees: flex 12
+    pelvis: hinge 120
+    knees: flex 60
     neck: flex 15
     reach: hand_left ankle_left
     reach: hand_right ankle_right
     ground-lock: feet
-    cue "Hinge from the hips and reach your hands down toward your ankles"
+    cue "Hinge from the hips, bend the knees, and reach your hands down toward your ankles"
 
   step "Rise" 2s ease-out:
     pelvis: hinge 0

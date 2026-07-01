@@ -3,7 +3,13 @@ movit exercise "Pull-up"
   prop bar
   pose start = standing
 
-  step "Hang" 1.5s ease-in-out:
+  step "Reach" 0.8s ease-out:
+    shoulders: flex 175
+    elbows: flex 5
+    ground-lock: feet
+    cue "Reach up and grip the bar"
+
+  step "Hang" 0.7s ease-in-out:
     shoulders: flex 175
     elbows: flex 5
     pin: hand_left bar
@@ -23,5 +29,11 @@ movit exercise "Pull-up"
     pin: hand_left bar
     pin: hand_right bar
     cue "Lower under control back to a full hang"
+
+  step "Release" 0.8s ease-in:
+    shoulders: flex 0
+    elbows: flex 0
+    ground-lock: feet
+    cue "Drop off the bar and rest"
 
   repeat 6

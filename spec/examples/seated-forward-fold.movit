@@ -3,15 +3,17 @@ movit stretch "Seated forward fold"
   pose start = seated
 
   step "Fold" 3s ease-in-out:
-    pelvis: hinge 70
-    neck: flex 10
-    reach: hand_left ankle_left
-    reach: hand_right ankle_right
-    cue "Hinge forward over the legs and reach toward the feet"
+    spine: flex 60
+    chest: flex 25
+    neck: flex 15
+    shoulders: flex 60
+    cue "Hinge forward from the hips over the legs, reaching toward the feet"
 
   step "Rise" 2.5s ease-in-out:
-    pelvis: hinge 0
+    spine: flex 0
+    chest: flex 0
     neck: flex 0
+    shoulders: flex 0
     cue "Roll back up to a tall seated spine"
 
   repeat 3

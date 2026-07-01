@@ -3,8 +3,8 @@ movit stretch "Standing quad stretch"
   pose start = standing
 
   step "Catch the foot" 3s ease-in-out:
-    knee_right: flex 120
-    hip_right: extend 10
+    knee_right: flex 144
+    hip_right: extend 20
     reach: hand_right ankle_right
     cue "Bend the right knee back and reach the hand for the ankle"
 

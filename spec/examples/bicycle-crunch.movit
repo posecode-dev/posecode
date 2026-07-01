@@ -27,4 +27,12 @@ movit exercise "Bicycle crunch"
     knee_left: flex 20
     cue "Switch — left elbow toward the right knee"
 
+  step "Center" 0.6s ease-out:
+    spine: rotate-in 0
+    hip_right: flex 90
+    knee_right: flex 90
+    hip_left: flex 90
+    knee_left: flex 90
+    cue "Return to center, knees stacked over the hips"
+
   repeat 5
