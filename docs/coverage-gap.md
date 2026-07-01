@@ -28,7 +28,7 @@ majority; the **body-weight subset (~25%)** is our addressable universe.
 | Core / waist | dead-bug, glute-bridge, hanging-knee-raise, spinal-twist, side-bend, cross-body-reach | ~6 | **No crunch / plank / leg-raise / climber** |
 | Shoulders | lateral-raise, shoulder-flexion, shoulder-abduction, shoulder-rolls, overhead-reach, arm-circles, port-de-bras | ~7 | Good |
 | Back | bent-over-row, deadlift, good-morning, cobra, dead-hang | ~5 | **No superman / extension holds** |
-| Chest | chest-opener (stretch only) | 1 | **Weak — push-up not even registered** |
+| Chest | chest-opener (stretch only) | 1 | **Weak — push-up was pulled from the catalogue; still the obvious gap-filler once chest coverage is revisited** |
 | Upper arms | biceps-curl, elbow-forearm | 2 | **No triceps work** |
 | Lower legs | heel-raises, relevé | 2 | Thin |
 | Neck | neck-rotation, neck-side-stretch | 2 | Fine for scope |
@@ -41,7 +41,8 @@ Ordered by gap size × how cleanly the engine renders it:
 
 1. **Core** — `plank-hold`, `mountain-climber` (plank pose), `crunch`,
    `bicycle-crunch`, `supine-leg-raise` (supine pose). Highest-value, cleanest.
-2. **Chest** — register the existing `push-up`.
+2. **Chest** — still open; `push-up` was authored and then pulled from the
+   catalogue (see note above), so this gap remains.
 3. **Back** — `superman` (prone pose).
 4. **Upper legs** — `forward-lunge` (FK split stance, feet leveled).
 5. **Lower legs** — `single-leg-calf-raise`.

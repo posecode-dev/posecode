@@ -258,17 +258,35 @@ export function createViewer(
         if (Math.abs(deriv) < 1e-4) break;
         rotateRootAboutPivot(pivot, THREE.MathUtils.clamp(-y0 / deriv, -0.35, 0.35));
       }
+      // The loop above zeroes the WRIST BONE's height, but the visible hand
+      // (wrist ball + forearm capsule) and foot (mesh box) extend a bit below
+      // their bones, leaving the mesh sunk into the floor by that offset. Catch
+      // it with one final rigid-body vertical nudge (rotation already set the
+      // correct tilt; this only corrects the residual bone-vs-mesh gap).
+      mannequin.root.updateMatrixWorld(true);
+      const box = new THREE.Box3().setFromObject(mannequin.root);
+      if (box.min.y < 0) {
+        mannequin.root.position.y -= box.min.y;
+        mannequin.root.updateMatrixWorld(true);
+      }
       return;
     }
 
     if (feet.length > 0) {
-      let sumY = 0;
+      // Ground the FOOT MESH's lowest point, not the ankle bone's origin — the
+      // bone sits ~0.04m above the sole (foot box + capsule radius), so
+      // anchoring the bone itself left the visible foot sunk into the floor.
+      let minY = Infinity;
       for (const id of feet) {
         const node = mannequin.bones.get(id);
-        if (node) sumY += node.getWorldPosition(new THREE.Vector3()).y;
+        if (!node) continue;
+        const box = new THREE.Box3().setFromObject(node);
+        if (Number.isFinite(box.min.y)) minY = Math.min(minY, box.min.y);
       }
-      mannequin.root.position.y -= sumY / feet.length;
-      mannequin.root.updateMatrixWorld(true);
+      if (Number.isFinite(minY)) {
+        mannequin.root.position.y -= minY;
+        mannequin.root.updateMatrixWorld(true);
+      }
     }
   }
 
@@ -359,7 +377,10 @@ export function createViewer(
 
   function frameCamera(): void {
     // Auto-frame the figure: fit its bounding box, keep a pleasant angle.
+    // Include any scene prop too — a pull-up bar sits well above the figure's
+    // head, and framing on the mannequin alone left it cropped out of view.
     const box = new THREE.Box3().setFromObject(mannequin.root);
+    if (propScene) box.union(new THREE.Box3().setFromObject(propScene.group));
     if (box.isEmpty()) return;
     const center = box.getCenter(new THREE.Vector3());
     const size = box.getSize(new THREE.Vector3());
@@ -387,6 +408,21 @@ export function createViewer(
       mannequin.root.updateMatrixWorld(true);
       applyGroundLock(info.groundLock);
       applyPins(info.pins);
+      // Safety net: a phase with neither ground-lock nor a pin has no
+      // per-frame anchor at all, so the root stays frozen at the base pose's
+      // grounded height while the FK animates freely on top of it — bending
+      // joints (e.g. a prone "superman" lift, a supine crunch) can then swing
+      // part of the mesh below the floor with nothing to catch it. Clamp the
+      // root up so the lowest point never dips below y=0; a no-op whenever the
+      // pose is legitimately elevated (bbox min already ≥ 0).
+      if (info.groundLock.length === 0 && info.pins.length === 0) {
+        mannequin.root.updateMatrixWorld(true);
+        const box = new THREE.Box3().setFromObject(mannequin.root);
+        if (box.min.y < 0) {
+          mannequin.root.position.y -= box.min.y;
+          mannequin.root.updateMatrixWorld(true);
+        }
+      }
       applyReaches(info.reaches);
       if (info.phaseName !== lastPhaseName) {
         lastPhaseName = info.phaseName;

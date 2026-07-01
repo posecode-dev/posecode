@@ -8,13 +8,16 @@ movit exercise "Crunch"
     chest: flex 20
     neck: flex 20
     shoulders: flex 45
+    ground-lock: feet
     cue "Curl the shoulders off the floor, ribs toward the hips"
 
   step "Lower" 1.2s ease-in:
+    knees: flex 0
     spine: flex 0
     chest: flex 0
     neck: flex 0
     shoulders: flex 0
+    ground-lock: feet
     cue "Lower the upper back down with control"
 
   repeat 12
