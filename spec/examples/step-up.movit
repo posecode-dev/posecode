@@ -24,4 +24,10 @@ movit exercise "Step-up"
     pin: foot_right box
     cue "Lower the trailing foot back to the floor"
 
+  step "Off the box" 0.8s ease-out:
+    hip_right: flex 0
+    knee_right: flex 0
+    ground-lock: feet
+    cue "Step the lead foot down to meet it, standing tall on the floor"
+
   repeat 6

@@ -3,7 +3,13 @@ movit exercise "Hanging knee raise"
   prop bar
   pose start = standing
 
-  step "Grip" 1.5s ease-in-out:
+  step "Reach" 0.8s ease-out:
+    shoulders: flex 175
+    elbows: flex 5
+    ground-lock: feet
+    cue "Reach up and grip the bar"
+
+  step "Grip" 0.7s ease-in-out:
     shoulders: flex 175
     elbows: flex 5
     pin: hand_left bar
@@ -13,6 +19,8 @@ movit exercise "Hanging knee raise"
   step "Raise knees" 1.2s ease-out:
     hips: flex 90
     knees: flex 90
+    shoulders: flex 175
+    elbows: flex 5
     pin: hand_left bar
     pin: hand_right bar
     cue "Draw both knees up toward the chest"
@@ -20,8 +28,16 @@ movit exercise "Hanging knee raise"
   step "Lower" 1.4s ease-in:
     hips: flex 0
     knees: flex 0
+    shoulders: flex 175
+    elbows: flex 5
     pin: hand_left bar
     pin: hand_right bar
     cue "Lower the legs under control, staying in a steady hang"
+
+  step "Release" 0.8s ease-in:
+    shoulders: flex 0
+    elbows: flex 0
+    ground-lock: feet
+    cue "Drop off the bar and rest"
 
   repeat 8

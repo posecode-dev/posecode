@@ -3,16 +3,23 @@ movit exercise "Dead hang"
   prop bar
   pose start = standing
 
+  step "Reach" 0.8s ease-out:
+    shoulders: flex 175
+    elbows: flex 5
+    ground-lock: feet
+    cue "Reach up and grip the bar"
+
   step "Hang" 3s ease-in-out:
     shoulders: flex 175
     elbows: flex 5
     pin: hand_left bar
     pin: hand_right bar
-    cue "Reach up, grip the bar, and relax into a long, straight-arm hang"
+    cue "Relax into a long, straight-arm hang"
 
   step "Down" 1.5s ease-out:
     shoulders: flex 0
     elbows: flex 0
+    ground-lock: feet
     cue "Drop down off the bar and shake out the arms"
 
   repeat 3

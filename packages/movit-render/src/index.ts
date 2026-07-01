@@ -408,20 +408,20 @@ export function createViewer(
       mannequin.root.updateMatrixWorld(true);
       applyGroundLock(info.groundLock);
       applyPins(info.pins);
-      // Safety net: a phase with neither ground-lock nor a pin has no
-      // per-frame anchor at all, so the root stays frozen at the base pose's
-      // grounded height while the FK animates freely on top of it — bending
-      // joints (e.g. a prone "superman" lift, a supine crunch) can then swing
-      // part of the mesh below the floor with nothing to catch it. Clamp the
-      // root up so the lowest point never dips below y=0; a no-op whenever the
-      // pose is legitimately elevated (bbox min already ≥ 0).
-      if (info.groundLock.length === 0 && info.pins.length === 0) {
+      // Safety net: nothing above ever intentionally pushes part of the body
+      // below the floor, so clamp the root up whenever the lowest point dips
+      // below y=0 — a no-op whenever the pose is legitimately grounded or
+      // elevated (bbox min already ≥ 0). This also catches phases with
+      // neither ground-lock nor a pin (the root stays frozen at the base
+      // pose's grounded height while FK animates freely on top of it, e.g. a
+      // prone "superman" lift), and pinned phases where a fixed-height anchor
+      // (a low chair seat) combined with static leg FK can otherwise let the
+      // feet sink through the floor as the arms fold (e.g. a chair dip).
+      mannequin.root.updateMatrixWorld(true);
+      const box = new THREE.Box3().setFromObject(mannequin.root);
+      if (box.min.y < 0) {
+        mannequin.root.position.y -= box.min.y;
         mannequin.root.updateMatrixWorld(true);
-        const box = new THREE.Box3().setFromObject(mannequin.root);
-        if (box.min.y < 0) {
-          mannequin.root.position.y -= box.min.y;
-          mannequin.root.updateMatrixWorld(true);
-        }
       }
       applyReaches(info.reaches);
       if (info.phaseName !== lastPhaseName) {

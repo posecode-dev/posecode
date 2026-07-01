@@ -23,4 +23,13 @@ movit exercise "Bent-over row"
     ground-lock: feet
     cue "Lower the bar under control, keep the back flat"
 
+  step "Stand" 1s ease-out:
+    pelvis: hinge 0
+    knees: flex 0
+    shoulders: extend 0
+    elbows: flex 0
+    neck: extend 0
+    ground-lock: feet
+    cue "Stand up tall between sets"
+
   repeat 8

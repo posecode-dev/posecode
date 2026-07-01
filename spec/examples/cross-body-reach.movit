@@ -3,24 +3,24 @@ movit stretch "Cross-body reach"
   pose start = standing
 
   step "Reach across right" 2s ease-in-out:
-    spine: rotate-in 20
-    reach: hand_right knee_left
+    shoulder_right: flex 80
+    reach: hand_right shoulder_left
     ground-lock: feet
-    cue "Rotate gently and reach the right hand toward the left knee"
+    cue "Pull the right arm across the chest toward the left shoulder"
 
   step "Return" 1.4s ease-out:
-    spine: rotate-in 0
+    shoulder_right: flex 0
     ground-lock: feet
-    cue "Unwind back to standing tall"
+    cue "Release back to center"
 
   step "Reach across left" 2s ease-in-out:
-    spine: rotate-out 20
-    reach: hand_left knee_right
+    shoulder_left: flex 80
+    reach: hand_left shoulder_right
     ground-lock: feet
-    cue "Reach the left hand toward the right knee"
+    cue "Pull the left arm across the chest toward the right shoulder"
 
   step "Center" 1.4s ease-out:
-    spine: rotate-out 0
+    shoulder_left: flex 0
     ground-lock: feet
     cue "Return to center"
 
