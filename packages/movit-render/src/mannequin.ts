@@ -103,6 +103,10 @@ export function buildMannequin(material?: THREE.Material): Mannequin {
 
   // Head sphere + small hand/foot caps for readability.
   addBall(bones.get("head")!, 0.12, mat);
+  // A small face on the FRONT (+Z) of the head so the figure's facing is legible
+  // — essential once it turns and travels. A subtle nose + brow, same material,
+  // read by silhouette and shading like a wooden artist mannequin's face.
+  addFace(bones.get("head")!, mat);
   addBall(bones.get("wrist_left")!, 0.05, mat);
   addBall(bones.get("wrist_right")!, 0.05, mat);
   addFoot(bones.get("ankle_left")!, mat);
@@ -144,4 +148,23 @@ function addFoot(bone: THREE.Object3D, mat: THREE.Material): void {
   const mesh = new THREE.Mesh(geo, mat);
   mesh.position.set(0, -0.02, 0.05);
   bone.add(mesh);
+}
+
+/**
+ * A minimal face on the +Z (front) of the head: a small nose ridge and a brow
+ * line. Keeps the wooden-mannequin aesthetic (no eyes/mouth) while giving a
+ * clear, at-a-glance front so turns and travel are readable. The head sphere
+ * has radius ~0.06, so features sit on that surface.
+ */
+function addFace(head: THREE.Object3D, mat: THREE.Material): void {
+  const R = 0.06;
+  // Nose: a small tapered wedge protruding forward, centred and slightly low.
+  const nose = new THREE.Mesh(new THREE.ConeGeometry(0.016, 0.045, 4), mat);
+  nose.rotation.x = Math.PI / 2; // point the cone toward +Z
+  nose.position.set(0, -0.004, R - 0.002);
+  head.add(nose);
+  // Brow: a thin bar across the upper face, a subtle "this side is the front".
+  const brow = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.012, 0.02), mat);
+  brow.position.set(0, 0.028, R - 0.012);
+  head.add(brow);
 }

@@ -36,8 +36,20 @@ const PLANK: PoseSpec = {
   },
 };
 
-// Standing, ready position (alias of neutral for now).
-const STANDING: PoseSpec = NEUTRAL;
+// Standing, ready position. A relaxed human doesn't stand with the arms pinned
+// dead-vertical against the torso — they hang with a small "carrying angle" so
+// the hands clear the hips/thighs. Give the arms ~11° of abduction (an A-pose)
+// so they sit clear of the body instead of clipping into it. Left/right use
+// opposite Z signs (frontal-plane abduction, per joints.ts). Any movement that
+// explicitly poses the shoulders overrides this; leg/core movements that never
+// touch the shoulders keep the natural gap.
+const STANDING: PoseSpec = {
+  root: { position: [0, 0, 0], rotationDeg: [0, 0, 0] },
+  joints: {
+    shoulder_left: [0, 0, 11],
+    shoulder_right: [0, 0, -11],
+  },
+};
 
 // Lying face-up. Rotating the standing figure -90° about X lays it on its back:
 // the original front (+Z) ends up facing the ceiling (+Y) and the head points
