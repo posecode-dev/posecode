@@ -1,0 +1,37 @@
+movit posture "Quarter turns"
+  rig humanoid
+  pose start = standing
+
+  step "Face right" 1s ease-in-out:
+    hips: flex 12
+    knees: flex 20
+    shoulders: abduct 30
+    turn: 90
+    ground-lock: feet
+    cue "Small dip and pivot a quarter-turn to the right"
+
+  step "Face back" 1s ease-in-out:
+    knees: flex 0
+    hips: flex 0
+    shoulders: abduct 0
+    turn: 180
+    ground-lock: feet
+    cue "Rise, then pivot another quarter-turn to face the back"
+
+  step "Face left" 1s ease-in-out:
+    hips: flex 12
+    knees: flex 20
+    shoulders: abduct 30
+    turn: 270
+    ground-lock: feet
+    cue "Dip and pivot again to face the far side"
+
+  step "Face front" 1s ease-in-out:
+    knees: flex 0
+    hips: flex 0
+    shoulders: abduct 0
+    turn: 360
+    ground-lock: feet
+    cue "Rise and complete the circle, back to front"
+
+  repeat 3

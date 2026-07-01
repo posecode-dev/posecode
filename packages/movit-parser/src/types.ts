@@ -59,6 +59,16 @@ export interface Phase {
   reaches: ReachTarget[];
   /** Contact pins active during this phase (translate the body to the anchor). */
   pins: PinTarget[];
+  /**
+   * Root facing (yaw about world Y, degrees) at the end of this phase — an
+   * absolute target carried forward across phases. Powers turns / pirouettes.
+   */
+  turnDeg?: number;
+  /**
+   * Root ground position (world X/Z metres, offset from the load spot) at the
+   * end of this phase — absolute, carried forward. Powers travel / locomotion.
+   */
+  travel?: { x: number; z: number };
   cue?: string;
 }
 

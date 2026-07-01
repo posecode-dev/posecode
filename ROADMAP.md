@@ -17,7 +17,7 @@ domain needs — so contributions land where they unlock the most.
 | **Fitness / strength** | Body-weight and free-form movement coaching | ✅ Core today (squat, curl, raise). Barbell/dumbbell/machine work needs props + grip. |
 | **Functional / elderly care** | Sit-to-stand, balance, gentle ROM, fall-prevention drills | 🟡 Partial — sit-to-stand works; reaching/balance need reach-IK + props. |
 | **Sports technique** | Golf swing, tennis serve, throwing, kicking | 🟡 Partial — needs trunk rotation fidelity, weight shift, and implements (club/racket/ball). |
-| **Dance / choreography** | Notating sequences, port de bras, simple phrases | 🟡 Simple gestures work; precise reach + partner work are future. |
+| **Dance / choreography** | Notating sequences, port de bras, phrases that turn & travel | ✅ Phrases, port de bras, pirouettes, and traveling combos (box-step, grapevine, chassé) work via `turn`/`travel`; partner work is future. |
 | **Martial arts** | Stances, strikes, basic forms | 🟡 Stances/strikes partly work; contact and weapons are future. |
 | **Sign language / gesture** | Finger-spelling, signs, expressive gesture | ⛔ Needs a hand/finger rig (the rig currently ends at the wrist). |
 
@@ -43,7 +43,14 @@ These are the unlocks, roughly in order of leverage:
 5. ~~**Hand / finger articulation**~~ — ✅ **shipped (single-DOF).** Per-finger
    curl bones + `fingers` group. Powers `make-a-fist`, `pinch-grip`, `hand-wave`,
    `finger-spell-demo`. Next: multi-joint fingers for accurate sign language.
-6. **Two-person + collision** — partner stretches, assisted rehab, contact sports
+6. ~~**Spatial choreography (turn & travel)**~~ — ✅ **shipped.** `turn: <deg>`
+   rotates the figure's facing and `travel: <x> <z>` moves it across the floor,
+   both absolute + carried across phases and returning home on the loop wrap.
+   Powers `pirouette`, `box-step`, `grapevine`, `waltz-box`, `chasse`,
+   `walk-cycle`, `quarter-turns` — pirouettes, traveling combos, and gait.
+   Standing poses only. Next: footstep-locked travel (true gait), motion
+   aliveness (velocity-continuous flow + weight shift).
+7. **Two-person + collision** — partner stretches, assisted rehab, contact sports
    (still deferred in the spec).
 
 ## Prop / equipment library (future)

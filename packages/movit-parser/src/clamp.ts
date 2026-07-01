@@ -114,6 +114,15 @@ function resolveStep(
     euler,
   }));
 
+  // Travel is clamped to a sane studio footprint (±TRAVEL_MAX m) so a stray
+  // large value can't fling the figure off the ground plane / out of frame.
+  const travel = step.travel
+    ? {
+        x: clampNum(step.travel.x, -TRAVEL_MAX, TRAVEL_MAX),
+        z: clampNum(step.travel.z, -TRAVEL_MAX, TRAVEL_MAX),
+      }
+    : undefined;
+
   return {
     name: step.name,
     durationSec: step.durationSec,
@@ -122,8 +131,17 @@ function resolveStep(
     groundLock: step.groundLock,
     reaches: step.reaches,
     pins: step.pins,
+    ...(step.turn !== undefined ? { turnDeg: step.turn } : {}),
+    ...(travel ? { travel } : {}),
     ...(step.cue ? { cue: step.cue } : {}),
   };
+}
+
+/** Max travel offset from the load spot, metres, in any single axis. */
+const TRAVEL_MAX = 3;
+
+function clampNum(v: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, v));
 }
 
 function ensure(map: Map<string, EulerDeg>, bone: string): EulerDeg {

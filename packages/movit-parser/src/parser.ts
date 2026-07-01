@@ -34,6 +34,10 @@ export interface AstStep {
   groundLock: string[];
   reaches: AstReach[];
   pins: AstPin[];
+  /** Root facing (yaw about world Y, degrees) at the end of this phase. */
+  turn?: number;
+  /** Root ground position (world X/Z metres) at the end of this phase. */
+  travel?: { x: number; z: number };
   cue?: string;
   line: number;
 }
@@ -221,6 +225,28 @@ function parseStepChild(ln: Line, current: AstStep | null): ParseError | null {
       return { line: ln.line, message: "expected `pin: <effector> <anchor>`" };
     }
     current.pins.push({ effector, anchor });
+    return null;
+  }
+
+  if (head === "turn") {
+    // `turn: <degrees>` — the figure's facing (root yaw about world Y) at the
+    // end of this phase. Absolute, accumulated forward like a joint target.
+    if (!current) return { line: ln.line, message: "`turn` outside of a step" };
+    if (t[1]?.type !== "colon" || t[2]?.type !== "num") {
+      return { line: ln.line, message: "expected `turn: <degrees>`" };
+    }
+    current.turn = Number(t[2].value);
+    return null;
+  }
+
+  if (head === "travel") {
+    // `travel: <x> <z>` — the figure's ground position (world X/Z metres) at the
+    // end of this phase. Absolute offset from the load spot, accumulated forward.
+    if (!current) return { line: ln.line, message: "`travel` outside of a step" };
+    if (t[1]?.type !== "colon" || t[2]?.type !== "num" || t[3]?.type !== "num") {
+      return { line: ln.line, message: "expected `travel: <x> <z>`" };
+    }
+    current.travel = { x: Number(t[2].value), z: Number(t[3].value) };
     return null;
   }
 
