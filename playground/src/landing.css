@@ -463,6 +463,19 @@ code {
   font-weight: 700;
   color: var(--accent);
 }
+.example-more {
+  border-style: dashed;
+  border-color: var(--border-2);
+  background: transparent;
+  justify-content: center;
+}
+.example-more .example-name {
+  color: var(--accent);
+}
+.example-more:hover {
+  border-style: solid;
+  background: var(--panel);
+}
 
 /* --- How it works ---------------------------------------------------------- */
 .how {
