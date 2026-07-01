@@ -89,6 +89,15 @@ import pullUp from "../../spec/examples/pull-up.movit?raw";
 import stepUp from "../../spec/examples/step-up.movit?raw";
 import tricepsDips from "../../spec/examples/triceps-dips.movit?raw";
 
+// Spatial choreography (turn & travel) — the figure turns and moves across the floor.
+import pirouette from "../../spec/examples/pirouette.movit?raw";
+import boxStep from "../../spec/examples/box-step.movit?raw";
+import grapevine from "../../spec/examples/grapevine.movit?raw";
+import waltzBox from "../../spec/examples/waltz-box.movit?raw";
+import chasse from "../../spec/examples/chasse.movit?raw";
+import walkCycle from "../../spec/examples/walk-cycle.movit?raw";
+import quarterTurns from "../../spec/examples/quarter-turns.movit?raw";
+
 export type Difficulty = "Beginner" | "Intermediate" | "Advanced";
 
 export interface Preset {
@@ -197,4 +206,11 @@ export const PRESETS: Preset[] = [
   { id: "pinch-grip", label: "Pinch grip", domain: "Hand therapy", bodyPart: "Hands", target: "Forearms", equipment: "Body weight", difficulty: "Beginner", source: pinchGrip },
   { id: "finger-spell", label: "Finger-spelling (approx.)", domain: "Sign language", bodyPart: "Hands", target: "Forearms", equipment: "Body weight", difficulty: "Beginner", source: fingerSpell },
   { id: "hand-wave", label: "Hand wave", domain: "Sign language", bodyPart: "Hands", target: "Forearms", equipment: "Body weight", difficulty: "Beginner", source: handWave },
+  { id: "pirouette", label: "Pirouette (full turn)", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Intermediate", source: pirouette },
+  { id: "box-step", label: "Box step (travels)", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", source: boxStep },
+  { id: "grapevine", label: "Grapevine (travels)", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", source: grapevine },
+  { id: "waltz-box", label: "Waltz box step", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", source: waltzBox },
+  { id: "chasse", label: "Chassé (travels)", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Intermediate", source: chasse },
+  { id: "walk-cycle", label: "Walk & turn", domain: "Locomotion", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", source: walkCycle },
+  { id: "quarter-turns", label: "Quarter turns", domain: "Locomotion", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", source: quarterTurns },
 ];

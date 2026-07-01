@@ -30,11 +30,13 @@ pose       = "pose" "start" "=" WORD ;                  (* neutral|standing|plan
 repeat     = "repeat" NUMBER ;
 step       = "step" STRING DURATION easing ":" { child } ;
 easing     = "linear" | "ease-in" | "ease-out" | "ease-in-out" ;
-child      = jointTarget | groundLock | reach | pin | cue ;
+child      = jointTarget | groundLock | reach | pin | turn | travel | cue ;
 jointTarget= joint ":" action [ NUMBER ] ;
 groundLock = "ground-lock" ":" effector { "," effector } ;
 reach      = "reach" ":" effector target ;             (* effector → world target via IK *)
 pin        = "pin" ":" effector anchor ;               (* move the BODY so effector sits on anchor *)
+turn       = "turn" ":" NUMBER ;                       (* face this yaw (deg) by phase end *)
+travel     = "travel" ":" NUMBER NUMBER ;              (* move to this x z (metres) by phase end *)
 cue        = "cue" STRING ;
 DURATION   = NUMBER "s" ;                                (* e.g. 2s, 1.5s *)
 ```
@@ -135,7 +137,15 @@ research §5.1 normative tables. Selected ceilings (degrees):
    reach moves a limb to a target, a **pin moves the body** while the contact
    stays put — so the figure hangs from a bar, pulls up toward it, rises onto a
    box, or lowers into a dip as the joints work.
-6. **Looping** — the timeline loops base → phases → base; `repeat` is the rep
+7. **Spatial choreography** — `turn: <deg>` rotates the figure's facing (yaw
+   about vertical) and `travel: <x> <z>` moves it across the floor (world metres
+   from the load spot). Both are **absolute targets carried across phases** (like
+   joint angles) and both return home on the loop wrap, so a box-step traces a
+   square back to start and a pirouette spins a full turn. They layer under
+   grounding (feet still rest on the floor) and power pirouettes, grapevines,
+   traveling combos, and walk cycles. **Standing poses only** — combining with
+   lying/seated bases (whose root is already tilted) is out of scope.
+8. **Looping** — the timeline loops base → phases → base; `repeat` is the rep
    count surfaced to the UI.
 
 **Start poses:** `neutral`, `standing`, `plank`, `supine` (face-up), `prone`

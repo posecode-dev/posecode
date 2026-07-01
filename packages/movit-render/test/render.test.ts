@@ -106,6 +106,65 @@ describe("hip-hinge coupling", () => {
   });
 });
 
+describe("spatial choreography (turn & travel)", () => {
+  it("interpolates root yaw across a turn phase", () => {
+    const src = [
+      'movit exercise "Half turn"',
+      "  rig humanoid",
+      "  pose start = standing",
+      '  step "Spin" 1s linear:',
+      "    turn: 180",
+      "    ground-lock: feet",
+      "  repeat 1",
+    ].join("\n");
+    const { ir } = parse(src);
+    const tl = buildTimeline(ir!);
+    const m = buildMannequin();
+
+    // Midway through the 1s spin → ~90°; at the end → 180° (π radians).
+    expect(tl.sample(0.5, m.bones).rootYaw).toBeCloseTo(Math.PI / 2, 3);
+    expect(tl.sample(1, m.bones).rootYaw).toBeCloseTo(Math.PI, 3);
+  });
+
+  it("interpolates the root ground offset across a travel phase", () => {
+    const src = [
+      'movit exercise "Step over"',
+      "  rig humanoid",
+      "  pose start = standing",
+      '  step "Go" 1s linear:',
+      "    travel: 0.5 -0.4",
+      "    ground-lock: feet",
+      "  repeat 1",
+    ].join("\n");
+    const { ir } = parse(src);
+    const tl = buildTimeline(ir!);
+    const m = buildMannequin();
+
+    const end = tl.sample(1, m.bones).rootOffset;
+    expect(end.x).toBeCloseTo(0.5, 3);
+    expect(end.z).toBeCloseTo(-0.4, 3);
+    // Travel extent (for camera framing) is the largest offset magnitude.
+    expect(tl.travelExtent).toBeCloseTo(Math.hypot(0.5, 0.4), 3);
+  });
+
+  it("leaves yaw and offset at home for movements that never turn/travel", () => {
+    const src = [
+      'movit exercise "Curl"',
+      "  rig humanoid",
+      '  step "Up" 1s linear:',
+      "    elbows: flex 90",
+      "  repeat 1",
+    ].join("\n");
+    const { ir } = parse(src);
+    const tl = buildTimeline(ir!);
+    const m = buildMannequin();
+    const info = tl.sample(1, m.bones);
+    expect(info.rootYaw).toBe(0);
+    expect(info.rootOffset).toEqual({ x: 0, z: 0 });
+    expect(tl.travelExtent).toBe(0);
+  });
+});
+
 describe("lying & seated poses", () => {
   it("lays the supine torso horizontal", () => {
     const spec = poseFor("supine");

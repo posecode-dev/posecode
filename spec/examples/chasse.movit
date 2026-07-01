@@ -1,0 +1,41 @@
+movit exercise "Chassé"
+  rig humanoid
+  pose start = standing
+
+  step "Reach & push" 0.8s ease-out:
+    hip_right: flex 30
+    knee_right: flex 25
+    ankle_left: plantarflex 20
+    shoulders: abduct 60
+    elbows: flex 18
+    travel: 0.5 0
+    ground-lock: feet
+    cue "Reach the lead foot out and push off to travel sideways"
+
+  step "Gallop close" 0.6s ease-in:
+    hip_right: flex 0
+    knee_right: flex 0
+    ankle_left: plantarflex 0
+    travel: 0.9 0
+    ground-lock: feet
+    cue "Chase the trailing foot to the lead — feet meet in the air"
+
+  step "Reach & push back" 0.8s ease-out:
+    hip_left: flex 30
+    knee_left: flex 25
+    ankle_right: plantarflex 20
+    travel: 0.4 0
+    ground-lock: feet
+    cue "Change direction and travel back the other way"
+
+  step "Gallop home" 0.6s ease-in:
+    hip_left: flex 0
+    knee_left: flex 0
+    ankle_right: plantarflex 0
+    shoulders: abduct 0
+    elbows: flex 0
+    travel: 0 0
+    ground-lock: feet
+    cue "Close home, ready to chassé again"
+
+  repeat 4

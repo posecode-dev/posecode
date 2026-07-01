@@ -25,6 +25,10 @@ interface Keyframe {
   groundLock: string[];
   reaches: ReachTarget[];
   pins: PinTarget[];
+  /** Root facing (yaw about world Y, radians) at this keyframe. */
+  yaw: number;
+  /** Root ground offset (world X/Z metres) from the load spot at this keyframe. */
+  pos: { x: number; z: number };
 }
 
 /** A phase as a time span on the timeline, for scrubber markers / ribbon. */
@@ -52,7 +56,13 @@ export interface BuiltTimeline {
     groundLock: string[];
     reaches: ReachTarget[];
     pins: PinTarget[];
+    /** Interpolated root facing (yaw about world Y, radians). */
+    rootYaw: number;
+    /** Interpolated root ground offset (world X/Z metres) from the load spot. */
+    rootOffset: { x: number; z: number };
   };
+  /** Largest travel offset magnitude reached (metres) — for camera framing. */
+  travelExtent: number;
 }
 
 function eulerToQuat([x, y, z]: EulerDegTuple): THREE.Quaternion {
@@ -76,6 +86,11 @@ export function buildTimeline(ir: MovitIR): BuiltTimeline {
 
   // Accumulating current joint angles (degrees).
   const curr = new Map<string, EulerDegTuple>(baseJoints);
+  // Accumulating root facing (yaw, degrees) and ground offset (metres), both
+  // carried forward across phases like joints and seeded at home (0).
+  let currYaw = 0;
+  let currPos = { x: 0, z: 0 };
+  let travelExtent = 0;
 
   const keyframes: Keyframe[] = [];
   keyframes.push({
@@ -86,6 +101,8 @@ export function buildTimeline(ir: MovitIR): BuiltTimeline {
     groundLock: [],
     reaches: [],
     pins: [],
+    yaw: 0,
+    pos: { x: 0, z: 0 },
   });
 
   let t = 0;
@@ -93,6 +110,9 @@ export function buildTimeline(ir: MovitIR): BuiltTimeline {
     for (const target of phase.targets) {
       curr.set(target.boneId, [target.euler.x, target.euler.y, target.euler.z]);
     }
+    if (phase.turnDeg !== undefined) currYaw = phase.turnDeg;
+    if (phase.travel) currPos = { x: phase.travel.x, z: phase.travel.z };
+    travelExtent = Math.max(travelExtent, Math.hypot(currPos.x, currPos.z));
     t += phase.durationSec;
     keyframes.push({
       time: t,
@@ -103,11 +123,18 @@ export function buildTimeline(ir: MovitIR): BuiltTimeline {
       groundLock: phase.groundLock,
       reaches: phase.reaches,
       pins: phase.pins,
+      yaw: currYaw * DEG,
+      pos: { ...currPos },
     });
   }
 
-  // Wrap back to the base pose for a seamless loop.
+  // Wrap back to the base pose (and home position) for a seamless loop. Facing
+  // wraps to the NEAREST FULL TURN to the final yaw, not to 0: a completed 360°
+  // pirouette then holds its facing through the reset and the loop boundary
+  // (360°≡0°) is seamless, instead of visibly un-spinning backward. A partial
+  // turn (e.g. 90°) rounds to 0 and rotates back to front during the reset.
   const wrap = ir.phases[0]?.durationSec ?? 1;
+  const wrapYaw = Math.round(currYaw / 360) * 360 * DEG;
   t += wrap;
   keyframes.push({
     time: t,
@@ -117,6 +144,8 @@ export function buildTimeline(ir: MovitIR): BuiltTimeline {
     groundLock: [],
     reaches: [],
     pins: [],
+    yaw: wrapYaw,
+    pos: { x: 0, z: 0 },
   });
 
   // Fill every keyframe with the full bone set (missing → identity).
@@ -147,6 +176,7 @@ export function buildTimeline(ir: MovitIR): BuiltTimeline {
     basePose,
     bonesUsed,
     segments,
+    travelExtent,
     sample(time, bones) {
       const tt = duration > 0 ? ((time % duration) + duration) % duration : 0;
       let a = keyframes[0]!;
@@ -167,12 +197,22 @@ export function buildTimeline(ir: MovitIR): BuiltTimeline {
         if (!node) continue;
         node.quaternion.slerpQuaternions(a.quats.get(bone)!, b.quats.get(bone)!, eased);
       }
+      // Root facing/position: linear interpolation of the raw values so a large
+      // turn (e.g. 360°) sweeps the whole way round rather than taking a short
+      // arc. Uses the same eased param as the joints so everything moves as one.
+      const rootYaw = a.yaw + (b.yaw - a.yaw) * eased;
+      const rootOffset = {
+        x: a.pos.x + (b.pos.x - a.pos.x) * eased,
+        z: a.pos.z + (b.pos.z - a.pos.z) * eased,
+      };
       return {
         phaseName: b.name,
         ...(b.cue ? { cue: b.cue } : {}),
         groundLock: b.groundLock,
         reaches: b.reaches,
         pins: b.pins,
+        rootYaw,
+        rootOffset,
       };
     },
   };

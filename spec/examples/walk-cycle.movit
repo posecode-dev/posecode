@@ -1,0 +1,54 @@
+movit exercise "Walk & turn"
+  rig humanoid
+  pose start = standing
+
+  step "Step right" 0.7s ease-in-out:
+    hip_right: flex 30
+    knee_right: flex 15
+    hip_left: extend 12
+    shoulder_left: flex 25
+    shoulder_right: extend 20
+    travel: 0 0.4
+    ground-lock: feet
+    cue "Walk forward — right foot leads, opposite arm swings through"
+
+  step "Step left" 0.7s ease-in-out:
+    hip_left: flex 30
+    knee_left: flex 15
+    hip_right: extend 12
+    shoulder_right: flex 25
+    shoulder_left: extend 20
+    travel: 0 0.8
+    ground-lock: feet
+    cue "Left foot leads, arms swap — keep travelling forward"
+
+  step "About-face" 1s ease-in-out:
+    hips: flex 0
+    knees: flex 0
+    shoulders: flex 0
+    turn: 180
+    travel: 0 0.8
+    ground-lock: feet
+    cue "Plant and turn a half-turn to face back the way you came"
+
+  step "Walk back" 0.7s ease-in-out:
+    hip_right: flex 30
+    knee_right: flex 15
+    hip_left: extend 12
+    shoulder_left: flex 25
+    shoulder_right: extend 20
+    turn: 180
+    travel: 0 0.4
+    ground-lock: feet
+    cue "Walk back toward the start"
+
+  step "Arrive & square up" 1s ease-in-out:
+    hips: flex 0
+    knees: flex 0
+    shoulders: flex 0
+    turn: 360
+    travel: 0 0
+    ground-lock: feet
+    cue "Arrive home and turn to face front again"
+
+  repeat 2

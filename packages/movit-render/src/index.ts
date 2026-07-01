@@ -217,6 +217,9 @@ export function createViewer(
   }
 
   const ROOT_X = new THREE.Vector3(1, 0, 0);
+  // Reused scratch for the per-frame facing rotation (yaw about world Y).
+  const WORLD_Y = new THREE.Vector3(0, 1, 0);
+  const YAW_Q = new THREE.Quaternion();
 
   /** Rotate the whole figure about a world-space pivot (axis through pivot). */
   function rotateRootAboutPivot(pivot: THREE.Vector3, angle: number): void {
@@ -385,8 +388,11 @@ export function createViewer(
     const center = box.getCenter(new THREE.Vector3());
     const size = box.getSize(new THREE.Vector3());
     // Frame against a ~1.8m standing height floor so short poses (squat,
-    // plank) don't zoom in awkwardly; fill most of the viewport.
-    const radius = Math.max(size.x, size.y, size.z, 1.8) * 0.5;
+    // plank) don't zoom in awkwardly; fill most of the viewport. Traveling
+    // movements (turn/travel) roam across the floor, so widen the frame by the
+    // movement's travel extent to keep the figure in view the whole loop.
+    const travel = timeline?.travelExtent ?? 0;
+    const radius = Math.max(size.x, size.y, size.z, 1.8) * 0.5 + travel;
     const dist = (radius / Math.sin((camera.fov * DEG) / 2)) * 1.15 + 0.3;
 
     desiredTarget.copy(center);
@@ -405,6 +411,17 @@ export function createViewer(
       // Recompute root contact from the grounded base each frame (no drift).
       mannequin.root.position.copy(baseRootPos);
       mannequin.root.quaternion.copy(baseRootQuat);
+      // Spatial choreography: layer the phase's facing (yaw about world Y) and
+      // ground travel (world X/Z) onto the base root BEFORE ground-lock. The
+      // feet-only ground-lock only corrects the root's Y, so it composes with
+      // travel (X/Z) and yaw without fighting them; the figure turns and steps
+      // across the floor while its feet still rest on it.
+      if (info.rootYaw !== 0) {
+        YAW_Q.setFromAxisAngle(WORLD_Y, info.rootYaw);
+        mannequin.root.quaternion.premultiply(YAW_Q);
+      }
+      mannequin.root.position.x += info.rootOffset.x;
+      mannequin.root.position.z += info.rootOffset.z;
       mannequin.root.updateMatrixWorld(true);
       applyGroundLock(info.groundLock);
       applyPins(info.pins);

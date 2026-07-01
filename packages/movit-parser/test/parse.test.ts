@@ -124,4 +124,45 @@ describe("parse", () => {
     const { errors } = parse(src);
     expect(errors.some((e) => /easing/i.test(e.message))).toBe(true);
   });
+
+  it("parses turn and travel into the phase IR", () => {
+    const src = [
+      'movit exercise "Spin & step"',
+      "  rig humanoid",
+      "  pose start = standing",
+      '  step "Spin" 1s ease-in-out:',
+      "    turn: 360",
+      "    travel: -0.4 0.5",
+      "    ground-lock: feet",
+      "  repeat 2",
+    ].join("\n");
+    const { ir, errors, warnings } = parse(src);
+    expect(errors).toEqual([]);
+    expect(warnings).toEqual([]);
+    const phase = ir!.phases[0]!;
+    expect(phase.turnDeg).toBe(360);
+    expect(phase.travel).toEqual({ x: -0.4, z: 0.5 });
+  });
+
+  it("clamps travel to the studio footprint", () => {
+    const src = [
+      'movit exercise "Runaway"',
+      "  rig humanoid",
+      '  step "Go" 1s linear:',
+      "    travel: 99 -99",
+    ].join("\n");
+    const { ir } = parse(src);
+    expect(ir!.phases[0]!.travel).toEqual({ x: 3, z: -3 });
+  });
+
+  it("errors on malformed turn/travel", () => {
+    const src = [
+      'movit exercise "Bad"',
+      "  rig humanoid",
+      '  step "Go" 1s linear:',
+      "    travel: 0.4",
+    ].join("\n");
+    const { errors } = parse(src);
+    expect(errors.some((e) => /travel/i.test(e.message))).toBe(true);
+  });
 });

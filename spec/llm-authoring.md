@@ -21,6 +21,8 @@ movit <kind> "<Name>"          # kind = exercise | stretch | posture
     <joint>: <action> <degrees>
     reach: <effector> <target> # optional: drive a hand/foot to a target via IK
     ground-lock: <effectors>   # hands and/or feet pinned to the floor this phase
+    turn: <degrees>            # optional: face this yaw by phase end (standing only)
+    travel: <x> <z>            # optional: move to this x z (metres) by phase end
     cue "<short coaching cue>"
   repeat <count>
 ```
@@ -164,7 +166,17 @@ unset joints:
   `shoulders: flex 160, elbows: flex 20`. Move between them across phases.
 - **Plié:** `hips: flex 18, knees: flex 50, ankles: dorsiflex 12`.
 - **Relevé:** `ankles: plantarflex 28` (rise onto the balls of the feet).
+- **Turn / pirouette:** `turn: 360` (yaw in degrees, absolute). Pair with a
+  relevé to spin on the balls of the feet; `turn: 90` for a quarter-turn.
+- **Travel across the floor:** `travel: <x> <z>` (metres from the start spot,
+  absolute). A box-step traces a square back home:
+  `travel: 0.4 0` → `0.4 0.4` → `0 0.4` → `0 0`. A grapevine travels sideways;
+  a walk cycle steps forward in +z. Add the stepping legs with FK on top.
 
-Name each step by its count (`"5-6 - relevé, arms en haut"`) so the phrase reads
-like choreography. To extend a phrase, append more steps — the figure carries
-its pose forward. Use `ground-lock: feet` for grounded phrases.
+Both `turn` and `travel` are **absolute and carried forward** like joint angles,
+and both return home on the loop wrap, so phrases resolve cleanly. They work from
+**standing** poses only. Name each step by its count (`"5-6 - relevé, arms en
+haut"`) so the phrase reads like choreography. To extend a phrase, append more
+steps — the figure carries its pose forward. Use `ground-lock: feet` for grounded
+phrases (it still lets the figure turn and travel — it only keeps the feet on the
+floor vertically).
