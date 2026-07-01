@@ -104,8 +104,13 @@ export interface ActionAxis {
 const ACTIONS: Record<string, ActionAxis> = {
   flex: { axis: "x", sign: 1 },
   extend: { axis: "x", sign: -1 },
-  abduct: { axis: "z", sign: 1 },
-  adduct: { axis: "z", sign: -1 },
+  // Abduction rotates a down-hanging limb OUT to the side (frontal plane, Z).
+  // With the rig's rest arms/legs along -Y, a positive Z rotation swings the
+  // limb toward +X, which is *inward* (across the body) for the right side —
+  // so abduction is the NEGATIVE Z rotation, and the left/right mirror
+  // (joints below) flips it back for the left side. (adduct is the opposite.)
+  abduct: { axis: "z", sign: -1 },
+  adduct: { axis: "z", sign: 1 },
   "rotate-in": { axis: "y", sign: 1 },
   "rotate-out": { axis: "y", sign: -1 },
   supinate: { axis: "y", sign: 1 },

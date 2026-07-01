@@ -33,6 +33,43 @@ describe("mannequin", () => {
   });
 });
 
+describe("abduction opens limbs outward (not across the body)", () => {
+  function wristX(action: string) {
+    const src = [
+      'movit exercise "d"',
+      "  rig humanoid",
+      "  pose start = standing",
+      `  step "s" 1s linear:`,
+      `    shoulders: ${action}`,
+      "  repeat 1",
+    ].join("\n");
+    const { ir } = parse(src);
+    const m = buildMannequin();
+    buildTimeline(ir!).sample(1, m.bones);
+    m.root.updateMatrixWorld(true);
+    const l = m.bones.get("wrist_left")!.getWorldPosition(new THREE.Vector3());
+    const r = m.bones.get("wrist_right")!.getWorldPosition(new THREE.Vector3());
+    return { l: l.x, r: r.x };
+  }
+
+  it("swings each arm to its own side, not across the midline", () => {
+    // The left shoulder sits at +x, the right at -x. Abduction must carry each
+    // wrist further onto its OWN side (regression guard: the abduct/adduct
+    // Z-sign was once inverted, crossing the arms into an X across the body).
+    const { l, r } = wristX("abduct 90");
+    expect(l).toBeGreaterThan(0.5); // left wrist well out to +x
+    expect(r).toBeLessThan(-0.5); // right wrist well out to -x
+  });
+
+  it("adduction stays inboard of a T-pose", () => {
+    const { l, r } = wristX("adduct 30");
+    // Toward the midline: left wrist left of its abducted position, etc. Mainly
+    // it must NOT fling outward like abduction does.
+    expect(l).toBeLessThan(0.3);
+    expect(r).toBeGreaterThan(-0.3);
+  });
+});
+
 describe("timeline", () => {
   const PUSHUP = [
     'movit exercise "Push-up"',
