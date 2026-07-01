@@ -6,7 +6,6 @@ movit exercise "Step-up"
   step "Plant the foot" 1s ease-in-out:
     hip_right: flex 70
     knee_right: flex 90
-    pin: foot_right box
     cue "Plant the right foot up on top of the box"
 
   step "Drive up" 1.2s ease-out:

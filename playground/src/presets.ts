@@ -9,7 +9,6 @@ import posture from "../../spec/examples/posture-reset.movit?raw";
 import twist from "../../spec/examples/spinal-twist.movit?raw";
 import chair from "../../spec/examples/chair-pose.movit?raw";
 import sideBend from "../../spec/examples/side-bend.movit?raw";
-import pushup from "../../spec/examples/pushup.movit?raw";
 
 // Hip-hinge showcases.
 import deadlift from "../../spec/examples/deadlift.movit?raw";
@@ -120,7 +119,6 @@ export const PRESETS: Preset[] = [
   { id: "chest-opener", label: "Chest opener", domain: "Desk & posture", bodyPart: "Chest", target: "Pectorals", equipment: "Body weight", difficulty: "Beginner", source: chestOpener },
 
   // --- Strength & core (coverage-gap batch) ---
-  { id: "pushup", label: "Push-up", domain: "Fitness", bodyPart: "Chest", target: "Pectorals", equipment: "Body weight", difficulty: "Intermediate", source: pushup },
   { id: "plank-hold", label: "Plank hold", domain: "Fitness", bodyPart: "Core", target: "Abdominals", equipment: "Body weight", difficulty: "Beginner", source: plankHold },
   { id: "mountain-climber", label: "Mountain climber", domain: "Fitness", bodyPart: "Core", target: "Abdominals", equipment: "Body weight", difficulty: "Intermediate", source: mountainClimber },
   { id: "crunch", label: "Crunch", domain: "Fitness", bodyPart: "Core", target: "Abdominals", equipment: "Body weight", difficulty: "Beginner", source: crunch },
