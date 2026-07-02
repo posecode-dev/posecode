@@ -1002,9 +1002,17 @@ select:hover {
   .hud {
     max-width: 80vw;
   }
-  /* Keep the transport clear of the iOS home indicator. */
+  /* Keep the transport clear of the iOS home indicator, and let the controls
+     wrap — play + scrubber take the first row, loop/speed/export the second,
+     instead of overflowing off the right edge. */
   .transport {
     gap: 10px;
+    flex-wrap: wrap;
+    row-gap: 8px;
     padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+  .transport .scrub-wrap {
+    flex: 1 1 55%;
+    min-width: 140px;
   }
 }

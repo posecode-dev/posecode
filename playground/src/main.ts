@@ -150,6 +150,12 @@ function scheduleRecompile(): void {
 
 function recompile(): void {
   window.clearTimeout(debounce); // cancel any pending run; we're compiling now
+  if (exporting) {
+    // Reloading the viewer mid-export would yank the timeline out from under
+    // the recorder. Defer; edits land as soon as the export finishes.
+    scheduleRecompile();
+    return;
+  }
   const { ir, errors, warnings: warns } = parse(editorApi.getValue());
   renderWarnings(warnings, errors, warns);
   if (ir) {
@@ -278,18 +284,22 @@ speed.addEventListener("change", () => viewer.setSpeed(Number(speed.value)));
 
 // --- Export: download one loop as a shareable clip (video or GIF) -----------
 const exportIdle = exportSel.options[0]!;
+let exporting = false;
 exportSel.addEventListener("change", () => {
   const kind = exportSel.value;
   exportSel.value = "";
-  if (!kind) return;
+  if (!kind || exporting) return;
   const ectx = {
     viewer,
     glCanvas: canvas,
     name: () => movementName,
     caption: () => ({ phase: phaseEl.textContent ?? "", cue: cueEl.textContent ?? "" }),
     onProgress: (label: string | null) => {
+      exporting = label !== null;
       exportIdle.textContent = label ?? "export…";
-      exportSel.disabled = label !== null;
+      exportSel.disabled = exporting;
+      // Swapping movements mid-capture would corrupt the clip.
+      presetSel.disabled = exporting;
     },
   };
   const run = kind === "gif" ? exportGif(ectx) : exportVideo(ectx);

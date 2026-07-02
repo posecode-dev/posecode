@@ -47,6 +47,12 @@ export interface Viewer {
    * read the canvas — no dependence on the RAF loop's timing.
    */
   renderOnce(): void;
+  /**
+   * Toggle the idle camera orbit. Exporters freeze it so a captured loop's
+   * first and last frames share one camera angle (a seamless replay), then
+   * restore it. Returns the previous value so callers can put it back.
+   */
+  setAutoRotate(v: boolean): boolean;
   onPhase(cb: (info: ViewerPhaseInfo) => void): void;
   onTick(cb: (time: number, duration: number) => void): void;
   onLoop(cb: () => void): void;
@@ -671,6 +677,11 @@ export function createViewer(
     },
     renderOnce() {
       frame();
+    },
+    setAutoRotate(v: boolean) {
+      const prev = controls.autoRotate;
+      controls.autoRotate = v;
+      return prev;
     },
     onPhase(cb) {
       phaseCb = cb;

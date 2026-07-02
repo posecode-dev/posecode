@@ -116,39 +116,62 @@ export async function exportVideo(ectx: ExportContext): Promise<void> {
   rec.ondataavailable = (e) => {
     if (e.data.size > 0) chunks.push(e.data);
   };
-  const stopped = new Promise<void>((res) => (rec.onstop = () => res()));
-
-  const restore = restorePoint(viewer);
-  viewer.seek(0);
-  viewer.play();
-
-  let raf = 0;
-  const paint = (): void => {
-    compose(ctx, ectx, canvas.width, canvas.height, band);
-    raf = requestAnimationFrame(paint);
-  };
-  raf = requestAnimationFrame(paint);
-  rec.start(250);
-
-  // One full loop of movement time, at the viewer's current playback rate:
-  // watch the clock rather than guessing — speed is not exposed on the API.
-  const t0 = performance.now();
-  await new Promise<void>((res) => {
-    const tick = (): void => {
-      const elapsed = (performance.now() - t0) / 1000;
-      ectx.onProgress(`recording ${Math.min(100, Math.round((viewer.time / duration) * 100))}%`);
-      // Done when the loop wrapped (time went back down) or a hard cap hits.
-      if ((elapsed > 0.5 && viewer.time < duration * 0.05) || elapsed > duration * 2.5 + 3) res();
-      else setTimeout(tick, 100);
-    };
-    tick();
+  const stopped = new Promise<void>((res, rej) => {
+    rec.onstop = () => res();
+    rec.onerror = (e) => rej((e as ErrorEvent).error ?? new Error("MediaRecorder failed"));
   });
 
-  rec.stop();
-  cancelAnimationFrame(raf);
-  await stopped;
-  restore();
-  ectx.onProgress(null);
+  const restore = restorePoint(viewer);
+  // Freeze the idle orbit so the clip's first and last frames share one camera
+  // angle — a looping replay doesn't jump. The user's chosen angle is kept.
+  const hadAutoRotate = viewer.setAutoRotate(false);
+  let raf = 0;
+  try {
+    viewer.seek(0);
+    viewer.play();
+
+    const paint = (): void => {
+      compose(ctx, ectx, canvas.width, canvas.height, band);
+      raf = requestAnimationFrame(paint);
+    };
+    raf = requestAnimationFrame(paint);
+    rec.start(250);
+
+    // Record exactly one pass. Playback rate isn't exposed on the API, so
+    // watch the clock: a wrap (time jumps back) ends a looping pass, playback
+    // stopping ends a non-looping one, and a generous hard cap (covers 0.5×
+    // speed) guards against both signals being missed.
+    await new Promise<void>((res, rej) => {
+      stopped.catch(rej); // surface recorder errors while we wait
+      const t0 = performance.now();
+      let prevTime = viewer.time;
+      const tick = (): void => {
+        const elapsed = (performance.now() - t0) / 1000;
+        ectx.onProgress(`recording ${Math.min(100, Math.round((viewer.time / duration) * 100))}%`);
+        const wrapped = viewer.time < prevTime - 1e-3;
+        const ended = elapsed > 0.5 && !viewer.playing;
+        prevTime = viewer.time;
+        if (wrapped || ended || elapsed > duration * 2.5 + 3) res();
+        else setTimeout(tick, 60);
+      };
+      tick();
+    });
+
+    if (rec.state !== "inactive") rec.stop();
+    await stopped;
+  } finally {
+    cancelAnimationFrame(raf);
+    if (rec.state !== "inactive") {
+      try {
+        rec.stop();
+      } catch {
+        /* already stopped */
+      }
+    }
+    viewer.setAutoRotate(hadAutoRotate);
+    restore();
+    ectx.onProgress(null);
+  }
   download(new Blob(chunks, { type: mime || "video/webm" }), `${slug(ectx.name())}.webm`);
 }
 
@@ -176,29 +199,37 @@ export async function exportGif(ectx: ExportContext): Promise<void> {
   const frames = Math.max(2, Math.round(duration * fps));
   const gif = GIFEncoder();
   const restore = restorePoint(viewer);
-  viewer.pause();
+  // Freeze the idle orbit: frames are captured over encode time, not movement
+  // time, so a live orbit would swing at an arbitrary rate AND leave the last
+  // frame at a different angle than the first — a visible jump on every loop.
+  const hadAutoRotate = viewer.setAutoRotate(false);
+  try {
+    viewer.pause();
 
-  let palette: number[][] | null = null;
-  for (let i = 0; i < frames; i++) {
-    viewer.seek((i / frames) * duration);
-    viewer.renderOnce();
-    compose(ctx, ectx, outW, outH, band);
-    const { data } = ctx.getImageData(0, 0, outW, outH);
-    // One global palette from the first frame keeps files small; the studio
-    // scene's colors are stable across a loop, so it stays accurate.
-    if (!palette) palette = quantize(data, 256);
-    gif.writeFrame(applyPalette(data, palette), outW, outH, {
-      palette: palette as unknown as number[][],
-      delay: Math.round(1000 / fps),
-    });
-    if (i % 5 === 0) {
-      ectx.onProgress(`GIF ${Math.round((i / frames) * 100)}%`);
-      await new Promise((r) => setTimeout(r)); // keep the UI responsive
+    let palette: number[][] | null = null;
+    for (let i = 0; i < frames; i++) {
+      viewer.seek((i / frames) * duration);
+      viewer.renderOnce();
+      compose(ctx, ectx, outW, outH, band);
+      const { data } = ctx.getImageData(0, 0, outW, outH);
+      // One global palette from the first frame keeps files small; the studio
+      // scene's colors are stable across a loop, so it stays accurate.
+      if (!palette) palette = quantize(data, 256);
+      gif.writeFrame(applyPalette(data, palette), outW, outH, {
+        palette,
+        delay: Math.round(1000 / fps),
+      });
+      if (i % 5 === 0) {
+        ectx.onProgress(`GIF ${Math.round((i / frames) * 100)}%`);
+        await new Promise((r) => setTimeout(r)); // keep the UI responsive
+      }
     }
+    gif.finish();
+  } finally {
+    viewer.setAutoRotate(hadAutoRotate);
+    restore();
+    ectx.onProgress(null);
   }
-  gif.finish();
-  restore();
-  ectx.onProgress(null);
   // slice() = exact-size copy with a plain ArrayBuffer (bytes() may be a
   // subarray view over a larger internal buffer).
   const bytes = gif.bytes().slice();
