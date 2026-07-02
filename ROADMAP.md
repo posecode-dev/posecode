@@ -29,10 +29,13 @@ These are the unlocks, roughly in order of leverage:
    tips the torso forward over the hips while the legs stay planted (the renderer
    counter-rotates the hips). Powers `deadlift`, `bent-over-row`, `good-morning`,
    and `bow`. Next: hinge with a loaded-bar prop.
-2. ~~**Reach-IK (reach a world target)**~~ — ✅ **shipped.** `reach: <effector>
-   <target>` drives a hand/foot to a body landmark, the `floor`, or a prop anchor
-   via CCD. Powers `touch-toes`, `cross-body-reach`, `seated-forward-fold`, and
-   prop grips. Next: ROM-constrained reach + dual-hand targets.
+2. ~~**Reach-IK (reach a world target)**~~ — ✅ **shipped, now ROM-constrained.**
+   `reach: <effector> <target>` drives a hand/foot to a body landmark, the
+   `floor`, or a prop anchor via CCD. Powers `touch-toes`, `cross-body-reach`,
+   `seated-forward-fold`, and prop grips. The solve clamps every chain joint
+   into its Range-of-Motion box each iteration — solved angles obey the same
+   hard limits as authored ones — and `hands` / `feet` reach or pin both sides
+   in one line. Next: two-bone analytic solve for straighter elbows/knees.
 3. ~~**Scene props with contact anchors**~~ — ✅ **shipped (starter set).** `prop
    chair|wall|bar` adds a scene object with named anchors (`seat`, `wall`, `bar`).
    Powers `sit-to-stand`, `box-squat`, `wall-sit`, `dead-hang`, `hanging-knee-raise`.
@@ -77,8 +80,7 @@ Each prop is a small scene object + an anchor type; movements then reference it
 - One figure only; partner work and collision are still deferred.
 - A **starter** prop set (chair / wall / bar) — no bench, rings, bands, or loaded
   implements yet, and props sit at fixed default placements.
-- Reach-IK is **unconstrained** (no ROM limits on the solved chain) and props are
-  visual + reach anchors (no physical sit/lean solve).
+- Props are visual + reach anchors (no physical sit/lean solve).
 - Fingers are **single-DOF** curls — good for grip and rough gesture, not exact
   sign language. The head has no facial articulation.
 

@@ -10,10 +10,11 @@
 
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { eulerRomFor } from "movit-parser";
 import type { MovitIR, ReachTarget, PinTarget } from "movit-parser";
 import { buildMannequin, type Mannequin } from "./mannequin.js";
 import { buildTimeline, type BuiltTimeline, type PhaseSegment } from "./timeline.js";
-import { solveCCD } from "./ik.js";
+import { solveCCD, type JointLimits } from "./ik.js";
 import { buildProps, type PropScene } from "./props.js";
 
 const DEG = Math.PI / 180;
@@ -302,17 +303,52 @@ export function createViewer(
     foot_right: "ankle_right",
   };
 
-  /** The rotatable joint chain (proximal → distal) that moves an effector. */
-  function reachChain(effectorBone: string): THREE.Object3D[] {
+  /**
+   * The rotatable joint chain (proximal → distal) that moves an effector, with
+   * each joint's ROM expressed as local Euler limits for the constrained solve.
+   * A limit box is widened to include the joint's CURRENT (authored FK) angle:
+   * the timeline pose is already ROM-clamped in author terms, but rig mechanics
+   * such as the hip-hinge counter-rotation can place a bone outside its raw box
+   * on purpose — IK must never fight the authored pose, only be prevented from
+   * pushing beyond it.
+   */
+  function reachChain(effectorBone: string): {
+    joints: THREE.Object3D[];
+    limits: (JointLimits | null)[];
+  } {
     const side = effectorBone.endsWith("_left") ? "left" : "right";
     const ids = effectorBone.startsWith("wrist")
       ? [`shoulder_${side}`, `elbow_${side}`]
       : effectorBone.startsWith("ankle")
         ? [`hip_${side}`, `knee_${side}`]
         : [];
-    return ids
-      .map((id) => mannequin.bones.get(id))
-      .filter((n): n is THREE.Object3D => !!n);
+    const joints: THREE.Object3D[] = [];
+    const limits: (JointLimits | null)[] = [];
+    for (const id of ids) {
+      const node = mannequin.bones.get(id);
+      if (!node) continue;
+      joints.push(node);
+      limits.push(jointLimitsFor(id, node));
+    }
+    return { joints, limits };
+  }
+
+  const REACH_EULER = new THREE.Euler();
+
+  /** A bone's ROM as radian Euler limits, widened to admit its current pose. */
+  function jointLimitsFor(boneId: string, node: THREE.Object3D): JointLimits | null {
+    const rom = eulerRomFor(boneId);
+    if (!rom) return null;
+    REACH_EULER.setFromQuaternion(node.quaternion, "XYZ");
+    return {
+      x: widen(rom.x.min * DEG, rom.x.max * DEG, REACH_EULER.x),
+      y: widen(rom.y.min * DEG, rom.y.max * DEG, REACH_EULER.y),
+      z: widen(rom.z.min * DEG, rom.z.max * DEG, REACH_EULER.z),
+    };
+  }
+
+  function widen(min: number, max: number, current: number): [number, number] {
+    return [Math.min(min, current), Math.max(max, current)];
   }
 
   /** Resolve a reach target name to a world point: floor / prop anchor / landmark. */
@@ -333,10 +369,12 @@ export function createViewer(
   }
 
   /**
-   * Reach-IK: drive each active effector to its world target with CCD. Runs
-   * AFTER ground-lock so landmark/floor targets are resolved against the final
-   * root placement. The chain is the arm (hand) or the leg (foot); other joints
-   * keep their authored FK pose.
+   * Reach-IK: drive each active effector to its world target with ROM-
+   * constrained CCD — the solved arm/leg obeys the same hard joint limits as
+   * authored angles, so an unreachable target yields the closest SAFE pose.
+   * Runs AFTER ground-lock so landmark/floor targets are resolved against the
+   * final root placement. The chain is the arm (hand) or the leg (foot); other
+   * joints keep their authored FK pose.
    */
   function applyReaches(reaches: ReachTarget[]): void {
     for (const r of reaches) {
@@ -345,9 +383,9 @@ export function createViewer(
       if (!effector) continue;
       const target = resolveReachTarget(r.target, effector);
       if (!target) continue;
-      const joints = reachChain(effectorBone);
+      const { joints, limits } = reachChain(effectorBone);
       if (joints.length === 0) continue;
-      solveCCD({ joints, effector, target }, 12);
+      solveCCD({ joints, limits, effector, target }, 12);
     }
   }
 
@@ -590,6 +628,6 @@ function disposeTree(root: THREE.Object3D): void {
 
 export { buildMannequin } from "./mannequin.js";
 export { buildTimeline } from "./timeline.js";
-export { solveCCD } from "./ik.js";
+export { solveCCD, type IkChain, type JointLimits } from "./ik.js";
 export { buildProps, type PropScene } from "./props.js";
 export type { PhaseSegment } from "./timeline.js";

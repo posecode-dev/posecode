@@ -23,11 +23,13 @@ const jointTargetSchema = z.object({
 const reachSchema = z.object({
   effector: z.string().min(1),
   target: z.string().min(1),
+  line: z.number(),
 });
 
 const pinSchema = z.object({
   effector: z.string().min(1),
   anchor: z.string().min(1),
+  line: z.number(),
 });
 
 const stepSchema = z.object({

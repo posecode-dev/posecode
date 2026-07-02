@@ -5,7 +5,7 @@ import { buildTimeline } from "../src/timeline.js";
 import { solveCCD } from "../src/ik.js";
 import { poseFor } from "../src/poses.js";
 import { buildProps } from "../src/props.js";
-import { parse } from "movit-parser";
+import { parse, eulerRomFor } from "movit-parser";
 
 const DEG = Math.PI / 180;
 
@@ -347,5 +347,114 @@ describe("ccd ik", () => {
     const target = new THREE.Vector3(1.4, 0.6, 0);
     const distSq = solveCCD({ joints: [j0, j1], effector, target }, 30);
     expect(Math.sqrt(distSq)).toBeLessThan(0.05);
+  });
+});
+
+describe("ROM-constrained reach-IK", () => {
+  // The viewer's radian limit boxes, minus the current-pose widening (the rig
+  // starts at rest here, which is inside every box).
+  function limitsFor(id: string) {
+    const rom = eulerRomFor(id);
+    if (!rom) return null;
+    const r = (d: number) => d * DEG;
+    return {
+      x: [r(rom.x.min), r(rom.x.max)] as [number, number],
+      y: [r(rom.y.min), r(rom.y.max)] as [number, number],
+      z: [r(rom.z.min), r(rom.z.max)] as [number, number],
+    };
+  }
+
+  function armChain(m: ReturnType<typeof buildMannequin>) {
+    const shoulder = m.bones.get("shoulder_right")!;
+    const elbow = m.bones.get("elbow_right")!;
+    return {
+      joints: [shoulder, elbow],
+      limits: [limitsFor("shoulder_right"), limitsFor("elbow_right")],
+      effector: m.bones.get("wrist_right")!,
+    };
+  }
+
+  it("still converges on a reachable in-front target", () => {
+    const m = buildMannequin();
+    m.root.updateMatrixWorld(true);
+    const { joints, limits, effector } = armChain(m);
+    const target = joints[0]!
+      .getWorldPosition(new THREE.Vector3())
+      .add(new THREE.Vector3(0.3, -0.2, 0.3));
+
+    solveCCD({ joints, limits, effector, target }, 20);
+    m.root.updateMatrixWorld(true);
+    expect(
+      effector.getWorldPosition(new THREE.Vector3()).distanceTo(target),
+    ).toBeLessThan(0.06);
+  });
+
+  it("never pushes a chain joint past its ROM chasing an unsafe target", () => {
+    const m = buildMannequin();
+    m.root.updateMatrixWorld(true);
+    const { joints, limits, effector } = armChain(m);
+    const [shoulder, elbow] = joints;
+    // High behind the back (figure faces +Z): reaching it would demand
+    // shoulder extension far past the 60° healthy ceiling.
+    const target = shoulder!
+      .getWorldPosition(new THREE.Vector3())
+      .add(new THREE.Vector3(0, 0.3, -0.5));
+
+    solveCCD({ joints, limits, effector, target }, 30);
+    m.root.updateMatrixWorld(true);
+
+    const eps = 1e-6;
+    for (const [joint, lim] of [
+      [shoulder!, limits[0]!],
+      [elbow!, limits[1]!],
+    ] as const) {
+      const e = new THREE.Euler().setFromQuaternion(joint.quaternion, "XYZ");
+      expect(e.x).toBeGreaterThanOrEqual(lim.x[0] - eps);
+      expect(e.x).toBeLessThanOrEqual(lim.x[1] + eps);
+      expect(e.y).toBeGreaterThanOrEqual(lim.y[0] - eps);
+      expect(e.y).toBeLessThanOrEqual(lim.y[1] + eps);
+      expect(e.z).toBeGreaterThanOrEqual(lim.z[0] - eps);
+      expect(e.z).toBeLessThanOrEqual(lim.z[1] + eps);
+    }
+    // Sanity: unconstrained CCD DOES violate the shoulder ceiling here, so the
+    // clamp above is load-bearing, not vacuous.
+    const m2 = buildMannequin();
+    m2.root.updateMatrixWorld(true);
+    const free = armChain(m2);
+    const target2 = free.joints[0]!
+      .getWorldPosition(new THREE.Vector3())
+      .add(new THREE.Vector3(0, 0.3, -0.5));
+    solveCCD({ joints: free.joints, effector: free.effector, target: target2 }, 30);
+    const eFree = new THREE.Euler().setFromQuaternion(
+      free.joints[0]!.quaternion,
+      "XYZ",
+    );
+    expect(eFree.x).toBeGreaterThan(60 * DEG + 0.05); // past healthy extension
+  });
+
+  it("keeps a knee hinge-only: no lateral splay while a foot reaches", () => {
+    const m = buildMannequin();
+    m.root.updateMatrixWorld(true);
+    const hip = m.bones.get("hip_right")!;
+    const knee = m.bones.get("knee_right")!;
+    const ankle = m.bones.get("ankle_right")!;
+    // A target out to the side tempts unconstrained CCD to twist the knee
+    // sideways; the ROM box zeroes the knee's Y/Z axes.
+    const target = hip
+      .getWorldPosition(new THREE.Vector3())
+      .add(new THREE.Vector3(-0.5, -0.3, 0.2));
+
+    solveCCD(
+      {
+        joints: [hip, knee],
+        limits: [limitsFor("hip_right"), limitsFor("knee_right")],
+        effector: ankle,
+        target,
+      },
+      30,
+    );
+    const e = new THREE.Euler().setFromQuaternion(knee.quaternion, "XYZ");
+    expect(Math.abs(e.y)).toBeLessThan(1e-6);
+    expect(Math.abs(e.z)).toBeLessThan(1e-6);
   });
 });

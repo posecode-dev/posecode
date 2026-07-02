@@ -166,3 +166,46 @@ describe("parse", () => {
     expect(errors.some((e) => /travel/i.test(e.message))).toBe(true);
   });
 });
+
+describe("reach/pin effectors", () => {
+  it("expands `hands` / `feet` into per-side effectors", () => {
+    const { ir, errors } = parse(
+      [
+        'movit stretch "Fold"',
+        "  rig humanoid",
+        "  pose start = standing",
+        "  prop box",
+        '  step "Fold" 2s ease-in-out:',
+        "    pelvis: hinge 90",
+        "    reach: hands floor",
+        "    pin: feet box",
+        "  repeat 1",
+      ].join("\n"),
+    );
+    expect(errors).toEqual([]);
+    expect(ir!.phases[0]!.reaches).toEqual([
+      { effector: "hand_left", target: "floor" },
+      { effector: "hand_right", target: "floor" },
+    ]);
+    expect(ir!.phases[0]!.pins).toEqual([
+      { effector: "foot_left", anchor: "box" },
+      { effector: "foot_right", anchor: "box" },
+    ]);
+  });
+
+  it("rejects an unknown effector with a line-anchored error", () => {
+    const { ir, errors } = parse(
+      [
+        'movit stretch "Typo"',
+        "  rig humanoid",
+        '  step "Reach" 1s linear:',
+        "    reach: tentacle floor",
+        "  repeat 1",
+      ].join("\n"),
+    );
+    expect(ir).toBeNull();
+    expect(errors).toHaveLength(1);
+    expect(errors[0]!.line).toBe(4);
+    expect(errors[0]!.message).toContain("tentacle");
+  });
+});

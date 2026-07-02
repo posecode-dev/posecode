@@ -78,6 +78,13 @@ describe("getCompletions", () => {
       expect.arrayContaining(["hands", "feet"]),
     );
   });
+
+  it("suggests reach effectors (groups + sides) after `reach: ` and `pin: `", () => {
+    expect(onLine("    reach: ", 11)).toEqual(
+      expect.arrayContaining(["hands", "hand_left", "foot_right"]),
+    );
+    expect(onLine("    pin: ", 9)).toEqual(expect.arrayContaining(["feet"]));
+  });
 });
 
 describe("getHover", () => {

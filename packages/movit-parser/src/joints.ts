@@ -95,6 +95,36 @@ export function expandJoint(name: string): string[] {
   return [];
 }
 
+/** Per-side reach/pin effectors (friendly aliases the renderer maps to bones). */
+const EFFECTOR_SIDES = [
+  "hand_left",
+  "hand_right",
+  "foot_left",
+  "foot_right",
+] as const;
+
+/** Symmetric effector groups → the per-side effectors they expand to. */
+const EFFECTOR_GROUPS: Record<string, string[]> = {
+  hands: ["hand_left", "hand_right"],
+  feet: ["foot_left", "foot_right"],
+};
+
+/** Every effector name `reach:` / `pin:` accept: groups + per-side aliases. */
+export const EFFECTOR_NAMES = [...Object.keys(EFFECTOR_GROUPS), ...EFFECTOR_SIDES];
+
+const EFFECTOR_SIDE_SET = new Set<string>(EFFECTOR_SIDES);
+
+/**
+ * Resolve a reach/pin effector name into per-side effectors (`hands` →
+ * both hands). Returns an empty array if the name is unknown (caller errors).
+ */
+export function expandEffector(name: string): string[] {
+  const group = EFFECTOR_GROUPS[name];
+  if (group) return [...group];
+  if (EFFECTOR_SIDE_SET.has(name)) return [name];
+  return [];
+}
+
 export interface ActionAxis {
   axis: Axis;
   /** +1 or -1 in the bone's local frame (before left/right mirroring). */

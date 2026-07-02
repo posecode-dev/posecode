@@ -12,22 +12,19 @@ movit exercise "Pull-up"
   step "Hang" 0.7s ease-in-out:
     shoulders: flex 175
     elbows: flex 5
-    pin: hand_left bar
-    pin: hand_right bar
+    pin: hands bar
     cue "Hang from the bar, arms long, shoulders active"
 
   step "Pull up" 1.2s ease-out:
     shoulders: flex 150
     elbows: flex 130
-    pin: hand_left bar
-    pin: hand_right bar
+    pin: hands bar
     cue "Pull the chest toward the bar, driving the elbows down"
 
   step "Lower" 1.4s ease-in:
     shoulders: flex 175
     elbows: flex 5
-    pin: hand_left bar
-    pin: hand_right bar
+    pin: hands bar
     cue "Lower under control back to a full hang"
 
   step "Release" 0.8s ease-in:

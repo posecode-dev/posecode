@@ -33,7 +33,7 @@ easing     = "linear" | "ease-in" | "ease-out" | "ease-in-out" ;
 child      = jointTarget | groundLock | reach | pin | turn | travel | cue ;
 jointTarget= joint ":" action [ NUMBER ] ;
 groundLock = "ground-lock" ":" effector { "," effector } ;
-reach      = "reach" ":" effector target ;             (* effector → world target via IK *)
+reach      = "reach" ":" effector target ;             (* effector → world target via ROM-constrained IK *)
 pin        = "pin" ":" effector anchor ;               (* move the BODY so effector sits on anchor *)
 turn       = "turn" ":" NUMBER ;                       (* face this yaw (deg) by phase end *)
 travel     = "travel" ":" NUMBER NUMBER ;              (* move to this x z (metres) by phase end *)
@@ -126,17 +126,23 @@ research §5.1 normative tables. Selected ceilings (degrees):
 3. **Ground-lock IK** — effectors listed in `ground-lock` (`hands`, `feet`) are
    pinned to their planted floor position so they stay put while the body moves.
 4. **Reach-IK** — a `reach:` line drives an effector (`hand_left|hand_right|
-   foot_left|foot_right`) to a world **target** via Cyclic Coordinate Descent
-   (CCD) over the arm/leg chain. A target is a body landmark bone (e.g.
-   `ankle_left`), the keyword `floor`, or a prop anchor (`bar`, `seat`, `wall`).
+   foot_left|foot_right`, or the groups `hands`/`feet` for both sides) to a
+   world **target** via Cyclic Coordinate Descent (CCD) over the arm/leg chain.
+   A target is a body landmark bone (e.g. `ankle_left`), the keyword `floor`,
+   or a prop anchor (`bar`, `seat`, `wall`). The solve is **ROM-constrained**:
+   each iteration clamps every chain joint into its §4 Range-of-Motion limits
+   (expressed as a per-axis box in the bone's local Euler frame), so a reach
+   toward an unsafe or unreachable target settles on the closest *healthy*
+   pose — solved angles obey the same hard limits as authored ones.
 5. **Props** — `prop chair|wall|bar|box` adds a scene object at a fixed default
    placement (chair/wall behind, bar overhead, box in front); its named anchors
    become reach/pin targets.
 6. **Pins** — `pin: <effector> <anchor>` translates the whole figure so the
-   effector sits on the anchor. Where ground-lock keeps a foot on the floor and
-   reach moves a limb to a target, a **pin moves the body** while the contact
-   stays put — so the figure hangs from a bar, pulls up toward it, rises onto a
-   box, or lowers into a dip as the joints work.
+   effector sits on the anchor (effectors accept the same `hands`/`feet` groups
+   as reach — `pin: hands bar` pins both). Where ground-lock keeps a foot on
+   the floor and reach moves a limb to a target, a **pin moves the body** while
+   the contact stays put — so the figure hangs from a bar, pulls up toward it,
+   rises onto a box, or lowers into a dip as the joints work.
 7. **Spatial choreography** — `turn: <deg>` rotates the figure's facing (yaw
    about vertical) and `travel: <x> <z>` moves it across the floor (world metres
    from the load spot). Both are **absolute targets carried across phases** (like

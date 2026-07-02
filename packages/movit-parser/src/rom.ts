@@ -98,13 +98,52 @@ const ROM: Record<string, ActionLimits> = {
   },
 };
 
-import { boneType } from "./joints.js";
+import { actionAxis, boneType, flexionSign, isLeft } from "./joints.js";
+import type { Axis } from "./types.js";
 
 /** Look up the ROM limit for a bone + action, or null if undefined. */
 export function romFor(boneId: string, action: string): RomLimit | null {
   const limits = ROM[boneType(boneId)];
   if (!limits) return null;
   return limits[action] ?? null;
+}
+
+/** Signed per-axis rotation range, degrees, in a bone's LOCAL Euler frame. */
+export type EulerRom = Record<Axis, RomLimit>;
+
+/**
+ * The full ROM of a bone expressed as a signed Euler box in the renderer's
+ * local frame — the same frame `clamp.ts` resolves authored actions into
+ * (flexion-sign per joint, Y/Z mirrored on left-side bones). Each axis range is
+ * the union of every action that rotates it; axes with no ROM entry stay
+ * `{min: 0, max: 0}`, locking them (a knee is a pure hinge). This is what lets
+ * the IK solver honour the same hard limits as authored angles: any solved
+ * joint rotation clamped into this box is inside the healthy ROM.
+ *
+ * Returns null for bones without ROM data (e.g. `head`).
+ */
+export function eulerRomFor(boneId: string): EulerRom | null {
+  const limits = ROM[boneType(boneId)];
+  if (!limits) return null;
+
+  const box: EulerRom = {
+    x: { min: 0, max: 0 },
+    y: { min: 0, max: 0 },
+    z: { min: 0, max: 0 },
+  };
+  for (const [action, rom] of Object.entries(limits)) {
+    const aa = actionAxis(action);
+    if (!aa) continue;
+    // Mirrors the sign resolution in clamp.ts exactly.
+    const flexFlip =
+      action === "flex" || action === "extend" ? flexionSign(boneType(boneId)) : 1;
+    const mirror = isLeft(boneId) && aa.axis !== "x" ? -1 : 1;
+    const sign = aa.sign * flexFlip * mirror;
+    const range = box[aa.axis];
+    range.min = Math.min(range.min, sign * rom.min, sign * rom.max);
+    range.max = Math.max(range.max, sign * rom.min, sign * rom.max);
+  }
+  return box;
 }
 
 /**
