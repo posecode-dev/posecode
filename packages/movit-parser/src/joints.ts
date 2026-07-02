@@ -4,10 +4,12 @@
  * Coordinate convention (must match the renderer's rig — see spec/SPEC.md):
  *   Rest pose: standing, arms at sides, facing +Z. Each bone rotates in its
  *   own local frame where
- *     X = sagittal plane  (flexion +, extension -)
- *     Y = longitudinal    (internal rotation +, external -)
- *     Z = frontal plane   (abduction +, adduction -)
- *   Left-side bones mirror the Y and Z axes so symmetric cues look symmetric.
+ *     X = sagittal plane  (flexion / extension)
+ *     Y = longitudinal    (internal / external rotation)
+ *     Z = frontal plane   (abduction / adduction)
+ *   The unmirrored sign of each action is the RIGHT side's (the body's right
+ *   is -X); left-side bones mirror the Y and Z axes so symmetric cues look
+ *   symmetric — `shoulders: abduct 80` lifts both arms away from the midline.
  */
 
 import type { Axis } from "./types.js";
@@ -134,8 +136,14 @@ export interface ActionAxis {
 const ACTIONS: Record<string, ActionAxis> = {
   flex: { axis: "x", sign: 1 },
   extend: { axis: "x", sign: -1 },
-  abduct: { axis: "z", sign: 1 },
-  adduct: { axis: "z", sign: -1 },
+  // Frontal plane. The unmirrored sign is the RIGHT side's; with every bone
+  // resting along -Y and the right side of the body at -X, carrying a limb
+  // AWAY from the midline (abduction) is a -Z rotation. The left side mirrors
+  // to +Z. (Base sign +1 here was a bug that swung both arms and both legs
+  // through the torso.) For the unmirrored axial bones (spine/neck) abduct
+  // reads as lateral flexion toward the person's left.
+  abduct: { axis: "z", sign: -1 },
+  adduct: { axis: "z", sign: 1 },
   "rotate-in": { axis: "y", sign: 1 },
   "rotate-out": { axis: "y", sign: -1 },
   supinate: { axis: "y", sign: 1 },

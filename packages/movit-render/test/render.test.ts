@@ -458,3 +458,39 @@ describe("ROM-constrained reach-IK", () => {
     expect(Math.abs(e.z)).toBeLessThan(1e-6);
   });
 });
+
+describe("frontal plane direction", () => {
+  it("abduction carries arms and legs AWAY from the midline on both sides", () => {
+    const { ir, errors } = parse(
+      [
+        'movit exercise "Open"',
+        "  rig humanoid",
+        "  pose start = standing",
+        '  step "Open" 1s linear:',
+        "    shoulders: abduct 80",
+        "    hips: abduct 30",
+        "  repeat 1",
+      ].join("\n"),
+    );
+    expect(errors).toEqual([]);
+    const tl = buildTimeline(ir!);
+    const m = buildMannequin();
+    tl.sample(1, m.bones);
+    m.root.updateMatrixWorld(true);
+
+    // Each distal joint must sit FURTHER from the midline (|x|) than its
+    // proximal joint, on the SAME side — the inverted sign swung all four
+    // limbs across the body instead.
+    for (const [distal, proximal] of [
+      ["wrist_left", "shoulder_left"],
+      ["wrist_right", "shoulder_right"],
+      ["ankle_left", "hip_left"],
+      ["ankle_right", "hip_right"],
+    ] as const) {
+      const d = m.bones.get(distal)!.getWorldPosition(new THREE.Vector3());
+      const p = m.bones.get(proximal)!.getWorldPosition(new THREE.Vector3());
+      expect(Math.sign(d.x)).toBe(Math.sign(p.x));
+      expect(Math.abs(d.x)).toBeGreaterThan(Math.abs(p.x));
+    }
+  });
+});
