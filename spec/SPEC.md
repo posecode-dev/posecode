@@ -145,7 +145,16 @@ research §5.1 normative tables. Selected ceilings (degrees):
    grounding (feet still rest on the floor) and power pirouettes, grapevines,
    traveling combos, and walk cycles. **Standing poses only** — combining with
    lying/seated bases (whose root is already tilted) is out of scope.
-8. **Looping** — the timeline loops base → phases → base; `repeat` is the rep
+8. **Aliveness** — three renderer-side touches make playback read as human
+   rather than robotic, none of which change the authored poses: **weight
+   shift** (when one foot lifts, the body leans over the planted ankle —
+   pivoting there so the foot never skates — proportionally to the lift,
+   standing bases only); **follow-through** (during playback, distal segments
+   — hands, feet, head, fingers — trail their parent joints by a few tens of
+   milliseconds, so limbs overlap naturally; scrubbing snaps to the exact
+   authored pose); and **breath** (a ~1° chest oscillation on a ~4 s period,
+   visible in holds, imperceptible mid-movement).
+9. **Looping** — the timeline loops base → phases → base; `repeat` is the rep
    count surfaced to the UI.
 
 **Start poses:** `neutral`, `standing`, `plank`, `supine` (face-up), `prone`

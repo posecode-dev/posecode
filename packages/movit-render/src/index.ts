@@ -146,6 +146,28 @@ export function createViewer(
   let loopCb: () => void = () => {};
   let lastPhaseName = "";
 
+  // --- Aliveness layer state -------------------------------------------------
+  // Follow-through: displayed bone rotations chase the sampled targets with a
+  // small per-bone lag (deeper bones lag more), so limbs overlap naturally
+  // instead of the whole body moving in robotic lockstep. `alivenessSnap` skips
+  // the lag for one frame after load/seek so scrubbing stays frame-exact.
+  const followQuats = new Map<string, THREE.Quaternion>();
+  let alivenessSnap = true;
+  let lastFrameNow = 0;
+  // Weight shift: smoothed whole-body lean (radians) toward the planted foot.
+  let leanAngle = 0;
+  const LEAN_AXIS = new THREE.Vector3();
+  const LEAN_PIVOT = new THREE.Vector3();
+  const BREATH_Q = new THREE.Quaternion();
+
+  /** Seconds of lag per bone: distal segments trail proximal ones slightly. */
+  function followTau(boneId: string): number {
+    if (/^(wrist|ankle|head)/.test(boneId)) return 0.085;
+    if (/^(thumb|index|middle|ring|pinky)/.test(boneId)) return 0.105;
+    if (/^(elbow|knee)/.test(boneId)) return 0.06;
+    return 0.038; // pelvis, spine, chest, neck, shoulders, hips
+  }
+
   // Camera easing targets.
   const desiredTarget = new THREE.Vector3(0, 0.9, 0);
   const desiredPos = camera.position.clone();
@@ -222,11 +244,56 @@ export function createViewer(
   const YAW_Q = new THREE.Quaternion();
 
   /** Rotate the whole figure about a world-space pivot (axis through pivot). */
-  function rotateRootAboutPivot(pivot: THREE.Vector3, angle: number): void {
-    const q = new THREE.Quaternion().setFromAxisAngle(ROOT_X, angle);
+  function rotateRootAboutPivot(
+    pivot: THREE.Vector3,
+    angle: number,
+    axis: THREE.Vector3 = ROOT_X,
+  ): void {
+    const q = new THREE.Quaternion().setFromAxisAngle(axis, angle);
     mannequin.root.position.sub(pivot).applyQuaternion(q).add(pivot);
     mannequin.root.quaternion.premultiply(q);
     mannequin.root.updateMatrixWorld(true);
+  }
+
+  /** Max whole-body lean toward the planted foot, radians (~4°). */
+  const MAX_LEAN = 0.07;
+
+  /**
+   * Weight shift: when one foot lifts (march, kick, single-leg balance, dance
+   * steps), a real body moves its weight over the planted foot — a centred
+   * pelvis under a raised leg reads as physically impossible. Lean the whole
+   * figure about the planted ANKLE (pivoting there, so the planted foot never
+   * skates) toward the support, proportional to how high the other foot lifts,
+   * smoothed so the weight transfers gradually like a real step. Applies only
+   * to standing-based movements (a tilted base — plank/supine/prone — has its
+   * own support polygon) and never while pins carry the body (bar hangs).
+   */
+  function applyWeightShift(pinned: boolean, dt: number): void {
+    let target = 0;
+    const la = mannequin.bones.get("ankle_left");
+    const ra = mannequin.bones.get("ankle_right");
+    const [brx = 0, , brz = 0] = timeline?.basePose.root?.rotationDeg ?? [0, 0, 0];
+    if (!pinned && la && ra && Math.abs(brx) < 10 && Math.abs(brz) < 10) {
+      const lp = la.getWorldPosition(new THREE.Vector3());
+      const rp = ra.getWorldPosition(new THREE.Vector3());
+      const planted = lp.y <= rp.y ? lp : rp;
+      const lifted = lp.y <= rp.y ? rp : lp;
+      const diff = lifted.y - planted.y;
+      // Direction from the lifted foot toward the planted one, flattened to the
+      // ground plane; axis = UP × dir tips the body toward the planted side.
+      LEAN_AXIS.set(planted.x - lifted.x, 0, planted.z - lifted.z);
+      if (diff > 0.05 && planted.y < 0.15 && LEAN_AXIS.lengthSq() > 1e-6) {
+        target = Math.min(1, (diff - 0.05) / 0.12) * MAX_LEAN;
+        LEAN_AXIS.normalize();
+        LEAN_AXIS.crossVectors(WORLD_Y, LEAN_AXIS);
+        LEAN_PIVOT.copy(planted);
+      }
+    }
+    const alpha = alivenessSnap ? 1 : 1 - Math.exp(-dt / 0.18);
+    leanAngle += (target - leanAngle) * alpha;
+    if (Math.abs(leanAngle) > 1e-3 && LEAN_AXIS.lengthSq() > 0.5) {
+      rotateRootAboutPivot(LEAN_PIVOT, leanAngle, LEAN_AXIS);
+    }
   }
 
   /**
@@ -406,8 +473,46 @@ export function createViewer(
   }
 
   function frame(): void {
+    const now = performance.now();
+    const frameDt = lastFrameNow > 0 ? Math.min(0.05, (now - lastFrameNow) / 1000) : 0.016;
+    lastFrameNow = now;
     if (timeline) {
       const info = timeline.sample(time, mannequin.bones);
+      // Follow-through: chase the sampled pose with a small per-bone lag so
+      // distal segments (hands, feet, head, fingers) trail the joints that
+      // drive them — natural overlap instead of robotic lockstep. Snapped on
+      // load/seek so the scrubber stays frame-exact, and when paused so a
+      // still frame shows the authored pose.
+      if (playing && !alivenessSnap) {
+        for (const [id, bone] of mannequin.bones) {
+          let fq = followQuats.get(id);
+          if (!fq) {
+            fq = bone.quaternion.clone();
+            followQuats.set(id, fq);
+          }
+          const alpha = 1 - Math.exp(-frameDt / followTau(id));
+          fq.slerp(bone.quaternion, alpha);
+          bone.quaternion.copy(fq);
+        }
+      } else {
+        for (const [id, bone] of mannequin.bones) {
+          const fq = followQuats.get(id);
+          if (fq) fq.copy(bone.quaternion);
+          else followQuats.set(id, bone.quaternion.clone());
+        }
+      }
+      // Breathing: a barely-visible sinusoidal chest tilt (~1° @ ~3.8s period)
+      // so the figure reads as alive during holds. Imperceptible mid-movement;
+      // during a plank it even reads as breathing under load. When the timeline
+      // drives the chest, sample() has just reset it, so layering on top is
+      // safe; when it doesn't, sample() never touches the bone, so the value
+      // must be set absolutely — an in-place multiply would compound each frame.
+      const chest = mannequin.bones.get("chest");
+      if (chest) {
+        BREATH_Q.setFromAxisAngle(ROOT_X, Math.sin(now * 0.00165) * 0.019);
+        if (timeline.bonesUsed.includes("chest")) chest.quaternion.multiply(BREATH_Q);
+        else chest.quaternion.copy(BREATH_Q);
+      }
       // Recompute root contact from the grounded base each frame (no drift).
       mannequin.root.position.copy(baseRootPos);
       mannequin.root.quaternion.copy(baseRootQuat);
@@ -423,6 +528,8 @@ export function createViewer(
       mannequin.root.position.x += info.rootOffset.x;
       mannequin.root.position.z += info.rootOffset.z;
       mannequin.root.updateMatrixWorld(true);
+      applyWeightShift(info.pins.length > 0, frameDt);
+      alivenessSnap = false;
       applyGroundLock(info.groundLock);
       applyPins(info.pins);
       // Safety net: nothing above ever intentionally pushes part of the body
@@ -507,6 +614,8 @@ export function createViewer(
       captureGroundTargets();
       baseRootPos.copy(mannequin.root.position);
       baseRootQuat.copy(mannequin.root.quaternion);
+      leanAngle = 0;
+      alivenessSnap = true;
       frameCamera();
     },
     play() {
@@ -524,6 +633,9 @@ export function createViewer(
     seek(seconds: number) {
       if (!timeline) return;
       time = THREE.MathUtils.clamp(seconds, 0, timeline.duration);
+      // Scrubbing must be frame-exact: skip follow-through lag and land the
+      // weight shift instantly at the sought pose.
+      alivenessSnap = true;
     },
     setSpeed(multiplier: number) {
       speed = Math.max(0.1, multiplier);

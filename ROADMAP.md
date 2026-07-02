@@ -48,9 +48,14 @@ These are the unlocks, roughly in order of leverage:
    both absolute + carried across phases and returning home on the loop wrap.
    Powers `pirouette`, `box-step`, `grapevine`, `waltz-box`, `chasse`,
    `walk-cycle`, `quarter-turns` — pirouettes, traveling combos, and gait.
-   Standing poses only. Next: footstep-locked travel (true gait), motion
-   aliveness (velocity-continuous flow + weight shift).
-7. **Two-person + collision** — partner stretches, assisted rehab, contact sports
+   Standing poses only. Next: footstep-locked travel (true gait).
+7. ~~**Motion aliveness**~~ — ✅ **shipped.** Automatic weight shift over the
+   planted foot on single-leg moves (lean about the planted ankle, no skating),
+   distal follow-through during playback (hands/feet/head trail their parent
+   joints slightly — no more robotic lockstep), and a subtle breathing idle on
+   the chest so holds read as alive. Renderer-only; authored poses unchanged and
+   scrubbing stays frame-exact. Next: velocity-continuous phase blending.
+8. **Two-person + collision** — partner stretches, assisted rehab, contact sports
    (still deferred in the spec).
 
 ## Prop / equipment library (future)
