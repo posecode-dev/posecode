@@ -3,16 +3,34 @@
  * bone chain — the §6.2 algorithm, adapted to our rigid-segment rig (Three's
  * built-in CCDIKSolver is bound to SkinnedMesh, which we don't use).
  *
- * Used for ground-lock: pinning a hand/foot effector to a fixed floor target
- * while the rest of the body moves. v0.1 runs unconstrained CCD; ROM-aware
- * angle limits on the chain are deferred to a later version.
+ * Used for ground-lock and reach: pinning or driving a hand/foot effector to a
+ * world target while the rest of the body moves. Chains may carry per-joint
+ * Euler angle limits (the joint's Range of Motion expressed as a local-frame
+ * box, see movit-parser's `eulerRomFor`); each iteration clamps the joint back
+ * inside its box, so a solved pose can never exceed the healthy ROM any more
+ * than an authored angle can.
  */
 
 import * as THREE from "three";
 
+/**
+ * Per-axis rotation limits (radians) in a joint's LOCAL Euler (XYZ) frame.
+ * Axes the joint cannot rotate use `[0, 0]` — e.g. a knee is a pure hinge.
+ */
+export interface JointLimits {
+  x: [number, number];
+  y: [number, number];
+  z: [number, number];
+}
+
 export interface IkChain {
   /** Joints that may rotate, ordered proximal → distal. */
   joints: THREE.Object3D[];
+  /**
+   * Optional ROM limits, parallel to `joints` (null/undefined = unconstrained).
+   * Clamped every iteration so the solve stays inside the box throughout.
+   */
+  limits?: (JointLimits | null | undefined)[];
   /** The node whose world position should reach the target. */
   effector: THREE.Object3D;
   /** World-space goal for the effector. */
@@ -26,6 +44,7 @@ const TMP_TO_TARGET = new THREE.Vector3();
 const TMP_AXIS = new THREE.Vector3();
 const TMP_QUAT = new THREE.Quaternion();
 const TMP_PARENT_QUAT = new THREE.Quaternion();
+const TMP_EULER = new THREE.Euler();
 
 /**
  * Solve one chain in place. Rotates `joints` so `effector` approaches `target`.
@@ -64,6 +83,7 @@ export function solveCCD(chain: IkChain, iterations = 10, tolerance = 1e-4): num
       );
       const localQuat = new THREE.Quaternion().setFromAxisAngle(localAxis, angle);
       joint.quaternion.premultiply(localQuat);
+      clampToLimits(joint, chain.limits?.[j]);
       joint.updateMatrixWorld(true);
     }
 
@@ -74,6 +94,18 @@ export function solveCCD(chain: IkChain, iterations = 10, tolerance = 1e-4): num
   root.updateMatrixWorld(true);
   effector.getWorldPosition(TMP_EFF);
   return TMP_EFF.distanceToSquared(target);
+}
+
+/** Clamp a joint's local rotation into its per-axis Euler box, if it has one. */
+function clampToLimits(joint: THREE.Object3D, limits: JointLimits | null | undefined): void {
+  if (!limits) return;
+  TMP_EULER.setFromQuaternion(joint.quaternion, "XYZ");
+  const x = THREE.MathUtils.clamp(TMP_EULER.x, limits.x[0], limits.x[1]);
+  const y = THREE.MathUtils.clamp(TMP_EULER.y, limits.y[0], limits.y[1]);
+  const z = THREE.MathUtils.clamp(TMP_EULER.z, limits.z[0], limits.z[1]);
+  if (x === TMP_EULER.x && y === TMP_EULER.y && z === TMP_EULER.z) return;
+  TMP_EULER.set(x, y, z, "XYZ");
+  joint.quaternion.setFromEuler(TMP_EULER);
 }
 
 function topmostParent(node: THREE.Object3D): THREE.Object3D {

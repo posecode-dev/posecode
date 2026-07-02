@@ -42,7 +42,9 @@ function initHero(): void {
 if ("requestIdleCallback" in window) {
   requestIdleCallback(initHero, { timeout: 1200 });
 } else {
-  window.setTimeout(initHero, 200);
+  // `window` narrows to `never` here (lib.dom always declares
+  // requestIdleCallback), so call the global directly.
+  setTimeout(initHero, 200);
 }
 
 // --- Examples gallery: a curated taste, not the full 65 ---------------------

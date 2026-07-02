@@ -12,8 +12,7 @@ movit exercise "Dead hang"
   step "Hang" 3s ease-in-out:
     shoulders: flex 175
     elbows: flex 5
-    pin: hand_left bar
-    pin: hand_right bar
+    pin: hands bar
     cue "Relax into a long, straight-arm hang"
 
   step "Down" 1.5s ease-out:

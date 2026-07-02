@@ -13,11 +13,20 @@ import type {
   MovitIR,
   ParseError,
   Phase,
+  PinTarget,
+  ReachTarget,
   Warning,
 } from "./types.js";
 import { MOVIT_VERSION } from "./types.js";
 import type { AstDoc, AstStep } from "./parser.js";
-import { actionAxis, boneType, expandJoint, flexionSign, isLeft } from "./joints.js";
+import {
+  actionAxis,
+  boneType,
+  expandEffector,
+  expandJoint,
+  flexionSign,
+  isLeft,
+} from "./joints.js";
 import { clampAngle, romFor } from "./rom.js";
 
 export interface ResolveResult {
@@ -114,6 +123,28 @@ function resolveStep(
     euler,
   }));
 
+  // Reach / pin effectors: expand symmetric groups (`hands` → both hands) and
+  // reject unknown names — a typo'd effector would otherwise be silently
+  // ignored by the renderer, invisible to the authoring LLM.
+  const reaches: ReachTarget[] = [];
+  for (const r of step.reaches) {
+    const sides = expandEffector(r.effector);
+    if (sides.length === 0) {
+      errors.push({ line: r.line, message: `unknown reach effector: "${r.effector}"` });
+      continue;
+    }
+    for (const effector of sides) reaches.push({ effector, target: r.target });
+  }
+  const pins: PinTarget[] = [];
+  for (const p of step.pins) {
+    const sides = expandEffector(p.effector);
+    if (sides.length === 0) {
+      errors.push({ line: p.line, message: `unknown pin effector: "${p.effector}"` });
+      continue;
+    }
+    for (const effector of sides) pins.push({ effector, anchor: p.anchor });
+  }
+
   // Travel is clamped to a sane studio footprint (±TRAVEL_MAX m) so a stray
   // large value can't fling the figure off the ground plane / out of frame.
   const travel = step.travel
@@ -129,8 +160,8 @@ function resolveStep(
     easing: step.easing as Phase["easing"],
     targets,
     groundLock: step.groundLock,
-    reaches: step.reaches,
-    pins: step.pins,
+    reaches,
+    pins,
     ...(step.turn !== undefined ? { turnDeg: step.turn } : {}),
     ...(travel ? { travel } : {}),
     ...(step.cue ? { cue: step.cue } : {}),

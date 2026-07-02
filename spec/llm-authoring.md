@@ -111,10 +111,13 @@ movit exercise "Deadlift"
 ## Reaching, props, lying poses & hands
 
 - **Reach a target** — `reach: <effector> <target>` drives a hand or foot to a
-  world point via IK. Effectors: `hand_left hand_right foot_left foot_right`.
-  Targets: a body landmark bone (`ankle_left`, `knee_right`…), `floor`, or a prop
-  anchor (`bar`, `seat`, `wall`). Author the gross pose (e.g. a `pelvis: hinge`),
-  then let `reach` finish the hand placement. Example — touch your toes:
+  world point via IK. Effectors: `hand_left hand_right foot_left foot_right`,
+  or `hands` / `feet` for both sides at once. Targets: a body landmark bone
+  (`ankle_left`, `knee_right`…), `floor`, or a prop anchor (`bar`, `seat`,
+  `wall`). The solve is ROM-constrained — the arm/leg can never exceed the safe
+  joint limits chasing a target, so an out-of-reach target just yields the
+  closest healthy pose. Author the gross pose (e.g. a `pelvis: hinge`), then
+  let `reach` finish the hand placement. Example — touch your toes:
 
   ```movit
   step "Fold" 2.5s ease-in-out:
@@ -130,10 +133,10 @@ movit exercise "Deadlift"
   the figure (sit-to-stand, box squat), the wall behind that (wall sit), the bar
   overhead, the box in front (step-ups).
 - **Pins** — `pin: <effector> <anchor>` moves the whole BODY so the effector sits
-  on the anchor (vs `reach`, which moves just the limb). Use it for hanging and
-  climbing: `pin: hand_left bar` + flexing the elbows = a pull-up; `pin: foot_right
-  box` + straightening the leg = a step-up; `pin: hand_left seat` + bending the
-  elbows = a triceps dip.
+  on the anchor (vs `reach`, which moves just the limb). Same effectors as reach,
+  including `hands` / `feet`. Use it for hanging and climbing: `pin: hands bar` +
+  flexing the elbows = a pull-up; `pin: foot_right box` + straightening the leg =
+  a step-up; `pin: hands seat` + bending the elbows = a triceps dip.
 - **Lying / seated** — `pose start = supine | prone | seated` for floor and mat
   work (glute bridge, dead bug, cobra, seated forward fold).
 - **Hands** — `fingers: flex 80` makes a fist; curl individual fingers for shapes

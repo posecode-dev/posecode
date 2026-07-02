@@ -15,7 +15,7 @@
     "coverage": "vitest run --coverage",
     "dev": "npm run dev -w playground",
     "build": "npm run build -w playground",
-    "typecheck": "tsc -b --pretty"
+    "typecheck": "for p in packages/*/tsconfig.json playground/tsconfig.json editors/*/tsconfig.json; do tsc --noEmit -p \"$p\" || exit 1; done"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^2.1.8",

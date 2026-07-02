@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { romFor } from "../src/rom.js";
+import { romFor, eulerRomFor } from "../src/rom.js";
 import { expandJoint, actionAxis } from "../src/joints.js";
 
 describe("rom table", () => {
@@ -44,5 +44,38 @@ describe("joint vocabulary", () => {
 
   it("returns null for an unknown action", () => {
     expect(actionAxis("teleport")).toBeNull();
+  });
+});
+
+describe("euler ROM boxes (eulerRomFor)", () => {
+  it("unions elbow flex/extend into a signed X range (flex is -X off the knee)", () => {
+    const box = eulerRomFor("elbow_right")!;
+    expect(box.x).toEqual({ min: -154, max: 10 }); // flex 154 → -X, extend 10 → +X
+  });
+
+  it("locks axes with no ROM entry, making the knee a pure hinge", () => {
+    const box = eulerRomFor("knee_right")!;
+    expect(box.x).toEqual({ min: -5, max: 144 }); // knee flexes toward +X
+    expect(box.y).toEqual({ min: 0, max: 0 });
+    expect(box.z).toEqual({ min: 0, max: 0 });
+  });
+
+  it("mirrors Y/Z ranges on left-side bones", () => {
+    const right = eulerRomFor("elbow_right")!;
+    const left = eulerRomFor("elbow_left")!;
+    // supinate 92 / pronate 84 flip sides under the mirror.
+    expect(right.y).toEqual({ min: -84, max: 92 });
+    expect(left.y).toEqual({ min: -92, max: 84 });
+    // X (sagittal) is never mirrored.
+    expect(left.x).toEqual(right.x);
+  });
+
+  it("covers the ankle via dorsiflex/plantarflex and the pelvis via hinge", () => {
+    expect(eulerRomFor("ankle_left")!.x).toEqual({ min: -50, max: 15 });
+    expect(eulerRomFor("pelvis")!.x).toEqual({ min: -120, max: 0 });
+  });
+
+  it("returns null for a bone without ROM data", () => {
+    expect(eulerRomFor("head")).toBeNull();
   });
 });

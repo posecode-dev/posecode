@@ -76,9 +76,10 @@ For where Movit spreads fastest and the per-domain go-to-market plan, see
 ## Scope (v0.1)
 
 ✅ Single-person movement across fitness, physio, desk, dance, education & rehab ·
-Mermaid-style DSL · ROM safety clamping · forward kinematics · ground-lock **and
-reach-to-target IK** · hip-hinge · lying/seated poses · scene props (chair/wall/
-bar) · a single-DOF hand rig · live playground.
+Mermaid-style DSL · ROM safety clamping (authored **and IK-solved** angles) ·
+forward kinematics · ground-lock **and ROM-constrained reach-to-target IK** ·
+hip-hinge · lying/seated poses · scene props (chair/wall/bar) · a single-DOF
+hand rig · live playground.
 
 ⏳ Deferred: two-person / partner movements + collision detection, deeper props
 (load, bands, rings), multi-joint fingers, FBX/GLB export, hosted SaaS editor and

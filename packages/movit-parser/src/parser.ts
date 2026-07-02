@@ -19,11 +19,13 @@ export interface AstJointTarget {
 export interface AstReach {
   effector: string;
   target: string;
+  line: number;
 }
 
 export interface AstPin {
   effector: string;
   anchor: string;
+  line: number;
 }
 
 export interface AstStep {
@@ -212,7 +214,7 @@ function parseStepChild(ln: Line, current: AstStep | null): ParseError | null {
     if (t[1]?.type !== "colon" || !effector || !target) {
       return { line: ln.line, message: "expected `reach: <effector> <target>`" };
     }
-    current.reaches.push({ effector, target });
+    current.reaches.push({ effector, target, line: ln.line });
     return null;
   }
 
@@ -224,7 +226,7 @@ function parseStepChild(ln: Line, current: AstStep | null): ParseError | null {
     if (t[1]?.type !== "colon" || !effector || !anchor) {
       return { line: ln.line, message: "expected `pin: <effector> <anchor>`" };
     }
-    current.pins.push({ effector, anchor });
+    current.pins.push({ effector, anchor, line: ln.line });
     return null;
   }
 

@@ -9,6 +9,7 @@ import {
   KINDS,
   POSES,
   EFFECTORS,
+  REACH_EFFECTORS,
   EASINGS,
   JOINT_NAMES,
   ACTION_NAMES,
@@ -37,6 +38,7 @@ type Context =
   | "pose"
   | "easing"
   | "effector"
+  | "reach-effector"
   | "action"
   | "joint"
   | "top"
@@ -49,6 +51,7 @@ function contextFor(prefix: string, line: number): Context {
   if (/^\s*pose\s+start\s*=\s*[\w-]*$/.test(prefix)) return "pose";
   if (/^\s*step\s+"[^"]*"\s+[0-9.]+s\s+[\w-]*$/.test(prefix)) return "easing";
   if (/^\s*ground-lock\s*:\s*[\w,\s-]*$/.test(prefix)) return "effector";
+  if (/^\s*(reach|pin)\s*:\s*[\w-]*$/.test(prefix)) return "reach-effector";
   if (/^\s*[\w-]+\s*:\s*[\w-]*$/.test(prefix)) return "action";
 
   if (/^\s*[\w-]*$/.test(prefix)) {
@@ -80,6 +83,8 @@ export function getCompletions(
       return EASINGS.map((e) => item(e, "easing"));
     case "effector":
       return EFFECTORS.map((e) => item(e, "effector"));
+    case "reach-effector":
+      return REACH_EFFECTORS.map((e) => item(e, "effector"));
     case "action":
       return [...ACTION_NAMES, "hold"].map((a) => item(a, "action"));
     case "joint":

@@ -50,9 +50,11 @@ export {
   JOINT_GROUP_NAMES,
   JOINT_NAMES,
   ACTION_NAMES,
+  EFFECTOR_NAMES,
   expandJoint,
+  expandEffector,
   actionAxis,
   boneType,
 } from "./joints.js";
-export { romFor, clampAngle, type RomLimit } from "./rom.js";
+export { romFor, clampAngle, eulerRomFor, type RomLimit, type EulerRom } from "./rom.js";
 export { EASINGS } from "./schema.js";

@@ -4,7 +4,7 @@
  * drift from what the language actually accepts.
  */
 
-import { JOINT_NAMES, ACTION_NAMES, EASINGS } from "movit-parser";
+import { JOINT_NAMES, ACTION_NAMES, EASINGS, EFFECTOR_NAMES } from "movit-parser";
 
 export { JOINT_NAMES, ACTION_NAMES, EASINGS };
 
@@ -17,8 +17,8 @@ export const POSES = ["neutral", "standing", "plank", "supine", "prone", "seated
 /** Effectors that can be ground-locked. */
 export const EFFECTORS = ["hands", "feet"];
 
-/** Reach effectors (friendly aliases) and the scene props that supply anchors. */
-export const REACH_EFFECTORS = ["hand_left", "hand_right", "foot_left", "foot_right"];
+/** Reach/pin effectors (groups + per-side aliases) — sourced from the parser. */
+export const REACH_EFFECTORS = EFFECTOR_NAMES;
 export const PROPS = ["chair", "wall", "bar", "box"];
 
 /** Top-level directives (excluding the `movit` header keyword). */
@@ -37,8 +37,9 @@ export const KEYWORD_DOCS: Record<string, string> = {
   step: 'A movement phase — `step "<name>" <Ns> <easing>:`.',
   repeat: "How many times the movement loops.",
   "ground-lock": "Pins effectors (hands / feet) to the floor for this phase.",
-  reach: "Drives an effector to a target via IK — `reach: hand_left ankle_left`.",
-  pin: "Moves the body so an effector sits on an anchor — `pin: hand_left bar` (hang, pull up, step up, dip).",
+  reach:
+    "Drives an effector to a target via ROM-constrained IK — `reach: hand_left ankle_left`, `reach: hands floor`.",
+  pin: "Moves the body so an effector sits on an anchor — `pin: hands bar` (hang, pull up, step up, dip).",
   turn: "Turns the figure to face a new direction — `turn: 360` (degrees, yaw about vertical). Absolute, carried across phases. Standing poses only.",
   travel: "Moves the figure across the floor — `travel: 0.4 0` (world x z metres from the start spot). Absolute, carried across phases. Standing poses only.",
   cue: "A short coaching cue shown while this phase plays.",
