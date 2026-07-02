@@ -41,6 +41,12 @@ export interface Viewer {
   get duration(): number;
   get time(): number;
   getTimeline(): TimelineInfo | null;
+  /**
+   * Synchronously pose and render one frame at the current time. Used by
+   * exporters to capture deterministic frames: `seek(t); renderOnce();` then
+   * read the canvas — no dependence on the RAF loop's timing.
+   */
+  renderOnce(): void;
   onPhase(cb: (info: ViewerPhaseInfo) => void): void;
   onTick(cb: (time: number, duration: number) => void): void;
   onLoop(cb: () => void): void;
@@ -56,7 +62,10 @@ export function createViewer(
   canvas: HTMLCanvasElement,
   opts: ViewerOptions = {},
 ): Viewer {
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  // preserveDrawingBuffer keeps the last rendered frame readable from the
+  // canvas (drawImage / toBlob) outside the render call — required by the
+  // playground's GIF/video export compositor, negligible cost at this scene size.
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -659,6 +668,9 @@ export function createViewer(
         repeat: timeline.repeat,
         segments: timeline.segments,
       };
+    },
+    renderOnce() {
+      frame();
     },
     onPhase(cb) {
       phaseCb = cb;

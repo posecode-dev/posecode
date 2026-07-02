@@ -13,6 +13,7 @@ import { buildShareHash, readShareHash } from "movit-share";
 import { createMovitEditor, type MovitEditor } from "./editor.js";
 import { PRESETS } from "./presets.js";
 import { renderWarnings } from "./warnings.js";
+import { exportGif, exportVideo } from "./export.js";
 import llmPrompt from "../../spec/llm-authoring.md?raw";
 
 const $ = <T extends HTMLElement>(id: string): T =>
@@ -34,6 +35,7 @@ const phaseEl = $<HTMLDivElement>("phase");
 const cueEl = $<HTMLDivElement>("cue");
 const copyBtn = $<HTMLButtonElement>("copy-prompt");
 const shareBtn = $<HTMLButtonElement>("share");
+const exportSel = $<HTMLSelectElement>("export");
 const tabEditor = $<HTMLButtonElement>("tab-editor");
 const tabViewer = $<HTMLButtonElement>("tab-viewer");
 
@@ -41,6 +43,7 @@ const viewer = createViewer(canvas);
 let scrubbing = false;
 let repeat = 1;
 let rep = 1;
+let movementName = "movement"; // updated on every successful compile
 // Maps each phase name → the 1-based line range of its `step` block, so the
 // editor can highlight the lines driving the currently-animating phase.
 let phaseRanges = new Map<string, { from: number; to: number }>();
@@ -150,6 +153,7 @@ function recompile(): void {
   const { ir, errors, warnings: warns } = parse(editorApi.getValue());
   renderWarnings(warnings, errors, warns);
   if (ir) {
+    movementName = ir.name;
     viewer.load(ir);
     viewer.setLoop(loop.checked);
     viewer.play();
@@ -271,6 +275,29 @@ scrub.addEventListener("change", () => {
 });
 loop.addEventListener("change", () => viewer.setLoop(loop.checked));
 speed.addEventListener("change", () => viewer.setSpeed(Number(speed.value)));
+
+// --- Export: download one loop as a shareable clip (video or GIF) -----------
+const exportIdle = exportSel.options[0]!;
+exportSel.addEventListener("change", () => {
+  const kind = exportSel.value;
+  exportSel.value = "";
+  if (!kind) return;
+  const ectx = {
+    viewer,
+    glCanvas: canvas,
+    name: () => movementName,
+    caption: () => ({ phase: phaseEl.textContent ?? "", cue: cueEl.textContent ?? "" }),
+    onProgress: (label: string | null) => {
+      exportIdle.textContent = label ?? "export…";
+      exportSel.disabled = label !== null;
+    },
+  };
+  const run = kind === "gif" ? exportGif(ectx) : exportVideo(ectx);
+  run.catch((err) => {
+    console.error("export failed", err);
+    ectx.onProgress(null);
+  });
+});
 
 // --- Button label feedback ---
 // Swap a button's label (the inner `.lbl` span when present, else the button
