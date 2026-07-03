@@ -507,3 +507,125 @@ describe("face marker", () => {
     }
   });
 });
+
+describe("hand rig articulation", () => {
+  it("finger bones carry their own digit meshes, so curls are visible", () => {
+    const m = buildMannequin();
+    m.root.updateMatrixWorld(true);
+    const index = m.bones.get("index_right")!;
+    expect(index.children.length).toBeGreaterThan(0); // the digit capsule
+
+    // Curl the finger 90° and check the digit's far end actually moves.
+    const digit = index.children[0]!;
+    const tipBefore = digit.getWorldPosition(new THREE.Vector3());
+    index.rotation.x = -90 * DEG;
+    m.root.updateMatrixWorld(true);
+    const tipAfter = digit.getWorldPosition(new THREE.Vector3());
+    expect(tipBefore.distanceTo(tipAfter)).toBeGreaterThan(0.015);
+  });
+});
+
+describe("dip bars prop", () => {
+  it("exposes a `bars` grip anchor at support height", () => {
+    const { anchors, group } = buildProps(["dip-bars"]);
+    expect(anchors.has("bars")).toBe(true);
+    const grip = anchors.get("bars")!;
+    expect(grip.y).toBeGreaterThan(0.9); // high enough that feet clear the floor
+    expect(grip.y).toBeLessThan(1.6); // but well below the pull-up bar
+    expect(group.children.length).toBeGreaterThan(0);
+  });
+
+  // Same root-translation logic as the viewer's applyPins (see contact pins).
+  function pelvisYAt(source: string, t: number, anchors: Map<string, THREE.Vector3>): number {
+    const BONE: Record<string, string> = {
+      hand_left: "wrist_left",
+      hand_right: "wrist_right",
+      foot_left: "ankle_left",
+      foot_right: "ankle_right",
+    };
+    const { ir } = parse(source);
+    const tl = buildTimeline(ir!);
+    const m = buildMannequin();
+    const info = tl.sample(t, m.bones);
+    m.root.updateMatrixWorld(true);
+    const delta = new THREE.Vector3();
+    let n = 0;
+    for (const pin of info.pins) {
+      const eff = m.bones.get(BONE[pin.effector] ?? pin.effector);
+      const a = anchors.get(pin.anchor);
+      if (!eff || !a) continue;
+      delta.add(a.clone().sub(eff.getWorldPosition(new THREE.Vector3())));
+      n++;
+    }
+    if (n > 0) {
+      m.root.position.add(delta.multiplyScalar(1 / n));
+      m.root.updateMatrixWorld(true);
+    }
+    return m.bones.get("pelvis")!.getWorldPosition(new THREE.Vector3()).y;
+  }
+
+  it("lowers the body between the bars as the elbows flex (dip bottom)", () => {
+    const dips = [
+      'movit exercise "Dips"',
+      "  rig humanoid",
+      "  prop dip-bars",
+      "  pose start = standing",
+      '  step "Support" 1s ease-out:',
+      "    elbows: flex 5",
+      "    knees: flex 70",
+      "    pin: hands bars",
+      '  step "Lower" 1s ease-in-out:',
+      "    shoulders: extend 30",
+      "    elbows: flex 90",
+      "    knees: flex 70",
+      "    pin: hands bars",
+      "  repeat 4",
+    ].join("\n");
+    const anchors = buildProps(["dip-bars"]).anchors;
+    const support = pelvisYAt(dips, 0.99, anchors);
+    const bottom = pelvisYAt(dips, 1.99, anchors);
+    expect(support).toBeGreaterThan(0.9); // hips held up at bar height
+    expect(bottom).toBeLessThan(support - 0.08); // body sinks into the dip
+  });
+});
+
+describe("cobra", () => {
+  it("arches the chest and head up off the floor during the Lift", () => {
+    const src = [
+      'movit stretch "Cobra"',
+      "  rig humanoid",
+      "  pose start = prone",
+      '  step "Lift" 2.5s ease-in-out:',
+      "    spine: extend 30",
+      "    chest: extend 15",
+      "    neck: extend 25",
+      "    shoulders: flex 50",
+      "    elbows: flex 25",
+      "    reach: hands floor",
+      "  repeat 1",
+    ].join("\n");
+    const { ir, errors, warnings } = parse(src);
+    expect(errors).toEqual([]);
+    expect(warnings).toEqual([]);
+    const tl = buildTimeline(ir!);
+    const m = buildMannequin();
+
+    // Apply the prone base root like the viewer does.
+    const base = tl.basePose.root!;
+    m.root.rotation.set(...(base.rotationDeg!.map((d) => d * DEG) as [number, number, number]));
+
+    tl.sample(0, m.bones);
+    m.root.updateMatrixWorld(true);
+    const headFlat = m.bones.get("head")!.getWorldPosition(new THREE.Vector3()).y;
+    const pelvisFlat = m.bones.get("pelvis")!.getWorldPosition(new THREE.Vector3()).y;
+
+    tl.sample(2.5, m.bones);
+    m.root.updateMatrixWorld(true);
+    const headUp = m.bones.get("head")!.getWorldPosition(new THREE.Vector3()).y;
+    const pelvisUp = m.bones.get("pelvis")!.getWorldPosition(new THREE.Vector3()).y;
+
+    // The head rises well above its flat height while the pelvis stays put.
+    expect(headUp - headFlat).toBeGreaterThan(0.2);
+    expect(Math.abs(pelvisUp - pelvisFlat)).toBeLessThan(0.05);
+  });
+});

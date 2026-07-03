@@ -2,6 +2,11 @@ movit posture "Finger-spelling (approx.)"
   rig humanoid
   pose start = standing
 
+  step "Present the hand" 1s ease-out:
+    shoulder_right: flex 15
+    elbow_right: flex 140
+    cue "Bring the hand up in front of the chest, palm forward"
+
   step "Letter A" 1.5s ease-in-out:
     index_right: flex 95
     middle_right: flex 95
@@ -28,6 +33,8 @@ movit posture "Finger-spelling (approx.)"
 
   step "Relax" 1.2s ease-out:
     fingers_right: flex 0
-    cue "Open and relax the hand"
+    shoulder_right: flex 0
+    elbow_right: flex 0
+    cue "Open the hand and lower the arm"
 
   repeat 2

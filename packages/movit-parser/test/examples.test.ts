@@ -46,8 +46,9 @@ describe("hip-hinge action", () => {
     expect(errors).toEqual([]);
     expect(warnings).toEqual([]);
     const pelvis = ir!.phases[0]!.targets.find((t) => t.boneId === "pelvis")!;
-    // hinge tips the torso forward — same sagittal direction as spine flex (-X).
-    expect(pelvis.euler.x).toBe(-80);
+    // hinge tips the torso forward — same sagittal direction as spine flex (+X,
+    // the axial chain points up).
+    expect(pelvis.euler.x).toBe(80);
   });
 
   it("clamps an over-deep hinge to the pelvis ROM ceiling", () => {
@@ -56,6 +57,6 @@ describe("hip-hinge action", () => {
     expect(warnings).toHaveLength(1);
     expect(warnings[0]!.clamped).toBe(120);
     const pelvis = ir!.phases[0]!.targets.find((t) => t.boneId === "pelvis")!;
-    expect(pelvis.euler.x).toBe(-120);
+    expect(pelvis.euler.x).toBe(120);
   });
 });

@@ -20,7 +20,7 @@ export interface PropScene {
   anchors: Map<string, THREE.Vector3>;
 }
 
-/** Build the declared props (`chair | wall | bar`). Unknown types are ignored. */
+/** Build the declared props (`chair | wall | bar | box | dip-bars`). Unknown types are ignored. */
 export function buildProps(types: string[], material?: THREE.Material): PropScene {
   const group = new THREE.Group();
   group.name = "movit-props";
@@ -60,6 +60,33 @@ export function buildProps(types: string[], material?: THREE.Material): PropScen
       wall.position.set(0, 1.3, -0.34);
       group.add(wall);
       anchors.set("wall", new THREE.Vector3(0, 0.9, -0.29));
+    } else if (type === "dip-bars") {
+      // Parallel dip bars either side of the figure, rails running along Z.
+      // Rail height is set so a straight-arm support holds the feet clear of
+      // the floor. The single `bars` grip anchor sits at the midpoint between
+      // the rails at grip height: pins translate the BODY so the average hand
+      // position meets the anchor, which leaves each authored hand over its
+      // own rail.
+      const railH = 1.1;
+      const halfSpan = 0.22;
+      for (const x of [-halfSpan, halfSpan]) {
+        const rail = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.022, 0.022, 0.9, 12),
+          mat,
+        );
+        rail.rotation.x = Math.PI / 2; // horizontal, along Z
+        rail.position.set(x, railH, 0);
+        group.add(rail);
+        for (const z of [-0.35, 0.35]) {
+          const post = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.026, 0.026, railH, 10),
+            mat,
+          );
+          post.position.set(x, railH / 2, z);
+          group.add(post);
+        }
+      }
+      anchors.set("bars", new THREE.Vector3(0, railH, 0));
     } else if (type === "box") {
       // A low step/plateau placed IN FRONT of the figure (+Z) — the lead foot
       // steps forward and up onto it. Top surface at ~0.30 m; `box` anchor sits

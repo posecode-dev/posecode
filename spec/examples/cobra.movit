@@ -3,19 +3,21 @@ movit stretch "Cobra"
   pose start = prone
 
   step "Lift" 2.5s ease-in-out:
-    spine: extend 25
-    chest: extend 18
-    neck: extend 30
-    shoulders: extend 30
-    elbows: flex 40
-    cue "Press into the hands and lift the chest, rolling the shoulders back"
+    spine: extend 30
+    chest: extend 15
+    neck: extend 25
+    shoulders: flex 50
+    elbows: flex 25
+    reach: hands floor
+    cue "Press the palms into the floor and lift the chest, shoulders rolling back"
 
   step "Lower" 2.5s ease-in-out:
-    spine: flex 0
-    chest: flex 0
-    neck: flex 0
-    shoulders: extend 0
+    spine: extend 0
+    chest: extend 0
+    neck: extend 0
+    shoulders: flex 0
     elbows: flex 0
+    reach: hands floor
     cue "Lower the chest back to the floor with control"
 
   repeat 4

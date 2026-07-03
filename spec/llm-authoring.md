@@ -15,7 +15,7 @@ code block — no prose.
 ```
 movit <kind> "<Name>"          # kind = exercise | stretch | posture
   rig humanoid
-  prop <type>                  # optional: chair | wall | bar (repeatable)
+  prop <type>                  # optional: chair | wall | bar | box | dip-bars (repeatable)
   pose start = <pose>          # neutral | standing | plank | supine | prone | seated
   step "<Phase name>" <Ns> <easing>:   # easing = linear | ease-in | ease-out | ease-in-out
     <joint>: <action> <degrees>
@@ -129,14 +129,15 @@ movit exercise "Deadlift"
     cue "Hinge and reach toward the ankles"
   ```
 
-- **Props** — `prop chair | wall | bar | box` (top level). The chair sits behind
-  the figure (sit-to-stand, box squat), the wall behind that (wall sit), the bar
-  overhead, the box in front (step-ups).
+- **Props** — `prop chair | wall | bar | box | dip-bars` (top level). The chair
+  sits behind the figure (sit-to-stand, box squat), the wall behind that (wall
+  sit), the bar overhead, the box in front (step-ups), and the dip bars either
+  side at hip-press height (`pin: hands bars` + elbow flex = triceps dips).
 - **Pins** — `pin: <effector> <anchor>` moves the whole BODY so the effector sits
   on the anchor (vs `reach`, which moves just the limb). Same effectors as reach,
   including `hands` / `feet`. Use it for hanging and climbing: `pin: hands bar` +
   flexing the elbows = a pull-up; `pin: foot_right box` + straightening the leg =
-  a step-up; `pin: hands seat` + bending the elbows = a triceps dip.
+  a step-up; `pin: hands bars` (dip bars) + bending the elbows = a triceps dip.
 - **Lying / seated** — `pose start = supine | prone | seated` for floor and mat
   work (glute bridge, dead bug, cobra, seated forward fold).
 - **Hands** — `fingers: flex 80` makes a fist; curl individual fingers for shapes

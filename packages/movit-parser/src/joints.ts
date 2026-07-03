@@ -148,13 +148,15 @@ const ACTIONS: Record<string, ActionAxis> = {
   "rotate-out": { axis: "y", sign: -1 },
   supinate: { axis: "y", sign: 1 },
   pronate: { axis: "y", sign: -1 },
-  dorsiflex: { axis: "x", sign: 1 },
-  plantarflex: { axis: "x", sign: -1 },
+  // The foot points FORWARD (+Z): lifting the toes toward the shin
+  // (dorsiflexion) is a -X rotation, pointing them is +X.
+  dorsiflex: { axis: "x", sign: -1 },
+  plantarflex: { axis: "x", sign: 1 },
   // Hip hinge: tip the torso forward over the hip line (deadlift, row, bow,
-  // good-morning). Applied to the `pelvis`; sign -1 tips the figure forward
-  // (same sagittal direction as spine flex). The renderer counter-rotates the
-  // hips so the legs stay planted — see movit-render/src/timeline.ts.
-  hinge: { axis: "x", sign: -1 },
+  // good-morning). Applied to the `pelvis`, whose torso child points UP, so
+  // forward is +X (like spine flexion). The renderer counter-rotates the hips
+  // so the legs stay planted — see movit-render/src/timeline.ts.
+  hinge: { axis: "x", sign: 1 },
 };
 
 /** Every semantic action name the DSL accepts (e.g. "flex", "abduct"). */
@@ -166,13 +168,22 @@ export function actionAxis(action: string): ActionAxis | null {
 }
 
 /**
- * Sagittal flexion direction differs by joint. With every bone resting along
- * -Y, most joints flex toward +Z (anatomically forward / up): hip, shoulder,
- * elbow, spine, neck. The KNEE is the exception — it flexes toward -Z (heel
- * toward the buttock). `extend` is the opposite of `flex`. Used by the resolver
- * to sign flex/extend per joint so a squat folds correctly instead of inverting.
+ * Sagittal flexion direction differs by joint. Limb bones rest along -Y
+ * (their child chain points DOWN), so flexing toward +Z (anatomically
+ * forward: hip, shoulder, elbow, wrist, fingers) is a -X rotation. The AXIAL
+ * chain (spine, chest, neck, head) points UP, so the same forward bend is +X.
+ * The KNEE is the odd limb out — it flexes backward (heel toward the buttock),
+ * +X. `extend` is the opposite of `flex`. Used by the resolver to sign
+ * flex/extend per joint so a squat folds and a crunch curls forward instead
+ * of inverting.
  */
-const FLEXION_SIGN: Record<string, number> = { knee: 1 };
+const FLEXION_SIGN: Record<string, number> = {
+  knee: 1,
+  spine: 1,
+  chest: 1,
+  neck: 1,
+  head: 1,
+};
 
 export function flexionSign(boneType: string): number {
   return FLEXION_SIGN[boneType] ?? -1;

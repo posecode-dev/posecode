@@ -52,8 +52,11 @@ const SKELETON: BoneSpec[] = [
   { id: "knee_right", parent: "hip_right", offset: [0, -0.45, 0], radius: 0.05 },
   { id: "ankle_right", parent: "knee_right", offset: [0, -0.43, 0], radius: 0.04 },
 
-  // Fingers — short single-segment digits off each wrist, splayed in X and
-  // angled slightly forward (+Z, palm-side). One curl DOF each (flex).
+  // Fingers — one curl DOF each (flex), splayed in X and angled slightly
+  // forward (+Z, palm-side). Offsets are the FINGERTIP position; the bone is
+  // placed partway along at the knuckle (KNUCKLE_T) so the wrist-drawn segment
+  // becomes the rigid palm/metacarpal and the bone carries its own digit mesh —
+  // otherwise curling a finger rotates an empty node and the hand never moves.
   { id: "thumb_left", parent: "wrist_left", offset: [0.035, -0.04, 0.025], radius: 0.014 },
   { id: "index_left", parent: "wrist_left", offset: [0.025, -0.085, 0.012], radius: 0.013 },
   { id: "middle_left", parent: "wrist_left", offset: [0.008, -0.092, 0.012], radius: 0.013 },
@@ -66,6 +69,13 @@ const SKELETON: BoneSpec[] = [
   { id: "ring_right", parent: "wrist_right", offset: [0.01, -0.088, 0.012], radius: 0.013 },
   { id: "pinky_right", parent: "wrist_right", offset: [0.028, -0.075, 0.012], radius: 0.012 },
 ];
+
+/** Fraction of the wrist→fingertip span where the knuckle (finger bone) sits. */
+const KNUCKLE_T = 0.55;
+
+function isFinger(id: string): boolean {
+  return /^(thumb|index|middle|ring|pinky)_/.test(id);
+}
 
 /** Build the mannequin. `material` lets the playground theme it. */
 export function buildMannequin(material?: THREE.Material): Mannequin {
@@ -86,7 +96,10 @@ export function buildMannequin(material?: THREE.Material): Mannequin {
   for (const spec of SKELETON) {
     const bone = new THREE.Object3D();
     bone.name = spec.id;
-    bone.position.set(...spec.offset);
+    // Finger bones sit at the knuckle; the offset names the fingertip.
+    const offset = new THREE.Vector3(...spec.offset);
+    if (isFinger(spec.id)) offset.multiplyScalar(KNUCKLE_T);
+    bone.position.copy(offset);
 
     const parent = spec.parent ? bones.get(spec.parent) : root;
     (parent ?? root).add(bone);
@@ -94,11 +107,21 @@ export function buildMannequin(material?: THREE.Material): Mannequin {
 
     // Draw the segment from the parent joint to this joint, on the parent.
     if (spec.parent && spec.radius) {
-      const length = Math.hypot(...spec.offset);
-      const seg = makeSegment(length, spec.radius, mat);
-      orientSegment(seg, new THREE.Vector3(...spec.offset));
+      const seg = makeSegment(offset.length(), spec.radius, mat);
+      orientSegment(seg, offset);
       bones.get(spec.parent)!.add(seg);
     }
+  }
+
+  // Digit meshes ON the finger bones, spanning knuckle → fingertip, so a
+  // finger curl visibly folds at the knuckle.
+  for (const spec of SKELETON) {
+    if (!isFinger(spec.id) || !spec.radius) continue;
+    const full = new THREE.Vector3(...spec.offset);
+    const span = full.clone().multiplyScalar(1 - KNUCKLE_T);
+    const digit = makeSegment(span.length(), spec.radius * 0.92, mat);
+    orientSegment(digit, span);
+    bones.get(spec.id)!.add(digit);
   }
 
   // Head sphere + small hand/foot caps for readability.
