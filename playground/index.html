@@ -3,16 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Movit — describe human movement as text</title>
+    <title>Posecode — describe human movement as text</title>
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3 29 16 16 29 3 16Z' fill='%23c6f24a'/%3E%3C/svg%3E"
     />
     <meta
       name="description"
-      content="Movit is a tiny language LLMs can write to describe human movement — exercises, stretches, posture — rendered as an animated 3D figure in the browser, with every joint clamped to a safe range of motion."
+      content="Posecode is a tiny language LLMs can write to describe human movement — exercises, stretches, posture — rendered as an animated 3D figure in the browser, with every joint clamped to a safe range of motion."
     />
-    <meta property="og:title" content="Movit — human movement, written as text" />
+    <meta property="og:title" content="Posecode — human movement, written as text" />
     <meta
       property="og:description"
       content="A Mermaid-style language for kinematic motion. LLMs write it; the browser renders an animated, anatomically-safe 3D figure."
@@ -32,9 +32,9 @@
 
     <!-- Nav -->
     <header class="nav">
-      <a class="brand" href="./index.html" aria-label="Movit home">
+      <a class="brand" href="./index.html" aria-label="Posecode home">
         <span class="logo" aria-hidden="true">◆</span>
-        <span class="wordmark">Movit</span>
+        <span class="wordmark">Posecode</span>
       </a>
       <nav class="nav-links" aria-label="Primary">
         <a href="#how">How it works</a>
@@ -53,7 +53,7 @@
           Human movement,<br />written as <span class="hl">text</span>.
         </h1>
         <p class="subhead">
-          Movit is a tiny language an LLM can write — for physiotherapy, mobility,
+          Posecode is a tiny language an LLM can write — for physiotherapy, mobility,
           posture, yoga, and training — that renders to an animated 3D figure in the
           browser. Every joint is clamped to a safe range of motion, so the result is
           always anatomically plausible.
@@ -69,11 +69,11 @@
         </p>
       </div>
 
-      <div class="hero-stage reveal" aria-label="Live 3D preview of a Movit movement">
+      <div class="hero-stage reveal" aria-label="Live 3D preview of a Posecode movement">
         <div class="studio">
           <div class="studio-bar" aria-hidden="true">
             <span class="dots"></span>
-            <span class="studio-title">squat.movit</span>
+            <span class="studio-title">squat.posecode</span>
             <span class="studio-live"><i></i>live</span>
           </div>
           <canvas id="hero-canvas"></canvas>
@@ -81,7 +81,7 @@
         </div>
 
         <!-- Overlapping code chip: the text that produces the motion -->
-        <pre class="code-chip" aria-hidden="true"><span class="t-kw">movit</span> <span class="t-kind">exercise</span> <span class="t-str">"Body-weight squat"</span>
+        <pre class="code-chip" aria-hidden="true"><span class="t-kw">posecode</span> <span class="t-kind">exercise</span> <span class="t-str">"Body-weight squat"</span>
   <span class="t-kw">pose</span> start <span class="t-punct">=</span> <span class="t-atom">standing</span>
 
   <span class="t-kw">step</span> <span class="t-str">"Descend"</span> <span class="t-num">1.6s</span> <span class="t-atom">ease-in-out</span><span class="t-punct">:</span>
@@ -142,8 +142,8 @@
       <ol class="how-steps">
         <li class="reveal">
           <span class="how-n">1</span>
-          <h3>An LLM writes <code>.movit</code></h3>
-          <p>Paste the Movit prompt into any model and ask for a movement. It replies with a small, readable document.</p>
+          <h3>An LLM writes <code>.posecode</code></h3>
+          <p>Paste the Posecode prompt into any model and ask for a movement. It replies with a small, readable document.</p>
         </li>
         <li class="reveal">
           <span class="how-n">2</span>
@@ -172,15 +172,15 @@
         <div class="dev-card reveal">
           <h3>MCP server</h3>
           <p>Let any agent validate a movement and get back a render link, natively.</p>
-          <code class="dev-code">npx tsx movit-mcp</code>
+          <code class="dev-code">npx tsx posecode-mcp</code>
         </div>
         <div class="dev-card reveal">
           <h3>VS Code extension</h3>
-          <p>Highlighting, completion, hover docs, and ROM diagnostics for <code>.movit</code> files.</p>
+          <p>Highlighting, completion, hover docs, and ROM diagnostics for <code>.posecode</code> files.</p>
         </div>
         <a class="dev-card reveal" href="https://github.com/a-baran-orhan/movit" target="_blank" rel="noopener">
           <h3>MIT libraries</h3>
-          <p><code>movit-parser</code>, <code>movit-render</code>, <code>movit-share</code> — framework-agnostic, on GitHub.</p>
+          <p><code>posecode-parser</code>, <code>posecode-render</code>, <code>posecode-share</code> — framework-agnostic, on GitHub.</p>
         </a>
       </div>
     </section>
@@ -188,7 +188,7 @@
     <!-- Footer -->
     <footer class="footer">
       <div class="footer-brand">
-        <span class="logo" aria-hidden="true">◆</span> Movit
+        <span class="logo" aria-hidden="true">◆</span> Posecode
         <span class="footer-tag">kinematic motion as text</span>
       </div>
       <p class="footer-note">

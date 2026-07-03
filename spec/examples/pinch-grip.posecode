@@ -1,0 +1,17 @@
+posecode posture "Pinch grip"
+  rig humanoid
+  pose start = standing
+
+  step "Pinch" 1.2s ease-out:
+    thumb_right: flex 55
+    thumb_right: adduct 25
+    index_right: flex 60
+    cue "Bring the thumb and index fingertip together in a pinch"
+
+  step "Release" 1.2s ease-in:
+    thumb_right: flex 0
+    thumb_right: adduct 0
+    index_right: flex 0
+    cue "Open the hand and release"
+
+  repeat 6

@@ -1,0 +1,13 @@
+posecode exercise "Standing hip abduction"
+  rig humanoid
+  pose start = standing
+
+  step "Lift" 1.6s ease-in-out:
+    hip_right: abduct 40
+    cue "Lift the right leg out to the side, keep the torso tall"
+
+  step "Lower" 1.6s ease-in-out:
+    hip_right: abduct 0
+    cue "Lower the leg back to the midline"
+
+  repeat 10

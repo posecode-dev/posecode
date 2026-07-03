@@ -1,102 +1,102 @@
 /** Bundled example documents, loaded as raw text from spec/examples. */
-import squat from "../../spec/examples/squat.movit?raw";
-import biceps from "../../spec/examples/biceps-curl.movit?raw";
-import lateral from "../../spec/examples/lateral-raise.movit?raw";
-import shoulder from "../../spec/examples/shoulder-stretch.movit?raw";
-import fold from "../../spec/examples/forward-fold.movit?raw";
-import neck from "../../spec/examples/neck-rotation.movit?raw";
-import posture from "../../spec/examples/posture-reset.movit?raw";
-import twist from "../../spec/examples/spinal-twist.movit?raw";
-import chair from "../../spec/examples/chair-pose.movit?raw";
-import sideBend from "../../spec/examples/side-bend.movit?raw";
+import squat from "../../spec/examples/squat.posecode?raw";
+import biceps from "../../spec/examples/biceps-curl.posecode?raw";
+import lateral from "../../spec/examples/lateral-raise.posecode?raw";
+import shoulder from "../../spec/examples/shoulder-stretch.posecode?raw";
+import fold from "../../spec/examples/forward-fold.posecode?raw";
+import neck from "../../spec/examples/neck-rotation.posecode?raw";
+import posture from "../../spec/examples/posture-reset.posecode?raw";
+import twist from "../../spec/examples/spinal-twist.posecode?raw";
+import chair from "../../spec/examples/chair-pose.posecode?raw";
+import sideBend from "../../spec/examples/side-bend.posecode?raw";
 
 // Hip-hinge showcases.
-import deadlift from "../../spec/examples/deadlift.movit?raw";
-import bentOverRow from "../../spec/examples/bent-over-row.movit?raw";
+import deadlift from "../../spec/examples/deadlift.posecode?raw";
+import bentOverRow from "../../spec/examples/bent-over-row.posecode?raw";
 
 // Anatomy / education — single-joint range-of-motion demos.
-import shoulderAbduction from "../../spec/examples/shoulder-abduction-demo.movit?raw";
-import hipFlexion from "../../spec/examples/hip-flexion-demo.movit?raw";
-import spineRotation from "../../spec/examples/spine-rotation-demo.movit?raw";
-import elbowForearm from "../../spec/examples/elbow-flexion-pronation.movit?raw";
-import kneeFlexion from "../../spec/examples/knee-flexion-demo.movit?raw";
+import shoulderAbduction from "../../spec/examples/shoulder-abduction-demo.posecode?raw";
+import hipFlexion from "../../spec/examples/hip-flexion-demo.posecode?raw";
+import spineRotation from "../../spec/examples/spine-rotation-demo.posecode?raw";
+import elbowForearm from "../../spec/examples/elbow-flexion-pronation.posecode?raw";
+import kneeFlexion from "../../spec/examples/knee-flexion-demo.posecode?raw";
 
 // Physiotherapy / rehab.
-import heelRaises from "../../spec/examples/heel-raises.movit?raw";
-import hamstringCurl from "../../spec/examples/standing-hamstring-curl.movit?raw";
-import hipAbduction from "../../spec/examples/hip-abduction.movit?raw";
-import goodMorning from "../../spec/examples/good-morning.movit?raw";
+import heelRaises from "../../spec/examples/heel-raises.posecode?raw";
+import hamstringCurl from "../../spec/examples/standing-hamstring-curl.posecode?raw";
+import hipAbduction from "../../spec/examples/hip-abduction.posecode?raw";
+import goodMorning from "../../spec/examples/good-morning.posecode?raw";
 
 // Desk / workplace wellness.
-import shoulderRolls from "../../spec/examples/shoulder-rolls.movit?raw";
-import neckSideStretch from "../../spec/examples/neck-side-stretch.movit?raw";
-import chestOpener from "../../spec/examples/chest-opener.movit?raw";
-import overheadReach from "../../spec/examples/overhead-reach-reset.movit?raw";
+import shoulderRolls from "../../spec/examples/shoulder-rolls.posecode?raw";
+import neckSideStretch from "../../spec/examples/neck-side-stretch.posecode?raw";
+import chestOpener from "../../spec/examples/chest-opener.posecode?raw";
+import overheadReach from "../../spec/examples/overhead-reach-reset.posecode?raw";
 
 // Sports / martial arts / warm-up.
-import frontKick from "../../spec/examples/front-kick.movit?raw";
-import jabCross from "../../spec/examples/jab-cross.movit?raw";
-import horseStance from "../../spec/examples/horse-stance.movit?raw";
-import bow from "../../spec/examples/bow.movit?raw";
-import armCircles from "../../spec/examples/arm-circles.movit?raw";
-import highKneeMarch from "../../spec/examples/high-knee-march.movit?raw";
+import frontKick from "../../spec/examples/front-kick.posecode?raw";
+import jabCross from "../../spec/examples/jab-cross.posecode?raw";
+import horseStance from "../../spec/examples/horse-stance.posecode?raw";
+import bow from "../../spec/examples/bow.posecode?raw";
+import armCircles from "../../spec/examples/arm-circles.posecode?raw";
+import highKneeMarch from "../../spec/examples/high-knee-march.posecode?raw";
 
 // Dance / choreography.
-import demiPlie from "../../spec/examples/demi-plie.movit?raw";
-import releve from "../../spec/examples/releve.movit?raw";
-import tendu from "../../spec/examples/tendu.movit?raw";
-import portDeBras from "../../spec/examples/port-de-bras.movit?raw";
-import dancePhrase from "../../spec/examples/dance-phrase.movit?raw";
+import demiPlie from "../../spec/examples/demi-plie.posecode?raw";
+import releve from "../../spec/examples/releve.posecode?raw";
+import tendu from "../../spec/examples/tendu.posecode?raw";
+import portDeBras from "../../spec/examples/port-de-bras.posecode?raw";
+import dancePhrase from "../../spec/examples/dance-phrase.posecode?raw";
 
 // Reach-to-target IK.
-import touchToes from "../../spec/examples/touch-toes.movit?raw";
-import crossBodyReach from "../../spec/examples/cross-body-reach.movit?raw";
+import touchToes from "../../spec/examples/touch-toes.posecode?raw";
+import crossBodyReach from "../../spec/examples/cross-body-reach.posecode?raw";
 
 // Lying & seated base poses.
-import gluteBridge from "../../spec/examples/glute-bridge.movit?raw";
-import deadBug from "../../spec/examples/dead-bug.movit?raw";
-import cobra from "../../spec/examples/cobra.movit?raw";
-import seatedForwardFold from "../../spec/examples/seated-forward-fold.movit?raw";
+import gluteBridge from "../../spec/examples/glute-bridge.posecode?raw";
+import deadBug from "../../spec/examples/dead-bug.posecode?raw";
+import cobra from "../../spec/examples/cobra.posecode?raw";
+import seatedForwardFold from "../../spec/examples/seated-forward-fold.posecode?raw";
 
 // Scene props + contact anchors.
-import sitToStand from "../../spec/examples/chair-sit-to-stand.movit?raw";
-import boxSquat from "../../spec/examples/box-squat.movit?raw";
-import wallSit from "../../spec/examples/wall-sit.movit?raw";
-import deadHang from "../../spec/examples/dead-hang.movit?raw";
-import hangingKneeRaise from "../../spec/examples/hanging-knee-raise.movit?raw";
+import sitToStand from "../../spec/examples/chair-sit-to-stand.posecode?raw";
+import boxSquat from "../../spec/examples/box-squat.posecode?raw";
+import wallSit from "../../spec/examples/wall-sit.posecode?raw";
+import deadHang from "../../spec/examples/dead-hang.posecode?raw";
+import hangingKneeRaise from "../../spec/examples/hanging-knee-raise.posecode?raw";
 
 // Hand / finger rig.
-import makeAFist from "../../spec/examples/make-a-fist.movit?raw";
-import fingerSpell from "../../spec/examples/finger-spell-demo.movit?raw";
-import handWave from "../../spec/examples/hand-wave.movit?raw";
-import pinchGrip from "../../spec/examples/pinch-grip.movit?raw";
+import makeAFist from "../../spec/examples/make-a-fist.posecode?raw";
+import fingerSpell from "../../spec/examples/finger-spell-demo.posecode?raw";
+import handWave from "../../spec/examples/hand-wave.posecode?raw";
+import pinchGrip from "../../spec/examples/pinch-grip.posecode?raw";
 
 // Strength & core (coverage-gap batch — see docs/coverage-gap.md).
-import plankHold from "../../spec/examples/plank-hold.movit?raw";
-import mountainClimber from "../../spec/examples/mountain-climber.movit?raw";
-import crunch from "../../spec/examples/crunch.movit?raw";
-import bicycleCrunch from "../../spec/examples/bicycle-crunch.movit?raw";
-import supineLegRaise from "../../spec/examples/supine-leg-raise.movit?raw";
-import superman from "../../spec/examples/superman.movit?raw";
-import forwardLunge from "../../spec/examples/forward-lunge.movit?raw";
-import calfRaise from "../../spec/examples/single-leg-calf-raise.movit?raw";
-import jumpingJacks from "../../spec/examples/jumping-jacks.movit?raw";
-import quadStretch from "../../spec/examples/standing-quad-stretch.movit?raw";
-import boxStepTaps from "../../spec/examples/box-step-taps.movit?raw";
+import plankHold from "../../spec/examples/plank-hold.posecode?raw";
+import mountainClimber from "../../spec/examples/mountain-climber.posecode?raw";
+import crunch from "../../spec/examples/crunch.posecode?raw";
+import bicycleCrunch from "../../spec/examples/bicycle-crunch.posecode?raw";
+import supineLegRaise from "../../spec/examples/supine-leg-raise.posecode?raw";
+import superman from "../../spec/examples/superman.posecode?raw";
+import forwardLunge from "../../spec/examples/forward-lunge.posecode?raw";
+import calfRaise from "../../spec/examples/single-leg-calf-raise.posecode?raw";
+import jumpingJacks from "../../spec/examples/jumping-jacks.posecode?raw";
+import quadStretch from "../../spec/examples/standing-quad-stretch.posecode?raw";
+import boxStepTaps from "../../spec/examples/box-step-taps.posecode?raw";
 
 // Contact-pin movements (the body moves relative to a pinned hand/foot).
-import pullUp from "../../spec/examples/pull-up.movit?raw";
-import stepUp from "../../spec/examples/step-up.movit?raw";
-import tricepsDips from "../../spec/examples/triceps-dips.movit?raw";
+import pullUp from "../../spec/examples/pull-up.posecode?raw";
+import stepUp from "../../spec/examples/step-up.posecode?raw";
+import tricepsDips from "../../spec/examples/triceps-dips.posecode?raw";
 
 // Spatial choreography (turn & travel) — the figure turns and moves across the floor.
-import pirouette from "../../spec/examples/pirouette.movit?raw";
-import boxStep from "../../spec/examples/box-step.movit?raw";
-import grapevine from "../../spec/examples/grapevine.movit?raw";
-import waltzBox from "../../spec/examples/waltz-box.movit?raw";
-import chasse from "../../spec/examples/chasse.movit?raw";
-import walkCycle from "../../spec/examples/walk-cycle.movit?raw";
-import quarterTurns from "../../spec/examples/quarter-turns.movit?raw";
+import pirouette from "../../spec/examples/pirouette.posecode?raw";
+import boxStep from "../../spec/examples/box-step.posecode?raw";
+import grapevine from "../../spec/examples/grapevine.posecode?raw";
+import waltzBox from "../../spec/examples/waltz-box.posecode?raw";
+import chasse from "../../spec/examples/chasse.posecode?raw";
+import walkCycle from "../../spec/examples/walk-cycle.posecode?raw";
+import quarterTurns from "../../spec/examples/quarter-turns.posecode?raw";
 
 export type Difficulty = "Beginner" | "Intermediate" | "Advanced";
 

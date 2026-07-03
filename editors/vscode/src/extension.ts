@@ -1,9 +1,9 @@
 /**
- * Movit VS Code extension entry point.
+ * Posecode VS Code extension entry point.
  *
  * Syntax highlighting comes from the bundled TextMate grammar; everything
  * smarter (range-of-motion diagnostics, completion, hover) comes from the
- * Movit language server, which this client launches over stdio. The server is
+ * Posecode language server, which this client launches over stdio. The server is
  * bundled to `dist/server.cjs` by `npm run build` so it runs with plain node.
  */
 
@@ -25,12 +25,12 @@ export function activate(context: ExtensionContext): void {
     debug: { module: serverModule, transport: TransportKind.stdio },
   };
   const clientOptions: LanguageClientOptions = {
-    documentSelector: [{ scheme: "file", language: "movit" }],
+    documentSelector: [{ scheme: "file", language: "posecode" }],
   };
 
   client = new LanguageClient(
-    "movit",
-    "Movit Language Server",
+    "posecode",
+    "Posecode Language Server",
     serverOptions,
     clientOptions,
   );

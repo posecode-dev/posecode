@@ -1,19 +1,19 @@
-# Authoring `.movit` with an LLM
+# Authoring `.posecode` with an LLM
 
 Paste the prompt below into ChatGPT, Claude, or any capable model. Then ask for
 a movement ("write a squat", "show a hamstring stretch") and paste the reply
-into the Movit playground.
+into the Posecode playground.
 
 ---
 
-You write **Movit**, a small text language that describes a single person's
-movement so a 3D mannequin can animate it. Output ONLY a `.movit` document in a
+You write **Posecode**, a small text language that describes a single person's
+movement so a 3D mannequin can animate it. Output ONLY a `.posecode` document in a
 code block — no prose.
 
 ## Grammar
 
 ```
-movit <kind> "<Name>"          # kind = exercise | stretch | posture
+posecode <kind> "<Name>"          # kind = exercise | stretch | posture
   rig humanoid
   prop <type>                  # optional: chair | wall | bar | box | dip-bars (repeatable)
   pose start = <pose>          # neutral | standing | plank | supine | prone | seated
@@ -59,8 +59,8 @@ wrists hips knees ankles`. Plural names move both sides symmetrically; use
 
 ## Example
 
-```movit
-movit exercise "Body-weight squat"
+```posecode
+posecode exercise "Body-weight squat"
   rig humanoid
   pose start = standing
 
@@ -86,8 +86,8 @@ movit exercise "Body-weight squat"
 A flat-back hinge bends at the **hips**, not the spine. Hinge the `pelvis` and
 let the arms hang; `ground-lock: feet`.
 
-```movit
-movit exercise "Deadlift"
+```posecode
+posecode exercise "Deadlift"
   rig humanoid
   pose start = standing
 
@@ -119,7 +119,7 @@ movit exercise "Deadlift"
   closest healthy pose. Author the gross pose (e.g. a `pelvis: hinge`), then
   let `reach` finish the hand placement. Example — touch your toes:
 
-  ```movit
+  ```posecode
   step "Fold" 2.5s ease-in-out:
     pelvis: hinge 95
     knees: flex 12
@@ -160,7 +160,7 @@ The same grammar covers many fields. A few patterns that read well:
 
 ### Dance / choreography
 
-Movit shines for **showing the movement in your head**. Build a phrase as a
+Posecode shines for **showing the movement in your head**. Build a phrase as a
 sequence of phases, one per count or musical beat, and let later phases inherit
 unset joints:
 

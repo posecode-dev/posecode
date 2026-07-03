@@ -1,0 +1,25 @@
+posecode exercise "Forward lunge"
+  rig humanoid
+  pose start = standing
+
+  step "Lunge" 1.6s ease-in-out:
+    hip_right: flex 45
+    knee_right: flex 95
+    hip_left: extend 15
+    knee_left: flex 45
+    ankle_right: dorsiflex 14
+    spine: extend 4
+    ground-lock: feet
+    cue "Step forward and lower the back knee toward the floor"
+
+  step "Drive up" 1.4s ease-out:
+    hip_right: flex 0
+    knee_right: flex 0
+    hip_left: extend 0
+    knee_left: flex 0
+    ankle_right: dorsiflex 0
+    spine: flex 0
+    ground-lock: feet
+    cue "Push through the front heel to stand tall"
+
+  repeat 6

@@ -1,12 +1,12 @@
 /**
- * Movit landing page. Demo-forward: a live hero viewer and an examples gallery
+ * Posecode landing page. Demo-forward: a live hero viewer and an examples gallery
  * whose cards deep-link into the playground via the shared permalink codec.
  * Reuses the same parser, renderer, and share encoding as the tool — no
  * bespoke logic that could drift.
  */
 
-import { parse } from "movit-parser";
-import { buildShareHash } from "movit-share";
+import { parse } from "posecode-parser";
+import { buildShareHash } from "posecode-share";
 import { PRESETS } from "./presets.js";
 import llmPrompt from "../../spec/llm-authoring.md?raw";
 
@@ -24,7 +24,7 @@ const prefersReducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matc
 function initHero(): void {
   const heroCanvas = document.getElementById("hero-canvas") as HTMLCanvasElement | null;
   if (!heroCanvas) return;
-  void import("movit-render").then(({ createViewer }) => {
+  void import("posecode-render").then(({ createViewer }) => {
     const viewer = createViewer(heroCanvas, { autoRotate: !prefersReducedMotion });
     const phaseEl = document.getElementById("hero-phase");
     viewer.onPhase(({ phaseName }) => {

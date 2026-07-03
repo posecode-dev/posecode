@@ -1,5 +1,5 @@
 /**
- * Movit playground wiring: editor → parser → 3D viewer, plus the how-to
+ * Posecode playground wiring: editor → parser → 3D viewer, plus the how-to
  * slide-over and playback UX (phase ribbon, scrubber markers, rep counter).
  *
  * The text in the editor is the single source of truth. On every (debounced)
@@ -7,10 +7,10 @@
  * the side panel. This mirrors how an LLM-authored doc would be pasted in.
  */
 
-import { parse } from "movit-parser";
-import { createViewer } from "movit-render";
-import { buildShareHash, readShareHash } from "movit-share";
-import { createMovitEditor, type MovitEditor } from "./editor.js";
+import { parse } from "posecode-parser";
+import { createViewer } from "posecode-render";
+import { buildShareHash, readShareHash } from "posecode-share";
+import { createPosecodeEditor, type PosecodeEditor } from "./editor.js";
 import { PRESETS } from "./presets.js";
 import { renderWarnings } from "./warnings.js";
 import llmPrompt from "../../spec/llm-authoring.md?raw";
@@ -18,7 +18,7 @@ import llmPrompt from "../../spec/llm-authoring.md?raw";
 const $ = <T extends HTMLElement>(id: string): T =>
   document.getElementById(id) as T;
 
-let editorApi: MovitEditor; // assigned at boot, once the initial doc is known
+let editorApi: PosecodeEditor; // assigned at boot, once the initial doc is known
 const warnings = $<HTMLDivElement>("warnings");
 const presetSel = $<HTMLSelectElement>("preset");
 const canvas = $<HTMLCanvasElement>("canvas");
@@ -365,7 +365,7 @@ if (sharedSource) {
   presetSel.value = PRESETS[0]!.id;
 }
 
-editorApi = createMovitEditor($("editor"), {
+editorApi = createPosecodeEditor($("editor"), {
   doc: initialDoc,
   onChange: scheduleRecompile,
 });

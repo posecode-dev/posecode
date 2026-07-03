@@ -1,12 +1,12 @@
-# Movit — domains & roadmap
+# Posecode — domains & roadmap
 
-Movit's vision is broad: **describe any single-person movement as text and render it
+Posecode's vision is broad: **describe any single-person movement as text and render it
 safely in 3D.** The *protocol* is general; the *current renderer* is deliberately
 scoped (one figure, forward kinematics, ground-locked hands/feet, no props). This
-doc maps the domains Movit can serve, what already works, and what each remaining
+doc maps the domains Posecode can serve, what already works, and what each remaining
 domain needs — so contributions land where they unlock the most.
 
-## Where Movit fits
+## Where Posecode fits
 
 | Domain | Example uses | Status |
 | --- | --- | --- |
@@ -89,6 +89,6 @@ Each prop is a small scene object + an anchor type; movements then reference it
 
 ---
 
-See [`docs/market-research.md`](docs/market-research.md) for where Movit spreads
+See [`docs/market-research.md`](docs/market-research.md) for where Posecode spreads
 fastest, the per-domain go-to-market briefs, and which engine unlock opens which
 locked domain.

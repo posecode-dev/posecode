@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Movit Playground — kinematic motion as text</title>
+    <title>Posecode Playground — kinematic motion as text</title>
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3 29 16 16 29 3 16Z' fill='%23c6f24a'/%3E%3C/svg%3E"
@@ -21,9 +21,9 @@
     <div class="bg-fx" aria-hidden="true"></div>
 
     <header class="topbar">
-      <a class="brand" href="./index.html" aria-label="Movit home">
+      <a class="brand" href="./index.html" aria-label="Posecode home">
         <span class="logo" aria-hidden="true">◆</span>
-        <span class="wordmark">Movit</span>
+        <span class="wordmark">Posecode</span>
         <span class="tag">playground</span>
       </a>
       <div class="topbar-actions">
@@ -59,7 +59,7 @@
         <button
           id="copy-prompt"
           class="btn primary"
-          title="Copy a system prompt that teaches an LLM to write .movit"
+          title="Copy a system prompt that teaches an LLM to write .posecode"
         >
           <span class="lbl">Copy LLM prompt</span>
         </button>
@@ -68,7 +68,7 @@
 
     <div id="intro" class="intro">
       <span class="intro-text">
-        <b>New here?</b> Movit turns text into 3D movement. Copy the LLM prompt,
+        <b>New here?</b> Posecode turns text into 3D movement. Copy the LLM prompt,
         ask any AI for an exercise, paste the result on the left.
       </span>
       <button id="intro-open" class="link">Show me how →</button>
@@ -89,7 +89,7 @@
       <section class="editor-pane">
         <div class="pane-head">
           <span class="traffic" aria-hidden="true"></span>
-          <span class="file-name">movement.movit</span>
+          <span class="file-name">movement.posecode</span>
           <span class="live" aria-hidden="true"><i></i>live</span>
         </div>
         <div class="editor-wrap">
@@ -139,9 +139,9 @@
 
     <!-- How-to slide-over -->
     <div id="scrim" class="scrim" hidden></div>
-    <aside id="howto" class="slideover" hidden aria-label="How to use Movit">
+    <aside id="howto" class="slideover" hidden aria-label="How to use Posecode">
       <header class="slideover-head">
-        <h2>How to use Movit</h2>
+        <h2>How to use Posecode</h2>
         <button id="howto-close" class="x" aria-label="Close">×</button>
       </header>
       <div class="slideover-body">
@@ -150,7 +150,7 @@
             <span class="step-n">1</span>
             <div>
               <b>Copy the prompt.</b> Click <em>Copy LLM prompt</em> (top right). It teaches
-              any model — ChatGPT, Claude, Gemini — to write the Movit language.
+              any model — ChatGPT, Claude, Gemini — to write the Posecode language.
             </div>
           </li>
           <li>
@@ -158,13 +158,13 @@
             <div>
               <b>Ask an LLM for a movement.</b> Paste the prompt, then ask for what you want:
               <em>“write a deadlift”</em>, <em>“a hamstring stretch”</em>, <em>“cat-cow”</em>.
-              It replies with a <code>.movit</code> block.
+              It replies with a <code>.posecode</code> block.
             </div>
           </li>
           <li>
             <span class="step-n">3</span>
             <div>
-              <b>Paste it here.</b> Drop the <code>.movit</code> text into the editor on the
+              <b>Paste it here.</b> Drop the <code>.posecode</code> text into the editor on the
               left and watch it animate. Out-of-range angles are clamped automatically and
               flagged below the editor.
             </div>

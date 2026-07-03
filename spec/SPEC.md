@@ -1,6 +1,6 @@
-# Movit Protocol Specification — v0.1
+# Posecode Protocol Specification — v0.1
 
-Movit is a small text language for describing a single person's **kinematic
+Posecode is a small text language for describing a single person's **kinematic
 movement** so it can be rendered as an animated 3D figure in a web browser.
 
 It is to human movement what Mermaid is to diagrams: an LLM (or a human) writes
@@ -8,8 +8,8 @@ a compact, readable document; a client-side parser + renderer turns it into a
 moving mannequin. The model never produces 3D matrices — it expresses the
 *semantic phases* of a movement, which it already understands.
 
-- **Version keyword:** documents declare nothing; this is `movit 0.1`.
-- **File extension:** `.movit`
+- **Version keyword:** documents declare nothing; this is `posecode 0.1`.
+- **File extension:** `.posecode`
 - **Compute model:** generation is pure text (server-cheap); all 3D math runs
   on the client (Three.js). See the project research §6.
 
@@ -17,11 +17,11 @@ moving mannequin. The model never produces 3D matrices — it expresses the
 
 ## 1. Grammar
 
-Movit is line- and indentation-oriented. Comments start with `#` or `//`.
+Posecode is line- and indentation-oriented. Comments start with `#` or `//`.
 
 ```ebnf
 document   = header { directive } ;
-header     = "movit" kind STRING ;
+header     = "posecode" kind STRING ;
 kind       = "exercise" | "stretch" | "posture" ;       (* free-form word *)
 directive  = rig | prop | pose | step | repeat ;
 rig        = "rig" WORD ;
@@ -158,9 +158,9 @@ research §5.1 normative tables. Selected ceilings (degrees):
 **Start poses:** `neutral`, `standing`, `plank`, `supine` (face-up), `prone`
 (face-down), `seated` (long-sit on the floor).
 
-**IK note:** Three.js's bundled `CCDIKSolver` targets `SkinnedMesh`; the Movit
-mannequin is rigid capsule segments, so Movit implements CCD directly over the
-Object3D bone hierarchy (`movit-render/ik.ts`) for both ground-lock and reach.
+**IK note:** Three.js's bundled `CCDIKSolver` targets `SkinnedMesh`; the Posecode
+mannequin is rigid capsule segments, so Posecode implements CCD directly over the
+Object3D bone hierarchy (`posecode-render/ik.ts`) for both ground-lock and reach.
 Two-person/dual-IK and collision detection remain deferred (research §5.2, §6.2).
 
 ---
@@ -171,7 +171,7 @@ Two-person/dual-IK and collision detection remain deferred (research §5.2, §6.
 angles are in **degrees**.
 
 ```ts
-interface MovitIR {
+interface PosecodeIR {
   version: string;          // "0.1"
   kind: string;             // "exercise" | "stretch" | "posture"
   name: string;
@@ -190,4 +190,4 @@ interface MovitIR {
 ```
 
 See [`llm-authoring.md`](./llm-authoring.md) for the prompt that teaches an LLM
-to write Movit, and [`examples/`](./examples) for complete documents.
+to write Posecode, and [`examples/`](./examples) for complete documents.
