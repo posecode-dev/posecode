@@ -40,6 +40,13 @@ export interface Viewer {
   get duration(): number;
   get time(): number;
   getTimeline(): TimelineInfo | null;
+  /**
+   * Render the current time synchronously and return the frame as a PNG data
+   * URL. Works without preserveDrawingBuffer because the read happens in the
+   * same task as the render (no buffer swap in between). Powers GIF/poster
+   * export and headless capture tooling.
+   */
+  captureFrame(): string;
   onPhase(cb: (info: ViewerPhaseInfo) => void): void;
   onTick(cb: (time: number, duration: number) => void): void;
   onLoop(cb: () => void): void;
@@ -290,6 +297,10 @@ export function createViewer(
         repeat: timeline.repeat,
         segments: timeline.segments,
       };
+    },
+    captureFrame() {
+      frame();
+      return renderer.domElement.toDataURL("image/png");
     },
     onPhase(cb) {
       phaseCb = cb;

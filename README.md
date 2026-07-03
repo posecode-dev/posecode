@@ -4,6 +4,21 @@
 Movit gives them a way to <i>show movement</i> — exercises, physiotherapy, posture —<br/>
 as a tiny human-readable language that renders to an animated 3D figure in the browser.</p>
 
+<p align="center">
+  <a href="https://www.posecode.org/play"><b>▶ Live playground</b></a> ·
+  <a href="spec/SPEC.md">Language spec</a> ·
+  <a href="spec/examples">Examples</a> ·
+  <a href="packages/movit-mcp">MCP server</a>
+</p>
+
+<table align="center">
+  <tr>
+    <td align="center"><img src="docs/media/deadlift.gif" width="230" alt="Deadlift rendered from .movit text"/><br/><sub><code>hips: hinge 70</code> — deadlift</sub></td>
+    <td align="center"><img src="docs/media/squat.gif" width="230" alt="Body-weight squat rendered from .movit text"/><br/><sub><code>knees: flex 95</code> — squat</sub></td>
+    <td align="center"><img src="docs/media/lateral-raise.gif" width="230" alt="Lateral raise rendered from .movit text"/><br/><sub><code>shoulders: abduct 90</code> — lateral raise</sub></td>
+  </tr>
+</table>
+
 ---
 
 ## Why
@@ -46,15 +61,47 @@ movit exercise "Body-weight squat"
 
 ## Try it
 
+**No install:** open the [live playground](https://www.posecode.org/play),
+pick an example, edit the text, watch the figure move. Hit **Copy LLM prompt**
+to get a system prompt that teaches ChatGPT/Claude to write Movit for you —
+or wire up the [MCP server](packages/movit-mcp) so your agent authors,
+validates, and renders movements natively.
+
+**Locally:**
+
 ```bash
 npm install
 npm run dev      # opens the playground (Vite) at http://localhost:5173
-npm test         # parser + renderer test suites
+npm test         # parser + renderer + eval test suites
+npm run eval     # fidelity scorecard: geometric invariants over every example
 ```
 
-In the playground: pick an example, watch it animate, edit the text live, and
-hit **Copy LLM prompt** to get a system prompt that teaches ChatGPT/Claude to
-write Movit for you.
+## Examples
+
+Fourteen ready-to-paste movements live in [`spec/examples`](spec/examples) —
+squat, deadlift, push-up, biceps curl, lateral raise, forward fold, roll-down,
+chair pose, side bend, spinal twist, neck rotation, shoulder stretch, and two
+posture resets. A hip hinge is one line:
+
+```movit
+step "Hinge down" 2s ease-in-out:
+  hips: hinge 70        # closed-chain: torso tips over planted feet
+  knees: flex 20
+  ground-lock: feet
+  cue "Push the hips back, chest up, flat back"
+```
+
+## How Movit stays honest
+
+Two safety layers ship with the language:
+
+- **ROM clamping** — every angle is hard-clamped to healthy range-of-motion
+  tables before rendering; a hallucinated `knee: flex 200` renders at 144°
+  with a warning, never an impossible joint.
+- **Fidelity evals** — [`movit-eval`](packages/movit-eval) re-runs the real
+  parser → FK → ground-lock pipeline headlessly and scores geometric
+  invariants ("a deadlift pitches the torso ≥ 55° with a flat back and
+  vertical shins"). Every example must pass every invariant in CI.
 
 ## Packages
 
@@ -64,6 +111,9 @@ write Movit for you.
 | [`movit-render`](packages/movit-render) | IR → animated low-poly mannequin (Three.js), forward kinematics + ground-lock CCD IK. |
 | [`movit-share`](packages/movit-share) | Encode a `.movit` doc to a URL-safe token so a movement travels as a link. Pure, dependency-free. |
 | [`movit-mcp`](packages/movit-mcp) | MCP server: lets an LLM agent author, ROM-validate, and get a render link for a movement — natively. |
+| [`movit-eval`](packages/movit-eval) | Fidelity harness: headless kinematic probing + biomechanical invariant scoring. |
+| [`movit-language`](packages/movit-language) | Editor smarts (completion, hover docs, diagnostics) shared by CodeMirror and the LSP. |
+| [`movit-lsp`](packages/movit-lsp) | Language Server Protocol server + [VS Code extension](editors/vscode). |
 | [`playground`](playground) | Live editor + 3D viewport + warnings + the LLM prompt + shareable links. |
 
 The protocol and both libraries are **MIT-licensed** — the open core. See

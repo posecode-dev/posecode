@@ -38,6 +38,8 @@ const tabEditor = $<HTMLButtonElement>("tab-editor");
 const tabViewer = $<HTMLButtonElement>("tab-viewer");
 
 const viewer = createViewer(canvas);
+// Exposed for capture/e2e tooling (frame capture drives README GIFs).
+(window as unknown as Record<string, unknown>).__movitViewer = viewer;
 let scrubbing = false;
 let repeat = 1;
 let rep = 1;
