@@ -494,3 +494,16 @@ describe("frontal plane direction", () => {
     }
   });
 });
+
+describe("face marker", () => {
+  it("marks the head's front (+Z) so facing and neck turns are readable", () => {
+    const m = buildMannequin();
+    const face = m.bones.get("head")!.getObjectByName("face");
+    expect(face).toBeTruthy();
+    expect(face!.children.length).toBeGreaterThanOrEqual(3); // nose + two eyes
+    // Every face element sits on the figure's front side of the head ball.
+    for (const part of face!.children) {
+      expect(part.position.z).toBeGreaterThan(0.04);
+    }
+  });
+});

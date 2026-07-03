@@ -103,6 +103,7 @@ export function buildMannequin(material?: THREE.Material): Mannequin {
 
   // Head sphere + small hand/foot caps for readability.
   addBall(bones.get("head")!, 0.12, mat);
+  addFace(bones.get("head")!);
   addBall(bones.get("wrist_left")!, 0.05, mat);
   addBall(bones.get("wrist_right")!, 0.05, mat);
   addFoot(bones.get("ankle_left")!, mat);
@@ -137,6 +138,32 @@ function orientSegment(seg: THREE.Mesh, offset: THREE.Vector3): void {
 function addBall(bone: THREE.Object3D, diameter: number, mat: THREE.Material): void {
   const geo = new THREE.SphereGeometry(diameter / 2, 12, 10);
   bone.add(new THREE.Mesh(geo, mat));
+}
+
+/**
+ * A minimal face — nose wedge + two eye studs — on the head's front (+Z).
+ * The bare sphere hid which way the figure faces, making neck rotations and
+ * turns unreadable; darker studs poke just past the head surface so facing
+ * reads at a glance from any camera angle.
+ */
+function addFace(head: THREE.Object3D): void {
+  const mat = new THREE.MeshStandardMaterial({ color: 0x39424e, roughness: 0.6 });
+  const face = new THREE.Group();
+  face.name = "face";
+
+  // Head ball radius is 0.06 (see addBall(head, 0.12)).
+  const nose = new THREE.Mesh(new THREE.ConeGeometry(0.013, 0.035, 10), mat);
+  nose.rotation.x = Math.PI / 2; // cone +Y → +Z
+  nose.position.set(0, -0.004, 0.064);
+  face.add(nose);
+
+  for (const sx of [-1, 1]) {
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.0095, 10, 8), mat);
+    eye.position.set(sx * 0.024, 0.016, 0.054);
+    face.add(eye);
+  }
+
+  head.add(face);
 }
 
 function addFoot(bone: THREE.Object3D, mat: THREE.Material): void {
