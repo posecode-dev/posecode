@@ -25,7 +25,7 @@ header     = "movit" kind STRING ;
 kind       = "exercise" | "stretch" | "posture" ;       (* free-form word *)
 directive  = rig | prop | pose | step | repeat ;
 rig        = "rig" WORD ;
-prop       = "prop" WORD ;                              (* chair|wall|bar, repeatable *)
+prop       = "prop" WORD ;                              (* chair|wall|bar|box|dip-bars, repeatable *)
 pose       = "pose" "start" "=" WORD ;                  (* neutral|standing|plank|supine|prone|seated *)
 repeat     = "repeat" NUMBER ;
 step       = "step" STRING DURATION easing ":" { child } ;
@@ -134,9 +134,10 @@ research §5.1 normative tables. Selected ceilings (degrees):
    (expressed as a per-axis box in the bone's local Euler frame), so a reach
    toward an unsafe or unreachable target settles on the closest *healthy*
    pose — solved angles obey the same hard limits as authored ones.
-5. **Props** — `prop chair|wall|bar|box` adds a scene object at a fixed default
-   placement (chair/wall behind, bar overhead, box in front); its named anchors
-   become reach/pin targets.
+5. **Props** — `prop chair|wall|bar|box|dip-bars` adds a scene object at a
+   fixed default placement (chair/wall behind, bar overhead, box in front,
+   dip bars either side); its named anchors (`seat`, `wall`, `bar`, `box`,
+   `bars`) become reach/pin targets.
 6. **Pins** — `pin: <effector> <anchor>` translates the whole figure so the
    effector sits on the anchor (effectors accept the same `hands`/`feet` groups
    as reach — `pin: hands bar` pins both). Where ground-lock keeps a foot on

@@ -1,47 +1,38 @@
 movit exercise "Triceps dips"
   rig humanoid
-  prop chair
+  prop dip-bars
   pose start = standing
 
-  step "Sit" 0.8s ease-in-out:
-    hips: flex 0
-    knees: flex 130
-    ground-lock: feet
-    cue "Sit on the edge of the chair, hands beside the hips, feet tucked in"
+  step "Support" 1s ease-out:
+    shoulders: abduct 5
+    elbows: flex 5
+    knees: flex 70
+    ankles: plantarflex 20
+    pin: hands bars
+    cue "Press up to a straight-arm support between the bars"
 
-  step "Support" 0.6s ease-in-out:
-    hips: flex 0
-    knees: flex 130
-    shoulders: extend 25
-    elbows: flex 10
-    pin: hand_left seat
-    pin: hand_right seat
-    cue "Grip the edge and lift the hips just off the seat"
-
-  step "Lower" 1.1s ease-in-out:
-    hips: flex 0
-    knees: flex 130
-    shoulders: extend 25
-    elbows: flex 60
-    pin: hand_left seat
-    pin: hand_right seat
-    cue "Bend the elbows to lower the hips toward the floor"
+  step "Lower" 1.2s ease-in-out:
+    shoulders: extend 30
+    shoulders: abduct 5
+    elbows: flex 90
+    knees: flex 70
+    pin: hands bars
+    cue "Bend the elbows to lower the chest, elbows tracking back"
 
   step "Press" 1s ease-out:
-    hips: flex 0
-    knees: flex 130
-    shoulders: extend 25
-    elbows: flex 10
-    pin: hand_left seat
-    pin: hand_right seat
+    shoulders: extend 0
+    shoulders: abduct 5
+    elbows: flex 5
+    knees: flex 70
+    pin: hands bars
     cue "Press through the palms to straighten the arms"
 
-  step "Stand" 0.8s ease-in:
-    hips: flex 0
-    knees: flex 0
-    shoulders: extend 0
+  step "Dismount" 0.8s ease-in:
+    shoulders: abduct 0
     elbows: flex 0
+    knees: flex 0
+    ankles: plantarflex 0
     ground-lock: feet
-    cue "Step off and stand up"
+    cue "Step down and stand tall"
 
   repeat 8

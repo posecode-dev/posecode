@@ -71,8 +71,10 @@ describe("euler ROM boxes (eulerRomFor)", () => {
   });
 
   it("covers the ankle via dorsiflex/plantarflex and the pelvis via hinge", () => {
-    expect(eulerRomFor("ankle_left")!.x).toEqual({ min: -50, max: 15 });
-    expect(eulerRomFor("pelvis")!.x).toEqual({ min: -120, max: 0 });
+    // Toes point +Z: dorsiflexion (toes up) is -X, plantarflexion +X.
+    expect(eulerRomFor("ankle_left")!.x).toEqual({ min: -15, max: 50 });
+    // The pelvis' torso child points up: the forward hinge is +X.
+    expect(eulerRomFor("pelvis")!.x).toEqual({ min: 0, max: 120 });
   });
 
   it("returns null for a bone without ROM data", () => {

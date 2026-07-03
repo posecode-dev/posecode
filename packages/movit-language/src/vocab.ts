@@ -19,7 +19,7 @@ export const EFFECTORS = ["hands", "feet"];
 
 /** Reach/pin effectors (groups + per-side aliases) — sourced from the parser. */
 export const REACH_EFFECTORS = EFFECTOR_NAMES;
-export const PROPS = ["chair", "wall", "bar", "box"];
+export const PROPS = ["chair", "wall", "bar", "box", "dip-bars"];
 
 /** Top-level directives (excluding the `movit` header keyword). */
 export const TOP_KEYWORDS = ["rig", "prop", "pose", "step", "repeat"];
@@ -31,7 +31,7 @@ export const CHILD_KEYWORDS = ["ground-lock", "reach", "pin", "turn", "travel", 
 export const KEYWORD_DOCS: Record<string, string> = {
   movit: 'Document header — `movit <kind> "<name>"`.',
   rig: "Selects the rig (currently `humanoid`).",
-  prop: "Adds a scene object — `prop chair | wall | bar | box`. Supplies reach anchors.",
+  prop: "Adds a scene object — `prop chair | wall | bar | box | dip-bars`. Supplies reach/pin anchors.",
   pose: "Sets the starting pose — `pose start = standing | neutral | plank | supine | prone | seated`.",
   start: "Used in `pose start = <pose>`.",
   step: 'A movement phase — `step "<name>" <Ns> <easing>:`.',

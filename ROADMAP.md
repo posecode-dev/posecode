@@ -19,7 +19,7 @@ domain needs — so contributions land where they unlock the most.
 | **Sports technique** | Golf swing, tennis serve, throwing, kicking | 🟡 Partial — needs trunk rotation fidelity, weight shift, and implements (club/racket/ball). |
 | **Dance / choreography** | Notating sequences, port de bras, phrases that turn & travel | ✅ Phrases, port de bras, pirouettes, and traveling combos (box-step, grapevine, chassé) work via `turn`/`travel`; partner work is future. |
 | **Martial arts** | Stances, strikes, basic forms | 🟡 Stances/strikes partly work; contact and weapons are future. |
-| **Sign language / gesture** | Finger-spelling, signs, expressive gesture | ⛔ Needs a hand/finger rig (the rig currently ends at the wrist). |
+| **Sign language / gesture** | Finger-spelling, signs, expressive gesture | 🟡 Partial — single-DOF finger curls render visibly (fist, pinch, wave, rough finger-spelling); exact sign language needs multi-joint fingers + wrist orientation. |
 
 ## Engine capabilities that widen the scope
 
@@ -72,14 +72,15 @@ Each prop is a small scene object + an anchor type; movements then reference it
 | **Resistance band** | Band pull-aparts, banded rehab, mobility with tension |
 | **Dumbbell / barbell / kettlebell** | Loaded strength patterns (needs grip + load cues) |
 | **Ball (stability / medicine)** | Core work, balance, throws |
-| **Parallettes / dip station** | Dips, L-sits, push-up variations at height |
+| **Parallettes / dip station** | ✅ Dip bars shipped (`prop dip-bars` — triceps dips). Still future: L-sits, push-up variations at height |
 | **Foam roller** | Self-myofascial release, mobility drills |
 
 ## Current limitations (honest)
 
 - One figure only; partner work and collision are still deferred.
-- A **starter** prop set (chair / wall / bar) — no bench, rings, bands, or loaded
-  implements yet, and props sit at fixed default placements.
+- A **starter** prop set (chair / wall / bar / box / dip bars) — no bench,
+  rings, bands, or loaded implements yet, and props sit at fixed default
+  placements.
 - Props are visual + reach anchors (no physical sit/lean solve).
 - Fingers are **single-DOF** curls — good for grip and rough gesture, not exact
   sign language. The head has no facial articulation.
