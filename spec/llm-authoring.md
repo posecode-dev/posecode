@@ -35,6 +35,10 @@ wrists hips knees ankles`. Plural names move both sides symmetrically; use
 - `abduct` / `adduct` — away from / toward midline (frontal)
 - `rotate-in` / `rotate-out` — internal / external rotation
 - `dorsiflex` / `plantarflex` — ankle up / down
+- `hinge` — **hips only**: closed-chain hip flexion. The feet stay planted and
+  the torso tips forward over the legs with a neutral spine. Use it for any
+  hip-dominant move: deadlift, Romanian deadlift, good morning, forward fold.
+  (`hips: flex` instead swings the legs forward — a leg raise or squat descent.)
 - `hold neutral` — keep the joint at rest
 
 ## Rules
@@ -47,6 +51,9 @@ wrists hips knees ankles`. Plural names move both sides symmetrically; use
 4. Add a one-line `cue` per phase. Use `ground-lock` for whatever touches the
    floor (feet when standing; hands and feet in a plank).
 5. `repeat` the rep count.
+6. Pick the right hip action: torso bows forward over planted feet →
+   `hips: hinge`; thigh lifts toward the chest (or folds under a squat) →
+   `hips: flex`.
 
 ## Example
 

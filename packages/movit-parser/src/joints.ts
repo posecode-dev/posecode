@@ -83,8 +83,16 @@ const ACTIONS: Record<string, ActionAxis> = {
   plantarflex: { axis: "x", sign: -1 },
 };
 
+/**
+ * `hinge` is the closed-chain hip action (deadlift / forward fold): the torso
+ * tips over planted feet instead of the legs swinging forward. It maps to
+ * multiple bones (pelvis + both hips), so it lives outside the single-axis
+ * ACTIONS table and is resolved specially in clamp.ts.
+ */
+export const HINGE_ACTION = "hinge";
+
 /** Every semantic action name the DSL accepts (e.g. "flex", "abduct"). */
-export const ACTION_NAMES = Object.keys(ACTIONS);
+export const ACTION_NAMES = [...Object.keys(ACTIONS), HINGE_ACTION];
 
 /** Map a semantic action to its rotation axis and sign, or null if unknown. */
 export function actionAxis(action: string): ActionAxis | null {
@@ -92,13 +100,24 @@ export function actionAxis(action: string): ActionAxis | null {
 }
 
 /**
- * Sagittal flexion direction differs by joint. With every bone resting along
- * -Y, most joints flex toward +Z (anatomically forward / up): hip, shoulder,
- * elbow, spine, neck. The KNEE is the exception — it flexes toward -Z (heel
- * toward the buttock). `extend` is the opposite of `flex`. Used by the resolver
- * to sign flex/extend per joint so a squat folds correctly instead of inverting.
+ * Sagittal flexion direction differs by joint. Limb bones rest along -Y
+ * (children hang below the joint), and for them a NEGATIVE x rotation flexes
+ * toward +Z — anatomically forward: hip, shoulder, elbow. Exceptions:
+ * - KNEE flexes toward -Z (heel toward the buttock) → +1.
+ * - TORSO chain (pelvis, spine, chest, neck) rests along +Y (children sit
+ *   ABOVE the joint), which mirrors the rotation: a POSITIVE x rotation is
+ *   what bends them toward +Z → +1. Without this the spine bent backward
+ *   while the limbs flexed forward.
+ * `extend` is the opposite of `flex`. Used by the resolver to sign
+ * flex/extend per joint so a squat folds correctly instead of inverting.
  */
-const FLEXION_SIGN: Record<string, number> = { knee: 1 };
+const FLEXION_SIGN: Record<string, number> = {
+  knee: 1,
+  pelvis: 1,
+  spine: 1,
+  chest: 1,
+  neck: 1,
+};
 
 export function flexionSign(boneType: string): number {
   return FLEXION_SIGN[boneType] ?? -1;

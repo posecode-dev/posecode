@@ -1,0 +1,23 @@
+movit stretch "Standing roll-down"
+  rig humanoid
+  pose start = standing
+
+  step "Roll down" 3s ease-in-out:
+    spine: flex 45
+    chest: flex 30
+    neck: flex 20
+    shoulders: flex 95
+    knees: flex 10
+    ground-lock: feet
+    cue "Drop the chin and round down one vertebra at a time"
+
+  step "Roll up" 2.5s ease-in-out:
+    spine: flex 0
+    chest: flex 0
+    neck: flex 0
+    shoulders: flex 0
+    knees: flex 0
+    ground-lock: feet
+    cue "Stack the spine back up to standing"
+
+  repeat 3

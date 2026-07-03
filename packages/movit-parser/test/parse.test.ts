@@ -114,6 +114,83 @@ describe("parse", () => {
     expect(errors[0]!.message).toMatch(/header|must start/i);
   });
 
+  it("resolves torso flexion forward, matching the limbs (positive x)", () => {
+    // Torso bones' children sit at +Y offsets (limbs at -Y), so torso flexion
+    // needs the opposite euler sign to bend the same world direction (+Z).
+    const src = [
+      'movit stretch "Fold"',
+      "  rig humanoid",
+      '  step "Bend" 1s linear:',
+      "    spine: flex 45",
+      "    neck: flex 20",
+    ].join("\n");
+    const { ir, errors } = parse(src);
+    expect(errors).toEqual([]);
+    const targets = ir!.phases[0]!.targets;
+    expect(targets.find((t) => t.boneId === "spine")!.euler.x).toBe(45);
+    expect(targets.find((t) => t.boneId === "neck")!.euler.x).toBe(20);
+  });
+
+  it("resolves a hip hinge into pelvis rotation + hip counter-rotation", () => {
+    const src = [
+      'movit exercise "Deadlift"',
+      "  rig humanoid",
+      '  step "Hinge" 2s ease-in-out:',
+      "    hips: hinge 70",
+      "    knees: flex 20",
+      "    ground-lock: feet",
+    ].join("\n");
+    const { ir, errors, warnings } = parse(src);
+    expect(errors).toEqual([]);
+    expect(warnings).toEqual([]);
+    const targets = ir!.phases[0]!.targets;
+    // Pelvis tips the torso forward (+x); both hips counter-rotate so the
+    // legs stay vertical in world space.
+    expect(targets.find((t) => t.boneId === "pelvis")!.euler.x).toBe(70);
+    expect(targets.find((t) => t.boneId === "hip_left")!.euler.x).toBe(-70);
+    expect(targets.find((t) => t.boneId === "hip_right")!.euler.x).toBe(-70);
+    // Explicit knee targets are untouched by the hinge.
+    expect(targets.find((t) => t.boneId === "knee_left")!.euler.x).toBe(20);
+  });
+
+  it("clamps a hinge beyond hip flexion ROM and records warnings", () => {
+    const src = [
+      'movit exercise "Overfold"',
+      "  rig humanoid",
+      '  step "Hinge" 1s linear:',
+      "    hips: hinge 170",
+    ].join("\n");
+    const { ir, warnings } = parse(src);
+    expect(warnings).toHaveLength(2); // hip_left + hip_right
+    expect(warnings[0]!.action).toBe("hinge");
+    expect(warnings[0]!.clamped).toBe(135);
+    const targets = ir!.phases[0]!.targets;
+    expect(targets.find((t) => t.boneId === "pelvis")!.euler.x).toBe(135);
+    expect(targets.find((t) => t.boneId === "hip_left")!.euler.x).toBe(-135);
+  });
+
+  it("rejects hinge on joints other than hips", () => {
+    const src = [
+      'movit exercise "Bad hinge"',
+      "  rig humanoid",
+      '  step "Move" 1s linear:',
+      "    knees: hinge 30",
+    ].join("\n");
+    const { errors } = parse(src);
+    expect(errors.some((e) => /hinge.*hips/i.test(e.message))).toBe(true);
+  });
+
+  it("requires an angle for hinge", () => {
+    const src = [
+      'movit exercise "No angle"',
+      "  rig humanoid",
+      '  step "Move" 1s linear:',
+      "    hips: hinge",
+    ].join("\n");
+    const { errors } = parse(src);
+    expect(errors.some((e) => /angle/i.test(e.message))).toBe(true);
+  });
+
   it("rejects an unknown easing", () => {
     const src = [
       'movit exercise "Bad easing"',

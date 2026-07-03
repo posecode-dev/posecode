@@ -34,4 +34,7 @@ export const KEYWORD_DOCS: Record<string, string> = {
   "ground-lock": "Pins effectors (hands / feet) to the floor for this phase.",
   cue: "A short coaching cue shown while this phase plays.",
   hold: "Keep the joint at its neutral / rest angle.",
+  hinge:
+    "Hips only: closed-chain hip flexion — the torso tips over planted feet " +
+    "with a neutral spine (deadlift / forward fold).",
 };

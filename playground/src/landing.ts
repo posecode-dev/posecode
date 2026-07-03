@@ -42,7 +42,7 @@ function initHero(): void {
 if ("requestIdleCallback" in window) {
   requestIdleCallback(initHero, { timeout: 1200 });
 } else {
-  window.setTimeout(initHero, 200);
+  setTimeout(initHero, 200);
 }
 
 // --- Examples gallery: each card opens the movement in the playground -------

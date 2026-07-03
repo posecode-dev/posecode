@@ -71,11 +71,26 @@ where the previous phase left it).
 | `rotate-in` / `rotate-out` | Y (longitudinal) | internal / external rotation |
 | `supinate` / `pronate` | Y | forearm turn |
 | `dorsiflex` / `plantarflex` | X | ankle up / down |
+| `hinge` | X (multi-bone) | closed-chain hip flexion — see below |
 | `hold neutral` | — | keep at rest |
 
 **Coordinate convention:** rest pose is standing, arms at sides, facing +Z. The
 renderer's mannequin is built in this same convention so the parser's resolved
-Euler angles apply directly.
+Euler angles apply directly. Flexion always bends toward +Z (anatomically
+forward): limb bones hang along −Y and torso-chain bones (pelvis, spine, chest,
+neck) stack along +Y, so the resolver signs the rotation per joint to keep the
+world-space direction consistent.
+
+### 3.1 `hinge` — the hip hinge
+
+`hips: hinge <deg>` describes **closed-chain** hip flexion: the feet stay
+planted and the torso tips over the femurs — a deadlift, Romanian deadlift,
+good morning, or forward fold. (Open-chain `hips: flex` swings the free leg
+forward instead.) The resolver expands it into a pelvis pitch of `<deg>` plus
+an equal counter-rotation on both hips, so the legs remain a vertical column
+while the upper body hinges with a neutral spine. It applies only to the
+`hips` group and is clamped by the hip-flexion ROM (135°). Combine with
+`spine: flex` for a rounded fold or `knees: flex` for soft knees.
 
 ---
 
@@ -89,9 +104,10 @@ research §5.1 normative tables. Selected ceilings (degrees):
 | --- | --- | --- | --- | --- |
 | shoulder | 180 | 60 | 180 | rot-in 70 / rot-out 90 |
 | elbow | 154 | 10 | — | supinate 92 / pronate 84 |
-| hip | 135 | 20 | 45 | — |
+| hip | 135 | 20 | 45 | hinge 135 |
 | knee | 144 | 5 | — | — |
 | ankle | — | — | — | dorsiflex 15 / plantarflex 50 |
+| pelvis | 30 | 20 | 15 | rotate 15 |
 | spine | 90 | 30 | 35 | rotate 45 |
 | neck | 50 | 60 | 45 | rotate 80 |
 

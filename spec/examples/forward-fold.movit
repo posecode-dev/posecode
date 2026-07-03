@@ -1,23 +1,23 @@
-movit stretch "Standing roll-down"
+movit stretch "Standing forward fold"
   rig humanoid
   pose start = standing
 
-  step "Roll down" 3s ease-in-out:
-    spine: flex 45
-    chest: flex 30
-    neck: flex 20
-    shoulders: flex 95
-    knees: flex 10
+  step "Fold" 3s ease-in-out:
+    hips: hinge 90
+    spine: flex 30
+    neck: flex 15
+    shoulders: flex 120
+    knees: flex 8
     ground-lock: feet
-    cue "Drop the chin and round down one vertebra at a time"
+    cue "Hinge at the hips and let the arms hang heavy"
 
-  step "Roll up" 2.5s ease-in-out:
+  step "Rise" 2.5s ease-in-out:
+    hips: hinge 0
     spine: flex 0
-    chest: flex 0
     neck: flex 0
     shoulders: flex 0
     knees: flex 0
     ground-lock: feet
-    cue "Stack the spine back up to standing"
+    cue "Press the feet down and hinge back up to standing"
 
-  repeat 3
+  repeat 2

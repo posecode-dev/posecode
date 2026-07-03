@@ -55,6 +55,52 @@ describe("timeline", () => {
   });
 });
 
+describe("pose directions (world space)", () => {
+  function poseAtEnd(src: string) {
+    const { ir, errors } = parse(src);
+    expect(errors).toEqual([]);
+    const m = buildMannequin();
+    const tl = buildTimeline(ir!);
+    tl.sample(tl.segments[0]!.end - 1e-6, m.bones);
+    m.root.updateMatrixWorld(true);
+    return m;
+  }
+  const world = (m: ReturnType<typeof buildMannequin>, id: string) =>
+    m.bones.get(id)!.getWorldPosition(new THREE.Vector3());
+  const doc = (...lines: string[]) =>
+    ['movit exercise "t"', "  rig humanoid", '  step "go" 2s linear:', ...lines.map((l) => `    ${l}`)].join("\n");
+
+  it("spine flexion bends the head forward (+Z), the same side as the toes", () => {
+    const m = poseAtEnd(doc("spine: flex 45"));
+    expect(world(m, "head").z).toBeGreaterThan(0.15);
+  });
+
+  it("hip hinge tips the torso over the feet while the legs stay vertical", () => {
+    const m = poseAtEnd(doc("hips: hinge 70", "ground-lock: feet"));
+    // Torso pitched well forward…
+    expect(world(m, "head").z).toBeGreaterThan(0.35);
+    expect(world(m, "head").y).toBeLessThan(1.3);
+    // …while the legs stay a vertical column: knee directly below the hip.
+    const hip = world(m, "hip_left");
+    const knee = world(m, "knee_left");
+    const ankle = world(m, "ankle_left");
+    expect(Math.abs(knee.z - hip.z)).toBeLessThan(0.03);
+    expect(Math.abs(ankle.z - knee.z)).toBeLessThan(0.03);
+  });
+
+  it("hip hinge is a hinge, not a spinal roll: spine stays neutral", () => {
+    const m = poseAtEnd(doc("hips: hinge 70"));
+    // Neck→head direction should still align with the chest→neck direction
+    // (straight back), unlike a roll-down which curls the spine.
+    const chest = world(m, "chest");
+    const neck = world(m, "neck");
+    const head = world(m, "head");
+    const a = neck.clone().sub(chest).normalize();
+    const b = head.clone().sub(neck).normalize();
+    expect(a.dot(b)).toBeGreaterThan(0.99);
+  });
+});
+
 describe("ccd ik", () => {
   it("brings an effector close to its target", () => {
     const root = new THREE.Object3D();

@@ -15,7 +15,7 @@
     "coverage": "vitest run --coverage",
     "dev": "npm run dev -w playground",
     "build": "npm run build -w playground",
-    "typecheck": "tsc -b --pretty"
+    "typecheck": "tsc --noEmit -p packages/movit-parser && tsc --noEmit -p packages/movit-share && tsc --noEmit -p packages/movit-render && tsc --noEmit -p packages/movit-language && tsc --noEmit -p packages/movit-lsp && tsc --noEmit -p packages/movit-mcp && tsc --noEmit -p playground && tsc --noEmit -p editors/vscode"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^2.1.8",

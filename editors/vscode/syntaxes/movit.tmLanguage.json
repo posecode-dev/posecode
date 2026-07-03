@@ -37,7 +37,7 @@
     },
     "actions": {
       "name": "keyword.operator.movit",
-      "match": "\\b(flex|extend|abduct|adduct|rotate-in|rotate-out|supinate|pronate|dorsiflex|plantarflex)\\b"
+      "match": "\\b(flex|extend|abduct|adduct|rotate-in|rotate-out|supinate|pronate|dorsiflex|plantarflex|hinge)\\b"
     },
     "joints": {
       "name": "variable.other.movit",

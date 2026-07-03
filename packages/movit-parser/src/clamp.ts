@@ -17,7 +17,14 @@ import type {
 } from "./types.js";
 import { MOVIT_VERSION } from "./types.js";
 import type { AstDoc, AstStep } from "./parser.js";
-import { actionAxis, boneType, expandJoint, flexionSign, isLeft } from "./joints.js";
+import {
+  HINGE_ACTION,
+  actionAxis,
+  boneType,
+  expandJoint,
+  flexionSign,
+  isLeft,
+} from "./joints.js";
 import { clampAngle, romFor } from "./rom.js";
 
 export interface ResolveResult {
@@ -67,6 +74,13 @@ function resolveStep(
     // `hold <pose>` keeps the joint at neutral.
     if (target.action === "hold") {
       for (const bone of bones) ensure(byBone, bone);
+      continue;
+    }
+
+    // `hinge` is closed-chain and multi-bone (pelvis + both hips), so it
+    // can't go through the single-axis action table below.
+    if (target.action === HINGE_ACTION) {
+      resolveHinge(target, step.name, byBone, warnings, errors);
       continue;
     }
 
@@ -121,6 +135,55 @@ function resolveStep(
     groundLock: step.groundLock,
     ...(step.cue ? { cue: step.cue } : {}),
   };
+}
+
+/**
+ * Resolve `hips: hinge θ` — the closed-chain hip flexion of a deadlift or
+ * forward fold. Open-chain hip flexion swings the free leg forward; with the
+ * feet planted, the same joint motion instead tips the torso over the femurs.
+ * The rig expresses that as: rotate the pelvis forward by θ (the whole upper
+ * body pitches, spine staying neutral) and counter-rotate both hips by θ so
+ * the legs remain a vertical column. Clamped by hip-flexion ROM.
+ */
+function resolveHinge(
+  target: AstStep["targets"][number],
+  phaseName: string,
+  byBone: Map<string, EulerDeg>,
+  warnings: Warning[],
+  errors: ParseError[],
+): void {
+  if (target.joint !== "hips") {
+    errors.push({
+      line: target.line,
+      message: `action "hinge" only applies to "hips" (got "${target.joint}")`,
+    });
+    return;
+  }
+  if (target.degrees === null) {
+    errors.push({ line: target.line, message: `action "hinge" requires an angle` });
+    return;
+  }
+
+  const hipBones = expandJoint("hips");
+  let clamped = target.degrees;
+  for (const bone of hipBones) {
+    clamped = clampAngle(bone, HINGE_ACTION, target.degrees);
+    if (clamped !== target.degrees) {
+      warnings.push({
+        line: target.line,
+        phase: phaseName,
+        joint: bone,
+        action: HINGE_ACTION,
+        requested: target.degrees,
+        clamped,
+        limit: romFor(bone, HINGE_ACTION)!,
+      });
+    }
+  }
+
+  // Pelvis rests along +Y, so +x pitches the torso toward +Z (forward).
+  ensure(byBone, "pelvis").x = clamped;
+  for (const bone of hipBones) ensure(byBone, bone).x = -clamped;
 }
 
 function ensure(map: Map<string, EulerDeg>, bone: string): EulerDeg {

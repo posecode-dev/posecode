@@ -41,6 +41,9 @@ const ROM: Record<string, ActionLimits> = {
   // --- Lower extremity (research Table 2) ---
   hip: {
     flex: { min: 0, max: 135 },
+    // Closed-chain hip flexion (torso over femur — deadlift / forward fold).
+    // Same anatomical joint and ceiling as open-chain flexion.
+    hinge: { min: 0, max: 135 },
     extend: { min: 0, max: 20 },
     abduct: { min: 0, max: 45 },
     adduct: { min: 0, max: 30 },
@@ -56,6 +59,14 @@ const ROM: Record<string, ActionLimits> = {
     plantarflex: { min: 0, max: 50 },
   },
   // --- Axial (conservative literature values) ---
+  pelvis: {
+    flex: { min: 0, max: 30 }, // anterior tilt
+    extend: { min: 0, max: 20 }, // posterior tilt
+    abduct: { min: 0, max: 15 }, // lateral tilt
+    adduct: { min: 0, max: 15 },
+    "rotate-in": { min: 0, max: 15 },
+    "rotate-out": { min: 0, max: 15 },
+  },
   spine: {
     flex: { min: 0, max: 90 },
     extend: { min: 0, max: 30 },

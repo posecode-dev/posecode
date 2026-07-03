@@ -1,0 +1,19 @@
+movit exercise "Deadlift"
+  rig humanoid
+  pose start = standing
+
+  step "Hinge down" 2s ease-in-out:
+    hips: hinge 70
+    knees: flex 20
+    shoulders: flex 70
+    ground-lock: feet
+    cue "Push the hips back, chest up, flat back"
+
+  step "Stand tall" 1.5s ease-out:
+    hips: hinge 0
+    knees: flex 0
+    shoulders: flex 0
+    ground-lock: feet
+    cue "Drive the hips forward to lock out"
+
+  repeat 5
