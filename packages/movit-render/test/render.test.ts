@@ -88,6 +88,20 @@ describe("pose directions (world space)", () => {
     expect(Math.abs(ankle.z - knee.z)).toBeLessThan(0.03);
   });
 
+  it("shoulder abduction raises the arms OUTWARD, away from the midline", () => {
+    const m = poseAtEnd(doc("shoulders: abduct 90"));
+    // Left arm hangs from +X; abduction must move it further +X (and the
+    // right arm further -X), not cross them through the torso.
+    expect(world(m, "wrist_left").x).toBeGreaterThan(0.5);
+    expect(world(m, "wrist_right").x).toBeLessThan(-0.5);
+  });
+
+  it("hip abduction moves the legs apart, not into each other", () => {
+    const m = poseAtEnd(doc("hips: abduct 30"));
+    expect(world(m, "ankle_left").x).toBeGreaterThan(world(m, "hip_left").x + 0.1);
+    expect(world(m, "ankle_right").x).toBeLessThan(world(m, "hip_right").x - 0.1);
+  });
+
   it("hip hinge is a hinge, not a spinal roll: spine stays neutral", () => {
     const m = poseAtEnd(doc("hips: hinge 70"));
     // Neck→head direction should still align with the chest→neck direction

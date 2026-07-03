@@ -13,6 +13,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import type { MovitIR } from "movit-parser";
 import { buildMannequin, type Mannequin } from "./mannequin.js";
 import { buildTimeline, type BuiltTimeline, type PhaseSegment } from "./timeline.js";
+import { applyGroundLock, groundFigure } from "./groundlock.js";
 
 const DEG = Math.PI / 180;
 
@@ -159,20 +160,6 @@ export function createViewer(
     root.updateMatrixWorld(true);
   }
 
-  function groundFigure(): void {
-    mannequin.root.updateMatrixWorld(true);
-    let minY = Infinity;
-    for (const id of ["wrist_left", "wrist_right", "ankle_left", "ankle_right"]) {
-      const node = mannequin.bones.get(id);
-      if (!node) continue;
-      minY = Math.min(minY, node.getWorldPosition(new THREE.Vector3()).y);
-    }
-    if (Number.isFinite(minY)) {
-      mannequin.root.position.y -= minY;
-      mannequin.root.updateMatrixWorld(true);
-    }
-  }
-
   function captureGroundTargets(): void {
     // "Ground-lock" means HOLD the effector where the grounded base pose placed
     // it — not drag it to y=0. groundFigure() already set the floor contact.
@@ -182,83 +169,6 @@ export function createViewer(
         const node = mannequin.bones.get(id);
         if (node) groundTargets.set(id, node.getWorldPosition(new THREE.Vector3()));
       }
-    }
-  }
-
-  function activeEffectorIds(active: string[]): string[] {
-    const ids = new Set<string>();
-    for (const group of active) {
-      for (const id of mannequin.effectors[group] ?? []) ids.add(id);
-    }
-    return [...ids];
-  }
-
-  /** Average world position of a set of effector bones. */
-  function avgWorld(ids: string[]): THREE.Vector3 {
-    const p = new THREE.Vector3();
-    let n = 0;
-    for (const id of ids) {
-      const node = mannequin.bones.get(id);
-      if (!node) continue;
-      p.add(node.getWorldPosition(new THREE.Vector3()));
-      n++;
-    }
-    return n > 0 ? p.multiplyScalar(1 / n) : p;
-  }
-
-  const ROOT_X = new THREE.Vector3(1, 0, 0);
-
-  /** Rotate the whole figure about a world-space pivot (axis through pivot). */
-  function rotateRootAboutPivot(pivot: THREE.Vector3, angle: number): void {
-    const q = new THREE.Quaternion().setFromAxisAngle(ROOT_X, angle);
-    mannequin.root.position.sub(pivot).applyQuaternion(q).add(pivot);
-    mannequin.root.quaternion.premultiply(q);
-    mannequin.root.updateMatrixWorld(true);
-  }
-
-  /**
-   * Ground-lock = floating-root contact solving, tuned per support type:
-   *
-   * - **Hands + feet (push-up / plank):** pivot the whole rigid body about the
-   *   foot line (the toes stay planted) until the hands reach the floor. As the
-   *   elbows fold (FK), the hands rise toward the shoulders, so the body tips
-   *   down around the toes — the torso lowers in one straight line, a real
-   *   push-up. Rotating about an X-axis through the foot midpoint keeps both
-   *   feet exactly planted (they differ from the pivot only along X).
-   * - **Feet only (squat / roll-down):** drop the body vertically so the feet
-   *   stay planted while the legs keep their authored FK bend — the pelvis
-   *   lowers. Legs are never CCD-solved (that would overwrite the squat pose).
-   */
-  function applyGroundLock(active: string[]): void {
-    if (active.length === 0) return;
-    const ids = activeEffectorIds(active);
-    const hands = ids.filter((id) => id.startsWith("wrist"));
-    const feet = ids.filter((id) => id.startsWith("ankle"));
-
-    if (hands.length > 0 && feet.length > 0) {
-      const pivot = avgWorld(feet);
-      // Newton iterations: rotate about the toes until avg hand height = 0.
-      for (let i = 0; i < 8; i++) {
-        const y0 = avgWorld(hands).y;
-        if (Math.abs(y0) < 0.004) break;
-        rotateRootAboutPivot(pivot, 0.01);
-        const y1 = avgWorld(hands).y;
-        rotateRootAboutPivot(pivot, -0.01);
-        const deriv = (y1 - y0) / 0.01;
-        if (Math.abs(deriv) < 1e-4) break;
-        rotateRootAboutPivot(pivot, THREE.MathUtils.clamp(-y0 / deriv, -0.35, 0.35));
-      }
-      return;
-    }
-
-    if (feet.length > 0) {
-      let sumY = 0;
-      for (const id of feet) {
-        const node = mannequin.bones.get(id);
-        if (node) sumY += node.getWorldPosition(new THREE.Vector3()).y;
-      }
-      mannequin.root.position.y -= sumY / feet.length;
-      mannequin.root.updateMatrixWorld(true);
     }
   }
 
@@ -287,7 +197,7 @@ export function createViewer(
     if (timeline) {
       const info = timeline.sample(time, mannequin.bones);
       mannequin.root.updateMatrixWorld(true);
-      applyGroundLock(info.groundLock);
+      applyGroundLock(mannequin, info.groundLock);
       if (info.phaseName !== lastPhaseName) {
         lastPhaseName = info.phaseName;
         phaseCb({ phaseName: info.phaseName, ...(info.cue ? { cue: info.cue } : {}) });
@@ -338,7 +248,7 @@ export function createViewer(
       applyBaseRoot();
       timeline.sample(0, mannequin.bones);
       mannequin.root.updateMatrixWorld(true);
-      groundFigure();
+      groundFigure(mannequin);
       captureGroundTargets();
       frameCamera();
     },
@@ -411,4 +321,6 @@ function enableShadows(root: THREE.Object3D): void {
 export { buildMannequin } from "./mannequin.js";
 export { buildTimeline } from "./timeline.js";
 export { solveCCD } from "./ik.js";
+export { applyGroundLock, groundFigure } from "./groundlock.js";
+export type { Mannequin } from "./mannequin.js";
 export type { PhaseSegment } from "./timeline.js";

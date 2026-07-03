@@ -73,8 +73,11 @@ export interface ActionAxis {
 const ACTIONS: Record<string, ActionAxis> = {
   flex: { axis: "x", sign: 1 },
   extend: { axis: "x", sign: -1 },
-  abduct: { axis: "z", sign: 1 },
-  adduct: { axis: "z", sign: -1 },
+  // For a limb hanging along -Y, a NEGATIVE local-z rotation swings it away
+  // from the midline on the right side; left-side bones mirror z, giving the
+  // matching outward swing. (A +1 sign crossed the arms through the torso.)
+  abduct: { axis: "z", sign: -1 },
+  adduct: { axis: "z", sign: 1 },
   "rotate-in": { axis: "y", sign: 1 },
   "rotate-out": { axis: "y", sign: -1 },
   supinate: { axis: "y", sign: 1 },
