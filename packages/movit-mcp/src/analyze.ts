@@ -11,7 +11,7 @@ import { parse, type Warning } from "movit-parser";
 import { buildShareHash } from "movit-share";
 
 /** Production playground that renders a shared `.movit` link. */
-export const DEFAULT_BASE_URL = "https://movit-fawn.vercel.app";
+export const DEFAULT_BASE_URL = "https://www.posecode.org";
 
 export interface PhaseSummary {
   name: string;
