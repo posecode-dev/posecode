@@ -1,0 +1,13 @@
+posecode stretch "Hip flexion (ROM demo)"
+  rig humanoid
+  pose start = standing
+
+  step "Lift" 2.5s ease-in-out:
+    hip_right: flex 90
+    cue "Raise the straight right leg forward — sagittal-plane hip flexion"
+
+  step "Lower" 2.5s ease-in-out:
+    hip_right: flex 0
+    cue "Lower the leg back under the hip"
+
+  repeat 4

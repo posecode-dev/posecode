@@ -1,0 +1,26 @@
+posecode exercise "Box step taps"
+  rig humanoid
+  prop box
+  pose start = standing
+
+  step "Right tap" 0.6s ease-out:
+    hip_right: flex 70
+    knee_right: flex 90
+    cue "Tap the right foot lightly on top of the box"
+
+  step "Right down" 0.5s ease-in:
+    hip_right: flex 0
+    knee_right: flex 0
+    cue "Return the right foot to the floor"
+
+  step "Left tap" 0.6s ease-out:
+    hip_left: flex 70
+    knee_left: flex 90
+    cue "Tap the left foot on the box"
+
+  step "Left down" 0.5s ease-in:
+    hip_left: flex 0
+    knee_left: flex 0
+    cue "Back to the floor — keep a light, quick rhythm"
+
+  repeat 6

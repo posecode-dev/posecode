@@ -1,0 +1,15 @@
+posecode exercise "Lateral raise"
+  rig humanoid
+  pose start = standing
+
+  step "Raise" 1.4s ease-out:
+    shoulders: abduct 90
+    elbows: flex 10
+    cue "Lift out to shoulder height, soft elbows"
+
+  step "Lower" 1.6s ease-in:
+    shoulders: abduct 0
+    elbows: flex 0
+    cue "Lower slowly, resist on the way down"
+
+  repeat 8

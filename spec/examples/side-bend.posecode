@@ -1,0 +1,17 @@
+posecode stretch "Standing side bend"
+  rig humanoid
+  pose start = standing
+
+  step "Reach over" 3s ease-in-out:
+    shoulders: flex 175
+    spine: abduct 30
+    ground-lock: feet
+    cue "Reach tall, then arc gently over to one side"
+
+  step "Return" 2.5s ease-in-out:
+    shoulders: flex 0
+    spine: abduct 0
+    ground-lock: feet
+    cue "Lengthen back up through the crown of the head"
+
+  repeat 3

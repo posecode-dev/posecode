@@ -1,0 +1,19 @@
+posecode stretch "Chest opener"
+  rig humanoid
+  pose start = standing
+
+  step "Open" 3s ease-in-out:
+    shoulders: extend 40
+    chest: extend 18
+    spine: extend 12
+    ground-lock: feet
+    cue "Reach the arms back and lift the chest — open the front line"
+
+  step "Release" 2.5s ease-in-out:
+    shoulders: extend 0
+    chest: flex 0
+    spine: flex 0
+    ground-lock: feet
+    cue "Return to neutral, ribs stacked over the hips"
+
+  repeat 4

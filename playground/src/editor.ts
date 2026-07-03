@@ -1,8 +1,8 @@
 /**
- * The Movit code editor — a CodeMirror 6 setup that turns the plain textarea
+ * The Posecode code editor — a CodeMirror 6 setup that turns the plain textarea
  * into a real editor: syntax highlighting, inline ROM/error squiggles,
  * context-aware autocomplete, and hover docs. All language smarts come from
- * `movit-language` (shared with the LSP), so the editor never reimplements them.
+ * `posecode-language` (shared with the LSP), so the editor never reimplements them.
  */
 
 import { EditorState, StateEffect, StateField } from "@codemirror/state";
@@ -45,12 +45,12 @@ import {
   getCompletions,
   getHover,
   type CompletionKind,
-} from "movit-language";
+} from "posecode-language";
 
 // --- Syntax highlighting ----------------------------------------------------
 
 const KEYWORDS = new Set([
-  "movit",
+  "posecode",
   "rig",
   "pose",
   "start",
@@ -99,8 +99,8 @@ const JOINTS = new Set([
   "head",
 ]);
 
-const movitStream = StreamLanguage.define<{ inStep: boolean }>({
-  name: "movit",
+const posecodeStream = StreamLanguage.define<{ inStep: boolean }>({
+  name: "posecode",
   startState: () => ({ inStep: false }),
   token(stream) {
     if (stream.eatSpace()) return null;
@@ -136,7 +136,7 @@ const movitStream = StreamLanguage.define<{ inStep: boolean }>({
   languageData: { commentTokens: { line: "#" } },
 });
 
-const movitHighlight = HighlightStyle.define([
+const posecodeHighlight = HighlightStyle.define([
   { tag: t.keyword, color: "var(--accent)", fontWeight: "600" },
   { tag: t.typeName, color: "#79c0ff" },
   { tag: t.operatorKeyword, color: "#ffcc66" },
@@ -150,7 +150,7 @@ const movitHighlight = HighlightStyle.define([
 
 // --- Language service bridges ----------------------------------------------
 
-const movitLinter = linter(
+const posecodeLinter = linter(
   (view) => {
     const doc = view.state.doc;
     return getDiagnostics(doc.toString()).map((d): CmDiagnostic => {
@@ -172,7 +172,7 @@ const CM_TYPE: Record<CompletionKind, string> = {
   effector: "constant",
 };
 
-function movitCompletions(context: CompletionContext): CompletionResult | null {
+function posecodeCompletions(context: CompletionContext): CompletionResult | null {
   const line = context.state.doc.lineAt(context.pos);
   const items = getCompletions(
     context.state.doc.toString(),
@@ -199,7 +199,7 @@ function escapeHtml(s: string): string {
   );
 }
 
-const movitHoverTip = hoverTooltip((view, pos) => {
+const posecodeHoverTip = hoverTooltip((view, pos) => {
   const line = view.state.doc.lineAt(pos);
   const info = getHover(view.state.doc.toString(), line.number - 1, pos - line.from);
   if (!info) return null;
@@ -207,7 +207,7 @@ const movitHoverTip = hoverTooltip((view, pos) => {
     pos,
     create() {
       const dom = document.createElement("div");
-      dom.className = "cm-movit-hover";
+      dom.className = "cm-posecode-hover";
       // Contents are markdown from our own vocab (no user free-text) — render bold.
       dom.innerHTML = escapeHtml(info.contents).replace(
         /\*\*(.+?)\*\*/g,
@@ -220,7 +220,7 @@ const movitHoverTip = hoverTooltip((view, pos) => {
 
 // --- Theme (Kinetic Lab dark) ----------------------------------------------
 
-const movitTheme = EditorView.theme(
+const posecodeTheme = EditorView.theme(
   {
     "&": { height: "100%", color: "var(--text)", backgroundColor: "transparent" },
     ".cm-scroller": {
@@ -247,14 +247,14 @@ const movitTheme = EditorView.theme(
       borderRadius: "8px",
       boxShadow: "var(--shadow-2)",
     },
-    ".cm-movit-hover": {
+    ".cm-posecode-hover": {
       padding: "8px 11px",
       fontFamily: "var(--sans)",
       fontSize: "12.5px",
       maxWidth: "320px",
       color: "var(--text-2)",
     },
-    ".cm-movit-hover strong": { color: "var(--text)" },
+    ".cm-posecode-hover strong": { color: "var(--text)" },
     ".cm-tooltip-autocomplete > ul > li[aria-selected]": {
       backgroundColor: "var(--accent-veil)",
       color: "var(--text)",
@@ -297,7 +297,7 @@ const phaseHighlightField = StateField.define<DecorationSet>({
 
 // --- Public API -------------------------------------------------------------
 
-export interface MovitEditor {
+export interface PosecodeEditor {
   getValue(): string;
   setValue(doc: string): void;
   focus(): void;
@@ -305,15 +305,15 @@ export interface MovitEditor {
   highlightPhase(from: number | null, to?: number): void;
 }
 
-export interface MovitEditorOptions {
+export interface PosecodeEditorOptions {
   doc: string;
   onChange: (value: string) => void;
 }
 
-export function createMovitEditor(
+export function createPosecodeEditor(
   parent: HTMLElement,
-  opts: MovitEditorOptions,
-): MovitEditor {
+  opts: PosecodeEditorOptions,
+): PosecodeEditor {
   const view = new EditorView({
     parent,
     state: EditorState.create({
@@ -326,14 +326,14 @@ export function createMovitEditor(
         history(),
         bracketMatching(),
         closeBrackets(),
-        new LanguageSupport(movitStream),
-        syntaxHighlighting(movitHighlight),
+        new LanguageSupport(posecodeStream),
+        syntaxHighlighting(posecodeHighlight),
         phaseHighlightField,
-        autocompletion({ override: [movitCompletions], icons: false }),
-        movitLinter,
+        autocompletion({ override: [posecodeCompletions], icons: false }),
+        posecodeLinter,
         lintGutter(),
-        movitHoverTip,
-        movitTheme,
+        posecodeHoverTip,
+        posecodeTheme,
         EditorView.lineWrapping,
         keymap.of([
           ...closeBracketsKeymap,
@@ -351,7 +351,7 @@ export function createMovitEditor(
 
   // Dev-only handle for preview/E2E testing; stripped from production builds.
   if (import.meta.env.DEV) {
-    (globalThis as unknown as { movitView?: EditorView }).movitView = view;
+    (globalThis as unknown as { posecodeView?: EditorView }).posecodeView = view;
   }
 
   return {

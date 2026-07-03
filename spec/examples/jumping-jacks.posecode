@@ -1,0 +1,17 @@
+posecode exercise "Jumping jacks"
+  rig humanoid
+  pose start = standing
+
+  step "Out" 0.5s ease-out:
+    shoulders: abduct 160
+    hips: abduct 30
+    ground-lock: feet
+    cue "Arms sweep overhead as the feet jump wide"
+
+  step "In" 0.5s ease-in:
+    shoulders: abduct 0
+    hips: abduct 0
+    ground-lock: feet
+    cue "Arms down, feet back together"
+
+  repeat 12

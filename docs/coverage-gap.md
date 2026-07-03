@@ -1,10 +1,10 @@
 # Movement coverage — gap analysis
 
-> Benchmarks Movit's curated library against a standard fitness taxonomy
+> Benchmarks Posecode's curated library against a standard fitness taxonomy
 > (body-part × equipment × target muscle), the structure popularised by public
 > exercise datasets. **We use those datasets only as a yardstick for *coverage and
 > taxonomy* — never their copyrighted media, instructions, or records.** Every
-> Movit movement is authored from scratch and ROM-validated.
+> Posecode movement is authored from scratch and ROM-validated.
 
 The point of this doc: find the holes in our library that the **current engine can
 already render**, so we author exactly the right movements next.
@@ -20,7 +20,7 @@ barbell / cable / machine / band work (needs load + grip-to-implement), and
 anything needing a second person. In a typical exercise dataset these are the
 majority; the **body-weight subset (~25%)** is our addressable universe.
 
-## Movit library today, by body part (51 movements)
+## Posecode library today, by body part (51 movements)
 
 | Body part | Have | Count | Verdict |
 | --- | --- | --- | --- |
@@ -74,7 +74,7 @@ follow-on to the pin work.
 ## Metadata gap (drives the catalogue work)
 
 A real exercise record carries `body-part, equipment, primary target, secondary
-muscles, difficulty`. Movit presets carried only `id, label, domain`. We now add
+muscles, difficulty`. Posecode presets carried only `id, label, domain`. We now add
 `bodyPart / target / equipment / difficulty` to every preset and a **filterable
 gallery**, so the library is searchable like a proper exercise explorer — see
 `playground/src/presets.ts` and the filter row in the playground.

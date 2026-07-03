@@ -1,8 +1,8 @@
 {
-  "name": "movit-monorepo",
+  "name": "posecode-monorepo",
   "version": "0.1.0",
   "private": true,
-  "description": "Movit — a kinematic motion protocol for LLMs. Describe 3D human movement as text; render it in the browser.",
+  "description": "Posecode — a kinematic motion protocol for LLMs. Describe 3D human movement as text; render it in the browser.",
   "license": "MIT",
   "workspaces": [
     "packages/*",

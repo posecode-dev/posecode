@@ -1,5 +1,5 @@
 {
-  "name": "movit-playground",
+  "name": "posecode-playground",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -16,10 +16,10 @@
     "@codemirror/state": "^6.5.0",
     "@codemirror/view": "^6.36.1",
     "@lezer/highlight": "^1.2.1",
-    "movit-language": "0.1.0",
-    "movit-parser": "0.1.0",
-    "movit-render": "0.1.0",
-    "movit-share": "0.1.0",
+    "posecode-language": "0.1.0",
+    "posecode-parser": "0.1.0",
+    "posecode-render": "0.1.0",
+    "posecode-share": "0.1.0",
     "three": "^0.171.0"
   },
   "devDependencies": {

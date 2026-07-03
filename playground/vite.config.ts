@@ -9,9 +9,9 @@ export default defineConfig({
   root: here,
   resolve: {
     alias: {
-      "movit-parser": resolve(repoRoot, "packages/movit-parser/src/index.ts"),
-      "movit-render": resolve(repoRoot, "packages/movit-render/src/index.ts"),
-      "movit-share": resolve(repoRoot, "packages/movit-share/src/index.ts"),
+      "posecode-parser": resolve(repoRoot, "packages/posecode-parser/src/index.ts"),
+      "posecode-render": resolve(repoRoot, "packages/posecode-render/src/index.ts"),
+      "posecode-share": resolve(repoRoot, "packages/posecode-share/src/index.ts"),
     },
     dedupe: ["three"],
   },
@@ -25,7 +25,7 @@ export default defineConfig({
     },
   },
   server: {
-    // Allow importing .movit examples and llm-authoring.md from spec/.
+    // Allow importing .posecode examples and llm-authoring.md from spec/.
     fs: { allow: [repoRoot] },
   },
 });

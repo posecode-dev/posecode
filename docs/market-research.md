@@ -1,23 +1,23 @@
-# Movit — market research & go-to-market
+# Posecode — market research & go-to-market
 
-> Where Movit spreads fastest, who pulls hardest, and which engine unlock opens
+> Where Posecode spreads fastest, who pulls hardest, and which engine unlock opens
 > which locked domain. Companion to [`../ROADMAP.md`](../ROADMAP.md) (engine
 > capabilities) and [`../spec/llm-authoring.md`](../spec/llm-authoring.md)
 > (how an LLM authors a movement).
 
 ## 1. The thesis
 
-Movit is **"Mermaid for human movement."** A person describes a movement in
-words; an LLM writes a short `.movit` document; the browser parses it, clamps it
+Posecode is **"Mermaid for human movement."** A person describes a movement in
+words; an LLM writes a short `.posecode` document; the browser parses it, clamps it
 to a safe range of motion, and renders an animated 3D mannequin — producing a
 **shareable URL**. The loop is:
 
 > **ask an LLM for a movement → it renders → share the link.**
 
-This is structurally different from video. A `.movit` doc is **editable text**:
+This is structurally different from video. A `.posecode` doc is **editable text**:
 an LLM can generate it, a human can tweak one angle, a clinician can fork it, and
 it diffs in version control. Diffusion/video models hallucinate anatomy and can't
-be safely constrained; Movit's ROM clamp is a *correctness* feature, not a filter.
+be safely constrained; Posecode's ROM clamp is a *correctness* feature, not a filter.
 Text is also how LLMs natively "think" about structure — so authoring is reliable
 and improves as models improve.
 
@@ -25,9 +25,9 @@ and improves as models improve.
 
 - **LLM-native.** The unit of creation is a code block any chat model emits. No
   studio, no mocap, no rigging.
-- **Shareable by construction.** Every movement is a URL ([`movit-share`](../packages/movit-share)).
+- **Shareable by construction.** Every movement is a URL ([`posecode-share`](../packages/posecode-share)).
   A link is the most viral object on the internet.
-- **Agent-native.** The [`movit-mcp`](../packages/movit-mcp) server lets Claude/
+- **Agent-native.** The [`posecode-mcp`](../packages/posecode-mcp) server lets Claude/
   ChatGPT author, validate, and return a render link *inside the chat* — the
   movement appears where the user already is.
 - **Safe to trust.** Clinical ROM limits mean shared links can't depict unsafe
@@ -57,7 +57,7 @@ on the roadmap.
 - **Aha use case:** "What is shoulder abduction?" → an isolated joint sweeps
   through its plane, labeled. The answer is a *moving figure*, not a static
   diagram.
-- **Viral loop:** an LLM answering an anatomy question embeds a Movit link;
+- **Viral loop:** an LLM answering an anatomy question embeds a Posecode link;
   teachers paste links into slides/LMS; students re-prompt for the next joint.
 - **Ships:** `shoulder-abduction-demo`, `hip-flexion-demo`, `knee-flexion-demo`,
   `spine-rotation-demo`, `elbow-flexion-pronation`.
@@ -116,15 +116,15 @@ expressive, and social — exactly the content people share.
 - **Engine-fit:** ★★★☆☆ today (turnout, plié, relevé, port de bras all render);
   precise foot placement, traveling steps, and partner work are future.
 - **Long game:** a **shareable, LLM-authorable choreography notation** — Labanotation
-  was never going to be typed into a chat box; a `.movit` phrase is. If Movit
+  was never going to be typed into a chat box; a `.posecode` phrase is. If Posecode
   becomes the way people sketch and pass around movement, dance is the wedge.
 
 ## 4. Spread mechanics
 
-- **MCP inside the assistant.** [`movit-mcp`](../packages/movit-mcp) puts authoring +
+- **MCP inside the assistant.** [`posecode-mcp`](../packages/posecode-mcp) puts authoring +
   a render link directly in Claude/ChatGPT — distribution rides on assistants we
   don't have to build an audience for.
-- **Links as the unit.** [`movit-share`](../packages/movit-share) makes every
+- **Links as the unit.** [`posecode-share`](../packages/posecode-share) makes every
   movement a URL; links are forwarded, bookmarked, and embedded.
 - **Gallery grouped by domain.** The playground presets carry a `domain` and the
   gallery auto-groups them (Education, Physiotherapy, Desk & posture, Martial
@@ -134,7 +134,7 @@ expressive, and social — exactly the content people share.
   ask LLMs daily; each answer can carry a link.
 - **Workplace cadence.** "Every hour" stretch prompts create recurring,
   habit-driven link generation.
-- **Embeds.** A link that renders in an iframe drops Movit into LMSs, clinic
+- **Embeds.** A link that renders in an iframe drops Posecode into LMSs, clinic
   portals, and blog posts.
 
 ## 5. Which engine unlock opens which domain
@@ -156,6 +156,6 @@ a hand rig now shipped, the roadmap's 🟡 domains (functional/elderly care, flo
 yoga, loaded strength, gesture) are reachable today; the remaining frontier is
 deeper props (load, bands, rings), ROM-constrained reach, and two-person work.
 
-> ⚠️ Movit's range-of-motion values are general literature data, not medical
+> ⚠️ Posecode's range-of-motion values are general literature data, not medical
 > advice. Consult a qualified professional for physiotherapy or exercise
 > prescription.

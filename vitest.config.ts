@@ -5,7 +5,7 @@ export default defineConfig({
     include: ["packages/**/test/**/*.test.ts"],
     coverage: {
       provider: "v8",
-      include: ["packages/movit-parser/src/**/*.ts"],
+      include: ["packages/posecode-parser/src/**/*.ts"],
       exclude: ["**/index.ts", "**/types.ts"],
       thresholds: {
         lines: 80,
