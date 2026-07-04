@@ -44,5 +44,7 @@ posecode <kind> "<Name>"          # kind = exercise | stretch | posture
 
 Joints: neck head spine chest pelvis, and (singular or plural) shoulders elbows
 wrists hips knees ankles. Actions (degrees are absolute targets): flex/extend,
-abduct/adduct, rotate-in/rotate-out, dorsiflex/plantarflex, hold neutral.
+abduct/adduct, rotate-in/rotate-out, dorsiflex/plantarflex, hold neutral, and
+hinge (hips only — closed-chain hip flexion: torso tips over planted feet with
+a neutral spine; use for deadlift / forward fold instead of hips: flex).
 Stay within healthy range of motion; the renderer hard-clamps anything beyond.`;

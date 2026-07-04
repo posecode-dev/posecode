@@ -5,6 +5,7 @@ import { buildTimeline } from "../src/timeline.js";
 import { solveCCD } from "../src/ik.js";
 import { poseFor } from "../src/poses.js";
 import { buildProps } from "../src/props.js";
+import { applyGroundLock, groundFigure } from "../src/groundlock.js";
 import { parse, eulerRomFor } from "posecode-parser";
 
 const DEG = Math.PI / 180;
@@ -242,6 +243,72 @@ describe("hand rig", () => {
       const q = m.bones.get(id)!.quaternion;
       expect(Math.abs(q.x) + Math.abs(q.y) + Math.abs(q.z)).toBeGreaterThan(0.1);
     }
+  });
+});
+
+describe("ground-lock (shared solver)", () => {
+  // The solver extracted into groundlock.ts is what both the viewer and the
+  // headless eval harness call, so exercise it directly.
+  function posedRaw(source: string): ReturnType<typeof buildMannequin> {
+    const { ir } = parse(source);
+    const tl = buildTimeline(ir!);
+    const m = buildMannequin();
+    tl.sample(tl.segments[0]!.end - 1e-4, m.bones);
+    m.root.updateMatrixWorld(true);
+    return m;
+  }
+
+  it("drops the body and plants the foot mesh for a feet-only squat", () => {
+    const m = posedRaw(
+      [
+        'posecode exercise "Squat"',
+        "  rig humanoid",
+        "  pose start = standing",
+        '  step "Descend" 1s ease-in-out:',
+        "    hips: flex 80",
+        "    knees: flex 95",
+        "    ground-lock: feet",
+      ].join("\n"),
+    );
+    applyGroundLock(m, ["feet"]);
+    m.root.updateMatrixWorld(true);
+    // Pelvis well below standing rest (~0.95m) — the body lowered into a squat.
+    const pelvisY = m.bones.get("pelvis")!.getWorldPosition(new THREE.Vector3()).y;
+    expect(pelvisY).toBeLessThan(0.85);
+    // Foot MESH sole rests on the floor (ankle bone rides ~0.04m above it).
+    const soleY = new THREE.Box3().setFromObject(m.bones.get("ankle_left")!).min.y;
+    expect(Math.abs(soleY)).toBeLessThan(0.01);
+  });
+
+  it("is a no-op when no effectors are ground-locked", () => {
+    const m = posedRaw(
+      [
+        'posecode posture "Reach"',
+        "  rig humanoid",
+        '  step "Up" 1s linear:',
+        "    shoulders: flex 90",
+      ].join("\n"),
+    );
+    const before = m.root.position.clone();
+    applyGroundLock(m, []);
+    expect(m.root.position.equals(before)).toBe(true);
+  });
+
+  it("groundFigure drops the lowest mesh point onto the floor", () => {
+    const m = posedRaw(
+      [
+        'posecode posture "Stand"',
+        "  rig humanoid",
+        "  pose start = standing",
+        '  step "Hold" 1s linear:',
+        "    spine: hold neutral",
+      ].join("\n"),
+    );
+    m.root.position.y += 0.5; // lift off the floor
+    m.root.updateMatrixWorld(true);
+    groundFigure(m);
+    m.root.updateMatrixWorld(true);
+    expect(new THREE.Box3().setFromObject(m.root).min.y).toBeCloseTo(0, 2);
   });
 });
 

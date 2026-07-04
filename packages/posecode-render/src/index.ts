@@ -13,6 +13,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { eulerRomFor } from "posecode-parser";
 import type { PosecodeIR, ReachTarget, PinTarget } from "posecode-parser";
 import { buildMannequin, type Mannequin } from "./mannequin.js";
+import { applyGroundLock as applyGroundLockTo, groundFigure as groundFigureOf } from "./groundlock.js";
 import { buildTimeline, type BuiltTimeline, type PhaseSegment } from "./timeline.js";
 import { solveCCD, type JointLimits } from "./ik.js";
 import { buildProps, type PropScene } from "./props.js";
@@ -42,6 +43,13 @@ export interface Viewer {
   get duration(): number;
   get time(): number;
   getTimeline(): TimelineInfo | null;
+  /**
+   * Render the current time synchronously and return the frame as a PNG data
+   * URL. Works without preserveDrawingBuffer because the read happens in the
+   * same task as the render (no buffer swap in between). Powers GIF/poster
+   * export and headless capture tooling.
+   */
+  captureFrame(): string;
   onPhase(cb: (info: ViewerPhaseInfo) => void): void;
   onTick(cb: (time: number, duration: number) => void): void;
   onLoop(cb: () => void): void;
@@ -171,19 +179,6 @@ export function createViewer(
     root.updateMatrixWorld(true);
   }
 
-  function groundFigure(): void {
-    // Drop the whole figure so its lowest point rests on the floor. Using the
-    // mesh bounding-box min (not just hand/foot joints) means ANY pose grounds
-    // correctly — standing/plank rest on feet/hands, while supine/prone/seated
-    // poses rest on the back, chest, or glutes.
-    mannequin.root.updateMatrixWorld(true);
-    const box = new THREE.Box3().setFromObject(mannequin.root);
-    if (Number.isFinite(box.min.y)) {
-      mannequin.root.position.y -= box.min.y;
-      mannequin.root.updateMatrixWorld(true);
-    }
-  }
-
   function captureGroundTargets(): void {
     // "Ground-lock" means HOLD the effector where the grounded base pose placed
     // it — not drag it to y=0. groundFigure() already set the floor contact.
@@ -196,103 +191,9 @@ export function createViewer(
     }
   }
 
-  function activeEffectorIds(active: string[]): string[] {
-    const ids = new Set<string>();
-    for (const group of active) {
-      for (const id of mannequin.effectors[group] ?? []) ids.add(id);
-    }
-    return [...ids];
-  }
-
-  /** Average world position of a set of effector bones. */
-  function avgWorld(ids: string[]): THREE.Vector3 {
-    const p = new THREE.Vector3();
-    let n = 0;
-    for (const id of ids) {
-      const node = mannequin.bones.get(id);
-      if (!node) continue;
-      p.add(node.getWorldPosition(new THREE.Vector3()));
-      n++;
-    }
-    return n > 0 ? p.multiplyScalar(1 / n) : p;
-  }
-
-  const ROOT_X = new THREE.Vector3(1, 0, 0);
   // Reused scratch for the per-frame facing rotation (yaw about world Y).
   const WORLD_Y = new THREE.Vector3(0, 1, 0);
   const YAW_Q = new THREE.Quaternion();
-
-  /** Rotate the whole figure about a world-space pivot (axis through pivot). */
-  function rotateRootAboutPivot(pivot: THREE.Vector3, angle: number): void {
-    const q = new THREE.Quaternion().setFromAxisAngle(ROOT_X, angle);
-    mannequin.root.position.sub(pivot).applyQuaternion(q).add(pivot);
-    mannequin.root.quaternion.premultiply(q);
-    mannequin.root.updateMatrixWorld(true);
-  }
-
-  /**
-   * Ground-lock = floating-root contact solving, tuned per support type:
-   *
-   * - **Hands + feet (push-up / plank):** pivot the whole rigid body about the
-   *   foot line (the toes stay planted) until the hands reach the floor. As the
-   *   elbows fold (FK), the hands rise toward the shoulders, so the body tips
-   *   down around the toes — the torso lowers in one straight line, a real
-   *   push-up. Rotating about an X-axis through the foot midpoint keeps both
-   *   feet exactly planted (they differ from the pivot only along X).
-   * - **Feet only (squat / roll-down):** drop the body vertically so the feet
-   *   stay planted while the legs keep their authored FK bend — the pelvis
-   *   lowers. Legs are never CCD-solved (that would overwrite the squat pose).
-   */
-  function applyGroundLock(active: string[]): void {
-    if (active.length === 0) return;
-    const ids = activeEffectorIds(active);
-    const hands = ids.filter((id) => id.startsWith("wrist"));
-    const feet = ids.filter((id) => id.startsWith("ankle"));
-
-    if (hands.length > 0 && feet.length > 0) {
-      const pivot = avgWorld(feet);
-      // Newton iterations: rotate about the toes until avg hand height = 0.
-      for (let i = 0; i < 8; i++) {
-        const y0 = avgWorld(hands).y;
-        if (Math.abs(y0) < 0.004) break;
-        rotateRootAboutPivot(pivot, 0.01);
-        const y1 = avgWorld(hands).y;
-        rotateRootAboutPivot(pivot, -0.01);
-        const deriv = (y1 - y0) / 0.01;
-        if (Math.abs(deriv) < 1e-4) break;
-        rotateRootAboutPivot(pivot, THREE.MathUtils.clamp(-y0 / deriv, -0.35, 0.35));
-      }
-      // The loop above zeroes the WRIST BONE's height, but the visible hand
-      // (wrist ball + forearm capsule) and foot (mesh box) extend a bit below
-      // their bones, leaving the mesh sunk into the floor by that offset. Catch
-      // it with one final rigid-body vertical nudge (rotation already set the
-      // correct tilt; this only corrects the residual bone-vs-mesh gap).
-      mannequin.root.updateMatrixWorld(true);
-      const box = new THREE.Box3().setFromObject(mannequin.root);
-      if (box.min.y < 0) {
-        mannequin.root.position.y -= box.min.y;
-        mannequin.root.updateMatrixWorld(true);
-      }
-      return;
-    }
-
-    if (feet.length > 0) {
-      // Ground the FOOT MESH's lowest point, not the ankle bone's origin — the
-      // bone sits ~0.04m above the sole (foot box + capsule radius), so
-      // anchoring the bone itself left the visible foot sunk into the floor.
-      let minY = Infinity;
-      for (const id of feet) {
-        const node = mannequin.bones.get(id);
-        if (!node) continue;
-        const box = new THREE.Box3().setFromObject(node);
-        if (Number.isFinite(box.min.y)) minY = Math.min(minY, box.min.y);
-      }
-      if (Number.isFinite(minY)) {
-        mannequin.root.position.y -= minY;
-        mannequin.root.updateMatrixWorld(true);
-      }
-    }
-  }
 
   // Friendly DSL effector aliases → the distal bone whose world position is
   // driven to the reach target.
@@ -461,7 +362,7 @@ export function createViewer(
       mannequin.root.position.x += info.rootOffset.x;
       mannequin.root.position.z += info.rootOffset.z;
       mannequin.root.updateMatrixWorld(true);
-      applyGroundLock(info.groundLock);
+      applyGroundLockTo(mannequin, info.groundLock);
       applyPins(info.pins);
       // Safety net: nothing above ever intentionally pushes part of the body
       // below the floor, so clamp the root up whenever the lowest point dips
@@ -541,7 +442,7 @@ export function createViewer(
       applyBaseRoot();
       timeline.sample(0, mannequin.bones);
       mannequin.root.updateMatrixWorld(true);
-      groundFigure();
+      groundFigureOf(mannequin);
       captureGroundTargets();
       baseRootPos.copy(mannequin.root.position);
       baseRootQuat.copy(mannequin.root.quaternion);
@@ -586,6 +487,10 @@ export function createViewer(
         segments: timeline.segments,
       };
     },
+    captureFrame() {
+      frame();
+      return renderer.domElement.toDataURL("image/png");
+    },
     onPhase(cb) {
       phaseCb = cb;
     },
@@ -627,6 +532,8 @@ function disposeTree(root: THREE.Object3D): void {
 }
 
 export { buildMannequin } from "./mannequin.js";
+export { applyGroundLock, groundFigure } from "./groundlock.js";
+export type { Mannequin } from "./mannequin.js";
 export { buildTimeline } from "./timeline.js";
 export { solveCCD, type IkChain, type JointLimits } from "./ik.js";
 export { buildProps, type PropScene } from "./props.js";

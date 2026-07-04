@@ -4,6 +4,21 @@
 Posecode gives them a way to <i>show movement</i> — exercises, physiotherapy, posture —<br/>
 as a tiny human-readable language that renders to an animated 3D figure in the browser.</p>
 
+<p align="center">
+  <a href="https://posecode.org/play"><b>▶ Live playground</b></a> ·
+  <a href="spec/SPEC.md">Language spec</a> ·
+  <a href="spec/examples">Examples</a> ·
+  <a href="packages/posecode-mcp">MCP server</a>
+</p>
+
+<table align="center">
+  <tr>
+    <td align="center"><img src="docs/media/deadlift.gif" width="230" alt="Deadlift rendered from .posecode text"/><br/><sub><code>pelvis: hinge</code> — deadlift</sub></td>
+    <td align="center"><img src="docs/media/squat.gif" width="230" alt="Body-weight squat rendered from .posecode text"/><br/><sub><code>knees: flex 95</code> — squat</sub></td>
+    <td align="center"><img src="docs/media/lateral-raise.gif" width="230" alt="Lateral raise rendered from .posecode text"/><br/><sub><code>shoulders: abduct 90</code> — lateral raise</sub></td>
+  </tr>
+</table>
+
 ---
 
 ## Why
@@ -49,12 +64,26 @@ posecode exercise "Body-weight squat"
 ```bash
 npm install
 npm run dev      # opens the playground (Vite) at http://localhost:5173
-npm test         # parser + renderer test suites
+npm test         # parser + renderer + eval test suites
+npm run eval     # fidelity scorecard: geometric invariants over every example
 ```
 
 In the playground: pick an example, watch it animate, edit the text live, and
 hit **Copy LLM prompt** to get a system prompt that teaches ChatGPT/Claude to
-write Posecode for you.
+write Posecode for you — or wire up the [MCP server](packages/posecode-mcp) so
+your agent authors, validates, and renders movements natively.
+
+## How Posecode stays honest
+
+Two safety layers ship with the language:
+
+- **ROM clamping** — every angle is hard-clamped to healthy range-of-motion
+  tables before rendering; a hallucinated `knee: flex 200` renders at its
+  ceiling with a warning, never an impossible joint.
+- **Fidelity evals** — [`posecode-eval`](packages/posecode-eval) re-runs the
+  real parser → FK → ground-lock pipeline headlessly and scores geometric
+  invariants ("a deadlift pitches the torso ≥ 50° with vertical shins"). Every
+  example must pass every invariant in CI.
 
 ## Packages
 
@@ -64,6 +93,7 @@ write Posecode for you.
 | [`posecode-render`](packages/posecode-render) | IR → animated low-poly mannequin (Three.js), forward kinematics + ground-lock CCD IK. |
 | [`posecode-share`](packages/posecode-share) | Encode a `.posecode` doc to a URL-safe token so a movement travels as a link. Pure, dependency-free. |
 | [`posecode-mcp`](packages/posecode-mcp) | MCP server: lets an LLM agent author, ROM-validate, and get a render link for a movement — natively. |
+| [`posecode-eval`](packages/posecode-eval) | Fidelity harness: headless kinematic probing + biomechanical invariant scoring. |
 | [`playground`](playground) | Live editor + 3D viewport + warnings + the LLM prompt + shareable links. |
 
 The protocol and both libraries are **MIT-licensed** — the open core. See
