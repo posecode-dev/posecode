@@ -1,0 +1,55 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Posecode",
+  "scopeName": "source.posecode",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#keywords" },
+    { "include": "#kinds" },
+    { "include": "#actions" },
+    { "include": "#joints" },
+    { "include": "#constants" },
+    { "include": "#numbers" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        { "name": "comment.line.number-sign.posecode", "match": "#.*$" },
+        { "name": "comment.line.double-slash.posecode", "match": "//.*$" }
+      ]
+    },
+    "strings": {
+      "name": "string.quoted.double.posecode",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        { "name": "constant.character.escape.posecode", "match": "\\\\." }
+      ]
+    },
+    "keywords": {
+      "name": "keyword.control.posecode",
+      "match": "\\b(posecode|rig|pose|start|step|repeat|ground-lock|cue|hold)\\b"
+    },
+    "kinds": {
+      "name": "storage.type.posecode",
+      "match": "\\b(exercise|stretch|posture)\\b"
+    },
+    "actions": {
+      "name": "keyword.operator.posecode",
+      "match": "\\b(flex|extend|abduct|adduct|rotate-in|rotate-out|supinate|pronate|dorsiflex|plantarflex)\\b"
+    },
+    "joints": {
+      "name": "variable.other.posecode",
+      "match": "\\b(shoulders|elbows|wrists|hips|knees|ankles|pelvis|spine|chest|neck|head|shoulder_left|shoulder_right|elbow_left|elbow_right|wrist_left|wrist_right|hip_left|hip_right|knee_left|knee_right|ankle_left|ankle_right)\\b"
+    },
+    "constants": {
+      "name": "constant.language.posecode",
+      "match": "\\b(ease-in-out|ease-in|ease-out|linear|neutral|standing|plank|hands|feet|humanoid)\\b"
+    },
+    "numbers": {
+      "name": "constant.numeric.posecode",
+      "match": "\\b[0-9]+(\\.[0-9]+)?s?\\b"
+    }
+  }
+}

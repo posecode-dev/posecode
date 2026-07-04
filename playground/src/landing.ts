@@ -1,12 +1,12 @@
 /**
- * Movit landing page. Demo-forward: a live hero viewer and an examples gallery
+ * Posecode landing page. Demo-forward: a live hero viewer and an examples gallery
  * whose cards deep-link into the playground via the shared permalink codec.
  * Reuses the same parser, renderer, and share encoding as the tool — no
  * bespoke logic that could drift.
  */
 
-import { parse } from "movit-parser";
-import { buildShareHash } from "movit-share";
+import { parse } from "posecode-parser";
+import { buildShareHash } from "posecode-share";
 import { PRESETS } from "./presets.js";
 import llmPrompt from "../../spec/llm-authoring.md?raw";
 
@@ -24,7 +24,7 @@ const prefersReducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matc
 function initHero(): void {
   const heroCanvas = document.getElementById("hero-canvas") as HTMLCanvasElement | null;
   if (!heroCanvas) return;
-  void import("movit-render").then(({ createViewer }) => {
+  void import("posecode-render").then(({ createViewer }) => {
     const viewer = createViewer(heroCanvas, { autoRotate: !prefersReducedMotion });
     const phaseEl = document.getElementById("hero-phase");
     viewer.onPhase(({ phaseName }) => {
@@ -42,13 +42,25 @@ function initHero(): void {
 if ("requestIdleCallback" in window) {
   requestIdleCallback(initHero, { timeout: 1200 });
 } else {
+  // `window` narrows to `never` here (lib.dom always declares
+  // requestIdleCallback), so call the global directly.
   setTimeout(initHero, 200);
 }
 
-// --- Examples gallery: each card opens the movement in the playground -------
+// --- Examples gallery: a curated taste, not the full 65 ---------------------
+// The full library already has a proper filterable/grouped gallery in the
+// playground itself (domain, body part, equipment, difficulty). Dumping all
+// 65 cards into the landing page turned this section into a long doom-scroll
+// on mobile, so show a handful of visually distinct highlights spanning
+// different domains, then hand off to the real gallery.
+const HIGHLIGHT_IDS = ["dance-phrase", "pull-up", "cobra", "touch-toes", "hand-wave"];
+
 const grid = document.getElementById("examples-grid");
 if (grid) {
-  for (const preset of PRESETS) {
+  const byId = new Map(PRESETS.map((p) => [p.id, p]));
+  for (const id of HIGHLIGHT_IDS) {
+    const preset = byId.get(id);
+    if (!preset) continue;
     const card = document.createElement("a");
     card.className = "example-card";
     card.href = `play.html${buildShareHash(preset.source)}`;
@@ -58,6 +70,16 @@ if (grid) {
       <span class="example-go">Open in playground →</span>`;
     grid.append(card);
   }
+
+  const remaining = PRESETS.length - HIGHLIGHT_IDS.length;
+  const more = document.createElement("a");
+  more.className = "example-card example-more";
+  more.href = "play.html";
+  more.innerHTML = `
+    <span class="example-kind">Full library</span>
+    <span class="example-name">+${remaining} more movements</span>
+    <span class="example-go">Browse &amp; filter by domain →</span>`;
+  grid.append(more);
 }
 
 // --- Copy the LLM authoring prompt ------------------------------------------

@@ -1,8 +1,8 @@
 {
-  "name": "movit-monorepo",
+  "name": "posecode-monorepo",
   "version": "0.1.0",
   "private": true,
-  "description": "Movit — a kinematic motion protocol for LLMs. Describe 3D human movement as text; render it in the browser.",
+  "description": "Posecode — a kinematic motion protocol for LLMs. Describe 3D human movement as text; render it in the browser.",
   "license": "MIT",
   "workspaces": [
     "packages/*",
@@ -14,9 +14,9 @@
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "dev": "npm run dev -w playground",
-    "eval": "tsx packages/movit-eval/src/cli.ts",
     "build": "npm run build -w playground",
-    "typecheck": "tsc --noEmit -p packages/movit-parser && tsc --noEmit -p packages/movit-share && tsc --noEmit -p packages/movit-render && tsc --noEmit -p packages/movit-eval && tsc --noEmit -p packages/movit-language && tsc --noEmit -p packages/movit-lsp && tsc --noEmit -p packages/movit-mcp && tsc --noEmit -p playground && tsc --noEmit -p editors/vscode"
+    "eval": "tsx packages/posecode-eval/src/cli.ts",
+    "typecheck": "for p in packages/*/tsconfig.json playground/tsconfig.json editors/*/tsconfig.json; do tsc --noEmit -p \"$p\" || exit 1; done"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^2.1.8",

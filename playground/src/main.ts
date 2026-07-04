@@ -1,5 +1,5 @@
 /**
- * Movit playground wiring: editor → parser → 3D viewer, plus the how-to
+ * Posecode playground wiring: editor → parser → 3D viewer, plus the how-to
  * slide-over and playback UX (phase ribbon, scrubber markers, rep counter).
  *
  * The text in the editor is the single source of truth. On every (debounced)
@@ -7,10 +7,10 @@
  * the side panel. This mirrors how an LLM-authored doc would be pasted in.
  */
 
-import { parse } from "movit-parser";
-import { createViewer } from "movit-render";
-import { buildShareHash, readShareHash } from "movit-share";
-import { createMovitEditor, type MovitEditor } from "./editor.js";
+import { parse } from "posecode-parser";
+import { createViewer } from "posecode-render";
+import { buildShareHash, readShareHash } from "posecode-share";
+import { createPosecodeEditor, type PosecodeEditor } from "./editor.js";
 import { PRESETS } from "./presets.js";
 import { renderWarnings } from "./warnings.js";
 import llmPrompt from "../../spec/llm-authoring.md?raw";
@@ -18,7 +18,7 @@ import llmPrompt from "../../spec/llm-authoring.md?raw";
 const $ = <T extends HTMLElement>(id: string): T =>
   document.getElementById(id) as T;
 
-let editorApi: MovitEditor; // assigned at boot, once the initial doc is known
+let editorApi: PosecodeEditor; // assigned at boot, once the initial doc is known
 const warnings = $<HTMLDivElement>("warnings");
 const presetSel = $<HTMLSelectElement>("preset");
 const canvas = $<HTMLCanvasElement>("canvas");
@@ -39,7 +39,7 @@ const tabViewer = $<HTMLButtonElement>("tab-viewer");
 
 const viewer = createViewer(canvas);
 // Exposed for capture/e2e tooling (frame capture drives README GIFs).
-(window as unknown as Record<string, unknown>).__movitViewer = viewer;
+(window as unknown as Record<string, unknown>).__posecodeViewer = viewer;
 let scrubbing = false;
 let repeat = 1;
 let rep = 1;
@@ -169,21 +169,77 @@ function recompile(): void {
   }
 }
 
-// --- Presets (grouped by domain so the dropdown shows the breadth) ---
-const presetGroups = new Map<string, HTMLOptGroupElement>();
-for (const p of PRESETS) {
-  let group = presetGroups.get(p.domain);
-  if (!group) {
-    group = document.createElement("optgroup");
-    group.label = p.domain;
-    presetGroups.set(p.domain, group);
-    presetSel.append(group);
+// --- Presets: a filterable gallery (body part / equipment / difficulty) ---
+// The catalogue is tagged like a standard exercise DB, so the dropdown can be
+// narrowed the way an exercise explorer would. Options for each filter are
+// derived from the data so they never drift.
+const fBody = $<HTMLSelectElement>("f-body");
+const fEquip = $<HTMLSelectElement>("f-equip");
+const fLevel = $<HTMLSelectElement>("f-level");
+const presetCount = $<HTMLSpanElement>("preset-count");
+
+function fillFilter(sel: HTMLSelectElement, values: string[], allLabel: string): void {
+  sel.innerHTML = "";
+  const all = document.createElement("option");
+  all.value = "";
+  all.textContent = allLabel;
+  sel.append(all);
+  for (const v of [...new Set(values)].sort()) {
+    const opt = document.createElement("option");
+    opt.value = v;
+    opt.textContent = v;
+    sel.append(opt);
   }
-  const opt = document.createElement("option");
-  opt.value = p.id;
-  opt.textContent = p.label;
-  group.append(opt);
 }
+fillFilter(fBody, PRESETS.map((p) => p.bodyPart), "All areas");
+fillFilter(fEquip, PRESETS.map((p) => p.equipment), "All gear");
+fillFilter(fLevel, PRESETS.map((p) => p.difficulty), "All levels");
+
+/** Rebuild the Example dropdown from the presets matching the active filters. */
+function rebuildPresetOptions(): void {
+  const matches = PRESETS.filter(
+    (p) =>
+      (!fBody.value || p.bodyPart === fBody.value) &&
+      (!fEquip.value || p.equipment === fEquip.value) &&
+      (!fLevel.value || p.difficulty === fLevel.value),
+  );
+  presetSel.innerHTML = "";
+  const groups = new Map<string, HTMLOptGroupElement>();
+  for (const p of matches) {
+    let group = groups.get(p.domain);
+    if (!group) {
+      group = document.createElement("optgroup");
+      group.label = p.domain;
+      groups.set(p.domain, group);
+      presetSel.append(group);
+    }
+    const opt = document.createElement("option");
+    opt.value = p.id;
+    opt.textContent = `${p.label} · ${p.target}`;
+    group.append(opt);
+  }
+  presetCount.textContent = `(${matches.length})`;
+  if (matches.length === 0) {
+    const opt = document.createElement("option");
+    opt.textContent = "No matches — clear filters";
+    opt.disabled = true;
+    presetSel.append(opt);
+  }
+}
+rebuildPresetOptions();
+
+for (const f of [fBody, fEquip, fLevel]) {
+  f.addEventListener("change", () => {
+    rebuildPresetOptions();
+    // Auto-load the first match so the viewer always reflects the filter.
+    const first = PRESETS.find((p) => p.id === presetSel.value);
+    if (first) {
+      editorApi.setValue(first.source);
+      recompile();
+    }
+  });
+}
+
 presetSel.addEventListener("change", () => {
   const preset = PRESETS.find((p) => p.id === presetSel.value);
   if (preset) {
@@ -311,7 +367,7 @@ if (sharedSource) {
   presetSel.value = PRESETS[0]!.id;
 }
 
-editorApi = createMovitEditor($("editor"), {
+editorApi = createPosecodeEditor($("editor"), {
   doc: initialDoc,
   onChange: scheduleRecompile,
 });

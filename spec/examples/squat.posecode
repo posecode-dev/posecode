@@ -1,0 +1,25 @@
+posecode exercise "Body-weight squat"
+  rig humanoid
+  pose start = standing
+
+  step "Descend" 1.6s ease-in-out:
+    hips: flex 80
+    knees: flex 95
+    ankles: dorsiflex 14
+    spine: flex 20
+    shoulders: flex 70
+    neck: extend 10
+    ground-lock: feet
+    cue "Sit the hips back, chest proud, knees track over the toes"
+
+  step "Drive up" 1.2s ease-out:
+    hips: flex 0
+    knees: flex 0
+    ankles: dorsiflex 0
+    spine: flex 0
+    shoulders: flex 0
+    neck: extend 0
+    ground-lock: feet
+    cue "Drive through the heels to stand tall"
+
+  repeat 8

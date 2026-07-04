@@ -1,0 +1,25 @@
+posecode exercise "Front kick"
+  rig humanoid
+  pose start = standing
+
+  step "Chamber" 0.5s ease-in:
+    hip_right: flex 95
+    knee_right: flex 90
+    cue "Drive the right knee up to chamber the kick"
+
+  step "Extend" 0.35s ease-out:
+    hip_right: flex 100
+    knee_right: flex 5
+    cue "Snap the lower leg out — strike with the ball of the foot"
+
+  step "Re-chamber" 0.45s ease-in:
+    hip_right: flex 95
+    knee_right: flex 90
+    cue "Snap the foot back to chamber"
+
+  step "Return" 0.6s ease-out:
+    hip_right: flex 0
+    knee_right: flex 0
+    cue "Set the foot back down to a fighting stance"
+
+  repeat 5

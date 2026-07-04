@@ -1,0 +1,23 @@
+posecode stretch "Shoulder rolls"
+  rig humanoid
+  pose start = standing
+
+  step "Lift & forward" 1.6s ease-in-out:
+    shoulders: flex 25
+    chest: extend 8
+    ground-lock: feet
+    cue "Roll the shoulders up and forward"
+
+  step "Back & down" 1.6s ease-in-out:
+    shoulders: extend 20
+    chest: extend 12
+    ground-lock: feet
+    cue "Squeeze the shoulder blades back and down"
+
+  step "Reset" 1.4s ease-out:
+    shoulders: flex 0
+    chest: flex 0
+    ground-lock: feet
+    cue "Return to a tall, neutral posture"
+
+  repeat 5

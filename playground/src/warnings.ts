@@ -1,5 +1,5 @@
 /** Render parse errors and ROM-clamp warnings into the side panel. */
-import type { ParseError, Warning } from "movit-parser";
+import type { ParseError, Warning } from "posecode-parser";
 
 export function renderWarnings(
   el: HTMLElement,

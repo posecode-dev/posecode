@@ -1,0 +1,35 @@
+posecode exercise "Grapevine"
+  rig humanoid
+  pose start = standing
+
+  step "Step out" 0.7s ease-in-out:
+    hip_left: abduct 30
+    shoulders: abduct 40
+    travel: 0.4 0
+    ground-lock: feet
+    cue "Step the leading foot out to the side"
+
+  step "Cross behind" 0.7s ease-in-out:
+    hip_left: abduct 0
+    hip_right: rotate-in 20
+    knee_right: flex 25
+    travel: 0.8 0
+    ground-lock: feet
+    cue "Cross the trailing foot behind and keep travelling"
+
+  step "Step out again" 0.7s ease-in-out:
+    hip_right: rotate-in 0
+    knee_right: flex 0
+    hip_left: abduct 30
+    travel: 1.2 0
+    ground-lock: feet
+    cue "Step out to the side once more"
+
+  step "Return home" 1s ease-in-out:
+    hip_left: abduct 0
+    shoulders: abduct 0
+    travel: 0 0
+    ground-lock: feet
+    cue "Travel back the other way to the starting spot"
+
+  repeat 3

@@ -1,6 +1,6 @@
-# Movit Protocol Specification — v0.1
+# Posecode Protocol Specification — v0.1
 
-Movit is a small text language for describing a single person's **kinematic
+Posecode is a small text language for describing a single person's **kinematic
 movement** so it can be rendered as an animated 3D figure in a web browser.
 
 It is to human movement what Mermaid is to diagrams: an LLM (or a human) writes
@@ -8,8 +8,8 @@ a compact, readable document; a client-side parser + renderer turns it into a
 moving mannequin. The model never produces 3D matrices — it expresses the
 *semantic phases* of a movement, which it already understands.
 
-- **Version keyword:** documents declare nothing; this is `movit 0.1`.
-- **File extension:** `.movit`
+- **Version keyword:** documents declare nothing; this is `posecode 0.1`.
+- **File extension:** `.posecode`
 - **Compute model:** generation is pure text (server-cheap); all 3D math runs
   on the client (Three.js). See the project research §6.
 
@@ -17,21 +17,26 @@ moving mannequin. The model never produces 3D matrices — it expresses the
 
 ## 1. Grammar
 
-Movit is line- and indentation-oriented. Comments start with `#` or `//`.
+Posecode is line- and indentation-oriented. Comments start with `#` or `//`.
 
 ```ebnf
 document   = header { directive } ;
-header     = "movit" kind STRING ;
+header     = "posecode" kind STRING ;
 kind       = "exercise" | "stretch" | "posture" ;       (* free-form word *)
-directive  = rig | pose | step | repeat ;
+directive  = rig | prop | pose | step | repeat ;
 rig        = "rig" WORD ;
-pose       = "pose" "start" "=" WORD ;                  (* neutral|standing|plank *)
+prop       = "prop" WORD ;                              (* chair|wall|bar|box|dip-bars, repeatable *)
+pose       = "pose" "start" "=" WORD ;                  (* neutral|standing|plank|supine|prone|seated *)
 repeat     = "repeat" NUMBER ;
 step       = "step" STRING DURATION easing ":" { child } ;
 easing     = "linear" | "ease-in" | "ease-out" | "ease-in-out" ;
-child      = jointTarget | groundLock | cue ;
+child      = jointTarget | groundLock | reach | pin | turn | travel | cue ;
 jointTarget= joint ":" action [ NUMBER ] ;
 groundLock = "ground-lock" ":" effector { "," effector } ;
+reach      = "reach" ":" effector target ;             (* effector → world target via ROM-constrained IK *)
+pin        = "pin" ":" effector anchor ;               (* move the BODY so effector sits on anchor *)
+turn       = "turn" ":" NUMBER ;                       (* face this yaw (deg) by phase end *)
+travel     = "travel" ":" NUMBER NUMBER ;              (* move to this x z (metres) by phase end *)
 cue        = "cue" STRING ;
 DURATION   = NUMBER "s" ;                                (* e.g. 2s, 1.5s *)
 ```
@@ -52,9 +57,11 @@ phase, all joint targets apply concurrently.
 | `knees` | `knee_left`, `knee_right` | yes |
 | `ankles` | `ankle_left`, `ankle_right` | yes |
 | axial | `pelvis`, `spine`, `chest`, `neck`, `head` | — |
+| `fingers` (or `fingers_left` / `fingers_right`) | `thumb_*`, `index_*`, `middle_*`, `ring_*`, `pinky_*` | yes |
 
 Plural names move both sides symmetrically (left-side bones mirror the Y and Z
-axes). Use a singular `*_left` / `*_right` name to move one side.
+axes). Use a singular `*_left` / `*_right` name to move one side. Each finger is a
+single curl (`flex`) joint; the thumb also takes `abduct`/`adduct`.
 
 ---
 
@@ -71,26 +78,17 @@ where the previous phase left it).
 | `rotate-in` / `rotate-out` | Y (longitudinal) | internal / external rotation |
 | `supinate` / `pronate` | Y | forearm turn |
 | `dorsiflex` / `plantarflex` | X | ankle up / down |
-| `hinge` | X (multi-bone) | closed-chain hip flexion — see below |
+| `hinge` | X | tip the torso forward over the hips (`pelvis` only) |
 | `hold neutral` | — | keep at rest |
+
+`hinge` is a **hip hinge**: applied to the `pelvis`, it pivots the torso forward
+over the hip line while the legs stay planted and vertical (the renderer
+counter-rotates the hips). Use it — not spinal `flex` — for a flat-back forward
+bend: deadlift, bent-over row, good-morning, or a bow.
 
 **Coordinate convention:** rest pose is standing, arms at sides, facing +Z. The
 renderer's mannequin is built in this same convention so the parser's resolved
-Euler angles apply directly. Flexion always bends toward +Z (anatomically
-forward): limb bones hang along −Y and torso-chain bones (pelvis, spine, chest,
-neck) stack along +Y, so the resolver signs the rotation per joint to keep the
-world-space direction consistent.
-
-### 3.1 `hinge` — the hip hinge
-
-`hips: hinge <deg>` describes **closed-chain** hip flexion: the feet stay
-planted and the torso tips over the femurs — a deadlift, Romanian deadlift,
-good morning, or forward fold. (Open-chain `hips: flex` swings the free leg
-forward instead.) The resolver expands it into a pelvis pitch of `<deg>` plus
-an equal counter-rotation on both hips, so the legs remain a vertical column
-while the upper body hinges with a neutral spine. It applies only to the
-`hips` group and is clamped by the hip-flexion ROM (135°). Combine with
-`spine: flex` for a rounded fold or `knees: flex` for soft knees.
+Euler angles apply directly.
 
 ---
 
@@ -104,10 +102,12 @@ research §5.1 normative tables. Selected ceilings (degrees):
 | --- | --- | --- | --- | --- |
 | shoulder | 180 | 60 | 180 | rot-in 70 / rot-out 90 |
 | elbow | 154 | 10 | — | supinate 92 / pronate 84 |
-| hip | 135 | 20 | 45 | hinge 135 |
+| hip | 135 | 20 | 45 | — |
 | knee | 144 | 5 | — | — |
 | ankle | — | — | — | dorsiflex 15 / plantarflex 50 |
-| pelvis | 30 | 20 | 15 | rotate 15 |
+| pelvis | — | — | — | hinge 120 |
+| finger | 100 | 20 | — | — |
+| thumb | 80 | 20 | 50 | adduct 30 |
 | spine | 90 | 30 | 35 | rotate 45 |
 | neck | 50 | 60 | 45 | rotate 80 |
 
@@ -120,17 +120,48 @@ research §5.1 normative tables. Selected ceilings (degrees):
 
 1. **Forward kinematics** — each phase sets joint angles; the renderer slerps
    bone rotations between phases with the phase's easing.
-2. **Ground-lock IK** — effectors listed in `ground-lock` (`hands`, `feet`) are
-   pinned to their planted floor position via Cyclic Coordinate Descent (CCD)
-   so they stay put while the body moves.
-3. **Looping** — the timeline loops base → phases → base; `repeat` is the rep
+2. **Grounding** — the figure is dropped so its lowest point rests on the floor
+   (a bounding-box drop), which grounds standing, plank, and the lying/seated
+   poses alike.
+3. **Ground-lock IK** — effectors listed in `ground-lock` (`hands`, `feet`) are
+   pinned to their planted floor position so they stay put while the body moves.
+4. **Reach-IK** — a `reach:` line drives an effector (`hand_left|hand_right|
+   foot_left|foot_right`, or the groups `hands`/`feet` for both sides) to a
+   world **target** via Cyclic Coordinate Descent (CCD) over the arm/leg chain.
+   A target is a body landmark bone (e.g. `ankle_left`), the keyword `floor`,
+   or a prop anchor (`bar`, `seat`, `wall`). The solve is **ROM-constrained**:
+   each iteration clamps every chain joint into its §4 Range-of-Motion limits
+   (expressed as a per-axis box in the bone's local Euler frame), so a reach
+   toward an unsafe or unreachable target settles on the closest *healthy*
+   pose — solved angles obey the same hard limits as authored ones.
+5. **Props** — `prop chair|wall|bar|box|dip-bars` adds a scene object at a
+   fixed default placement (chair/wall behind, bar overhead, box in front,
+   dip bars either side); its named anchors (`seat`, `wall`, `bar`, `box`,
+   `bars`) become reach/pin targets.
+6. **Pins** — `pin: <effector> <anchor>` translates the whole figure so the
+   effector sits on the anchor (effectors accept the same `hands`/`feet` groups
+   as reach — `pin: hands bar` pins both). Where ground-lock keeps a foot on
+   the floor and reach moves a limb to a target, a **pin moves the body** while
+   the contact stays put — so the figure hangs from a bar, pulls up toward it,
+   rises onto a box, or lowers into a dip as the joints work.
+7. **Spatial choreography** — `turn: <deg>` rotates the figure's facing (yaw
+   about vertical) and `travel: <x> <z>` moves it across the floor (world metres
+   from the load spot). Both are **absolute targets carried across phases** (like
+   joint angles) and both return home on the loop wrap, so a box-step traces a
+   square back to start and a pirouette spins a full turn. They layer under
+   grounding (feet still rest on the floor) and power pirouettes, grapevines,
+   traveling combos, and walk cycles. **Standing poses only** — combining with
+   lying/seated bases (whose root is already tilted) is out of scope.
+8. **Looping** — the timeline loops base → phases → base; `repeat` is the rep
    count surfaced to the UI.
 
-**v0.1 IK note:** Three.js's bundled `CCDIKSolver` targets `SkinnedMesh`; the
-Movit mannequin is rigid capsule segments, so Movit implements the same CCD
-algorithm directly over the Object3D bone hierarchy (`movit-render/ik.ts`).
-Reach-IK, two-person/dual-IK, and collision detection are deferred (research
-§5.2, §6.2).
+**Start poses:** `neutral`, `standing`, `plank`, `supine` (face-up), `prone`
+(face-down), `seated` (long-sit on the floor).
+
+**IK note:** Three.js's bundled `CCDIKSolver` targets `SkinnedMesh`; the Posecode
+mannequin is rigid capsule segments, so Posecode implements CCD directly over the
+Object3D bone hierarchy (`posecode-render/ik.ts`) for both ground-lock and reach.
+Two-person/dual-IK and collision detection remain deferred (research §5.2, §6.2).
 
 ---
 
@@ -140,7 +171,7 @@ Reach-IK, two-person/dual-IK, and collision detection are deferred (research
 angles are in **degrees**.
 
 ```ts
-interface MovitIR {
+interface PosecodeIR {
   version: string;          // "0.1"
   kind: string;             // "exercise" | "stretch" | "posture"
   name: string;
@@ -159,4 +190,4 @@ interface MovitIR {
 ```
 
 See [`llm-authoring.md`](./llm-authoring.md) for the prompt that teaches an LLM
-to write Movit, and [`examples/`](./examples) for complete documents.
+to write Posecode, and [`examples/`](./examples) for complete documents.
