@@ -1,0 +1,42 @@
+{
+  "name": "posecode-embed",
+  "version": "0.1.0",
+  "description": "Embed a live 3D Posecode movement anywhere with one <script> tag — the <posecode-player> web component.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "esbuild src/auto.ts --bundle --minify --format=iife --global-name=Posecode --outfile=dist/posecode-embed.js && esbuild src/index.ts --bundle --minify --format=esm --outfile=dist/posecode-embed.esm.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/posecode-dev/posecode.git",
+    "directory": "packages/posecode-embed"
+  },
+  "keywords": [
+    "posecode",
+    "web-component",
+    "custom-element",
+    "embed",
+    "3d",
+    "animation",
+    "three.js"
+  ],
+  "dependencies": {
+    "posecode-parser": "0.1.0",
+    "posecode-render": "0.1.0",
+    "posecode-share": "0.1.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.2"
+  }
+}

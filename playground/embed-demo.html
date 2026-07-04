@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>posecode-embed demo</title>
+    <style>
+      body { font: 15px/1.5 system-ui, sans-serif; margin: 0; background: #f4f6f8; color: #10151c; }
+      main { max-width: 760px; margin: 0 auto; padding: 32px 20px 120px; }
+      h1 { font-size: 22px; }
+      h2 { font-size: 15px; margin: 28px 0 8px; color: #556; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+      posecode-player { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12); }
+      code { background: #e6eaef; padding: 1px 5px; border-radius: 4px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>◆ posecode-embed — one script tag, live 3D movement anywhere</h1>
+      <p>Every player below is the same custom element, fed a movement a different way.</p>
+
+      <div class="grid">
+        <div>
+          <h2>1. From a share token (<code>doc</code>)</h2>
+          <posecode-player id="from-token"></posecode-player>
+        </div>
+        <div>
+          <h2>2. From a URL (<code>src</code>)</h2>
+          <posecode-player src="/squat.posecode"></posecode-player>
+        </div>
+      </div>
+
+      <h2>3. From inline text — reads like the language itself</h2>
+      <posecode-player>
+posecode exercise "Lateral raise"
+  rig humanoid
+  pose start = standing
+  step "Raise" 1.4s ease-out:
+    shoulders: abduct 90
+    elbows: flex 10
+    cue "Lift out to shoulder height, soft elbows"
+  step "Lower" 1.6s ease-in:
+    shoulders: abduct 0
+    elbows: flex 0
+  repeat 8
+      </posecode-player>
+
+      <h2>4. Graceful error (an invalid token)</h2>
+      <posecode-player doc="totally-not-a-valid-token"></posecode-player>
+
+      <script type="module">
+        import { encodePosecode } from "posecode-share";
+        // Build the share token at runtime so this page stays readable, and set
+        // it BEFORE the element is defined so it's present when the player boots.
+        const deadlift = `posecode exercise "Deadlift"
+  rig humanoid
+  pose start = standing
+  step "Lower" 1.8s ease-in-out:
+    pelvis: hinge 75
+    knees: flex 25
+    shoulders: extend 60
+    ground-lock: feet
+    cue "Push the hips back and hinge with a flat back"
+  step "Lift" 1.4s ease-out:
+    pelvis: hinge 0
+    knees: flex 0
+    shoulders: extend 0
+    ground-lock: feet
+  repeat 8`;
+        document
+          .getElementById("from-token")
+          .setAttribute("doc", encodePosecode(deadlift));
+        await import("posecode-embed"); // defines <posecode-player> → boots with doc set
+      </script>
+    </main>
+  </body>
+</html>
