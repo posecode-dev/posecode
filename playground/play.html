@@ -27,24 +27,27 @@
         <span class="tag">playground</span>
       </a>
       <div class="topbar-actions">
-        <label class="field filter">
-          <span>Area</span>
-          <div class="select-wrap sm"><select id="f-body"></select></div>
-        </label>
-        <label class="field filter">
-          <span>Gear</span>
-          <div class="select-wrap sm"><select id="f-equip"></select></div>
-        </label>
-        <label class="field filter">
-          <span>Level</span>
-          <div class="select-wrap sm"><select id="f-level"></select></div>
-        </label>
-        <label class="field">
+        <div class="filter-cluster" role="group" aria-label="Filter examples">
+          <label class="field filter">
+            <span>Area</span>
+            <div class="select-wrap sm"><select id="f-body"></select></div>
+          </label>
+          <label class="field filter">
+            <span>Gear</span>
+            <div class="select-wrap sm"><select id="f-equip"></select></div>
+          </label>
+          <label class="field filter">
+            <span>Level</span>
+            <div class="select-wrap sm"><select id="f-level"></select></div>
+          </label>
+        </div>
+        <label class="field field-primary">
           <span>Example <span id="preset-count" class="count"></span></span>
           <div class="select-wrap">
             <select id="preset"></select>
           </div>
         </label>
+        <span class="tb-divider" aria-hidden="true"></span>
         <button id="how-to" class="btn ghost" aria-label="How to use">
           <span class="ico-help" aria-hidden="true"></span><span class="lbl">How to use</span>
         </button>
