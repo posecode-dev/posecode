@@ -43,10 +43,33 @@
   --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-2: 0 10px 30px -12px rgba(0, 0, 0, 0.7);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Material system — the light that separates a "flat panel" from a real,
+     machined surface. `--edge` is the hairline catch-light along a top edge;
+     `--sheen` a barely-there vertical gradient that gives panels a subtle
+     top-lit read. Used consistently so every chrome surface feels milled. */
+  --edge: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --edge-strong: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --hairline: rgba(255, 255, 255, 0.06);
+  --sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.022), rgba(255, 255, 255, 0));
+  --shadow-float: 0 2px 4px rgba(0, 0, 0, 0.3), 0 12px 34px -14px rgba(0, 0, 0, 0.8);
+
+  /* Accent discipline: three tiers, brightest reserved. Signature moments only
+     get `--accent` at full strength; supporting states step down to line/wash
+     so the lime reads as a rare tracking marker, not a coat of paint. */
+  --accent-line: rgba(198, 242, 74, 0.35);
+  --accent-wash: rgba(198, 242, 74, 0.1);
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* Links inherit ink and stay undecorated unless a component opts in — no raw
+   UA blue anywhere. */
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
 html,
@@ -109,13 +132,21 @@ body {
     box-shadow 0.16s var(--ease),
     color 0.16s var(--ease);
 }
+/* Secondary buttons lift on a neutral surface — lime is reserved for the
+   primary CTA so it stays a signal, not decoration. */
 .btn:hover {
-  border-color: var(--accent);
+  border-color: var(--border-2);
+  background: var(--panel-3);
   color: #fff;
-  box-shadow: 0 0 0 1px var(--accent-veil), 0 6px 20px -10px var(--accent-glow);
+  box-shadow: var(--edge-strong), var(--shadow-1);
 }
 .btn:active {
   transform: translateY(1px);
+}
+.btn:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-wash);
 }
 .btn.sm {
   padding: 5px 10px;
@@ -209,9 +240,12 @@ select:hover {
   justify-content: space-between;
   padding: 12px 20px;
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(180deg, rgba(18, 23, 31, 0.92), rgba(12, 16, 22, 0.78));
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background:
+    var(--sheen),
+    linear-gradient(180deg, rgba(19, 24, 32, 0.94), rgba(11, 15, 21, 0.82));
+  box-shadow: var(--edge);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   z-index: 10;
 }
 
@@ -219,6 +253,8 @@ select:hover {
   display: flex;
   align-items: baseline;
   gap: 9px;
+  color: var(--text);
+  text-decoration: none;
 }
 .brand .logo {
   color: var(--accent);
@@ -252,35 +288,99 @@ select:hover {
 .field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.7px;
   text-transform: uppercase;
   color: var(--muted);
 }
-/* Compact gallery filters (Area / Gear / Level). */
-.topbar-actions .field.filter .select-wrap select {
-  min-width: 96px;
+
+/* Filter cluster (Area / Gear / Level) — a recessed, secondary control group
+   so it reads as "refine" beside the primary Example selector, not three more
+   peers competing for attention. */
+.filter-cluster {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 5px 10px 7px;
+  margin-right: 2px;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.18);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+.filter-cluster .field.filter {
+  font-size: 9px;
+  letter-spacing: 0.6px;
+  color: var(--muted);
+  opacity: 0.9;
+}
+.filter-cluster .select-wrap.sm select {
+  min-width: 92px;
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-2);
+  font-weight: 600;
+}
+.filter-cluster .select-wrap.sm select:hover {
+  border-color: var(--border-2);
+  color: var(--text);
+}
+
+/* Primary Example selector — the loudest control in the topbar. */
+.field-primary span:first-child {
+  color: var(--text-2);
+}
+.field-primary .select-wrap select {
+  min-width: 220px;
+  font-weight: 700;
+}
+.field-primary .select-wrap select:hover {
+  border-color: var(--accent-line);
 }
 .count {
   color: var(--accent);
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Divider between content-selection controls and the action buttons. */
+.tb-divider {
+  align-self: stretch;
+  width: 1px;
+  margin: 4px 4px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    var(--border-2) 25%,
+    var(--border-2) 75%,
+    transparent
+  );
 }
 
 /* --- Intro strip ---------------------------------------------------------- */
 .intro {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 10px 20px;
+  gap: 12px;
+  padding: 9px 20px;
   font-size: 13px;
   color: var(--text-2);
-  background: linear-gradient(90deg, var(--accent-faint), transparent 70%);
+  background: rgba(0, 0, 0, 0.16);
   border-bottom: 1px solid var(--border);
 }
+/* A small lime tick leads the strip instead of a full lime headline. */
+.intro::before {
+  content: "";
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
+}
 .intro b {
-  color: var(--accent);
+  color: var(--text);
   font-weight: 700;
 }
 .intro .link {
@@ -337,7 +437,8 @@ select:hover {
   gap: 10px;
   padding: 9px 16px;
   border-bottom: 1px solid var(--border);
-  background: var(--panel);
+  background: var(--sheen), var(--panel);
+  box-shadow: var(--edge);
 }
 .traffic {
   width: 10px;
@@ -522,67 +623,119 @@ select:hover {
   background: var(--panel-2);
   border: 1px solid var(--border-2);
   border-radius: 999px;
-  padding: 5px 13px;
+  padding: 5px 13px 5px 12px;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   transition:
     color 0.15s var(--ease),
     border-color 0.15s var(--ease),
     background 0.15s var(--ease),
     box-shadow 0.15s var(--ease);
 }
+/* A status dot on every chip: dim by default, lit lime when active. Carries the
+   "which phase is playing" signal without a loud solid fill. */
+.ribbon .chip::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--border-2);
+  transition: background 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
 .ribbon .chip:hover {
   color: var(--text);
-  border-color: var(--accent);
+  border-color: var(--border-2);
+  background: var(--panel-3);
 }
 .ribbon .chip.active {
-  color: var(--accent-ink);
-  background: linear-gradient(180deg, var(--accent), var(--accent-2));
-  border-color: transparent;
-  box-shadow: 0 4px 14px -6px var(--accent-glow);
+  color: var(--text);
+  background: var(--accent-wash);
+  border-color: var(--accent-line);
+  box-shadow: var(--edge);
+}
+.ribbon .chip.active::before {
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
 }
 
 /* --- Transport ------------------------------------------------------------ */
 .transport {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 12px 18px;
+  gap: 16px;
+  padding: 13px 20px;
   border-top: 1px solid var(--border);
-  background: linear-gradient(180deg, rgba(15, 20, 27, 0.85), rgba(10, 13, 18, 0.95));
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background:
+    var(--sheen),
+    linear-gradient(180deg, rgba(17, 22, 30, 0.9), rgba(9, 12, 17, 0.96));
+  box-shadow: var(--edge);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
+/* Circular media-player transport — a single confident lime disc instead of a
+   wide, shouty pill. Reads as a precision control, not a toy button. */
 .btn-play {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  font-family: var(--sans);
-  font-weight: 700;
-  font-size: 13px;
+  justify-content: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
   color: var(--accent-ink);
-  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  background: radial-gradient(120% 120% at 50% 22%, var(--accent), var(--accent-2));
   border: none;
-  border-radius: 999px;
-  padding: 9px 18px 9px 16px;
+  border-radius: 50%;
   cursor: pointer;
-  min-width: 96px;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.25) inset, 0 6px 18px -8px var(--accent-glow);
-  transition: transform 0.12s var(--ease), filter 0.16s var(--ease), box-shadow 0.16s var(--ease);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.15),
+    0 4px 14px -4px var(--accent-glow);
+  transition:
+    transform 0.14s var(--ease),
+    filter 0.16s var(--ease),
+    box-shadow 0.2s var(--ease);
 }
 .btn-play:hover {
-  filter: brightness(1.06);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.3) inset, 0 10px 26px -8px var(--accent-glow);
+  filter: brightness(1.05);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.15),
+    0 0 0 5px var(--accent-wash),
+    0 8px 22px -6px var(--accent-glow);
 }
 .btn-play:active {
-  transform: translateY(1px);
+  transform: scale(0.94);
+}
+.btn-play:focus-visible {
+  outline: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 0 0 3px var(--bg),
+    0 0 0 5px var(--accent);
+}
+/* The word label is redundant next to a universal glyph — hide it, keep it for
+   screen readers via aria-label on the button. */
+.btn-play .lbl {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 .btn-play .ico {
-  width: 13px;
-  height: 13px;
+  width: 15px;
+  height: 15px;
   background: currentColor;
   -webkit-mask: center / contain no-repeat var(--icon);
   mask: center / contain no-repeat var(--icon);
+}
+/* Optically center the play triangle in the disc. */
+.btn-play[data-playing="false"] .ico {
+  transform: translateX(1px);
 }
 .btn-play[data-playing="false"] .ico {
   --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 5v14l12-7z'/%3E%3C/svg%3E");
@@ -609,28 +762,37 @@ select:hover {
   z-index: 2;
 }
 #scrub::-webkit-slider-runnable-track {
-  height: 4px;
+  height: 5px;
   border-radius: 999px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
   background: linear-gradient(
     90deg,
     var(--accent) 0%,
-    var(--accent) var(--pct, 0%),
+    var(--accent-2) var(--pct, 0%),
     var(--track) var(--pct, 0%),
     var(--track) 100%
   );
 }
 #scrub::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 14px;
-  height: 14px;
-  margin-top: -5px;
+  width: 13px;
+  height: 13px;
+  margin-top: -4px;
   border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 0 4px var(--accent-veil), 0 0 12px var(--accent-glow);
-  transition: box-shadow 0.15s var(--ease);
+  background: #fff;
+  box-shadow:
+    0 0 0 3px var(--accent),
+    0 1px 3px rgba(0, 0, 0, 0.5),
+    0 0 12px var(--accent-glow);
+  transition: box-shadow 0.15s var(--ease), transform 0.15s var(--ease);
 }
 #scrub:hover::-webkit-slider-thumb {
-  box-shadow: 0 0 0 6px var(--accent-veil), 0 0 16px var(--accent-glow);
+  transform: scale(1.12);
+  box-shadow:
+    0 0 0 3px var(--accent),
+    0 0 0 7px var(--accent-wash),
+    0 1px 3px rgba(0, 0, 0, 0.5),
+    0 0 16px var(--accent-glow);
 }
 #scrub::-moz-range-track {
   height: 4px;
@@ -677,15 +839,19 @@ select:hover {
   color: var(--text-2);
   min-width: 46px;
   text-align: right;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.2px;
+  padding-left: 16px;
+  border-left: 1px solid var(--hairline);
 }
 .loop,
 .speed {
   display: flex;
   align-items: center;
-  gap: 7px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.4px;
+  gap: 8px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
   text-transform: uppercase;
   color: var(--muted);
   user-select: none;
@@ -953,6 +1119,25 @@ select:hover {
   .topbar-actions .field .select-wrap,
   .topbar-actions .field select {
     width: 100%;
+  }
+  /* Filter cluster spans a full row; the primary Example sits on its own row. */
+  .filter-cluster {
+    flex: 1 1 100%;
+    justify-content: space-between;
+  }
+  .filter-cluster .field.filter,
+  .filter-cluster .select-wrap.sm,
+  .filter-cluster .select-wrap.sm select {
+    flex: 1 1 0;
+    min-width: 0;
+    width: 100%;
+  }
+  .field-primary {
+    flex: 1 1 100%;
+  }
+  /* The vertical divider only makes sense in the single-row desktop layout. */
+  .tb-divider {
+    display: none;
   }
   /* Compact "How to use" + "Share" to icon-only so the controls fit two rows. */
   #how-to,
