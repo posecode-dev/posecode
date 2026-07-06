@@ -8,6 +8,6 @@ posecode exercise "Biceps curl"
 
   step "Lower" 1.4s ease-in:
     elbows: flex 15
-    cue "Lower under control — don't swing"
+    cue "Lower under control: don't swing"
 
   repeat 10

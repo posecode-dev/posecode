@@ -4,7 +4,7 @@ posecode stretch "Knee flexion (ROM demo)"
 
   step "Flex" 2.5s ease-in-out:
     knee_right: flex 130
-    cue "Bend the right knee, heel toward the glutes — the knee's single plane"
+    cue "Bend the right knee, heel toward the glutes: the knee's single plane"
 
   step "Extend" 2.5s ease-in-out:
     knee_right: flex 0

@@ -14,7 +14,7 @@ posecode posture "Hand wave"
 
   step "Wave in" 0.6s ease-in-out:
     fingers_right: flex 0
-    cue "...and back again — a friendly wave"
+    cue "...and back again: a friendly wave"
 
   step "Lower" 0.8s ease-in:
     shoulder_right: flex 0

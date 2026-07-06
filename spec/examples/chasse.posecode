@@ -18,7 +18,7 @@ posecode exercise "Chassé"
     ankle_left: plantarflex 0
     travel: 0.9 0
     ground-lock: feet
-    cue "Chase the trailing foot to the lead — feet meet in the air"
+    cue "Chase the trailing foot to the lead: feet meet in the air"
 
   step "Reach & push back" 0.8s ease-out:
     hip_left: flex 30

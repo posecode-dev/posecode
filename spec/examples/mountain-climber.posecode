@@ -14,7 +14,7 @@ posecode exercise "Mountain climber"
     hip_left: flex 60
     knee_left: flex 75
     ground-lock: hands, feet
-    cue "Switch fast — left knee drives in"
+    cue "Switch fast: left knee drives in"
 
   step "Out" 0.5s ease-in:
     hip_left: flex 0

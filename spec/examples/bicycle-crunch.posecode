@@ -25,7 +25,7 @@ posecode exercise "Bicycle crunch"
     knee_right: flex 90
     hip_left: flex 25
     knee_left: flex 20
-    cue "Switch — left elbow toward the right knee"
+    cue "Switch: left elbow toward the right knee"
 
   step "Center" 0.6s ease-out:
     spine: rotate-in 0

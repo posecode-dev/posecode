@@ -4,7 +4,7 @@ posecode stretch "Hip flexion (ROM demo)"
 
   step "Lift" 2.5s ease-in-out:
     hip_right: flex 90
-    cue "Raise the straight right leg forward — sagittal-plane hip flexion"
+    cue "Raise the straight right leg forward: sagittal-plane hip flexion"
 
   step "Lower" 2.5s ease-in-out:
     hip_right: flex 0

@@ -21,6 +21,6 @@ posecode exercise "Box step taps"
   step "Left down" 0.5s ease-in:
     hip_left: flex 0
     knee_left: flex 0
-    cue "Back to the floor — keep a light, quick rhythm"
+    cue "Back to the floor: keep a light, quick rhythm"
 
   repeat 6

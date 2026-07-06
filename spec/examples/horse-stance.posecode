@@ -11,7 +11,7 @@ posecode posture "Horse stance"
     shoulders: flex 80
     elbows: flex 90
     ground-lock: feet
-    cue "Sink into a wide, low stance — thighs working, back tall, guard up"
+    cue "Sink into a wide, low stance: thighs working, back tall, guard up"
 
   step "Rise" 2s ease-out:
     hips: flex 0

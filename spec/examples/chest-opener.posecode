@@ -7,7 +7,7 @@ posecode stretch "Chest opener"
     chest: extend 18
     spine: extend 12
     ground-lock: feet
-    cue "Reach the arms back and lift the chest — open the front line"
+    cue "Reach the arms back and lift the chest: open the front line"
 
   step "Release" 2.5s ease-in-out:
     shoulders: extend 0

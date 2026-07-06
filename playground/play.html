@@ -3,11 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Posecode Playground — kinematic motion as text</title>
+    <title>Posecode Playground: Write and Preview 3D Human Movement as Text</title>
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3 29 16 16 29 3 16Z' fill='%23c6f24a'/%3E%3C/svg%3E"
     />
+    <meta
+      name="description"
+      content="Try Posecode live: paste text from ChatGPT, Claude, or Gemini and watch it animate a 3D figure. Browse a library of movements across fitness, physiotherapy, yoga, and dance."
+    />
+    <link rel="canonical" href="https://posecode.org/play" />
+    <meta name="theme-color" content="#0a0d12" />
+    <meta property="og:title" content="Posecode Playground: live editor for movement as text" />
+    <meta
+      property="og:description"
+      content="Paste a .posecode document and watch a 3D figure animate it, with every joint clamped to a safe range of motion."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://posecode.org/play" />
+    <meta property="og:site_name" content="Posecode" />
+    <meta property="og:image" content="https://posecode.org/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -27,26 +43,17 @@
         <span class="tag">playground</span>
       </a>
       <div class="topbar-actions">
-        <div class="filter-cluster" role="group" aria-label="Filter examples">
-          <label class="field filter">
-            <span>Area</span>
-            <div class="select-wrap sm"><select id="f-body"></select></div>
-          </label>
-          <label class="field filter">
-            <span>Gear</span>
-            <div class="select-wrap sm"><select id="f-equip"></select></div>
-          </label>
-          <label class="field filter">
-            <span>Level</span>
-            <div class="select-wrap sm"><select id="f-level"></select></div>
-          </label>
-        </div>
-        <label class="field field-primary">
-          <span>Example <span id="preset-count" class="count"></span></span>
-          <div class="select-wrap">
-            <select id="preset"></select>
-          </div>
-        </label>
+        <button
+          id="lib-open"
+          class="lib-btn"
+          type="button"
+          aria-haspopup="dialog"
+          title="Browse the movement library"
+        >
+          <span class="lib-btn-kicker">Movement</span>
+          <span id="lib-current" class="lib-btn-name"></span>
+          <span class="lib-caret" aria-hidden="true"></span>
+        </button>
         <span class="tb-divider" aria-hidden="true"></span>
         <button id="how-to" class="btn ghost" aria-label="How to use">
           <span class="ico-help" aria-hidden="true"></span><span class="lbl">How to use</span>
@@ -153,7 +160,7 @@
             <span class="step-n">1</span>
             <div>
               <b>Copy the prompt.</b> Click <em>Copy LLM prompt</em> (top right). It teaches
-              any model — ChatGPT, Claude, Gemini — to write the Posecode language.
+              any model (ChatGPT, Claude, Gemini) to write the Posecode language.
             </div>
           </li>
           <li>
@@ -182,6 +189,26 @@
           <pre id="prompt-text"></pre>
         </div>
       </div>
+    </aside>
+
+    <!-- Movement library: one place to search, filter, and pick an example -->
+    <aside id="library" class="slideover library" hidden aria-label="Movement library">
+      <header class="slideover-head">
+        <h2>Movement library <span id="lib-count" class="count"></span></h2>
+        <button id="library-close" class="x" aria-label="Close">×</button>
+      </header>
+      <div class="lib-tools">
+        <input
+          id="lib-search"
+          type="search"
+          placeholder="Search: squat, hamstrings, yoga, chair…"
+          aria-label="Search movements"
+          autocomplete="off"
+        />
+        <div id="lib-domains" class="chip-row" role="group" aria-label="Filter by practice"></div>
+        <div id="lib-levels" class="chip-row" role="group" aria-label="Filter by level"></div>
+      </div>
+      <div id="lib-list" class="lib-list"></div>
     </aside>
 
     <script type="module" src="./src/main.ts"></script>
