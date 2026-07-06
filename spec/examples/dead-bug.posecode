@@ -21,7 +21,7 @@ posecode exercise "Dead bug"
     shoulder_left: flex 150
     hip_right: flex 25
     knee_right: flex 30
-    cue "Return and switch — left arm and right leg reach out"
+    cue "Return and switch: left arm and right leg reach out"
 
   step "Return" 1s ease-out:
     shoulder_left: flex 90

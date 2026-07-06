@@ -20,7 +20,6 @@ const $ = <T extends HTMLElement>(id: string): T =>
 
 let editorApi: PosecodeEditor; // assigned at boot, once the initial doc is known
 const warnings = $<HTMLDivElement>("warnings");
-const presetSel = $<HTMLSelectElement>("preset");
 const canvas = $<HTMLCanvasElement>("canvas");
 const playpause = $<HTMLButtonElement>("playpause");
 const scrub = $<HTMLInputElement>("scrub");
@@ -169,85 +168,155 @@ function recompile(): void {
   }
 }
 
-// --- Presets: a filterable gallery (body part / equipment / difficulty) ---
-// The catalogue is tagged like a standard exercise DB, so the dropdown can be
-// narrowed the way an exercise explorer would. Options for each filter are
-// derived from the data so they never drift.
-const fBody = $<HTMLSelectElement>("f-body");
-const fEquip = $<HTMLSelectElement>("f-equip");
-const fLevel = $<HTMLSelectElement>("f-level");
-const presetCount = $<HTMLSpanElement>("preset-count");
+// --- Movement library: one panel to search, filter, and pick an example ---
+// Replaces the old topbar dropdown cluster (area / gear / level / example): a
+// single button shows the current movement and opens a browsable panel with
+// one search box and two light chip filters. Picking a movement loads it and
+// closes the panel, so the topbar stays a one-glance control on any screen.
+const libOpenBtn = $<HTMLButtonElement>("lib-open");
+const libCurrent = $<HTMLSpanElement>("lib-current");
+const library = $<HTMLElement>("library");
+const libSearch = $<HTMLInputElement>("lib-search");
+const libDomains = $<HTMLDivElement>("lib-domains");
+const libLevels = $<HTMLDivElement>("lib-levels");
+const libList = $<HTMLDivElement>("lib-list");
+const libCount = $<HTMLSpanElement>("lib-count");
 
-function fillFilter(sel: HTMLSelectElement, values: string[], allLabel: string): void {
-  sel.innerHTML = "";
-  const all = document.createElement("option");
-  all.value = "";
-  all.textContent = allLabel;
-  sel.append(all);
-  for (const v of [...new Set(values)].sort()) {
-    const opt = document.createElement("option");
-    opt.value = v;
-    opt.textContent = v;
-    sel.append(opt);
+let currentPresetId: string | null = null;
+let libQuery = "";
+let libDomain = ""; // "" = all
+let libLevel = ""; // "" = all
+
+/** Render one chip row ("All" + each distinct value) reflecting the selection. */
+function renderChips(
+  host: HTMLDivElement,
+  values: string[],
+  selected: string,
+  allLabel: string,
+  onPick: (value: string) => void,
+): void {
+  host.innerHTML = "";
+  for (const value of ["", ...values]) {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "fchip";
+    chip.textContent = value || allLabel;
+    chip.setAttribute("aria-pressed", String(value === selected));
+    chip.addEventListener("click", () => onPick(value));
+    host.append(chip);
   }
 }
-fillFilter(fBody, PRESETS.map((p) => p.bodyPart), "All areas");
-fillFilter(fEquip, PRESETS.map((p) => p.equipment), "All gear");
-fillFilter(fLevel, PRESETS.map((p) => p.difficulty), "All levels");
 
-/** Rebuild the Example dropdown from the presets matching the active filters. */
-function rebuildPresetOptions(): void {
-  const matches = PRESETS.filter(
-    (p) =>
-      (!fBody.value || p.bodyPart === fBody.value) &&
-      (!fEquip.value || p.equipment === fEquip.value) &&
-      (!fLevel.value || p.difficulty === fLevel.value),
-  );
-  presetSel.innerHTML = "";
-  const groups = new Map<string, HTMLOptGroupElement>();
-  for (const p of matches) {
-    let group = groups.get(p.domain);
-    if (!group) {
-      group = document.createElement("optgroup");
-      group.label = p.domain;
-      groups.set(p.domain, group);
-      presetSel.append(group);
-    }
-    const opt = document.createElement("option");
-    opt.value = p.id;
-    opt.textContent = `${p.label} · ${p.target}`;
-    group.append(opt);
-  }
-  presetCount.textContent = `(${matches.length})`;
-  if (matches.length === 0) {
-    const opt = document.createElement("option");
-    opt.textContent = "No matches — clear filters";
-    opt.disabled = true;
-    presetSel.append(opt);
-  }
-}
-rebuildPresetOptions();
-
-for (const f of [fBody, fEquip, fLevel]) {
-  f.addEventListener("change", () => {
-    rebuildPresetOptions();
-    // Auto-load the first match so the viewer always reflects the filter.
-    const first = PRESETS.find((p) => p.id === presetSel.value);
-    if (first) {
-      editorApi.setValue(first.source);
-      recompile();
-    }
+function renderLibraryFilters(): void {
+  // Domains keep catalogue order (curated); levels are a fixed scale.
+  renderChips(libDomains, [...new Set(PRESETS.map((p) => p.domain))], libDomain, "All", (v) => {
+    libDomain = v;
+    renderLibraryFilters();
+    renderLibraryList();
+  });
+  renderChips(libLevels, ["Beginner", "Intermediate", "Advanced"], libLevel, "All levels", (v) => {
+    libLevel = v;
+    renderLibraryFilters();
+    renderLibraryList();
   });
 }
 
-presetSel.addEventListener("change", () => {
-  const preset = PRESETS.find((p) => p.id === presetSel.value);
-  if (preset) {
-    editorApi.setValue(preset.source);
-    recompile();
-    setMobileView("viewer"); // on phones, jump to the figure after picking
+/** Case- and accent-insensitive ("plie" finds "Demi-plié"). */
+function fold(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function libraryMatches(): typeof PRESETS {
+  const q = fold(libQuery.trim());
+  return PRESETS.filter(
+    (p) =>
+      (!libDomain || p.domain === libDomain) &&
+      (!libLevel || p.difficulty === libLevel) &&
+      (!q ||
+        fold(`${p.label} ${p.target} ${p.domain} ${p.bodyPart} ${p.equipment}`).includes(q)),
+  );
+}
+
+function renderLibraryList(): void {
+  const matches = libraryMatches();
+  libCount.textContent = `(${matches.length})`;
+  libList.innerHTML = "";
+
+  if (matches.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "lib-empty";
+    empty.textContent = "No movements match. ";
+    const reset = document.createElement("button");
+    reset.type = "button";
+    reset.className = "link";
+    reset.textContent = "Reset search & filters";
+    reset.addEventListener("click", () => {
+      libQuery = "";
+      libSearch.value = "";
+      libDomain = "";
+      libLevel = "";
+      renderLibraryFilters();
+      renderLibraryList();
+    });
+    empty.append(reset);
+    libList.append(empty);
+    return;
   }
+
+  // Group by domain (first-seen order) so each practice gets a single header.
+  const groups = new Map<string, typeof matches>();
+  for (const p of matches) {
+    const group = groups.get(p.domain);
+    if (group) group.push(p);
+    else groups.set(p.domain, [p]);
+  }
+  for (const [domain, presets] of groups) {
+    const head = document.createElement("div");
+    head.className = "lib-group";
+    head.textContent = domain;
+    libList.append(head);
+    for (const p of presets) appendItem(p);
+  }
+
+  function appendItem(p: (typeof PRESETS)[number]): void {
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "lib-item";
+    if (p.id === currentPresetId) item.setAttribute("aria-current", "true");
+    const name = document.createElement("span");
+    name.className = "li-name";
+    name.textContent = p.label;
+    const meta = document.createElement("span");
+    meta.className = "li-meta";
+    meta.textContent = `${p.target} · ${p.equipment} · ${p.difficulty}`;
+    item.append(name, meta);
+    item.addEventListener("click", () => {
+      loadPreset(p.id);
+      closePanels();
+    });
+    libList.append(item);
+  }
+}
+
+function loadPreset(id: string): void {
+  const preset = PRESETS.find((p) => p.id === id);
+  if (!preset) return;
+  currentPresetId = preset.id;
+  libCurrent.textContent = preset.label;
+  editorApi.setValue(preset.source);
+  recompile();
+  setMobileView("viewer"); // on phones, jump to the figure after picking
+}
+
+libSearch.addEventListener("input", () => {
+  libQuery = libSearch.value;
+  renderLibraryList();
 });
+renderLibraryFilters();
+renderLibraryList();
 
 // --- Mobile Editor/Viewer toggle (no-op visually on desktop, where both show) ---
 function setMobileView(view: "editor" | "viewer"): void {
@@ -317,27 +386,40 @@ async function shareLink(): Promise<void> {
 }
 shareBtn.addEventListener("click", shareLink);
 
-// --- How-to slide-over ---
+// --- Slide-over panels (how-to, movement library) sharing one scrim ---
 const howto = $<HTMLElement>("howto");
 const scrim = $<HTMLDivElement>("scrim");
 $<HTMLPreElement>("prompt-text").textContent = llmPrompt;
 
-function openHowto(): void {
-  howto.hidden = false;
+function openPanel(panel: HTMLElement): void {
+  closePanels();
+  panel.hidden = false;
   scrim.hidden = false;
 }
-function closeHowto(): void {
+function closePanels(): void {
   howto.hidden = true;
+  library.hidden = true;
   scrim.hidden = true;
 }
+function openHowto(): void {
+  openPanel(howto);
+}
+function openLibrary(): void {
+  renderLibraryList(); // refresh the "current movement" marker
+  openPanel(library);
+  // Focus search only with a real keyboard; on touch it would pop the OSK.
+  if (matchMedia("(hover: hover) and (pointer: fine)").matches) libSearch.focus();
+}
 $<HTMLButtonElement>("how-to").addEventListener("click", openHowto);
-$<HTMLButtonElement>("howto-close").addEventListener("click", closeHowto);
-scrim.addEventListener("click", closeHowto);
+$<HTMLButtonElement>("howto-close").addEventListener("click", closePanels);
+libOpenBtn.addEventListener("click", openLibrary);
+$<HTMLButtonElement>("library-close").addEventListener("click", closePanels);
+scrim.addEventListener("click", closePanels);
 $<HTMLButtonElement>("howto-copy").addEventListener("click", (e) =>
   copyPrompt(e.currentTarget as HTMLButtonElement),
 );
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") closeHowto();
+  if (e.key === "Escape") closePanels();
 });
 
 // --- Intro strip ---
@@ -354,17 +436,13 @@ $<HTMLButtonElement>("intro-dismiss").addEventListener("click", () => {
 const sharedSource = readShareHash(window.location.hash);
 let initialDoc: string;
 if (sharedSource) {
-  // Reflect the off-preset document in the dropdown with a transient option.
-  const opt = document.createElement("option");
-  opt.value = "__shared__";
-  opt.textContent = "↗ shared link";
-  presetSel.prepend(opt);
-  presetSel.value = "__shared__";
+  libCurrent.textContent = "↗ Shared link";
   initialDoc = sharedSource;
   intro.hidden = true;
 } else {
   initialDoc = PRESETS[0]!.source;
-  presetSel.value = PRESETS[0]!.id;
+  currentPresetId = PRESETS[0]!.id;
+  libCurrent.textContent = PRESETS[0]!.label;
 }
 
 editorApi = createPosecodeEditor($("editor"), {

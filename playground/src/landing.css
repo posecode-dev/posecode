@@ -185,6 +185,7 @@ code {
 .examples,
 .how,
 .developers,
+.faq,
 .footer {
   max-width: var(--container);
   margin: 0 auto;
@@ -565,6 +566,42 @@ a.dev-card:hover {
   color: var(--accent);
   background: var(--accent-faint);
   border-color: var(--accent-veil);
+}
+
+/* --- FAQ -------------------------------------------------------------------- */
+.faq {
+  padding-top: clamp(48px, 7vw, 88px);
+  padding-bottom: clamp(48px, 7vw, 88px);
+}
+.faq-list {
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.faq-item {
+  padding: 22px 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, var(--panel), transparent);
+}
+.faq-item dt {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  margin: 0 0 8px;
+}
+.faq-item dd {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+.faq-item em {
+  color: var(--accent);
+  font-style: normal;
+  font-weight: 600;
 }
 
 /* --- Footer ---------------------------------------------------------------- */

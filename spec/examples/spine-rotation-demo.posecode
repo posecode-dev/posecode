@@ -5,7 +5,7 @@ posecode stretch "Spine rotation (ROM demo)"
   step "Rotate right" 2.5s ease-in-out:
     spine: rotate-out 45
     ground-lock: feet
-    cue "Rotate the trunk to the right — transverse-plane spinal rotation"
+    cue "Rotate the trunk to the right: transverse-plane spinal rotation"
 
   step "Rotate left" 2.5s ease-in-out:
     spine: rotate-in 45

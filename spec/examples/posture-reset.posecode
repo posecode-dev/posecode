@@ -8,7 +8,7 @@ posecode posture "Desk posture reset"
     neck: flex 28
     shoulders: flex 22
     ground-lock: feet
-    cue "The collapsed desk posture — rounded back, head drifting forward"
+    cue "The collapsed desk posture: rounded back, head drifting forward"
 
   step "Stack tall" 2.5s ease-in-out:
     spine: flex 0

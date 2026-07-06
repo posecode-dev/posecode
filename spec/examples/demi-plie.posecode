@@ -11,7 +11,7 @@ posecode exercise "Demi-plié"
     elbows: flex 15
     spine: extend 4
     ground-lock: feet
-    cue "Turn out from the hips and bend the knees over the toes — heels down"
+    cue "Turn out from the hips and bend the knees over the toes: heels down"
 
   step "Straighten" 2s ease-out:
     hips: flex 0

@@ -10,7 +10,7 @@ posecode exercise "Relevé"
     elbows: flex 12
     spine: extend 4
     ground-lock: feet
-    cue "Turn out and rise onto the balls of the feet — lengthen up tall"
+    cue "Turn out and rise onto the balls of the feet: lengthen up tall"
 
   step "Lower" 1.8s ease-in:
     ankles: plantarflex 0

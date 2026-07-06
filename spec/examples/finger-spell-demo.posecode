@@ -13,7 +13,7 @@ posecode posture "Finger-spelling (approx.)"
     ring_right: flex 95
     pinky_right: flex 95
     thumb_right: flex 0
-    cue "A — fingers curled into a fist, thumb resting alongside"
+    cue "A: fingers curled into a fist, thumb resting alongside"
 
   step "Letter B" 1.5s ease-in-out:
     index_right: flex 0
@@ -21,7 +21,7 @@ posecode posture "Finger-spelling (approx.)"
     ring_right: flex 0
     pinky_right: flex 0
     thumb_right: flex 60
-    cue "B — fingers straight and together, thumb across the palm"
+    cue "B: fingers straight and together, thumb across the palm"
 
   step "Letter I" 1.5s ease-in-out:
     index_right: flex 95
@@ -29,7 +29,7 @@ posecode posture "Finger-spelling (approx.)"
     ring_right: flex 95
     pinky_right: flex 0
     thumb_right: flex 60
-    cue "I — only the little finger stands up"
+    cue "I: only the little finger stands up"
 
   step "Relax" 1.2s ease-out:
     fingers_right: flex 0

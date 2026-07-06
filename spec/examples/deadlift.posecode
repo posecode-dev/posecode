@@ -8,7 +8,7 @@ posecode exercise "Deadlift"
     shoulders: extend 60
     neck: extend 12
     ground-lock: feet
-    cue "Push the hips back and hinge with a flat back — let the arms hang to the bar"
+    cue "Push the hips back and hinge with a flat back: let the arms hang to the bar"
 
   step "Lift" 1.4s ease-out:
     pelvis: hinge 0

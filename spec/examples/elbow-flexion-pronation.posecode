@@ -5,11 +5,11 @@ posecode stretch "Elbow flexion & forearm rotation (ROM demo)"
   step "Flex & supinate" 2.5s ease-in-out:
     elbows: flex 140
     elbows: supinate 80
-    cue "Bend the elbows and turn the palms up — flexion with supination"
+    cue "Bend the elbows and turn the palms up: flexion with supination"
 
   step "Extend & pronate" 2.5s ease-in-out:
     elbows: flex 10
     elbows: pronate 80
-    cue "Straighten and turn the palms down — extension with pronation"
+    cue "Straighten and turn the palms down: extension with pronation"
 
   repeat 4

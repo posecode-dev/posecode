@@ -10,7 +10,7 @@ posecode exercise "Front kick"
   step "Extend" 0.35s ease-out:
     hip_right: flex 100
     knee_right: flex 5
-    cue "Snap the lower leg out — strike with the ball of the foot"
+    cue "Snap the lower leg out: strike with the ball of the foot"
 
   step "Re-chamber" 0.45s ease-in:
     hip_right: flex 95

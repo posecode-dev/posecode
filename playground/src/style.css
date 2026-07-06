@@ -283,60 +283,59 @@ select:hover {
 .topbar-actions {
   display: flex;
   gap: 12px;
-  align-items: flex-end;
+  align-items: center;
 }
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+
+/* Movement-library trigger — the one content control in the topbar. Reads like
+   a select (kicker, current movement, caret) but opens the full browse panel. */
+.lib-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--sans);
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: border-color 0.16s var(--ease), background 0.16s var(--ease);
+}
+.lib-btn:hover {
+  border-color: var(--accent-line);
+  background: var(--panel-3);
+}
+.lib-btn:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-wash);
+}
+.lib-btn-kicker {
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.7px;
   text-transform: uppercase;
   color: var(--muted);
 }
-
-/* Filter cluster (Area / Gear / Level) — a recessed, secondary control group
-   so it reads as "refine" beside the primary Example selector, not three more
-   peers competing for attention. */
-.filter-cluster {
-  display: flex;
-  align-items: flex-end;
-  gap: 8px;
-  padding: 5px 10px 7px;
-  margin-right: 2px;
-  border-radius: var(--radius-sm);
-  background: rgba(0, 0, 0, 0.18);
-  box-shadow: inset 0 0 0 1px var(--hairline);
-}
-.filter-cluster .field.filter {
-  font-size: 9px;
-  letter-spacing: 0.6px;
-  color: var(--muted);
-  opacity: 0.9;
-}
-.filter-cluster .select-wrap.sm select {
-  min-width: 92px;
-  background: transparent;
-  border-color: transparent;
-  color: var(--text-2);
-  font-weight: 600;
-}
-.filter-cluster .select-wrap.sm select:hover {
-  border-color: var(--border-2);
-  color: var(--text);
-}
-
-/* Primary Example selector — the loudest control in the topbar. */
-.field-primary span:first-child {
-  color: var(--text-2);
-}
-.field-primary .select-wrap select {
-  min-width: 220px;
+.lib-btn-name {
+  font-size: 13px;
   font-weight: 700;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.field-primary .select-wrap select:hover {
-  border-color: var(--accent-line);
+.lib-caret {
+  width: 7px;
+  height: 7px;
+  margin-top: -3px;
+  border-right: 1.5px solid var(--text-2);
+  border-bottom: 1.5px solid var(--text-2);
+  transform: rotate(45deg);
+  transition: border-color 0.16s var(--ease);
+}
+.lib-btn:hover .lib-caret {
+  border-color: var(--accent);
 }
 .count {
   color: var(--accent);
@@ -515,7 +514,7 @@ select:hover {
   background: var(--panel);
 }
 .warnings:empty::before {
-  content: "✓  parses clean — no warnings";
+  content: "✓  parses clean, no warnings";
   color: var(--accent);
   opacity: 0.85;
 }
@@ -1007,6 +1006,131 @@ select:hover {
   white-space: pre-wrap;
 }
 
+/* --- Movement library panel ------------------------------------------------ */
+.lib-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--border);
+}
+#lib-search {
+  width: 100%;
+  font-family: var(--sans);
+  font-size: 13.5px;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  transition: border-color 0.16s var(--ease), box-shadow 0.16s var(--ease);
+}
+#lib-search::placeholder {
+  color: var(--muted);
+}
+#lib-search:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-wash);
+}
+/* Chip rows scroll sideways instead of wrapping, so filters stay one glance tall. */
+.chip-row {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+.chip-row::-webkit-scrollbar {
+  display: none;
+}
+.fchip {
+  flex: none;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  background: var(--panel-2);
+  border: 1px solid var(--border-2);
+  border-radius: 999px;
+  padding: 5px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    color 0.15s var(--ease),
+    border-color 0.15s var(--ease),
+    background 0.15s var(--ease);
+}
+.fchip:hover {
+  color: var(--text);
+  background: var(--panel-3);
+}
+.fchip[aria-pressed="true"] {
+  color: var(--text);
+  background: var(--accent-wash);
+  border-color: var(--accent-line);
+}
+.lib-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 6px 14px 22px;
+}
+.lib-group {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 16px 10px 6px;
+}
+.lib-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 9px 10px;
+  cursor: pointer;
+  transition: background 0.14s var(--ease);
+}
+.lib-item:hover {
+  background: var(--panel-2);
+}
+.lib-item[aria-current="true"] {
+  background: var(--accent-wash);
+  box-shadow: inset 2px 0 0 0 var(--accent);
+}
+.lib-item .li-name {
+  font-family: var(--sans);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+.lib-item .li-meta {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.lib-empty {
+  padding: 26px 12px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.lib-empty .link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  cursor: pointer;
+}
+
 /* --- Scrollbars ----------------------------------------------------------- */
 ::-webkit-scrollbar {
   width: 10px;
@@ -1046,6 +1170,10 @@ select:hover {
 @keyframes slidein {
   from { transform: translateX(100%); }
   to { transform: translateX(0); }
+}
+@keyframes sheetup {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
 @keyframes rise {
   from { opacity: 0; transform: translateY(14px); }
@@ -1097,7 +1225,9 @@ select:hover {
 
 /* --- Responsive ----------------------------------------------------------- */
 @media (max-width: 860px) {
-  /* Topbar: brand on its own line, controls wrap below, primary CTA full-width */
+  /* Topbar: brand on its own line; below it one row with the Movement button
+     plus the two icon actions, then the primary CTA. Two dropdown-free rows
+     instead of the old three rows of selects. */
   .topbar {
     flex-wrap: wrap;
     gap: 10px 10px;
@@ -1107,39 +1237,25 @@ select:hover {
     width: 100%;
     flex-wrap: wrap;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
   }
-  .field > span {
-    display: none; /* drop the tiny "EXAMPLE" label to align with buttons */
-  }
-  .topbar-actions .field {
+  .lib-btn {
     flex: 1 1 auto;
     min-width: 0;
+    justify-content: flex-start;
   }
-  .topbar-actions .field .select-wrap,
-  .topbar-actions .field select {
-    width: 100%;
+  .lib-btn-kicker {
+    display: none; /* the caret already says "this opens a picker" */
   }
-  /* Filter cluster spans a full row; the primary Example sits on its own row. */
-  .filter-cluster {
-    flex: 1 1 100%;
-    justify-content: space-between;
-  }
-  .filter-cluster .field.filter,
-  .filter-cluster .select-wrap.sm,
-  .filter-cluster .select-wrap.sm select {
-    flex: 1 1 0;
-    min-width: 0;
-    width: 100%;
-  }
-  .field-primary {
-    flex: 1 1 100%;
+  .lib-btn-name {
+    flex: 1;
+    max-width: none;
   }
   /* The vertical divider only makes sense in the single-row desktop layout. */
   .tb-divider {
     display: none;
   }
-  /* Compact "How to use" + "Share" to icon-only so the controls fit two rows. */
+  /* Compact "How to use" + "Share" to icon-only so the controls fit one row. */
   #how-to,
   #share {
     flex: 0 0 auto;
@@ -1157,6 +1273,24 @@ select:hover {
   #copy-prompt {
     flex: 1 1 100%;
     justify-content: center;
+  }
+
+  /* The movement library becomes a bottom sheet on phones. */
+  .slideover.library {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: min(78vh, 620px);
+    border-left: none;
+    border-top: 1px solid var(--border-2);
+    border-radius: 16px 16px 0 0;
+    animation: sheetup 0.32s var(--ease);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .lib-tools {
+    padding: 12px 16px;
   }
 
   .intro-text {

@@ -10,7 +10,7 @@ posecode exercise "Walk & turn"
     shoulder_right: extend 20
     travel: 0 0.4
     ground-lock: feet
-    cue "Walk forward — right foot leads, opposite arm swings through"
+    cue "Walk forward: right foot leads, opposite arm swings through"
 
   step "Step left" 0.7s ease-in-out:
     hip_left: flex 30
@@ -20,7 +20,7 @@ posecode exercise "Walk & turn"
     shoulder_left: extend 20
     travel: 0 0.8
     ground-lock: feet
-    cue "Left foot leads, arms swap — keep travelling forward"
+    cue "Left foot leads, arms swap: keep travelling forward"
 
   step "About-face" 1s ease-in-out:
     hips: flex 0
