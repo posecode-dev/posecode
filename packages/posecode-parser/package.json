@@ -11,5 +11,27 @@
   },
   "dependencies": {
     "zod": "^3.24.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/posecode-dev/posecode.git",
+    "directory": "packages/posecode-parser"
+  },
+  "keywords": [
+    "posecode",
+    "kinematics",
+    "dsl",
+    "parser",
+    "llm",
+    "text-to-motion",
+    "biomechanics"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ]
 }

@@ -17,5 +17,27 @@
   },
   "devDependencies": {
     "@types/three": "^0.171.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/posecode-dev/posecode.git",
+    "directory": "packages/posecode-render"
+  },
+  "keywords": [
+    "posecode",
+    "three.js",
+    "3d",
+    "animation",
+    "kinematics",
+    "forward-kinematics",
+    "llm"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ]
 }

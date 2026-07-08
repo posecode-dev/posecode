@@ -6,7 +6,8 @@ as a tiny human-readable language that renders to an animated 3D figure in the b
 
 <p align="center">
   <a href="https://posecode.org/play"><b>▶ Live playground</b></a> ·
-  <a href="spec/SPEC.md">Language spec</a> ·
+  <a href="https://posecode.org/moves/">Movement library</a> ·
+  <a href="https://posecode.org/spec.html">Language spec</a> ·
   <a href="spec/examples">Examples</a> ·
   <a href="packages/posecode-mcp">MCP server</a>
 </p>
