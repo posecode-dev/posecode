@@ -10,6 +10,7 @@
 
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { eulerRomFor } from "posecode-parser";
 import type { PosecodeIR, ReachTarget, PinTarget } from "posecode-parser";
 import { buildMannequin, type Mannequin } from "./mannequin.js";
@@ -77,6 +78,13 @@ export function createViewer(
   scene.background = new THREE.Color(0x0c0f15);
   scene.fog = new THREE.Fog(0x0c0f15, 9, 18);
 
+  // Image-based environment light: soft bounced light that gives the matte
+  // figure materials realistic shading gradients instead of flat CG plastic.
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  scene.environmentIntensity = 0.35;
+  pmrem.dispose();
+
   const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
   camera.position.set(2.6, 1.6, 3.4);
 
@@ -91,7 +99,8 @@ export function createViewer(
   controls.autoRotateSpeed = 0.5;
 
   // --- Studio lighting ---
-  const hemi = new THREE.HemisphereLight(0xdfe9ff, 0x20242c, 0.85);
+  // Trimmed from 0.85 to keep exposure level after adding the environment map.
+  const hemi = new THREE.HemisphereLight(0xdfe9ff, 0x20242c, 0.6);
   scene.add(hemi);
 
   const key = new THREE.DirectionalLight(0xfff4e6, 2.0);
@@ -134,6 +143,38 @@ export function createViewer(
   let mannequin: Mannequin = buildMannequin();
   enableShadows(mannequin.root);
   scene.add(mannequin.root);
+
+  // --- Life layer: breathing + blinking so the figure reads as alive even
+  // when the movement is paused. Breathing is a tiny additive sagittal
+  // rotation layered onto the sampled pose each frame; it can never drift
+  // because timeline.sample() rewrites those quaternions every frame.
+  const BREATH_PERIOD = 3.8; // seconds per breath cycle
+  const BLINK_DURATION = 0.13;
+  const LIFE_AXIS = new THREE.Vector3(1, 0, 0);
+  const LIFE_Q = new THREE.Quaternion();
+  const eyes = ["eye_left", "eye_right"]
+    .map((n) => mannequin.root.getObjectByName(n))
+    .filter((o): o is THREE.Object3D => Boolean(o));
+  let nextBlink = performance.now() / 1000 + 2;
+
+  function breatheBone(boneId: string, angle: number): void {
+    const bone = mannequin.bones.get(boneId);
+    if (!bone) return;
+    LIFE_Q.setFromAxisAngle(LIFE_AXIS, angle);
+    bone.quaternion.multiply(LIFE_Q);
+  }
+
+  function applyLife(nowSec: number): void {
+    const breath = Math.sin((nowSec * Math.PI * 2) / BREATH_PERIOD);
+    breatheBone("chest", breath * 0.022);
+    breatheBone("spine", breath * 0.012);
+    breatheBone("neck", breath * -0.014); // counter-rotate: head stays level
+    if (nowSec >= nextBlink + BLINK_DURATION) {
+      nextBlink = nowSec + 2.5 + Math.random() * 3;
+    }
+    const closed = nowSec >= nextBlink && nowSec < nextBlink + BLINK_DURATION;
+    for (const eye of eyes) eye.scale.y = closed ? 0.12 : 1;
+  }
 
   let timeline: BuiltTimeline | null = null;
   let groundTargets = new Map<string, THREE.Vector3>();
@@ -347,6 +388,9 @@ export function createViewer(
   function frame(): void {
     if (timeline) {
       const info = timeline.sample(time, mannequin.bones);
+      // Life layer rides on wall-clock time (not timeline time) so the figure
+      // keeps breathing and blinking while paused or scrubbing.
+      applyLife(performance.now() / 1000);
       // Recompute root contact from the grounded base each frame (no drift).
       mannequin.root.position.copy(baseRootPos);
       mannequin.root.quaternion.copy(baseRootQuat);
