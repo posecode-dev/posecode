@@ -8,12 +8,15 @@
  */
 
 import { parse } from "posecode-parser";
+import { inject } from "@vercel/analytics";
 import type { Viewer } from "posecode-render";
 import { buildNiceShareHash, resolveSharedSource } from "./nice-share.js";
 import { createPosecodeEditor, type PosecodeEditor } from "./editor.js";
 import { PRESETS } from "./presets.js";
 import { renderWarnings } from "./warnings.js";
 import llmPrompt from "../../spec/llm-authoring.md?raw";
+
+inject();
 
 const $ = <T extends HTMLElement>(id: string): T =>
   document.getElementById(id) as T;

@@ -6,9 +6,12 @@
  */
 
 import { parse } from "posecode-parser";
+import { inject } from "@vercel/analytics";
 import { buildNiceShareHash } from "./nice-share.js";
 import { PRESETS } from "./presets.js";
 import llmPrompt from "../../spec/llm-authoring.md?raw";
+
+inject();
 
 // Preserve permalinks shared before the tool moved from `/` to `/play`.
 if (location.hash.startsWith("#doc=")) {

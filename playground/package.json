@@ -16,6 +16,7 @@
     "@codemirror/state": "^6.5.0",
     "@codemirror/view": "^6.36.1",
     "@lezer/highlight": "^1.2.1",
+    "@vercel/analytics": "^2.0.1",
     "posecode-language": "0.1.0",
     "posecode-parser": "0.1.0",
     "posecode-render": "0.1.0",
