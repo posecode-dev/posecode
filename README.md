@@ -19,6 +19,11 @@ as a tiny human-readable language that renders to an animated 3D figure in the b
   <a href="https://github.com/posecode-dev/posecode/tree/main/packages/posecode-mcp"><img src="https://img.shields.io/badge/MCP-Compatible-orange.svg" alt="MCP Compatible"/></a>
 </p>
 
+<p align="center">
+  <img src="docs/media/jumping-jacks.gif" width="440" alt="Jumping jacks rendered live from a .posecode text document"/>
+</p>
+<p align="center"><sub>One <code>.posecode</code> document — <code>shoulders: abduct 160</code>, <code>hips: abduct 30</code>, <code>repeat 12</code> — rendered live in the browser.</sub></p>
+
 <table align="center">
   <tr>
     <td align="center"><img src="docs/media/deadlift.gif" width="230" alt="Deadlift rendered from .posecode text"/><br/><sub><code>pelvis: hinge</code>, deadlift</sub></td>
