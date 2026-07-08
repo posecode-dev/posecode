@@ -145,30 +145,31 @@ export function createViewer(
   scene.add(mannequin.root);
 
   // --- Life layer: breathing + blinking so the figure reads as alive even
-  // when the movement is paused. Breathing is a tiny additive sagittal
-  // rotation layered onto the sampled pose each frame; it can never drift
-  // because timeline.sample() rewrites those quaternions every frame.
+  // when the movement is paused. Both are MESH-only effects. Breathing must
+  // never rotate skeleton bones: an earlier version breathed via tiny
+  // chest/spine rotations, but those ran before ground-lock/pin solving,
+  // which translated the whole figure to re-plant the displaced hands/feet,
+  // so every movement visibly swayed and the head bobbed. Swelling the
+  // ribcage mesh cannot disturb any joint, so authored poses stay exact.
   const BREATH_PERIOD = 3.8; // seconds per breath cycle
   const BLINK_DURATION = 0.13;
-  const LIFE_AXIS = new THREE.Vector3(1, 0, 0);
-  const LIFE_Q = new THREE.Quaternion();
   const eyes = ["eye_left", "eye_right"]
     .map((n) => mannequin.root.getObjectByName(n))
     .filter((o): o is THREE.Object3D => Boolean(o));
+  const ribcage = mannequin.root.getObjectByName("ribcage");
+  const ribcageRestScale = ribcage ? ribcage.scale.clone() : null;
   let nextBlink = performance.now() / 1000 + 2;
 
-  function breatheBone(boneId: string, angle: number): void {
-    const bone = mannequin.bones.get(boneId);
-    if (!bone) return;
-    LIFE_Q.setFromAxisAngle(LIFE_AXIS, angle);
-    bone.quaternion.multiply(LIFE_Q);
-  }
-
   function applyLife(nowSec: number): void {
-    const breath = Math.sin((nowSec * Math.PI * 2) / BREATH_PERIOD);
-    breatheBone("chest", breath * 0.022);
-    breatheBone("spine", breath * 0.012);
-    breatheBone("neck", breath * -0.014); // counter-rotate: head stays level
+    if (ribcage && ribcageRestScale) {
+      // 0..1 inhale fraction; the chest swells mostly front-to-back.
+      const breath = 0.5 + 0.5 * Math.sin((nowSec * Math.PI * 2) / BREATH_PERIOD);
+      ribcage.scale.set(
+        ribcageRestScale.x * (1 + breath * 0.015),
+        ribcageRestScale.y * (1 + breath * 0.01),
+        ribcageRestScale.z * (1 + breath * 0.05),
+      );
+    }
     if (nowSec >= nextBlink + BLINK_DURATION) {
       nextBlink = nowSec + 2.5 + Math.random() * 3;
     }
