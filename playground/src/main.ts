@@ -11,7 +11,7 @@ import { parse } from "posecode-parser";
 import { inject } from "@vercel/analytics";
 import type { Viewer } from "posecode-render";
 import { buildNiceShareHash, resolveSharedSource } from "./nice-share.js";
-import { createPosecodeEditor, type PosecodeEditor } from "./editor.js";
+import type { PosecodeEditor } from "./editor.js";
 import { PRESETS } from "./presets.js";
 import { renderWarnings } from "./warnings.js";
 import llmPrompt from "../../spec/llm-authoring.md?raw";
@@ -21,7 +21,10 @@ inject();
 const $ = <T extends HTMLElement>(id: string): T =>
   document.getElementById(id) as T;
 
-let editorApi: PosecodeEditor; // assigned at boot, once the initial doc is known
+// CodeMirror is heavy too, so the editor is lazy-loaded after first paint (its
+// own chunk). Until that resolves, `editorApi` is null; recompile() and the
+// user-action handlers guard on it (a click in that ~tens-of-ms window no-ops).
+let editorApi: PosecodeEditor | null = null;
 const warnings = $<HTMLDivElement>("warnings");
 const canvas = $<HTMLCanvasElement>("canvas");
 const playpause = $<HTMLButtonElement>("playpause");
@@ -156,7 +159,11 @@ function scheduleRecompile(): void {
 
 function recompile(): void {
   window.clearTimeout(debounce); // cancel any pending run; we're compiling now
-  const source = editorApi.getValue();
+  // Captured once so control-flow narrowing survives the calls below; a null
+  // editor (still loading) means there's nothing to compile yet.
+  const ed = editorApi;
+  if (!ed) return;
+  const source = ed.getValue();
   if (!source.trim()) {
     // A deliberately blank editor (the "New" flow): a paste target, not an
     // error state. Show a hint instead of parse errors and stop the playback.
@@ -181,10 +188,10 @@ function recompile(): void {
     updateReps();
     buildRibbonAndMarkers();
     phaseRanges = computePhaseRanges(
-      editorApi.getValue(),
+      ed.getValue(),
       (tl?.segments ?? []).map((s) => s.name),
     );
-    editorApi.highlightPhase(null); // next onPhase paints the active block
+    ed.highlightPhase(null); // next onPhase paints the active block
   }
 }
 
@@ -326,7 +333,7 @@ function loadPreset(id: string): void {
   if (!preset) return;
   currentPresetId = preset.id;
   libCurrent.textContent = preset.label;
-  editorApi.setValue(preset.source);
+  editorApi?.setValue(preset.source);
   recompile();
   setMobileView("viewer"); // on phones, jump to the figure after picking
 }
@@ -345,10 +352,10 @@ renderLibraryList();
 $<HTMLButtonElement>("new-doc").addEventListener("click", () => {
   currentPresetId = null;
   libCurrent.textContent = "New movement";
-  editorApi.setValue("");
+  editorApi?.setValue("");
   recompile(); // swaps the status row to the blank-editor hint immediately
   setMobileView("editor"); // the paste target, front and center on phones
-  editorApi.focus();
+  editorApi?.focus();
 });
 
 // --- Mobile Editor/Viewer toggle (no-op visually on desktop, where both show) ---
@@ -402,6 +409,7 @@ copyBtn.addEventListener("click", () => copyPrompt(copyBtn));
 // Snapshot the current document into a URL hash, reflect it in the address bar
 // (so it's bookmarkable), and copy the full link to the clipboard.
 async function shareLink(): Promise<void> {
+  if (!editorApi) return; // editor still loading; nothing to snapshot yet
   try {
     const hash = buildNiceShareHash(editorApi.getValue());
     const url = `${location.origin}${location.pathname}${hash}`;
@@ -483,17 +491,21 @@ if (sharedSource) {
   libCurrent.textContent = PRESETS[0]!.label;
 }
 
-editorApi = createPosecodeEditor($("editor"), {
-  doc: initialDoc,
-  onChange: scheduleRecompile,
-});
-// Parse + surface warnings immediately so the editor is useful at first paint,
-// even though the 3D figure appears a beat later once the renderer chunk loads.
-recompile();
+// Boot the two heavyweights (CodeMirror editor + Three.js renderer) after the
+// shell paints, each in its own lazy chunk, so neither is on the critical path.
+// They load independently; recompile() self-guards until both are ready, and
+// whichever resolves last triggers the parse-and-animate pass.
 
-// Boot the renderer after first paint: dynamic import keeps Three.js off the
-// critical path (its own chunk), mirroring the landing page. Once the viewer
-// exists we wire its callbacks and recompile so the current doc animates.
+// Editor: mount CodeMirror into the shell, then compile so warnings surface.
+void import("./editor.js").then(({ createPosecodeEditor }) => {
+  editorApi = createPosecodeEditor($("editor"), {
+    doc: initialDoc,
+    onChange: scheduleRecompile,
+  });
+  recompile();
+});
+
+// Renderer: keep Three.js off the critical path, mirroring the landing page.
 void import("posecode-render").then(({ createViewer }) => {
   viewer = createViewer(canvas);
   // Exposed for capture/e2e tooling (frame capture drives README GIFs).
