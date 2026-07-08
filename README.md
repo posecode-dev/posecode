@@ -1,11 +1,11 @@
-<h1 align="center">◆ Posecode</h1>
+<h1 align="center">Posecode</h1>
 
 <p align="center"><b>Kinematic motion as text.</b> Mermaid gave LLMs a way to draw diagrams.<br/>
 Posecode gives them a way to <i>show movement</i>: exercises, physiotherapy, posture,<br/>
 as a tiny human-readable language that renders to an animated 3D figure in the browser.</p>
 
 <p align="center">
-  <a href="https://posecode.org/play"><b>▶ Live playground</b></a> ·
+  <a href="https://posecode.org/play"><b>Live playground</b></a> ·
   <a href="https://posecode.org/moves/">Movement library</a> ·
   <a href="https://posecode.org/spec.html">Language spec</a> ·
   <a href="spec/examples">Examples</a> ·
@@ -51,7 +51,7 @@ Posecode takes the opposite, lightweight approach:
 
 ## The Idea in 30 Seconds
 
-A `.posecode` file describes human movements as a sequence of timed steps with targeted joint movements and range-of-motion rules:
+ A `.posecode` file describes human movements as a sequence of timed steps with targeted joint movements and range-of-motion rules:
 
 | 1. Write `.posecode` | 2. Render 3D Animation |
 | :--- | :--- |
@@ -63,11 +63,11 @@ A `.posecode` file describes human movements as a sequence of timed steps with t
 
 Choose the integration path that fits your use case:
 
-### 🌐 Live Playground (No installation)
+### Live Playground (No installation)
 Instantly preview, edit, and share movements in the browser:
-👉 **[posecode.org/play](https://posecode.org/play)**
+**[posecode.org/play](https://posecode.org/play)**
 
-### 🤖 MCP Server (For AI Agents)
+### MCP Server (For AI Agents)
 Teach your AI agent (in Claude Desktop, Cursor, etc.) to read, write, and render Posecode natively using our Model Context Protocol server:
 ```bash
 # Add to your MCP client config (e.g. claude_desktop_config.json):
@@ -75,7 +75,7 @@ npx posecode-mcp
 ```
 *See the [MCP Package README](packages/posecode-mcp/README.md) for full configuration options.*
 
-### 📦 Web Component Embed (For Blogs & Docs)
+### Web Component Embed (For Blogs & Docs)
 Embed an interactive, low-poly 3D player on any page using a single `<script>` tag:
 ```html
 <script src="https://unpkg.com/posecode-embed/dist/posecode-embed.js"></script>
@@ -84,7 +84,7 @@ Embed an interactive, low-poly 3D player on any page using a single `<script>` t
 ```
 *See the [Embed Package README](packages/posecode-embed/README.md) for customizing autoplay, controls, speed, and styling.*
 
-### 💻 Core Libraries (For custom JS/TS apps)
+### Core Libraries (For custom JS/TS apps)
 Build custom rendering or parsing logic directly in your own applications:
 ```bash
 # Parser only (converts text to range-of-motion clamped IR)
@@ -123,9 +123,9 @@ For where Posecode spreads fastest and the per-domain go-to-market plan, see [`d
 
 ## Scope (v0.1)
 
-✅ Single-person movement across fitness, physio, desk, dance, education & rehab · Mermaid-style DSL · ROM safety clamping (authored **and IK-solved** angles) · forward kinematics · ground-lock **and ROM-constrained reach-to-target IK** · hip-hinge · lying/seated poses · scene props (chair/wall/bar) · a single-DOF hand rig · live playground.
+Single-person movement across fitness, physio, desk, dance, education & rehab · Mermaid-style DSL · ROM safety clamping (authored **and IK-solved** angles) · forward kinematics · ground-lock **and ROM-constrained reach-to-target IK** · hip-hinge · lying/seated poses · scene props (chair/wall/bar) · a single-DOF hand rig · live playground.
 
-⏳ Deferred: two-person / partner movements + collision detection, deeper props (load, bands, rings), multi-joint fingers, FBX/GLB export, hosted SaaS editor and the expert-verified motion marketplace.
+Deferred: two-person / partner movements + collision detection, deeper props (load, bands, rings), multi-joint fingers, FBX/GLB export, hosted SaaS editor and the expert-verified motion marketplace.
 
 ---
 
@@ -133,7 +133,7 @@ For where Posecode spreads fastest and the per-domain go-to-market plan, see [`d
 
 This project follows a design study, *"Kinematic Motion Definition Protocols for Large Language Models"*, which argues for a semantic DSL over diffusion models, specifies ROM-based safety constraints from clinical normative data, and lays out the open-core commercialization path. The spec cross-references its sections (§4 DSL, §5 biomechanics, §6 client rendering, §7 strategy).
 
-> ⚠️ Posecode's range-of-motion values are general literature data, not medical advice. Consult a qualified professional for physiotherapy or exercise prescription.
+> Posecode's range-of-motion values are general literature data, not medical advice. Consult a qualified professional for physiotherapy or exercise prescription.
 
 ---
 

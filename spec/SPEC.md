@@ -111,7 +111,7 @@ research §5.1 normative tables. Selected ceilings (degrees):
 | spine | 90 | 30 | 35 | rotate 45 |
 | neck | 50 | 60 | 45 | rotate 80 |
 
-> ⚠️ These are general literature values, not medical advice. Consult a
+>  These are general literature values, not medical advice. Consult a
 > qualified professional for physiotherapy or exercise prescription.
 
 ---

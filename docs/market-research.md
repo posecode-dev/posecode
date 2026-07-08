@@ -143,19 +143,19 @@ From [`../ROADMAP.md`](../ROADMAP.md), in rough order of leverage:
 
 | Unlock | Domains it opens / deepens | Status |
 | --- | --- | --- |
-| **Hip-hinge** | Fitness (deadlift, row, good-morning), back-health physio, martial-arts bow | ✅ shipped |
-| **Reach-to-target IK** | Big share of physio (touch toes, cross-body), yoga, prop interaction | ✅ shipped |
-| **Scene props + anchors** | Sit-to-stand, box squat, wall sit, dead hang / hanging knee raise | ✅ shipped (chair / wall / bar) |
-| **Lying / seated base poses** | Floor yoga, mat Pilates, bed-based rehab (glute bridge, dead bug, cobra) | ✅ shipped |
-| **Hand / finger rig** | Grip rehab, expressive gesture, rough finger-spelling | ✅ shipped (single-DOF) |
-| **Two-person + collision** | Partner stretches, assisted rehab, contact sports | ⏳ deferred |
+| **Hip-hinge** | Fitness (deadlift, row, good-morning), back-health physio, martial-arts bow |  shipped |
+| **Reach-to-target IK** | Big share of physio (touch toes, cross-body), yoga, prop interaction |  shipped |
+| **Scene props + anchors** | Sit-to-stand, box squat, wall sit, dead hang / hanging knee raise |  shipped (chair / wall / bar) |
+| **Lying / seated base poses** | Floor yoga, mat Pilates, bed-based rehab (glute bridge, dead bug, cobra) |  shipped |
+| **Hand / finger rig** | Grip rehab, expressive gesture, rough finger-spelling |  shipped (single-DOF) |
+| **Two-person + collision** | Partner stretches, assisted rehab, contact sports |  deferred |
 
 The strategic read: **education + physio + desk + dance** monetize the rig and
 build the catalog/virality flywheel. With reach-IK, props, lying/seated poses, and
-a hand rig now shipped, the roadmap's 🟡 domains (functional/elderly care, floor
+a hand rig now shipped, the roadmap's  domains (functional/elderly care, floor
 yoga, loaded strength, gesture) are reachable today; the remaining frontier is
 deeper props (load, bands, rings), ROM-constrained reach, and two-person work.
 
-> ⚠️ Posecode's range-of-motion values are general literature data, not medical
+>  Posecode's range-of-motion values are general literature data, not medical
 > advice. Consult a qualified professional for physiotherapy or exercise
 > prescription.
