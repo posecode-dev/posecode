@@ -1,0 +1,26 @@
+# Smithery configuration file
+# See https://smithery.ai/docs for more information
+
+runtime: node
+
+startCommand:
+  type: stdio
+
+configSchema:
+  type: object
+  properties:
+    posecodeBaseUrl:
+      type: string
+      description: "Optional custom base URL for the Posecode playground (defaults to https://www.posecode.org/play)"
+
+commandFunction: |-
+  (config) => ({
+    command: 'npx',
+    args: ['-y', 'posecode-mcp'],
+    env: {
+      POSECODE_BASE_URL: config.posecodeBaseUrl || ''
+    }
+  })
+
+exampleConfig:
+  posecodeBaseUrl: "https://www.posecode.org/play"
