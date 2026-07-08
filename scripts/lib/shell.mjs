@@ -108,10 +108,8 @@ export function pageShell({ title, description, canonicalPath, jsonLd, bodyHtml,
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>${safeTitle}</title>
-    <link
-      rel="icon"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3 29 16 16 29 3 16Z' fill='%23c6f24a'/%3E%3C/svg%3E"
-    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="description" content="${safeDesc}" />
     <link rel="canonical" href="${canonical}" />
     <meta name="theme-color" content="#0a0d12" />
@@ -134,7 +132,7 @@ export function pageShell({ title, description, canonicalPath, jsonLd, bodyHtml,
   <body>
     <header class="site-nav">
       <div class="wrap">
-        <a class="brand" href="/"><span class="logo">◆</span> Posecode</a>
+        <a class="brand" href="/"><svg class="logo" aria-hidden="true" viewBox="0 0 100 100" width="18" height="18" fill="none"><g stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path d="M50 34V55"/><path d="M50 35L34 26L23 15"/><path d="M50 35L66 26L77 15"/><path d="M50 54L36 72L28 88"/><path d="M50 54L64 72L72 88"/></g><circle cx="50" cy="20" r="10" fill="currentColor"/></svg> Posecode</a>
         <nav class="links" aria-label="Primary">
           <a href="/play.html">Playground</a>
           <a href="/moves/">Movement library</a>
