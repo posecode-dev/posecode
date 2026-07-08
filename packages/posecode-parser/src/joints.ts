@@ -1,7 +1,7 @@
 /**
  * Joint vocabulary and the semantic-action → rotation-axis mapping.
  *
- * Coordinate convention (must match the renderer's rig — see spec/SPEC.md):
+ * Coordinate convention (must match the renderer's rig: see spec/SPEC.md):
  *   Rest pose: standing, arms at sides, facing +Z. Each bone rotates in its
  *   own local frame where
  *     X = sagittal plane  (flexion / extension)
@@ -9,7 +9,7 @@
  *     Z = frontal plane   (abduction / adduction)
  *   The unmirrored sign of each action is the RIGHT side's (the body's right
  *   is -X); left-side bones mirror the Y and Z axes so symmetric cues look
- *   symmetric — `shoulders: abduct 80` lifts both arms away from the midline.
+ *   symmetric: `shoulders: abduct 80` lifts both arms away from the midline.
  */
 
 import type { Axis } from "./types.js";
@@ -155,7 +155,7 @@ const ACTIONS: Record<string, ActionAxis> = {
   // Hip hinge: tip the torso forward over the hip line (deadlift, row, bow,
   // good-morning). Applied to the `pelvis`, whose torso child points UP, so
   // forward is +X (like spine flexion). The renderer counter-rotates the hips
-  // so the legs stay planted — see posecode-render/src/timeline.ts.
+  // so the legs stay planted; see posecode-render/src/timeline.ts.
   hinge: { axis: "x", sign: 1 },
 };
 
@@ -172,7 +172,7 @@ export function actionAxis(action: string): ActionAxis | null {
  * (their child chain points DOWN), so flexing toward +Z (anatomically
  * forward: hip, shoulder, elbow, wrist, fingers) is a -X rotation. The AXIAL
  * chain (spine, chest, neck, head) points UP, so the same forward bend is +X.
- * The KNEE is the odd limb out — it flexes backward (heel toward the buttock),
+ * The KNEE is the odd limb out: it flexes backward (heel toward the buttock),
  * +X. `extend` is the opposite of `flex`. Used by the resolver to sign
  * flex/extend per joint so a squat folds and a crunch curls forward instead
  * of inverting.

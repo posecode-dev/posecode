@@ -37,7 +37,7 @@ interface BoneSpec {
 
 // Standing rest pose, Y-up, facing +Z. Roughly 1.75 m tall.
 // NOTE: joint offsets are load-bearing (poses, IK, ground-lock, tests key off
-// them) — only the mesh radii/volumes below are cosmetic.
+// them); only the mesh radii/volumes below are cosmetic.
 const SKELETON: BoneSpec[] = [
   { id: "pelvis", parent: null, offset: [0, 0.95, 0] },
   { id: "spine", parent: "pelvis", offset: [0, 0.14, 0], radius: 0.105, radiusEnd: 0.085 },
@@ -61,10 +61,10 @@ const SKELETON: BoneSpec[] = [
   { id: "knee_right", parent: "hip_right", offset: [0, -0.45, 0], radius: 0.078, radiusEnd: 0.056 },
   { id: "ankle_right", parent: "knee_right", offset: [0, -0.43, 0], radius: 0.052, radiusEnd: 0.032 },
 
-  // Fingers — one curl DOF each (flex), splayed in X and angled slightly
+  // Fingers: one curl DOF each (flex), splayed in X and angled slightly
   // forward (+Z, palm-side). Offsets are the FINGERTIP position; the bone is
   // placed partway along at the knuckle (KNUCKLE_T) so the wrist-drawn segment
-  // becomes the rigid palm/metacarpal and the bone carries its own digit mesh —
+  // becomes the rigid palm/metacarpal and the bone carries its own digit mesh,
   // otherwise curling a finger rotates an empty node and the hand never moves.
   { id: "thumb_left", parent: "wrist_left", offset: [0.035, -0.04, 0.025], radius: 0.014 },
   { id: "index_left", parent: "wrist_left", offset: [0.025, -0.085, 0.012], radius: 0.013 },
@@ -233,7 +233,7 @@ function orientSegment(seg: THREE.Object3D, offset: THREE.Vector3): void {
   seg.position.copy(offset.clone().multiplyScalar(0.5));
 }
 
-/** A sphere scaled into an ellipsoid — the basic body-volume building block. */
+/** A sphere scaled into an ellipsoid: the basic body-volume building block. */
 function addEllipsoid(
   bone: THREE.Object3D,
   radius: number,
@@ -310,7 +310,7 @@ function addHead(head: THREE.Object3D, mats: FigureMaterials): void {
   head.add(face);
 }
 
-/** A flattened palm instead of a ball — hands read as hands, not maracas. */
+/** A flattened palm instead of a ball: hands read as hands, not maracas. */
 function addPalm(wrist: THREE.Object3D, mat: THREE.Material): void {
   addEllipsoid(wrist, 0.045, [0.85, 1.05, 0.5], [0, -0.02, 0.004], mat);
 }

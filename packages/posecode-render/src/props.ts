@@ -1,10 +1,10 @@
 /**
- * Scene props — objects the figure sits on, leans against, or grips.
+ * Scene props: objects the figure sits on, leans against, or grips.
  *
  * A prop is a simple low-poly mesh at a fixed default transform plus named
  * **anchors**: world-space contact points the movement can reference from a
  * `reach:` line (e.g. `reach: hand_left bar`). Props are NOT parented to the
- * mannequin — they live in the world and the figure moves to meet them.
+ * mannequin: they live in the world and the figure moves to meet them.
  *
  * Default placement is chosen so each prop sits where its movements need it and
  * distinct props don't collide: the chair is just behind the figure, the wall
@@ -88,7 +88,7 @@ export function buildProps(types: string[], material?: THREE.Material): PropScen
       }
       anchors.set("bars", new THREE.Vector3(0, railH, 0));
     } else if (type === "box") {
-      // A low step/plateau placed IN FRONT of the figure (+Z) — the lead foot
+      // A low step/plateau placed IN FRONT of the figure (+Z): the lead foot
       // steps forward and up onto it. Top surface at ~0.30 m; `box` anchor sits
       // on top where the foot lands.
       const topH = 0.3;

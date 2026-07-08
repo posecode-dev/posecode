@@ -58,7 +58,7 @@ export function getHover(
       const rom = romFor(bone, token);
       if (rom) {
         return md(
-          `**${boneType(bone)} · ${token}** — safe range **${rom.min}–${rom.max}°**. Angles beyond this are hard-clamped.`,
+          `**${boneType(bone)} · ${token}**: safe range **${rom.min}–${rom.max}°**. Angles beyond this are hard-clamped.`,
         );
       }
     }
@@ -70,7 +70,7 @@ export function getHover(
   }
 
   const keywordDoc = KEYWORD_DOCS[token];
-  if (keywordDoc) return md(`**${token}** — ${keywordDoc}`);
+  if (keywordDoc) return md(`**${token}**: ${keywordDoc}`);
   if (KINDS.includes(token)) return md(`Movement kind **${token}**.`);
   if (POSES.includes(token)) return md(`Start pose **${token}**.`);
   if ((EASINGS as readonly string[]).includes(token)) {

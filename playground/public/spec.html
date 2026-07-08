@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Posecode Language Specification: The .posecode Kinematic Motion DSL</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="description" content="The full Posecode v0.1 grammar, joints, actions, and range-of-motion tables: a small text language LLMs write to describe human movement as an animated 3D figure." />
+    <link rel="canonical" href="https://posecode.org/spec.html" />
+    <meta name="theme-color" content="#0a0d12" />
+    <meta property="og:title" content="Posecode Language Specification: The .posecode Kinematic Motion DSL" />
+    <meta property="og:description" content="The full Posecode v0.1 grammar, joints, actions, and range-of-motion tables: a small text language LLMs write to describe human movement as an animated 3D figure." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://posecode.org/spec.html" />
+    <meta property="og:site_name" content="Posecode" />
+    <meta property="og:image" content="https://posecode.org/og.png" />
+    <meta name="twitter:image" content="https://posecode.org/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+:root{--bg:#0a0d12;--panel:#0f141b;--panel-2:#141a23;--border:#1e2530;--border-2:#2a323f;
+--text:#e9eef4;--text-2:#9aa6b4;--muted:#616d7c;--accent:#c6f24a;--accent-2:#a9e02f;
+--accent-ink:#0a0d12;--accent-glow:rgba(198,242,74,.45);--accent-wash:rgba(198,242,74,.1);
+--accent-line:rgba(198,242,74,.35);--mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+--sans:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;--radius:10px;}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.6;
+-webkit-font-smoothing:antialiased;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:840px;margin:0 auto;padding:0 24px}
+header.site-nav{border-bottom:1px solid var(--border);padding:16px 0;margin-bottom:8px}
+header.site-nav .wrap{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.brand{display:flex;align-items:center;gap:9px;color:var(--text);font-weight:800;font-size:18px}
+.brand .logo{color:var(--accent)}
+nav.links{display:flex;gap:18px;font-size:13.5px;font-weight:600;flex-wrap:wrap}
+nav.links a{color:var(--text-2)}
+nav.links a:hover{color:var(--text)}
+main{padding:36px 0 64px}
+.eyebrow{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:2px;
+text-transform:uppercase;color:var(--accent);margin:0 0 12px}
+h1{font-size:clamp(28px,4.5vw,42px);font-weight:900;letter-spacing:-1px;line-height:1.1;margin:0 0 14px}
+h2{font-size:22px;font-weight:800;letter-spacing:-.3px;margin:36px 0 12px}
+h3{font-size:17px;font-weight:700;margin:24px 0 8px}
+h4{font-size:14px;font-weight:700;margin:18px 0 6px}
+p{color:var(--text-2);margin:0 0 14px}
+.meta-line{font-family:var(--mono);font-size:12.5px;color:var(--muted);margin:0 0 22px;
+letter-spacing:.2px}
+.meta-line b{color:var(--text-2);font-weight:600}
+code{font-family:var(--mono);font-size:.92em;background:var(--panel-2);border:1px solid var(--border);
+padding:1px 6px;border-radius:5px;color:var(--text)}
+pre.code-block{font-family:var(--mono);font-size:12.5px;line-height:1.55;color:var(--text-2);
+background:var(--panel);border:1px solid var(--border-2);border-radius:var(--radius);
+padding:16px 18px;overflow:auto;margin:0 0 18px}
+pre.code-block code{background:none;border:none;padding:0;color:inherit}
+.table-wrap{overflow-x:auto;margin:0 0 18px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--border)}
+th{color:var(--text);font-weight:700;background:var(--panel-2)}
+td{color:var(--text-2)}
+ul,ol{color:var(--text-2);padding-left:22px;margin:0 0 16px}
+li{margin-bottom:6px}
+hr{border:none;border-top:1px solid var(--border);margin:28px 0}
+.card{border:1px solid var(--border);border-radius:var(--radius);
+background:linear-gradient(180deg,var(--panel),transparent);padding:20px 22px;margin:0 0 16px}
+.btn{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:14px;
+color:var(--accent-ink);background:linear-gradient(180deg,var(--accent),var(--accent-2));
+border-radius:8px;padding:11px 18px;text-decoration:none}
+.btn:hover{filter:brightness(1.06);text-decoration:none}
+.steps{list-style:none;padding:0;margin:0 0 22px;display:flex;flex-direction:column;gap:12px}
+.steps li{border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;
+background:var(--panel)}
+.steps .step-name{font-weight:700;color:var(--text);display:block;margin-bottom:4px}
+.steps .step-cue{color:var(--text-2);font-size:13.5px}
+.steps .step-dur{font-family:var(--mono);font-size:11px;color:var(--muted);margin-left:8px}
+.chip-list{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 8px}
+.chip-list a{font-size:12.5px;font-weight:600;color:var(--text-2);background:var(--panel-2);
+border:1px solid var(--border-2);border-radius:999px;padding:5px 12px}
+.chip-list a:hover{color:var(--text);text-decoration:none;border-color:var(--accent-line)}
+.domain-group{margin-bottom:26px}
+.domain-group h2{margin-top:0}
+.move-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.move-card{display:block;border:1px solid var(--border);border-radius:var(--radius);
+padding:13px 15px;background:var(--panel)}
+.move-card:hover{border-color:var(--accent-line);text-decoration:none}
+.move-card .mc-name{display:block;font-weight:700;color:var(--text);font-size:13.5px}
+.move-card .mc-meta{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
+footer.site-footer{border-top:1px solid var(--border);padding:26px 0 40px;margin-top:20px}
+footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-width:70ch}
+@media(max-width:600px){.wrap{padding:0 18px}}
+</style>
+    
+  </head>
+  <body>
+    <header class="site-nav">
+      <div class="wrap">
+        <a class="brand" href="/"><svg class="logo" aria-hidden="true" viewBox="0 0 100 100" width="18" height="18" fill="none"><g stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path d="M50 34V55"/><path d="M50 35L34 26L23 15"/><path d="M50 35L66 26L77 15"/><path d="M50 54L36 72L28 88"/><path d="M50 54L64 72L72 88"/></g><circle cx="50" cy="20" r="10" fill="currentColor"/></svg> Posecode</a>
+        <nav class="links" aria-label="Primary">
+          <a href="/play.html">Playground</a>
+          <a href="/moves/">Movement library</a>
+          <a href="/spec.html">Language spec</a>
+          <a href="/llm-guide.html">LLM guide</a>
+          <a href="https://github.com/posecode-dev/posecode" target="_blank" rel="noopener">GitHub</a>
+        </nav>
+      </div>
+    </header>
+    <main class="wrap">
+      <p class="eyebrow">Reference</p>
+<h1>Posecode Protocol Specification v0.1</h1>
+<p>Posecode is a small text language for describing a single person's <strong>kinematic movement</strong> so it can be rendered as an animated 3D figure in a web browser.</p>
+<p>It is to human movement what Mermaid is to diagrams: an LLM (or a human) writes a compact, readable document; a client-side parser + renderer turns it into a moving mannequin. The model never produces 3D matrices: it expresses the *semantic phases* of a movement, which it already understands.</p>
+<ul><li><strong>Version keyword:</strong> documents declare nothing; this is <code>posecode 0.1</code>.</li><li><strong>File extension:</strong> <code>.posecode</code></li><li><strong>Compute model:</strong> generation is pure text (server-cheap); all 3D math runs</li></ul>
+<p>on the client (Three.js). See the project research §6.</p>
+<hr>
+<h2>1. Grammar</h2>
+<p>Posecode is line- and indentation-oriented. Comments start with <code>#</code> or <code>//</code>.</p>
+<pre class="code-block" data-lang="ebnf"><code>document   = header { directive } ;
+header     = &quot;posecode&quot; kind STRING ;
+kind       = &quot;exercise&quot; | &quot;stretch&quot; | &quot;posture&quot; ;       (* free-form word *)
+directive  = rig | prop | pose | step | repeat ;
+rig        = &quot;rig&quot; WORD ;
+prop       = &quot;prop&quot; WORD ;                              (* chair|wall|bar|box|dip-bars, repeatable *)
+pose       = &quot;pose&quot; &quot;start&quot; &quot;=&quot; WORD ;                  (* neutral|standing|plank|supine|prone|seated *)
+repeat     = &quot;repeat&quot; NUMBER ;
+step       = &quot;step&quot; STRING DURATION easing &quot;:&quot; { child } ;
+easing     = &quot;linear&quot; | &quot;ease-in&quot; | &quot;ease-out&quot; | &quot;ease-in-out&quot; ;
+child      = jointTarget | groundLock | reach | pin | turn | travel | cue ;
+jointTarget= joint &quot;:&quot; action [ NUMBER ] ;
+groundLock = &quot;ground-lock&quot; &quot;:&quot; effector { &quot;,&quot; effector } ;
+reach      = &quot;reach&quot; &quot;:&quot; effector target ;             (* effector → world target via ROM-constrained IK *)
+pin        = &quot;pin&quot; &quot;:&quot; effector anchor ;               (* move the BODY so effector sits on anchor *)
+turn       = &quot;turn&quot; &quot;:&quot; NUMBER ;                       (* face this yaw (deg) by phase end *)
+travel     = &quot;travel&quot; &quot;:&quot; NUMBER NUMBER ;              (* move to this x z (metres) by phase end *)
+cue        = &quot;cue&quot; STRING ;
+DURATION   = NUMBER &quot;s&quot; ;                                (* e.g. 2s, 1.5s *)</code></pre>
+<p>A <code>step</code> is one <strong>phase</strong> of the movement. Phases run in sequence; within a phase, all joint targets apply concurrently.</p>
+<hr>
+<h2>2. Joints</h2>
+<div class="table-wrap"><table><thead><tr><th>Group (plural)</th><th>Bones</th><th>Singular forms</th></tr></thead><tbody>
+<tr><td><code>shoulders</code></td><td><code>shoulder_left</code>, <code>shoulder_right</code></td><td>yes</td></tr>
+<tr><td><code>elbows</code></td><td><code>elbow_left</code>, <code>elbow_right</code></td><td>yes</td></tr>
+<tr><td><code>wrists</code></td><td><code>wrist_left</code>, <code>wrist_right</code></td><td>yes</td></tr>
+<tr><td><code>hips</code></td><td><code>hip_left</code>, <code>hip_right</code></td><td>yes</td></tr>
+<tr><td><code>knees</code></td><td><code>knee_left</code>, <code>knee_right</code></td><td>yes</td></tr>
+<tr><td><code>ankles</code></td><td><code>ankle_left</code>, <code>ankle_right</code></td><td>yes</td></tr>
+<tr><td>axial</td><td><code>pelvis</code>, <code>spine</code>, <code>chest</code>, <code>neck</code>, <code>head</code></td><td>n/a</td></tr>
+<tr><td><code>fingers</code> (or <code>fingers_left</code> / <code>fingers_right</code>)</td><td><code>thumb_*</code>, <code>index_*</code>, <code>middle_*</code>, <code>ring_*</code>, <code>pinky_*</code></td><td>yes</td></tr>
+</tbody></table></div>
+<p>Plural names move both sides symmetrically (left-side bones mirror the Y and Z axes). Use a singular <code>*_left</code> / <code>*_right</code> name to move one side. Each finger is a single curl (<code>flex</code>) joint; the thumb also takes <code>abduct</code>/<code>adduct</code>.</p>
+<hr>
+<h2>3. Actions</h2>
+<p>Each action maps to a rotation about one local axis. Degrees are <strong>absolute targets</strong> for that direction (a phase that doesn't mention a joint leaves it where the previous phase left it).</p>
+<div class="table-wrap"><table><thead><tr><th>Action</th><th>Axis</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code>flex</code> / <code>extend</code></td><td>X (sagittal)</td><td>bend / straighten</td></tr>
+<tr><td><code>abduct</code> / <code>adduct</code></td><td>Z (frontal)</td><td>away from / toward midline</td></tr>
+<tr><td><code>rotate-in</code> / <code>rotate-out</code></td><td>Y (longitudinal)</td><td>internal / external rotation</td></tr>
+<tr><td><code>supinate</code> / <code>pronate</code></td><td>Y</td><td>forearm turn</td></tr>
+<tr><td><code>dorsiflex</code> / <code>plantarflex</code></td><td>X</td><td>ankle up / down</td></tr>
+<tr><td><code>hinge</code></td><td>X</td><td>tip the torso forward over the hips (<code>pelvis</code> only)</td></tr>
+<tr><td><code>hold neutral</code></td><td>n/a</td><td>keep at rest</td></tr>
+</tbody></table></div>
+<p><code>hinge</code> is a <strong>hip hinge</strong>: applied to the <code>pelvis</code>, it pivots the torso forward over the hip line while the legs stay planted and vertical (the renderer counter-rotates the hips). Use it, not spinal <code>flex</code>, for a flat-back forward bend: deadlift, bent-over row, good-morning, or a bow.</p>
+<p><strong>Coordinate convention:</strong> rest pose is standing, arms at sides, facing +Z. The renderer's mannequin is built in this same convention so the parser's resolved Euler angles apply directly.</p>
+<hr>
+<h2>4. Range of Motion (safety)</h2>
+<p>Every angle is <strong>hard-clamped</strong> to a healthy Range of Motion before rendering; a clamp emits a warning (it does not fail the parse). Limits follow the research §5.1 normative tables. Selected ceilings (degrees):</p>
+<div class="table-wrap"><table><thead><tr><th>Joint</th><th>flex</th><th>extend</th><th>abduct</th><th>other</th></tr></thead><tbody>
+<tr><td>shoulder</td><td>180</td><td>60</td><td>180</td><td>rot-in 70 / rot-out 90</td></tr>
+<tr><td>elbow</td><td>154</td><td>10</td><td>n/a</td><td>supinate 92 / pronate 84</td></tr>
+<tr><td>hip</td><td>135</td><td>20</td><td>45</td><td>n/a</td></tr>
+<tr><td>knee</td><td>144</td><td>5</td><td>n/a</td><td>n/a</td></tr>
+<tr><td>ankle</td><td>n/a</td><td>n/a</td><td>n/a</td><td>dorsiflex 15 / plantarflex 50</td></tr>
+<tr><td>pelvis</td><td>n/a</td><td>n/a</td><td>n/a</td><td>hinge 120</td></tr>
+<tr><td>finger</td><td>100</td><td>20</td><td>n/a</td><td>n/a</td></tr>
+<tr><td>thumb</td><td>80</td><td>20</td><td>50</td><td>adduct 30</td></tr>
+<tr><td>spine</td><td>90</td><td>30</td><td>35</td><td>rotate 45</td></tr>
+<tr><td>neck</td><td>50</td><td>60</td><td>45</td><td>rotate 80</td></tr>
+</tbody></table></div>
+<p>&gt; ⚠️ These are general literature values, not medical advice. Consult a &gt; qualified professional for physiotherapy or exercise prescription.</p>
+<hr>
+<h2>5. Rendering model</h2>
+<ol><li><strong>Forward kinematics</strong>: each phase sets joint angles; the renderer slerps</li></ol>
+<p>bone rotations between phases with the phase's easing.</p>
+<ol><li><strong>Grounding</strong>: the figure is dropped so its lowest point rests on the floor</li></ol>
+<p>(a bounding-box drop), which grounds standing, plank, and the lying/seated poses alike.</p>
+<ol><li><strong>Ground-lock IK</strong>: effectors listed in <code>ground-lock</code> (<code>hands</code>, <code>feet</code>) are</li></ol>
+<p>pinned to their planted floor position so they stay put while the body moves.</p>
+<ol><li><strong>Reach-IK</strong>: a <code>reach:</code> line drives an effector (`hand_left|hand_right|</li></ol>
+<p>foot_left|foot_right<code>, or the groups </code>hands<code>/</code>feet<code> for both sides) to a world <strong>target</strong> via Cyclic Coordinate Descent (CCD) over the arm/leg chain. A target is a body landmark bone (e.g. </code>ankle_left<code>), the keyword </code>floor<code>, or a prop anchor (</code>bar<code>, </code>seat<code>, </code>wall`). The solve is <strong>ROM-constrained</strong>: each iteration clamps every chain joint into its §4 Range-of-Motion limits (expressed as a per-axis box in the bone's local Euler frame), so a reach toward an unsafe or unreachable target settles on the closest *healthy* pose; solved angles obey the same hard limits as authored ones.</p>
+<ol><li><strong>Props</strong>: <code>prop chair|wall|bar|box|dip-bars</code> adds a scene object at a</li></ol>
+<p>fixed default placement (chair/wall behind, bar overhead, box in front, dip bars either side); its named anchors (<code>seat</code>, <code>wall</code>, <code>bar</code>, <code>box</code>, <code>bars</code>) become reach/pin targets.</p>
+<ol><li><strong>Pins</strong>: <code>pin: &lt;effector&gt; &lt;anchor&gt;</code> translates the whole figure so the</li></ol>
+<p>effector sits on the anchor (effectors accept the same <code>hands</code>/<code>feet</code> groups as reach: <code>pin: hands bar</code> pins both). Where ground-lock keeps a foot on the floor and reach moves a limb to a target, a <strong>pin moves the body</strong> while the contact stays put, so the figure hangs from a bar, pulls up toward it, rises onto a box, or lowers into a dip as the joints work.</p>
+<ol><li><strong>Spatial choreography</strong>: <code>turn: &lt;deg&gt;</code> rotates the figure's facing (yaw</li></ol>
+<p>about vertical) and <code>travel: &lt;x&gt; &lt;z&gt;</code> moves it across the floor (world metres from the load spot). Both are <strong>absolute targets carried across phases</strong> (like joint angles) and both return home on the loop wrap, so a box-step traces a square back to start and a pirouette spins a full turn. They layer under grounding (feet still rest on the floor) and power pirouettes, grapevines, traveling combos, and walk cycles. <strong>Standing poses only</strong>: combining with lying/seated bases (whose root is already tilted) is out of scope.</p>
+<ol><li><strong>Looping</strong>: the timeline loops base → phases → base; <code>repeat</code> is the rep</li></ol>
+<p>count surfaced to the UI.</p>
+<p><strong>Start poses:</strong> <code>neutral</code>, <code>standing</code>, <code>plank</code>, <code>supine</code> (face-up), <code>prone</code> (face-down), <code>seated</code> (long-sit on the floor).</p>
+<p><strong>IK note:</strong> Three.js's bundled <code>CCDIKSolver</code> targets <code>SkinnedMesh</code>; the Posecode mannequin is rigid capsule segments, so Posecode implements CCD directly over the Object3D bone hierarchy (<code>posecode-render/ik.ts</code>) for both ground-lock and reach. Two-person/dual-IK and collision detection remain deferred (research §5.2, §6.2).</p>
+<hr>
+<h2>6. Intermediate Representation (IR)</h2>
+<p><code>parse(source)</code> returns <code>{ ir, warnings, errors }</code>. The IR is renderer-agnostic; angles are in <strong>degrees</strong>.</p>
+<pre class="code-block" data-lang="ts"><code>interface PosecodeIR {
+  version: string;          // &quot;0.1&quot;
+  kind: string;             // &quot;exercise&quot; | &quot;stretch&quot; | &quot;posture&quot;
+  name: string;
+  rig: string;              // &quot;humanoid&quot;
+  startPose?: string;       // &quot;plank&quot; | &quot;standing&quot; | ...
+  repeat: number;
+  phases: {
+    name: string;
+    durationSec: number;
+    easing: &quot;linear&quot; | &quot;ease-in&quot; | &quot;ease-out&quot; | &quot;ease-in-out&quot;;
+    targets: { boneId: string; euler: { x: number; y: number; z: number } }[];
+    groundLock: string[];   // [&quot;hands&quot;,&quot;feet&quot;]
+    cue?: string;
+  }[];
+}</code></pre>
+<p>See <a href="./llm-authoring.md"><code>llm-authoring.md</code></a> for the prompt that teaches an LLM to write Posecode, and <a href="./examples"><code>examples/</code></a> for complete documents.</p>
+    </main>
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>Range-of-motion values are general literature data, not medical advice. Consult a
+        qualified professional for physiotherapy or exercise prescription.</p>
+        <p><a href="/">Posecode</a>, MIT-licensed open core.</p>
+      </div>
+    </footer>
+  </body>
+</html>

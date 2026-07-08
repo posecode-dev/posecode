@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Posecode language server (stdio). Thin wiring around the pure converters in
- * convert.ts — diagnostics on change, completion, and hover. Run via `tsx` in
+ * convert.ts: diagnostics on change, completion, and hover. Run via `tsx` in
  * dev or as the bundled `dist/server.cjs` from the VS Code extension.
  */
 

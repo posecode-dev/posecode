@@ -1,4 +1,4 @@
-# Vercel Plugin — AI Agent Instructions
+# Vercel Plugin: AI Agent Instructions
 
 > Drop this file into any GitHub repo. AI coding agents (Claude Code, Codex, Cursor, Copilot, Grok Build) will pick it up automatically.
 
@@ -22,25 +22,25 @@ Requires Node.js 18+ and Bun. After install, session context is injected automat
 
 ## Key skills (invoke on demand)
 
-- `nextjs` — App Router, Server Components, Server Actions, rendering strategies
-- `ai-sdk` — AI SDK v6: streaming, tool calling, agents, MCP, embeddings
-- `ai-gateway` — Unified API to 100+ models with failover and cost tracking
-- `vercel-functions` — Serverless, Edge, Fluid Compute, streaming, Cron Jobs
-- `vercel-storage` — Blob, Edge Config, Neon Postgres, Upstash Redis
-- `deployments-cicd` — Deploy, promote, rollback, `--prebuilt`, CI config
-- `env-vars` — `.env` files, `vercel env`, OIDC tokens
-- `routing-middleware` — Rewrites, redirects, personalization (Node.js/Edge/Bun)
-- `runtime-cache` — Per-region KV cache with tag-based invalidation
-- `shadcn` — shadcn/ui CLI, components, theming, Tailwind integration
-- `workflow` — Durable execution, DurableAgent, steps, pause/resume
-- `vercel-sandbox` — Ephemeral VMs for running untrusted/AI-generated code
-- `verification` — Browser, API, data, and response flow verification
+- `nextjs`: App Router, Server Components, Server Actions, rendering strategies
+- `ai-sdk`: AI SDK v6: streaming, tool calling, agents, MCP, embeddings
+- `ai-gateway`: Unified API to 100+ models with failover and cost tracking
+- `vercel-functions`: Serverless, Edge, Fluid Compute, streaming, Cron Jobs
+- `vercel-storage`: Blob, Edge Config, Neon Postgres, Upstash Redis
+- `deployments-cicd`: Deploy, promote, rollback, `--prebuilt`, CI config
+- `env-vars`: `.env` files, `vercel env`, OIDC tokens
+- `routing-middleware`: Rewrites, redirects, personalization (Node.js/Edge/Bun)
+- `runtime-cache`: Per-region KV cache with tag-based invalidation
+- `shadcn`: shadcn/ui CLI, components, theming, Tailwind integration
+- `workflow`: Durable execution, DurableAgent, steps, pause/resume
+- `vercel-sandbox`: Ephemeral VMs for running untrusted/AI-generated code
+- `verification`: Browser, API, data, and response flow verification
 
 ## Specialist agents
 
-- `deployment-expert` — CI/CD, deploy strategies, environment variables, rollbacks
-- `performance-optimizer` — Core Web Vitals, caching, rendering, asset optimization
-- `ai-architect` — AI app design, model selection, streaming, MCP integration
+- `deployment-expert`: CI/CD, deploy strategies, environment variables, rollbacks
+- `performance-optimizer`: Core Web Vitals, caching, rendering, asset optimization
+- `ai-architect`: AI app design, model selection, streaming, MCP integration
 
 ## Platform defaults to assume
 

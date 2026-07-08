@@ -9,7 +9,7 @@ const VALID = [
   "  rig humanoid",
   "  pose start = standing",
   '  step "Deep" 1s linear:',
-  "    knees: flex 200", // over the 144° ROM ceiling — must clamp + warn
+  "    knees: flex 200", // over the 144° ROM ceiling: must clamp + warn
   '    cue "too deep"',
   "  repeat 2",
 ].join("\n");

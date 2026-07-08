@@ -1,9 +1,9 @@
 /**
  * Headless kinematic probe.
  *
- * Runs a `.posecode` source through the REAL production pipeline — parser →
+ * Runs a `.posecode` source through the REAL production pipeline (parser →
  * timeline → mannequin FK → root choreography (yaw/travel) → ground-lock →
- * floor clamp — without a WebGL context (three.js scene-graph math is pure),
+ * floor clamp) without a WebGL context (three.js scene-graph math is pure),
  * and returns world-space bone positions at the end of every phase. This is
  * the ground truth the invariant checks score against.
  *

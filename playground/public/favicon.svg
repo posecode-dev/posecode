@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Posecode">
+  <!-- Bare figure, same as the on-page logo. Adapts to the tab color: lime on
+       dark UI, ink on light UI, so it stays legible without a background tile. -->
+  <style>
+    .s { fill: none; stroke: #c6f24a; stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; }
+    .h { fill: #c6f24a; }
+    @media (prefers-color-scheme: light) { .s { stroke: #0a0d12; } .h { fill: #0a0d12; } }
+  </style>
+  <g class="s">
+    <path d="M50 34V55"/>
+    <path d="M50 35L34 26L23 15"/>
+    <path d="M50 35L66 26L77 15"/>
+    <path d="M50 54L36 72L28 88"/>
+    <path d="M50 54L64 72L72 88"/>
+  </g>
+  <circle class="h" cx="50" cy="20" r="10"/>
+</svg>

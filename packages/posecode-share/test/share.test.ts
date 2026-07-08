@@ -59,7 +59,7 @@ describe("posecode-share codec", () => {
 
   it("rejects empty or non-string input when encoding", () => {
     expect(() => encodePosecode("")).toThrow();
-    // @ts-expect-error — guarding the runtime boundary against bad callers
+    // @ts-expect-error: guarding the runtime boundary against bad callers
     expect(() => encodePosecode(null)).toThrow();
   });
 

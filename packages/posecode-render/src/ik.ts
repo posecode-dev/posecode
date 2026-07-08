@@ -1,6 +1,6 @@
 /**
  * Generic Cyclic Coordinate Descent (CCD) inverse kinematics over an Object3D
- * bone chain — the §6.2 algorithm, adapted to our rigid-segment rig (Three's
+ * bone chain: the §6.2 algorithm, adapted to our rigid-segment rig (Three's
  * built-in CCDIKSolver is bound to SkinnedMesh, which we don't use).
  *
  * Used for ground-lock and reach: pinning or driving a hand/foot effector to a
@@ -15,7 +15,7 @@ import * as THREE from "three";
 
 /**
  * Per-axis rotation limits (radians) in a joint's LOCAL Euler (XYZ) frame.
- * Axes the joint cannot rotate use `[0, 0]` — e.g. a knee is a pure hinge.
+ * Axes the joint cannot rotate use `[0, 0]`, e.g. a knee is a pure hinge.
  */
 export interface JointLimits {
   x: [number, number];

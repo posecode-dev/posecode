@@ -1,6 +1,6 @@
 /**
  * Shadow-DOM styles for the player. Scoped to the shadow root so an embed can
- * never leak styles into — or inherit surprises from — the host page. Colors
+ * never leak styles into (or inherit surprises from) the host page. Colors
  * mirror the playground's studio-dark + lime theme but are self-contained.
  */
 

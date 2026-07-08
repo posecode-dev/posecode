@@ -1,5 +1,5 @@
 /**
- * posecode-render — public API.
+ * posecode-render: public API.
  *
  * `createViewer(canvas)` sets up a Three.js studio scene with the procedural
  * mannequin and returns a controller. `load(ir)` builds a timeline from a parsed
@@ -222,7 +222,7 @@ export function createViewer(
 
   function captureGroundTargets(): void {
     // "Ground-lock" means HOLD the effector where the grounded base pose placed
-    // it — not drag it to y=0. groundFigure() already set the floor contact.
+    // it, not drag it to y=0. groundFigure() already set the floor contact.
     groundTargets = new Map();
     for (const ids of Object.values(mannequin.effectors)) {
       for (const id of ids) {
@@ -251,7 +251,7 @@ export function createViewer(
    * A limit box is widened to include the joint's CURRENT (authored FK) angle:
    * the timeline pose is already ROM-clamped in author terms, but rig mechanics
    * such as the hip-hinge counter-rotation can place a bone outside its raw box
-   * on purpose — IK must never fight the authored pose, only be prevented from
+   * on purpose: IK must never fight the authored pose, only be prevented from
    * pushing beyond it.
    */
   function reachChain(effectorBone: string): {
@@ -312,7 +312,7 @@ export function createViewer(
 
   /**
    * Reach-IK: drive each active effector to its world target with ROM-
-   * constrained CCD — the solved arm/leg obeys the same hard joint limits as
+   * constrained CCD: the solved arm/leg obeys the same hard joint limits as
    * authored angles, so an unreachable target yields the closest SAFE pose.
    * Runs AFTER ground-lock so landmark/floor targets are resolved against the
    * final root placement. The chain is the arm (hand) or the leg (foot); other
@@ -334,7 +334,7 @@ export function createViewer(
   /**
    * Contact pins: translate the WHOLE figure so each pinned effector sits on its
    * anchor. Where ground-lock keeps a planted foot on the floor, a pin keeps a
-   * hand on the bar or a foot on the box while the body moves relative to it —
+   * hand on the bar or a foot on the box while the body moves relative to it,
    * so the figure hangs from a bar, pulls up toward it, rises onto a box, or
    * lowers into a dip as the limb joints work. Applied after ground-lock (which
    * pinned movements normally omit) and before reach-IK.
@@ -360,7 +360,7 @@ export function createViewer(
 
   function frameCamera(): void {
     // Auto-frame the figure: fit its bounding box, keep a pleasant angle.
-    // Include any scene prop too — a pull-up bar sits well above the figure's
+    // Include any scene prop too: a pull-up bar sits well above the figure's
     // head, and framing on the mannequin alone left it cropped out of view.
     const box = new THREE.Box3().setFromObject(mannequin.root);
     if (propScene) box.union(new THREE.Box3().setFromObject(propScene.group));
@@ -410,7 +410,7 @@ export function createViewer(
       applyPins(info.pins);
       // Safety net: nothing above ever intentionally pushes part of the body
       // below the floor, so clamp the root up whenever the lowest point dips
-      // below y=0 — a no-op whenever the pose is legitimately grounded or
+      // below y=0, a no-op whenever the pose is legitimately grounded or
       // elevated (bbox min already ≥ 0). This also catches phases with
       // neither ground-lock nor a pin (the root stays frozen at the base
       // pose's grounded height while FK animates freely on top of it, e.g. a
@@ -479,7 +479,7 @@ export function createViewer(
         enableShadows(propScene.group);
         scene.add(propScene.group);
       }
-      // Reset every bone to rest — otherwise joints from a previous movement
+      // Reset every bone to rest: otherwise joints from a previous movement
       // that this document doesn't touch would persist (e.g. bent legs from a
       // squat showing under a biceps curl).
       for (const bone of mannequin.bones.values()) bone.quaternion.identity();

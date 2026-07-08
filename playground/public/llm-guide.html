@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How to Teach an LLM to Write Posecode: The Authoring Guide</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="description" content="The system prompt that teaches ChatGPT, Claude, or Gemini to author valid .posecode documents: syntax, joints, phases, and worked examples." />
+    <link rel="canonical" href="https://posecode.org/llm-guide.html" />
+    <meta name="theme-color" content="#0a0d12" />
+    <meta property="og:title" content="How to Teach an LLM to Write Posecode: The Authoring Guide" />
+    <meta property="og:description" content="The system prompt that teaches ChatGPT, Claude, or Gemini to author valid .posecode documents: syntax, joints, phases, and worked examples." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://posecode.org/llm-guide.html" />
+    <meta property="og:site_name" content="Posecode" />
+    <meta property="og:image" content="https://posecode.org/og.png" />
+    <meta name="twitter:image" content="https://posecode.org/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+:root{--bg:#0a0d12;--panel:#0f141b;--panel-2:#141a23;--border:#1e2530;--border-2:#2a323f;
+--text:#e9eef4;--text-2:#9aa6b4;--muted:#616d7c;--accent:#c6f24a;--accent-2:#a9e02f;
+--accent-ink:#0a0d12;--accent-glow:rgba(198,242,74,.45);--accent-wash:rgba(198,242,74,.1);
+--accent-line:rgba(198,242,74,.35);--mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+--sans:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;--radius:10px;}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.6;
+-webkit-font-smoothing:antialiased;}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:840px;margin:0 auto;padding:0 24px}
+header.site-nav{border-bottom:1px solid var(--border);padding:16px 0;margin-bottom:8px}
+header.site-nav .wrap{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.brand{display:flex;align-items:center;gap:9px;color:var(--text);font-weight:800;font-size:18px}
+.brand .logo{color:var(--accent)}
+nav.links{display:flex;gap:18px;font-size:13.5px;font-weight:600;flex-wrap:wrap}
+nav.links a{color:var(--text-2)}
+nav.links a:hover{color:var(--text)}
+main{padding:36px 0 64px}
+.eyebrow{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:2px;
+text-transform:uppercase;color:var(--accent);margin:0 0 12px}
+h1{font-size:clamp(28px,4.5vw,42px);font-weight:900;letter-spacing:-1px;line-height:1.1;margin:0 0 14px}
+h2{font-size:22px;font-weight:800;letter-spacing:-.3px;margin:36px 0 12px}
+h3{font-size:17px;font-weight:700;margin:24px 0 8px}
+h4{font-size:14px;font-weight:700;margin:18px 0 6px}
+p{color:var(--text-2);margin:0 0 14px}
+.meta-line{font-family:var(--mono);font-size:12.5px;color:var(--muted);margin:0 0 22px;
+letter-spacing:.2px}
+.meta-line b{color:var(--text-2);font-weight:600}
+code{font-family:var(--mono);font-size:.92em;background:var(--panel-2);border:1px solid var(--border);
+padding:1px 6px;border-radius:5px;color:var(--text)}
+pre.code-block{font-family:var(--mono);font-size:12.5px;line-height:1.55;color:var(--text-2);
+background:var(--panel);border:1px solid var(--border-2);border-radius:var(--radius);
+padding:16px 18px;overflow:auto;margin:0 0 18px}
+pre.code-block code{background:none;border:none;padding:0;color:inherit}
+.table-wrap{overflow-x:auto;margin:0 0 18px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--border)}
+th{color:var(--text);font-weight:700;background:var(--panel-2)}
+td{color:var(--text-2)}
+ul,ol{color:var(--text-2);padding-left:22px;margin:0 0 16px}
+li{margin-bottom:6px}
+hr{border:none;border-top:1px solid var(--border);margin:28px 0}
+.card{border:1px solid var(--border);border-radius:var(--radius);
+background:linear-gradient(180deg,var(--panel),transparent);padding:20px 22px;margin:0 0 16px}
+.btn{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:14px;
+color:var(--accent-ink);background:linear-gradient(180deg,var(--accent),var(--accent-2));
+border-radius:8px;padding:11px 18px;text-decoration:none}
+.btn:hover{filter:brightness(1.06);text-decoration:none}
+.steps{list-style:none;padding:0;margin:0 0 22px;display:flex;flex-direction:column;gap:12px}
+.steps li{border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;
+background:var(--panel)}
+.steps .step-name{font-weight:700;color:var(--text);display:block;margin-bottom:4px}
+.steps .step-cue{color:var(--text-2);font-size:13.5px}
+.steps .step-dur{font-family:var(--mono);font-size:11px;color:var(--muted);margin-left:8px}
+.chip-list{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 8px}
+.chip-list a{font-size:12.5px;font-weight:600;color:var(--text-2);background:var(--panel-2);
+border:1px solid var(--border-2);border-radius:999px;padding:5px 12px}
+.chip-list a:hover{color:var(--text);text-decoration:none;border-color:var(--accent-line)}
+.domain-group{margin-bottom:26px}
+.domain-group h2{margin-top:0}
+.move-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.move-card{display:block;border:1px solid var(--border);border-radius:var(--radius);
+padding:13px 15px;background:var(--panel)}
+.move-card:hover{border-color:var(--accent-line);text-decoration:none}
+.move-card .mc-name{display:block;font-weight:700;color:var(--text);font-size:13.5px}
+.move-card .mc-meta{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
+footer.site-footer{border-top:1px solid var(--border);padding:26px 0 40px;margin-top:20px}
+footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-width:70ch}
+@media(max-width:600px){.wrap{padding:0 18px}}
+</style>
+    
+  </head>
+  <body>
+    <header class="site-nav">
+      <div class="wrap">
+        <a class="brand" href="/"><svg class="logo" aria-hidden="true" viewBox="0 0 100 100" width="18" height="18" fill="none"><g stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path d="M50 34V55"/><path d="M50 35L34 26L23 15"/><path d="M50 35L66 26L77 15"/><path d="M50 54L36 72L28 88"/><path d="M50 54L64 72L72 88"/></g><circle cx="50" cy="20" r="10" fill="currentColor"/></svg> Posecode</a>
+        <nav class="links" aria-label="Primary">
+          <a href="/play.html">Playground</a>
+          <a href="/moves/">Movement library</a>
+          <a href="/spec.html">Language spec</a>
+          <a href="/llm-guide.html">LLM guide</a>
+          <a href="https://github.com/posecode-dev/posecode" target="_blank" rel="noopener">GitHub</a>
+        </nav>
+      </div>
+    </header>
+    <main class="wrap">
+      <p class="eyebrow">For LLMs</p>
+<h1>Authoring <code>.posecode</code> with an LLM</h1>
+<p>Paste the prompt below into ChatGPT, Claude, or any capable model. Then ask for a movement (&quot;write a squat&quot;, &quot;show a hamstring stretch&quot;) and paste the reply into the Posecode playground.</p>
+<hr>
+<p>You write <strong>Posecode</strong>, a small text language that describes a single person's movement so a 3D mannequin can animate it. Output ONLY a <code>.posecode</code> document in a code block, no prose.</p>
+<h2>Grammar</h2>
+<pre class="code-block"><code>posecode &lt;kind&gt; &quot;&lt;Name&gt;&quot;          # kind = exercise | stretch | posture
+  rig humanoid
+  prop &lt;type&gt;                  # optional: chair | wall | bar | box | dip-bars (repeatable)
+  pose start = &lt;pose&gt;          # neutral | standing | plank | supine | prone | seated
+  step &quot;&lt;Phase name&gt;&quot; &lt;Ns&gt; &lt;easing&gt;:   # easing = linear | ease-in | ease-out | ease-in-out
+    &lt;joint&gt;: &lt;action&gt; &lt;degrees&gt;
+    reach: &lt;effector&gt; &lt;target&gt; # optional: drive a hand/foot to a target via IK
+    ground-lock: &lt;effectors&gt;   # hands and/or feet pinned to the floor this phase
+    turn: &lt;degrees&gt;            # optional: face this yaw by phase end (standing only)
+    travel: &lt;x&gt; &lt;z&gt;            # optional: move to this x z (metres) by phase end
+    cue &quot;&lt;short coaching cue&gt;&quot;
+  repeat &lt;count&gt;</code></pre>
+<h2>Joints</h2>
+<p><code>neck head spine chest pelvis</code> and (singular or plural) <code>shoulders elbows wrists hips knees ankles</code>. Plural names move both sides symmetrically; use <code>elbow_left</code> etc. for one side. Fingers: <code>fingers</code> (or <code>fingers_left</code> / <code>fingers_right</code>), and individually <code>thumb_* index_* middle_* ring_* pinky_*</code>.</p>
+<h2>Actions (degrees are absolute targets)</h2>
+<ul><li><code>flex</code> / <code>extend</code>: bend / straighten (sagittal)</li><li><code>abduct</code> / <code>adduct</code>: away from / toward midline (frontal)</li><li><code>rotate-in</code> / <code>rotate-out</code>: internal / external rotation</li><li><code>supinate</code> / <code>pronate</code>: forearm turn (palm up / down)</li><li><code>dorsiflex</code> / <code>plantarflex</code>: ankle up / down</li><li><code>hinge</code>: <strong>hip hinge</strong> (on <code>pelvis</code> only): tip the torso forward over the</li></ul>
+<p>hips with a flat back, legs staying planted. Use this, not spinal <code>flex</code>, for a deadlift, bent-over row, good-morning, or a bow.</p>
+<ul><li><code>hold neutral</code>: keep the joint at rest</li></ul>
+<h2>Rules</h2>
+<ol><li>Break the movement into 2–5 concurrent <strong>phases</strong>; each <code>step</code> is one phase.</li><li>Set the joints that actually move in that phase; unset joints hold their</li></ol>
+<p>previous value.</p>
+<ol><li>Stay within healthy range of motion (e.g. knee flex ≤ 144°, elbow flex ≤</li></ol>
+<p>154°, shoulder flex ≤ 180°). The renderer hard-clamps anything beyond it.</p>
+<ol><li>Add a one-line <code>cue</code> per phase. Use <code>ground-lock</code> for whatever touches the</li></ol>
+<p>floor (feet when standing; hands and feet in a plank).</p>
+<ol><li><code>repeat</code> the rep count.</li></ol>
+<h2>Example</h2>
+<pre class="code-block" data-lang="posecode"><code>posecode exercise &quot;Body-weight squat&quot;
+  rig humanoid
+  pose start = standing
+
+  step &quot;Descend&quot; 1.6s ease-in-out:
+    hips: flex 80
+    knees: flex 95
+    ankles: dorsiflex 14
+    ground-lock: feet
+    cue &quot;Sit the hips back, chest proud, knees track over the toes&quot;
+
+  step &quot;Drive up&quot; 1.2s ease-out:
+    hips: flex 0
+    knees: flex 0
+    ankles: dorsiflex 0
+    ground-lock: feet
+    cue &quot;Drive through the heels to stand tall&quot;
+
+  repeat 8</code></pre>
+<h2>Hip-hinge example</h2>
+<p>A flat-back hinge bends at the <strong>hips</strong>, not the spine. Hinge the <code>pelvis</code> and let the arms hang; <code>ground-lock: feet</code>.</p>
+<pre class="code-block" data-lang="posecode"><code>posecode exercise &quot;Deadlift&quot;
+  rig humanoid
+  pose start = standing
+
+  step &quot;Lower&quot; 1.8s ease-in-out:
+    pelvis: hinge 95
+    knees: flex 25
+    shoulders: flex 90
+    ground-lock: feet
+    cue &quot;Hips back, flat back: let the arms hang to the bar&quot;
+
+  step &quot;Lift&quot; 1.4s ease-out:
+    pelvis: hinge 0
+    knees: flex 0
+    shoulders: flex 0
+    ground-lock: feet
+    cue &quot;Drive the hips forward to stand tall&quot;
+
+  repeat 8</code></pre>
+<h2>Reaching, props, lying poses &amp; hands</h2>
+<ul><li><strong>Reach a target</strong>: <code>reach: &lt;effector&gt; &lt;target&gt;</code> drives a hand or foot to a</li></ul>
+<p>world point via IK. Effectors: <code>hand_left hand_right foot_left foot_right</code>, or <code>hands</code> / <code>feet</code> for both sides at once. Targets: a body landmark bone (<code>ankle_left</code>, <code>knee_right</code>…), <code>floor</code>, or a prop anchor (<code>bar</code>, <code>seat</code>, <code>wall</code>). The solve is ROM-constrained: the arm/leg can never exceed the safe joint limits chasing a target, so an out-of-reach target just yields the closest healthy pose. Author the gross pose (e.g. a <code>pelvis: hinge</code>), then let <code>reach</code> finish the hand placement. Example, touch your toes:</p>
+<p>``<code>posecode step &quot;Fold&quot; 2.5s ease-in-out: pelvis: hinge 95 knees: flex 12 reach: hand_left ankle_left reach: hand_right ankle_right ground-lock: feet cue &quot;Hinge and reach toward the ankles&quot; </code>``</p>
+<ul><li><strong>Props</strong>: <code>prop chair | wall | bar | box | dip-bars</code> (top level). The chair</li></ul>
+<p>sits behind the figure (sit-to-stand, box squat), the wall behind that (wall sit), the bar overhead, the box in front (step-ups), and the dip bars either side at hip-press height (<code>pin: hands bars</code> + elbow flex = triceps dips).</p>
+<ul><li><strong>Pins</strong>: <code>pin: &lt;effector&gt; &lt;anchor&gt;</code> moves the whole BODY so the effector sits</li></ul>
+<p>on the anchor (vs <code>reach</code>, which moves just the limb). Same effectors as reach, including <code>hands</code> / <code>feet</code>. Use it for hanging and climbing: <code>pin: hands bar</code> + flexing the elbows = a pull-up; <code>pin: foot_right box</code> + straightening the leg = a step-up; <code>pin: hands bars</code> (dip bars) + bending the elbows = a triceps dip.</p>
+<ul><li><strong>Lying / seated</strong>: <code>pose start = supine | prone | seated</code> for floor and mat</li></ul>
+<p>work (glute bridge, dead bug, cobra, seated forward fold).</p>
+<ul><li><strong>Hands</strong>: <code>fingers: flex 80</code> makes a fist; curl individual fingers for shapes</li></ul>
+<p>(<code>index_right: flex 95</code>). Single-DOF per finger, good for grip and rough gesture, not exact sign language.</p>
+<h2>Authoring by domain</h2>
+<p>The same grammar covers many fields. A few patterns that read well:</p>
+<ul><li><strong>Anatomy / education</strong>: isolate one joint and sweep it through its range</li></ul>
+<p>(<code>shoulders: abduct 160</code> → <code>0</code>). Name the plane in the cue. Great for teaching.</p>
+<ul><li><strong>Physiotherapy</strong>: gentle, single-joint reps; for one-sided work use a</li></ul>
+<p>singular joint (<code>knee_right: flex 95</code>) and skip <code>ground-lock</code> so the standing leg stays planted.</p>
+<ul><li><strong>Desk / posture</strong>: slow <code>stretch</code> documents with <code>ground-lock: feet</code>;</li></ul>
+<p>contrast a &quot;collapsed&quot; phase with a &quot;tall&quot; reset.</p>
+<ul><li><strong>Sports / martial arts</strong>: short, snappy phases (0.3–0.6s) with <code>ease-out</code></li></ul>
+<p>on the strike; chamber → extend → re-chamber → return.</p>
+<h3>Dance / choreography</h3>
+<p>Posecode shines for <strong>showing the movement in your head</strong>. Build a phrase as a sequence of phases, one per count or musical beat, and let later phases inherit unset joints:</p>
+<ul><li><strong>Turnout:</strong> <code>hips: rotate-out 25–30</code>.</li><li><strong>Port de bras (arm positions):</strong> first <code>shoulders: flex 30, elbows: flex 35</code>;</li></ul>
+<p>second <code>shoulders: abduct 85, elbows: flex 16</code>; fifth/en haut <code>shoulders: flex 160, elbows: flex 20</code>. Move between them across phases.</p>
+<ul><li><strong>Plié:</strong> <code>hips: flex 18, knees: flex 50, ankles: dorsiflex 12</code>.</li><li><strong>Relevé:</strong> <code>ankles: plantarflex 28</code> (rise onto the balls of the feet).</li><li><strong>Turn / pirouette:</strong> <code>turn: 360</code> (yaw in degrees, absolute). Pair with a</li></ul>
+<p>relevé to spin on the balls of the feet; <code>turn: 90</code> for a quarter-turn.</p>
+<ul><li><strong>Travel across the floor:</strong> <code>travel: &lt;x&gt; &lt;z&gt;</code> (metres from the start spot,</li></ul>
+<p>absolute). A box-step traces a square back home: <code>travel: 0.4 0</code> → <code>0.4 0.4</code> → <code>0 0.4</code> → <code>0 0</code>. A grapevine travels sideways; a walk cycle steps forward in +z. Add the stepping legs with FK on top.</p>
+<p>Both <code>turn</code> and <code>travel</code> are <strong>absolute and carried forward</strong> like joint angles, and both return home on the loop wrap, so phrases resolve cleanly. They work from <strong>standing</strong> poses only. Name each step by its count (<code>&quot;5-6 - relevé, arms en haut&quot;</code>) so the phrase reads like choreography. To extend a phrase, append more steps; the figure carries its pose forward. Use <code>ground-lock: feet</code> for grounded phrases (it still lets the figure turn and travel; it only keeps the feet on the floor vertically).</p>
+    </main>
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>Range-of-motion values are general literature data, not medical advice. Consult a
+        qualified professional for physiotherapy or exercise prescription.</p>
+        <p><a href="/">Posecode</a>, MIT-licensed open core.</p>
+      </div>
+    </footer>
+  </body>
+</html>

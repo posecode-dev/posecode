@@ -1,10 +1,10 @@
 /**
- * Posecode MCP server — exposes the Posecode protocol to any LLM agent.
+ * Posecode MCP server: exposes the Posecode protocol to any LLM agent.
  *
  * Three tools turn "an LLM knows biomechanics" into "an LLM can show movement":
- *   - posecode_authoring_guide — learn the .posecode language inline
- *   - validate_posecode        — parse + surface range-of-motion safety clamps
- *   - render_posecode          — get a playground link that animates the movement
+ *   - posecode_authoring_guide: learn the .posecode language inline
+ *   - validate_posecode:       parse + surface range-of-motion safety clamps
+ *   - render_posecode:         get a playground link that animates the movement
  *
  * The server is decoupled from any transport so it can be driven over stdio in
  * production and over an in-memory pair in tests.
@@ -38,7 +38,7 @@ export function createPosecodeServer(opts: PosecodeServerOptions = {}): McpServe
     {
       title: "How to write Posecode",
       description:
-        "Return the guide that teaches the Posecode (.posecode) language — grammar, joints, actions, and an example. Read this before writing a movement.",
+        "Return the guide that teaches the Posecode (.posecode) language: grammar, joints, actions, and an example. Read this before writing a movement.",
       inputSchema: {},
     },
     async () => ({ content: [{ type: "text" as const, text: authoringGuide() }] }),

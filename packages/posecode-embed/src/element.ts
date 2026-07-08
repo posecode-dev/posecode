@@ -1,11 +1,11 @@
 /**
- * `<posecode-player>` — a self-contained custom element that renders a Posecode
+ * `<posecode-player>`: a self-contained custom element that renders a Posecode
  * movement as a live 3D figure. Drop it on any page; give it a movement via a
  * `doc` token, a `src` URL, or inline text.
  *
  * Design notes:
  * - **Lazy boot.** three.js is heavy, so the WebGL viewer is created only when
- *   the element scrolls into view (IntersectionObserver) — many embeds on one
+ *   the element scrolls into view (IntersectionObserver): many embeds on one
  *   page stay cheap until seen.
  * - **Shadow DOM.** Markup + styles are isolated from the host page.
  * - **Accessible & polite.** Honors `prefers-reduced-motion` (no autoplay, no
@@ -49,7 +49,7 @@ export class PosecodePlayerElement extends HTMLElement {
     // Capture inline text BEFORE we replace the light DOM with shadow markup.
     this.#source = this.textContent ?? "";
     this.#renderChrome();
-    // Boot immediately UNLESS the element is measurably off-screen — in which
+    // Boot immediately UNLESS the element is measurably off-screen, in which
     // case defer the heavy renderer until it scrolls into view. The bias is
     // toward booting: an embed must never stay blank because we couldn't
     // measure the viewport (e.g. innerHeight reported as 0) or because the

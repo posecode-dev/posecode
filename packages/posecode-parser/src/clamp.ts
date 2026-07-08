@@ -4,7 +4,7 @@
  * This is the biomechanics-aware stage: it expands symmetric joint groups,
  * maps semantic actions to rotation axes (with left/right mirroring), and
  * clamps every angle into its safe Range of Motion (§5.1). All inputs are
- * treated as immutable — a fresh IR is built and returned.
+ * treated as immutable: a fresh IR is built and returned.
  */
 
 import type {
@@ -124,7 +124,7 @@ function resolveStep(
   }));
 
   // Reach / pin effectors: expand symmetric groups (`hands` → both hands) and
-  // reject unknown names — a typo'd effector would otherwise be silently
+  // reject unknown names, since a typo'd effector would otherwise be silently
   // ignored by the renderer, invisible to the authoring LLM.
   const reaches: ReachTarget[] = [];
   for (const r of step.reaches) {

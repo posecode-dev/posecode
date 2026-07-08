@@ -1,7 +1,7 @@
 /**
  * Movement sources for the harness.
  *
- * The fixture generator reads the canonical `spec/examples` — the regression
+ * The fixture generator reads the canonical `spec/examples`: the regression
  * baseline. LLM generators implement the same interface so "ask model X for a
  * deadlift, score what it wrote" plugs straight into `runEval` (they need API
  * keys, so they live with the caller, not here).
