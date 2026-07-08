@@ -640,6 +640,16 @@ a.dev-card:hover {
   color: var(--muted);
   margin: 0;
 }
+.footer-legal a {
+  color: var(--muted);
+  text-decoration: underline;
+  text-decoration-color: var(--border-2);
+  text-underline-offset: 2px;
+}
+.footer-legal a:hover {
+  color: var(--accent);
+  text-decoration-color: var(--accent);
+}
 
 /* --- Motion ---------------------------------------------------------------- */
 @keyframes pulse {

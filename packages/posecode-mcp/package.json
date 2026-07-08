@@ -1,7 +1,7 @@
 {
   "name": "posecode-mcp",
   "version": "0.1.0",
-  "description": "Model Context Protocol server for Posecode — let any LLM agent validate, ROM-check, and get a render link for a .posecode movement, natively.",
+  "description": "Model Context Protocol server for Posecode \u2014 let any LLM agent validate, ROM-check, and get a render link for a .posecode movement, natively.",
   "license": "MIT",
   "type": "module",
   "main": "./src/index.ts",
@@ -19,7 +19,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "start": "tsx src/stdio.ts",
-    "build": "esbuild src/stdio.ts --bundle --platform=node --format=esm --external:@modelcontextprotocol/sdk --external:zod --outfile=dist/posecode-mcp.mjs",
+    "build": "tsc -p tsconfig.json && esbuild src/stdio.ts --bundle --platform=node --format=esm --external:@modelcontextprotocol/sdk --external:zod --outfile=dist/posecode-mcp.mjs",
     "prepublishOnly": "npm run build"
   },
   "repository": {
@@ -39,13 +39,13 @@
   ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",
+    "posecode-parser": "0.1.0",
+    "posecode-share": "0.1.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
     "esbuild": "^0.24.2",
-    "posecode-parser": "0.1.0",
-    "posecode-share": "0.1.0",
     "tsx": "^4.19.2"
   }
 }
