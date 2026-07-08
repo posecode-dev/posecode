@@ -6,7 +6,7 @@
  */
 
 import { parse } from "posecode-parser";
-import { buildShareHash } from "posecode-share";
+import { buildNiceShareHash } from "./nice-share.js";
 import { PRESETS } from "./presets.js";
 import llmPrompt from "../../spec/llm-authoring.md?raw";
 
@@ -63,7 +63,7 @@ if (grid) {
     if (!preset) continue;
     const card = document.createElement("a");
     card.className = "example-card";
-    card.href = `play.html${buildShareHash(preset.source)}`;
+    card.href = `play.html${buildNiceShareHash(preset.source)}`;
     card.innerHTML = `
       <span class="example-kind">${preset.domain}</span>
       <span class="example-name">${preset.label}</span>

@@ -63,10 +63,9 @@ function slugTitle(label) {
 
 async function main() {
   const server = await createServer({ root: playgroundRoot, server: { middlewareMode: true } });
-  let PRESETS, buildShareHash;
+  let PRESETS;
   try {
     ({ PRESETS } = await server.ssrLoadModule("/src/presets.ts"));
-    ({ buildShareHash } = await server.ssrLoadModule("posecode-share"));
   } finally {
     await server.close();
   }
@@ -88,7 +87,7 @@ async function main() {
     const steps = parseSteps(p.source);
     const repeat = parseRepeat(p.source);
     const name = slugTitle(p.label);
-    const hash = buildShareHash(p.source);
+    const hash = `#doc=${p.id}`;
     const url = `/moves/${p.id}.html`;
 
     const stepsHtml = steps

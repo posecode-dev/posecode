@@ -9,7 +9,7 @@
 
 import { parse } from "posecode-parser";
 import { createViewer } from "posecode-render";
-import { buildShareHash, readShareHash } from "posecode-share";
+import { buildNiceShareHash, resolveSharedSource } from "./nice-share.js";
 import { createPosecodeEditor, type PosecodeEditor } from "./editor.js";
 import { PRESETS } from "./presets.js";
 import { renderWarnings } from "./warnings.js";
@@ -369,7 +369,7 @@ copyBtn.addEventListener("click", () => copyPrompt(copyBtn));
 // (so it's bookmarkable), and copy the full link to the clipboard.
 async function shareLink(): Promise<void> {
   try {
-    const hash = buildShareHash(editorApi.getValue());
+    const hash = buildNiceShareHash(editorApi.getValue());
     const url = `${location.origin}${location.pathname}${hash}`;
     history.replaceState(null, "", hash);
     await navigator.clipboard.writeText(url);
@@ -432,11 +432,15 @@ $<HTMLButtonElement>("intro-dismiss").addEventListener("click", () => {
   intro.hidden = true;
 });
 
-// Boot: a shared link (?#doc=…) wins over the default preset.
-const sharedSource = readShareHash(window.location.hash);
+// Boot: a shared link (?#doc=…) wins over the default preset. A link built
+// from a known movement (`#doc=squat`) resolves straight to that preset, so
+// it opens exactly like picking it from the library would.
+const sharedSource = resolveSharedSource(window.location.hash);
 let initialDoc: string;
 if (sharedSource) {
-  libCurrent.textContent = "↗ Shared link";
+  const preset = PRESETS.find((p) => p.source === sharedSource);
+  currentPresetId = preset?.id ?? null;
+  libCurrent.textContent = preset ? preset.label : "↗ Shared link";
   initialDoc = sharedSource;
   intro.hidden = true;
 } else {
