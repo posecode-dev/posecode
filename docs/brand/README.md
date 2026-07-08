@@ -1,18 +1,17 @@
 # Posecode brand kit
 
-The Posecode mark is a **kinematic figure in an open, energetic pose**: bones are
-strokes, joints are markers, the same rig the app animates. It hints at the
-project (human movement + a technical rig) while staying friendly and legible
-down to 16px.
+The Posecode logo is a **kinematic figure in an open, energetic pose**: bones as
+strokes, joints connected, the same rig the app animates. It hints at the
+project (human movement) while staying friendly and legible down to 16px. It is
+the exact mark used in the site's nav, favicon, and app icon: one logo,
+everywhere, no separate "tiled" variant.
 
 ## Palette
 
 | Token | Hex | Use |
 | --- | --- | --- |
 | Lime | `#c6f24a` | The figure / accent |
-| Lime (light) | `#d6ff5e` | Top of the figure gradient |
-| Lime (deep) | `#a9e02f` | Bottom of the figure gradient |
-| Ink | `#0a0d12` | Dark background / tile |
+| Ink | `#0a0d12` | Dark background |
 
 Type: **Hanken Grotesk** (wordmark), **JetBrains Mono** (code).
 
@@ -20,20 +19,20 @@ Type: **Hanken Grotesk** (wordmark), **JetBrains Mono** (code).
 
 | File | What it is |
 | --- | --- |
-| `posecode-mark.svg` | Figure only, `currentColor` (inherits text color). For inline logos. |
-| `posecode-mark-512.png` | Figure only, lime, transparent background. |
-| `posecode-icon.svg` | Rounded dark app-icon tile with glow + joint markers. |
-| `posecode-icon-512.png` | The app icon, rendered, transparent corners. Good for avatars. |
-| `posecode-icon-360.png` | Full-bleed square (no rounded corners) for iOS / masked contexts. |
-| `posecode-social.png` | 1280×640 GitHub social preview (mark + wordmark + tagline). |
+| `posecode-mark.svg` | The logo, `currentColor` so it inherits the surrounding text color. Source of truth for inline use. |
+| `posecode-icon-512.png` | The logo as a flat-lime PNG on a transparent background. Use for READMEs, avatars, anywhere. |
+| `posecode-social.png` | 1280×640 GitHub social preview (logo + wordmark + tagline). |
 
-The live favicon (`playground/public/favicon.svg`) and iOS icon
-(`playground/public/apple-touch-icon.png`) are wired into the site.
+The live favicon (`playground/public/favicon.svg`, plus `favicon-16/32/48/192/512.png`)
+and the iOS icon (`playground/public/apple-touch-icon.png`) use this same figure.
+The SVG favicon adapts to the tab color (lime on dark UI, ink on light) so it
+stays legible without a background tile.
 
 ## Using them on GitHub
 
 - **Repo social preview:** Settings → General → Social preview → upload
   `posecode-social.png`.
-- **Org / project avatar:** upload `posecode-icon-512.png` (square, rounded) or
-  `posecode-icon-360.png` (full-bleed).
-- **README badge / inline:** reference `posecode-mark-512.png`.
+- **Org / project avatar:** upload `posecode-icon-512.png`. (It's transparent, so
+  on a light avatar background the lime figure will read light; if you want more
+  contrast there, place it on an `#0a0d12` square first.)
+- **README / inline:** reference `posecode-icon-512.png` or `posecode-mark.svg`.
