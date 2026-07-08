@@ -21,11 +21,5 @@
       <path d="M50 54 L64 72 L72 88"/>
     </g>
     <circle cx="50" cy="20" r="9" fill="url(#lime)"/>
-    <g fill="#0a0d12" stroke="url(#lime)" stroke-width="2.4">
-      <circle cx="34" cy="26" r="2.6"/>
-      <circle cx="66" cy="26" r="2.6"/>
-      <circle cx="36" cy="72" r="2.6"/>
-      <circle cx="64" cy="72" r="2.6"/>
-    </g>
   </g>
 </svg>
