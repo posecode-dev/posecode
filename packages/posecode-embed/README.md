@@ -3,7 +3,7 @@
 **Embed a live 3D Posecode movement anywhere with one `<script>` tag.**
 
 `posecode-embed` ships a framework-free `<posecode-player>` web component. Drop
-it into a blog post, docs page, physio program, or an LLM chat UI — it renders
+it into a blog post, docs page, physio program, or an LLM chat UI, and it renders
 the movement as an animated 3D figure, right where a share link would have gone.
 
 ## Quick start (CDN, no build step)
@@ -17,7 +17,7 @@ the movement as an animated 3D figure, right where a share link would have gone.
 <!-- 2. From a URL to a .posecode file -->
 <posecode-player src="/movements/squat.posecode"></posecode-player>
 
-<!-- 3. From inline text — reads like the language itself -->
+<!-- 3. From inline text: reads like the language itself -->
 <posecode-player>
 posecode exercise "Lateral raise"
   rig humanoid
@@ -56,9 +56,9 @@ definePosecodePlayer(); // idempotent
 
 | Attribute | Default | Description |
 | --- | --- | --- |
-| `doc` | — | A `posecode-share` token (highest precedence). |
-| `src` | — | URL of a `.posecode` file to fetch. |
-| *(inline text)* | — | The element's text content, used if `doc`/`src` are absent. |
+| `doc` | n/a | A `posecode-share` token (highest precedence). |
+| `src` | n/a | URL of a `.posecode` file to fetch. |
+| *(inline text)* | n/a | The element's text content, used if `doc`/`src` are absent. |
 | `autoplay` | `true` | Play as soon as the movement loads. |
 | `loop` | `true` | Loop the timeline. |
 | `controls` | `true` | Show the play/pause bar. |

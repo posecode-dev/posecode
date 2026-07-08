@@ -5,7 +5,7 @@ It gives any MCP-capable agent (Claude Desktop, Cursor, …) a native way to *sh
 movement*: learn the `.posecode` language, validate a movement against healthy
 range-of-motion limits, and get a link that animates it as a 3D figure.
 
-This closes the loop the playground left open — no copy-pasting a system prompt
+This closes the loop the playground left open: no copy-pasting a system prompt
 or shuttling text between a chat window and the editor.
 
 ## Tools
@@ -42,12 +42,12 @@ npm start -w posecode-mcp          # tsx src/stdio.ts
 }
 ```
 
-`POSECODE_BASE_URL` is optional — it sets the playground that render permalinks
+`POSECODE_BASE_URL` is optional: it sets the playground that render permalinks
 point at (defaults to the hosted playground).
 
 ## How it fits
 
-`render_posecode` builds its links with [`posecode-share`](../posecode-share) — the same
-permalink primitive the playground uses — and validates with
+`render_posecode` builds its links with [`posecode-share`](../posecode-share), the same
+permalink primitive the playground uses, and validates with
 [`posecode-parser`](../posecode-parser). The server holds no rendering itself; 3D math
 runs client-side when the link is opened.

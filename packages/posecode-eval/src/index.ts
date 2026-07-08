@@ -1,4 +1,4 @@
-/** posecode-eval — public API. */
+/** posecode-eval: public API. */
 
 export { probeMovement } from "./probe.js";
 export type { ProbeResult, PhasePose, Vec3 } from "./probe.js";

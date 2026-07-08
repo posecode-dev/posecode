@@ -2,7 +2,7 @@
  * Procedural low-poly mannequin.
  *
  * Built from rigid capsule/sphere segments parented to an Object3D bone
- * hierarchy — the "wooden artist mannequin" look. No external assets, no
+ * hierarchy: the "wooden artist mannequin" look. No external assets, no
  * skinning: each bone is a joint node, and limb meshes hang off the proximal
  * bone so they follow its local rotation (forward kinematics).
  *
@@ -52,10 +52,10 @@ const SKELETON: BoneSpec[] = [
   { id: "knee_right", parent: "hip_right", offset: [0, -0.45, 0], radius: 0.05 },
   { id: "ankle_right", parent: "knee_right", offset: [0, -0.43, 0], radius: 0.04 },
 
-  // Fingers — one curl DOF each (flex), splayed in X and angled slightly
+  // Fingers: one curl DOF each (flex), splayed in X and angled slightly
   // forward (+Z, palm-side). Offsets are the FINGERTIP position; the bone is
   // placed partway along at the knuckle (KNUCKLE_T) so the wrist-drawn segment
-  // becomes the rigid palm/metacarpal and the bone carries its own digit mesh —
+  // becomes the rigid palm/metacarpal and the bone carries its own digit mesh,
   // otherwise curling a finger rotates an empty node and the hand never moves.
   { id: "thumb_left", parent: "wrist_left", offset: [0.035, -0.04, 0.025], radius: 0.014 },
   { id: "index_left", parent: "wrist_left", offset: [0.025, -0.085, 0.012], radius: 0.013 },
@@ -164,7 +164,7 @@ function addBall(bone: THREE.Object3D, diameter: number, mat: THREE.Material): v
 }
 
 /**
- * A minimal face — nose wedge + two eye studs — on the head's front (+Z).
+ * A minimal face (nose wedge + two eye studs) on the head's front (+Z).
  * The bare sphere hid which way the figure faces, making neck rotations and
  * turns unreadable; darker studs poke just past the head surface so facing
  * reads at a glance from any camera angle.

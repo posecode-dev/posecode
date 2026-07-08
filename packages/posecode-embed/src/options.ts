@@ -3,7 +3,7 @@
  *
  * Pure and DOM-free so it is unit-testable in node: the element hands us a
  * plain record of its attribute values. Boolean attributes follow a friendly
- * variant of HTML semantics — present means true, but an explicit `"false"`
+ * variant of HTML semantics: present means true, but an explicit `"false"`
  * (or `"0"` / `"no"`) turns them off, which reads better in hand-written embeds.
  */
 

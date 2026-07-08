@@ -46,7 +46,7 @@ describe("hip-hinge action", () => {
     expect(errors).toEqual([]);
     expect(warnings).toEqual([]);
     const pelvis = ir!.phases[0]!.targets.find((t) => t.boneId === "pelvis")!;
-    // hinge tips the torso forward — same sagittal direction as spine flex (+X,
+    // hinge tips the torso forward: same sagittal direction as spine flex (+X,
     // the axial chain points up).
     expect(pelvis.euler.x).toBe(80);
   });

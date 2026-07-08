@@ -2,12 +2,12 @@
  * Resolve a `<posecode-player>`'s movement source from its three input modes,
  * in precedence order:
  *
- *   1. `doc="<token>"`   — a posecode-share token (how permalinks travel)
- *   2. `src="<url>"`     — fetch a `.posecode` file
- *   3. inline text       — the element's own text content
+ *   1. `doc="<token>"`: a posecode-share token (how permalinks travel)
+ *   2. `src="<url>"`: fetch a `.posecode` file
+ *   3. inline text: the element's own text content
  *
  * DOM-free: the element passes a plain descriptor, so this is unit-testable in
- * node. Never throws — every failure comes back as `{ ok: false, error }` so
+ * node. Never throws: every failure comes back as `{ ok: false, error }` so
  * the element can render a friendly message instead of a blank canvas.
  */
 
@@ -59,7 +59,7 @@ export async function resolveSource(
 
   return {
     ok: false,
-    error: "No movement to render — set a doc token, a src URL, or inline text.",
+    error: "No movement to render: set a doc token, a src URL, or inline text.",
   };
 }
 

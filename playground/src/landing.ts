@@ -1,7 +1,7 @@
 /**
  * Posecode landing page. Demo-forward: a live hero viewer and an examples gallery
  * whose cards deep-link into the playground via the shared permalink codec.
- * Reuses the same parser, renderer, and share encoding as the tool — no
+ * Reuses the same parser, renderer, and share encoding as the tool: no
  * bespoke logic that could drift.
  */
 

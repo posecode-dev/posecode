@@ -205,7 +205,7 @@ describe("reach-IK", () => {
     const wrist = m.bones.get("wrist_right")!;
     const shoulder = m.bones.get("shoulder_right")!;
 
-    // A target ~0.47m from the shoulder — inside the ~0.54m arm reach — so the
+    // A target ~0.47m from the shoulder (inside the ~0.54m arm reach) so the
     // hand can actually arrive (a body landmark like a knee is out of range from
     // a neutral stand, which is exactly why touch-toes hinges the torso first).
     const target = shoulder
@@ -272,7 +272,7 @@ describe("ground-lock (shared solver)", () => {
     );
     applyGroundLock(m, ["feet"]);
     m.root.updateMatrixWorld(true);
-    // Pelvis well below standing rest (~0.95m) — the body lowered into a squat.
+    // Pelvis well below standing rest (~0.95m): the body lowered into a squat.
     const pelvisY = m.bones.get("pelvis")!.getWorldPosition(new THREE.Vector3()).y;
     expect(pelvisY).toBeLessThan(0.85);
     // Foot MESH sole rests on the floor (ankle bone rides ~0.04m above it).
@@ -546,7 +546,7 @@ describe("frontal plane direction", () => {
     m.root.updateMatrixWorld(true);
 
     // Each distal joint must sit FURTHER from the midline (|x|) than its
-    // proximal joint, on the SAME side — the inverted sign swung all four
+    // proximal joint, on the SAME side: the inverted sign swung all four
     // limbs across the body instead.
     for (const [distal, proximal] of [
       ["wrist_left", "shoulder_left"],

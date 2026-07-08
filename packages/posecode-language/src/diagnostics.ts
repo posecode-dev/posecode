@@ -32,7 +32,7 @@ export function getDiagnostics(text: string): Diagnostic[] {
     diagnostics.push({
       line: w.line,
       severity: "warning",
-      message: `${joint} ${w.action} ${w.requested}° exceeds range of motion — clamped to ${w.clamped}° (safe ${w.limit.min}–${w.limit.max}°)`,
+      message: `${joint} ${w.action} ${w.requested}° exceeds range of motion, clamped to ${w.clamped}° (safe ${w.limit.min}–${w.limit.max}°)`,
     });
   }
 

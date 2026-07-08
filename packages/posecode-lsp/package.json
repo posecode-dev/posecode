@@ -1,7 +1,7 @@
 {
   "name": "posecode-lsp",
   "version": "0.1.0",
-  "description": "Language Server Protocol implementation for the Posecode (.posecode) DSL — diagnostics, completion, and hover, powered by posecode-language.",
+  "description": "Language Server Protocol implementation for the Posecode (.posecode) DSL: diagnostics, completion, and hover, powered by posecode-language.",
   "license": "MIT",
   "type": "module",
   "main": "./src/server.ts",

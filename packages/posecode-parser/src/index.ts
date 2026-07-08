@@ -1,5 +1,5 @@
 /**
- * posecode-parser — public API.
+ * posecode-parser: public API.
  *
  * `parse()` turns `.posecode` source into a validated, ROM-clamped `PosecodeIR`.
  * Pipeline: tokenize → parse to AST → zod boundary validation → resolve+clamp.

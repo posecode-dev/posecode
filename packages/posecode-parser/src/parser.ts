@@ -1,7 +1,7 @@
 /**
  * Recursive-descent parser: tokenized lines → an Abstract Syntax Tree.
  *
- * The AST is intentionally "shallow" — it captures what was written without
+ * The AST is intentionally "shallow": it captures what was written without
  * resolving joints, axes, or ROM. That resolution happens in `clamp.ts`,
  * keeping parsing and biomechanics cleanly separated.
  */
@@ -118,7 +118,7 @@ export function parseToAst(source: string): ParseAstResult {
         break;
       }
       case "prop": {
-        // `prop <type>` — a scene object (chair | wall | bar), repeatable.
+        // `prop <type>`: a scene object (chair | wall | bar), repeatable.
         const p = word(t[1]);
         if (!p) errors.push({ line: ln.line, message: "prop requires a type" });
         else doc.props.push(p);
@@ -207,7 +207,7 @@ function parseStepChild(ln: Line, current: AstStep | null): ParseError | null {
   }
 
   if (head === "reach") {
-    // `reach: <effector> <target>` — drive an effector to a world target via IK.
+    // `reach: <effector> <target>`: drive an effector to a world target via IK.
     if (!current) return { line: ln.line, message: "`reach` outside of a step" };
     const effector = t[2]?.type === "word" ? t[2].value : null;
     const target = t[3]?.type === "word" ? t[3].value : null;
@@ -219,7 +219,7 @@ function parseStepChild(ln: Line, current: AstStep | null): ParseError | null {
   }
 
   if (head === "pin") {
-    // `pin: <effector> <anchor>` — translate the body so the effector sits there.
+    // `pin: <effector> <anchor>`: translate the body so the effector sits there.
     if (!current) return { line: ln.line, message: "`pin` outside of a step" };
     const effector = t[2]?.type === "word" ? t[2].value : null;
     const anchor = t[3]?.type === "word" ? t[3].value : null;
@@ -231,7 +231,7 @@ function parseStepChild(ln: Line, current: AstStep | null): ParseError | null {
   }
 
   if (head === "turn") {
-    // `turn: <degrees>` — the figure's facing (root yaw about world Y) at the
+    // `turn: <degrees>`: the figure's facing (root yaw about world Y) at the
     // end of this phase. Absolute, accumulated forward like a joint target.
     if (!current) return { line: ln.line, message: "`turn` outside of a step" };
     if (t[1]?.type !== "colon" || t[2]?.type !== "num") {
@@ -242,7 +242,7 @@ function parseStepChild(ln: Line, current: AstStep | null): ParseError | null {
   }
 
   if (head === "travel") {
-    // `travel: <x> <z>` — the figure's ground position (world X/Z metres) at the
+    // `travel: <x> <z>`: the figure's ground position (world X/Z metres) at the
     // end of this phase. Absolute offset from the load spot, accumulated forward.
     if (!current) return { line: ln.line, message: "`travel` outside of a step" };
     if (t[1]?.type !== "colon" || t[2]?.type !== "num" || t[3]?.type !== "num") {

@@ -2,7 +2,7 @@
  * Minimal Markdown → HTML renderer, scoped to exactly the constructs used in
  * spec/SPEC.md and spec/llm-authoring.md: headers, fenced code blocks, pipe
  * tables, ordered/unordered lists, bold, inline code, links, and hr. Not a
- * general-purpose renderer — deliberately small and dependency-free so the
+ * general-purpose renderer: deliberately small and dependency-free so the
  * doc pages don't pull a markdown library into the build.
  */
 
@@ -14,7 +14,7 @@ function escapeHtml(s) {
     .replace(/"/g, "&quot;");
 }
 
-/** Inline spans: `code`, **bold**, [text](url) — applied to already-escaped text. */
+/** Inline spans: `code`, **bold**, [text](url), applied to already-escaped text. */
 function renderInline(escaped) {
   return escaped
     .replace(/`([^`]+)`/g, "<code>$1</code>")

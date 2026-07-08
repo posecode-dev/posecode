@@ -17,7 +17,7 @@ export function buildNiceShareHash(source: string): string {
   return preset ? `#${SHARE_PARAM}=${preset.id}` : buildShareHash(source);
 }
 
-/** Reverse of buildNiceShareHash. Never throws — an invalid link is just "no shared doc". */
+/** Reverse of buildNiceShareHash. Never throws: an invalid link is just "no shared doc". */
 export function resolveSharedSource(hash: string): string | null {
   if (typeof hash !== "string") return null;
   const raw = hash.startsWith("#") ? hash.slice(1) : hash;

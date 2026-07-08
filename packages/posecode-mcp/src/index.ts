@@ -1,5 +1,5 @@
 /**
- * posecode-mcp — public API.
+ * posecode-mcp: public API.
  *
  * A Model Context Protocol server that lets LLM agents author, validate, and
  * render Posecode movements natively. See `stdio.ts` for the runnable entry

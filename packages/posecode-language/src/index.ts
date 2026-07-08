@@ -1,5 +1,5 @@
 /**
- * posecode-language — editor-agnostic language service for `.posecode`.
+ * posecode-language: editor-agnostic language service for `.posecode`.
  *
  * Pure functions over document text + a 0-based position. Consumed by the
  * playground's CodeMirror editor and by the LSP server, so both share one

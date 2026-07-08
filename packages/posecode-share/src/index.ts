@@ -1,5 +1,5 @@
 /**
- * posecode-share — the distribution primitive for Posecode.
+ * posecode-share: the distribution primitive for Posecode.
  *
  * Encodes a `.posecode` document into a compact, URL-safe token so any movement
  * can travel as a link and render wherever it lands. This is the mechanic that
@@ -50,7 +50,7 @@ export function buildShareHash(source: string): string {
 /**
  * Extract a shared document from a `location.hash`. This is the untrusted
  * boundary: a hand-edited or truncated link must degrade to "no shared doc"
- * rather than crash the page, so this never throws — it returns null instead.
+ * rather than crash the page, so this never throws: it returns null instead.
  */
 export function readShareHash(hash: string): string | null {
   if (typeof hash !== "string") return null;

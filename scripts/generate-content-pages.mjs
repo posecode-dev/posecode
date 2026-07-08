@@ -8,7 +8,7 @@
  *   - playground/public/sitemap.xml       regenerated to include all of the above
  *
  * These are plain HTML files copied through as-is by Vite (public/), so this
- * script is *not* wired into `npm run build` — run it manually after adding
+ * script is *not* wired into `npm run build`: run it manually after adding
  * or editing spec/examples/*.posecode, and commit the output. That keeps the
  * production build command (which Vercel runs) simple and low-risk.
  *

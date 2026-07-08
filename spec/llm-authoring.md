@@ -8,7 +8,7 @@ into the Posecode playground.
 
 You write **Posecode**, a small text language that describes a single person's
 movement so a 3D mannequin can animate it. Output ONLY a `.posecode` document in a
-code block — no prose.
+code block, no prose.
 
 ## Grammar
 
@@ -36,15 +36,15 @@ wrists hips knees ankles`. Plural names move both sides symmetrically; use
 
 ## Actions (degrees are absolute targets)
 
-- `flex` / `extend` — bend / straighten (sagittal)
-- `abduct` / `adduct` — away from / toward midline (frontal)
-- `rotate-in` / `rotate-out` — internal / external rotation
-- `supinate` / `pronate` — forearm turn (palm up / down)
-- `dorsiflex` / `plantarflex` — ankle up / down
-- `hinge` — **hip hinge** (on `pelvis` only): tip the torso forward over the
-  hips with a flat back, legs staying planted. Use this — not spinal `flex` —
+- `flex` / `extend`: bend / straighten (sagittal)
+- `abduct` / `adduct`: away from / toward midline (frontal)
+- `rotate-in` / `rotate-out`: internal / external rotation
+- `supinate` / `pronate`: forearm turn (palm up / down)
+- `dorsiflex` / `plantarflex`: ankle up / down
+- `hinge`: **hip hinge** (on `pelvis` only): tip the torso forward over the
+  hips with a flat back, legs staying planted. Use this, not spinal `flex`,
   for a deadlift, bent-over row, good-morning, or a bow.
-- `hold neutral` — keep the joint at rest
+- `hold neutral`: keep the joint at rest
 
 ## Rules
 
@@ -96,7 +96,7 @@ posecode exercise "Deadlift"
     knees: flex 25
     shoulders: flex 90
     ground-lock: feet
-    cue "Hips back, flat back — let the arms hang to the bar"
+    cue "Hips back, flat back: let the arms hang to the bar"
 
   step "Lift" 1.4s ease-out:
     pelvis: hinge 0
@@ -110,14 +110,14 @@ posecode exercise "Deadlift"
 
 ## Reaching, props, lying poses & hands
 
-- **Reach a target** — `reach: <effector> <target>` drives a hand or foot to a
+- **Reach a target**: `reach: <effector> <target>` drives a hand or foot to a
   world point via IK. Effectors: `hand_left hand_right foot_left foot_right`,
   or `hands` / `feet` for both sides at once. Targets: a body landmark bone
   (`ankle_left`, `knee_right`…), `floor`, or a prop anchor (`bar`, `seat`,
-  `wall`). The solve is ROM-constrained — the arm/leg can never exceed the safe
+  `wall`). The solve is ROM-constrained: the arm/leg can never exceed the safe
   joint limits chasing a target, so an out-of-reach target just yields the
   closest healthy pose. Author the gross pose (e.g. a `pelvis: hinge`), then
-  let `reach` finish the hand placement. Example — touch your toes:
+  let `reach` finish the hand placement. Example, touch your toes:
 
   ```posecode
   step "Fold" 2.5s ease-in-out:
@@ -129,33 +129,33 @@ posecode exercise "Deadlift"
     cue "Hinge and reach toward the ankles"
   ```
 
-- **Props** — `prop chair | wall | bar | box | dip-bars` (top level). The chair
+- **Props**: `prop chair | wall | bar | box | dip-bars` (top level). The chair
   sits behind the figure (sit-to-stand, box squat), the wall behind that (wall
   sit), the bar overhead, the box in front (step-ups), and the dip bars either
   side at hip-press height (`pin: hands bars` + elbow flex = triceps dips).
-- **Pins** — `pin: <effector> <anchor>` moves the whole BODY so the effector sits
+- **Pins**: `pin: <effector> <anchor>` moves the whole BODY so the effector sits
   on the anchor (vs `reach`, which moves just the limb). Same effectors as reach,
   including `hands` / `feet`. Use it for hanging and climbing: `pin: hands bar` +
   flexing the elbows = a pull-up; `pin: foot_right box` + straightening the leg =
   a step-up; `pin: hands bars` (dip bars) + bending the elbows = a triceps dip.
-- **Lying / seated** — `pose start = supine | prone | seated` for floor and mat
+- **Lying / seated**: `pose start = supine | prone | seated` for floor and mat
   work (glute bridge, dead bug, cobra, seated forward fold).
-- **Hands** — `fingers: flex 80` makes a fist; curl individual fingers for shapes
-  (`index_right: flex 95`). Single-DOF per finger — good for grip and rough
+- **Hands**: `fingers: flex 80` makes a fist; curl individual fingers for shapes
+  (`index_right: flex 95`). Single-DOF per finger, good for grip and rough
   gesture, not exact sign language.
 
 ## Authoring by domain
 
 The same grammar covers many fields. A few patterns that read well:
 
-- **Anatomy / education** — isolate one joint and sweep it through its range
+- **Anatomy / education**: isolate one joint and sweep it through its range
   (`shoulders: abduct 160` → `0`). Name the plane in the cue. Great for teaching.
-- **Physiotherapy** — gentle, single-joint reps; for one-sided work use a
+- **Physiotherapy**: gentle, single-joint reps; for one-sided work use a
   singular joint (`knee_right: flex 95`) and skip `ground-lock` so the standing
   leg stays planted.
-- **Desk / posture** — slow `stretch` documents with `ground-lock: feet`;
+- **Desk / posture**: slow `stretch` documents with `ground-lock: feet`;
   contrast a "collapsed" phase with a "tall" reset.
-- **Sports / martial arts** — short, snappy phases (0.3–0.6s) with `ease-out`
+- **Sports / martial arts**: short, snappy phases (0.3–0.6s) with `ease-out`
   on the strike; chamber → extend → re-chamber → return.
 
 ### Dance / choreography
@@ -181,6 +181,6 @@ Both `turn` and `travel` are **absolute and carried forward** like joint angles,
 and both return home on the loop wrap, so phrases resolve cleanly. They work from
 **standing** poses only. Name each step by its count (`"5-6 - relevé, arms en
 haut"`) so the phrase reads like choreography. To extend a phrase, append more
-steps — the figure carries its pose forward. Use `ground-lock: feet` for grounded
-phrases (it still lets the figure turn and travel — it only keeps the feet on the
+steps; the figure carries its pose forward. Use `ground-lock: feet` for grounded
+phrases (it still lets the figure turn and travel; it only keeps the feet on the
 floor vertically).

@@ -1,5 +1,5 @@
 /**
- * posecode-embed — public API.
+ * posecode-embed: public API.
  *
  * Importing this module in a browser auto-registers `<posecode-player>`, so the
  * common case is zero-config:
@@ -31,5 +31,5 @@ export function definePosecodePlayer(): void {
   customElements.define(PosecodePlayerElement.tagName, PosecodePlayerElement);
 }
 
-// Auto-register on import in a browser — the batteries-included default.
+// Auto-register on import in a browser: the batteries-included default.
 definePosecodePlayer();

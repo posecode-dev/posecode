@@ -61,7 +61,7 @@ export interface BuiltTimeline {
     /** Interpolated root ground offset (world X/Z metres) from the load spot. */
     rootOffset: { x: number; z: number };
   };
-  /** Largest travel offset magnitude reached (metres) — for camera framing. */
+  /** Largest travel offset magnitude reached (metres), for camera framing. */
   travelExtent: number;
 }
 
@@ -223,7 +223,7 @@ function snapshot(curr: Map<string, EulerDegTuple>): Map<string, THREE.Quaternio
   for (const [bone, euler] of curr) out.set(bone, eulerToQuat(euler));
 
   // Hip-hinge coupling. The `pelvis` is the shared parent of both the torso and
-  // the legs, so a pelvis X-rotation tips the WHOLE figure forward — torso and
+  // the legs, so a pelvis X-rotation tips the WHOLE figure forward: torso and
   // legs alike. A real hip hinge keeps the legs planted and pivots only the
   // torso over the hip line, so counter-rotate the hips by the same X angle:
   // the thighs (hence shins and feet) stay world-vertical while the torso tips.

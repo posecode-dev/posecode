@@ -3,8 +3,8 @@
  *
  * Values follow the maximum healthy limits in the project research
  * (CDC / clinical normative data), §5.1 Tables 1 & 2. The clamp pass treats
- * `max` as a HARD ceiling — e.g. a requested knee flexion of 200° is clamped to
- * 144° — so the renderer can never produce an anatomically impossible joint.
+ * `max` as a HARD ceiling: e.g. a requested knee flexion of 200° is clamped to
+ * 144°, so the renderer can never produce an anatomically impossible joint.
  *
  * `min` is the floor of the achievable angle for that action direction (0 for
  * most; small positive ceilings on extension capture hyperextension limits).
@@ -113,7 +113,7 @@ export type EulerRom = Record<Axis, RomLimit>;
 
 /**
  * The full ROM of a bone expressed as a signed Euler box in the renderer's
- * local frame — the same frame `clamp.ts` resolves authored actions into
+ * local frame: the same frame `clamp.ts` resolves authored actions into
  * (flexion-sign per joint, Y/Z mirrored on left-side bones). Each axis range is
  * the union of every action that rotates it; axes with no ROM entry stay
  * `{min: 0, max: 0}`, locking them (a knee is a pure hinge). This is what lets

@@ -36,7 +36,7 @@ if (errors.length === 0 && ir) {
 }
 ```
 
-`parse()` never throws — malformed or out-of-range documents come back as
+`parse()` never throws: malformed or out-of-range documents come back as
 structured `errors`/`warnings` instead. Every joint angle in `ir` is hard-clamped
 to a healthy range of motion, so a hallucinated `knee: flex 200` renders at its
 safe ceiling with a warning, never an anatomically impossible joint.
