@@ -256,8 +256,11 @@ function addEllipsoid(
 function addTorso(bones: Map<string, THREE.Object3D>, mats: FigureMaterials): void {
   // Hips: wide, slightly flattened, dressed in shorts.
   addEllipsoid(bones.get("pelvis")!, 0.09, [1.4, 1.0, 1.05], [0, -0.02, 0], mats.shorts);
-  // Ribcage: broad across the shoulders, shallow front-to-back.
-  addEllipsoid(bones.get("chest")!, 0.1, [1.5, 1.22, 0.82], [0, 0.03, 0], mats.top);
+  // Ribcage: broad across the shoulders, shallow front-to-back. Named so the
+  // viewer's life layer can swell it for breathing (a mesh-only effect that
+  // can never disturb the skeleton or the solved pose).
+  const ribcage = addEllipsoid(bones.get("chest")!, 0.1, [1.5, 1.22, 0.82], [0, 0.03, 0], mats.top);
+  ribcage.name = "ribcage";
   // Deltoids round off the shoulder line.
   addEllipsoid(bones.get("shoulder_left")!, 0.057, [1.02, 1.12, 1.02], [-0.006, -0.012, 0], mats.top);
   addEllipsoid(bones.get("shoulder_right")!, 0.057, [1.02, 1.12, 1.02], [0.006, -0.012, 0], mats.top);
