@@ -173,20 +173,20 @@
         <div class="studio">
           <div class="studio-bar" aria-hidden="true">
             <span class="dots"></span>
-            <span class="studio-title">squat.posecode</span>
+            <span class="studio-title">jumping-jacks.posecode</span>
             <span class="studio-live"><i></i>live</span>
           </div>
           <canvas id="hero-canvas"></canvas>
-          <div class="studio-hud"><span id="hero-phase">Descend</span></div>
+          <div class="studio-hud"><span id="hero-phase">Out</span></div>
         </div>
 
         <!-- Overlapping code chip: the text that produces the motion -->
-        <pre class="code-chip" aria-hidden="true"><span class="t-kw">posecode</span> <span class="t-kind">exercise</span> <span class="t-str">"Body-weight squat"</span>
+        <pre class="code-chip" aria-hidden="true"><span class="t-kw">posecode</span> <span class="t-kind">exercise</span> <span class="t-str">"Jumping jacks"</span>
   <span class="t-kw">pose</span> start <span class="t-punct">=</span> <span class="t-atom">standing</span>
 
-  <span class="t-kw">step</span> <span class="t-str">"Descend"</span> <span class="t-num">1.6s</span> <span class="t-atom">ease-in-out</span><span class="t-punct">:</span>
-    <span class="t-joint">hips</span><span class="t-punct">:</span> <span class="t-act">flex</span> <span class="t-num">80</span>
-    <span class="t-joint">knees</span><span class="t-punct">:</span> <span class="t-act">flex</span> <span class="t-num">95</span>
+  <span class="t-kw">step</span> <span class="t-str">"Out"</span> <span class="t-num">0.5s</span> <span class="t-atom">ease-out</span><span class="t-punct">:</span>
+    <span class="t-joint">shoulders</span><span class="t-punct">:</span> <span class="t-act">abduct</span> <span class="t-num">160</span>
+    <span class="t-joint">hips</span><span class="t-punct">:</span> <span class="t-act">abduct</span> <span class="t-num">30</span>
     <span class="t-kw">ground-lock</span><span class="t-punct">:</span> <span class="t-atom">feet</span></pre>
       </div>
     </section>

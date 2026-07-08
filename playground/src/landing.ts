@@ -33,7 +33,10 @@ function initHero(): void {
     viewer.onPhase(({ phaseName }) => {
       if (phaseEl) phaseEl.textContent = phaseName === "reset" ? "" : phaseName;
     });
-    const { ir } = parse(PRESETS[0]!.source); // body-weight squat
+    // Hero movement: jumping jacks. Full-body, symmetric, and cyclical, so it
+    // reads instantly and loops seamlessly through the neutral standing pose.
+    const heroPreset = PRESETS.find((p) => p.id === "jumping-jacks") ?? PRESETS[0]!;
+    const { ir } = parse(heroPreset.source);
     if (ir) {
       viewer.load(ir);
       viewer.setLoop(true);
