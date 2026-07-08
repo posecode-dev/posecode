@@ -118,7 +118,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 <h1>Authoring <code>.posecode</code> with an LLM</h1>
 <p>Paste the prompt below into ChatGPT, Claude, or any capable model. Then ask for a movement (&quot;write a squat&quot;, &quot;show a hamstring stretch&quot;) and paste the reply into the Posecode playground.</p>
 <hr>
-<p>You write <strong>Posecode</strong>, a small text language that describes a single person's movement so a 3D mannequin can animate it. Output ONLY a <code>.posecode</code> document in a code block — no prose.</p>
+<p>You write <strong>Posecode</strong>, a small text language that describes a single person's movement so a 3D mannequin can animate it. Output ONLY a <code>.posecode</code> document in a code block, no prose.</p>
 <h2>Grammar</h2>
 <pre class="code-block"><code>posecode &lt;kind&gt; &quot;&lt;Name&gt;&quot;          # kind = exercise | stretch | posture
   rig humanoid
@@ -135,9 +135,9 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 <h2>Joints</h2>
 <p><code>neck head spine chest pelvis</code> and (singular or plural) <code>shoulders elbows wrists hips knees ankles</code>. Plural names move both sides symmetrically; use <code>elbow_left</code> etc. for one side. Fingers: <code>fingers</code> (or <code>fingers_left</code> / <code>fingers_right</code>), and individually <code>thumb_* index_* middle_* ring_* pinky_*</code>.</p>
 <h2>Actions (degrees are absolute targets)</h2>
-<ul><li><code>flex</code> / <code>extend</code> — bend / straighten (sagittal)</li><li><code>abduct</code> / <code>adduct</code> — away from / toward midline (frontal)</li><li><code>rotate-in</code> / <code>rotate-out</code> — internal / external rotation</li><li><code>supinate</code> / <code>pronate</code> — forearm turn (palm up / down)</li><li><code>dorsiflex</code> / <code>plantarflex</code> — ankle up / down</li><li><code>hinge</code> — <strong>hip hinge</strong> (on <code>pelvis</code> only): tip the torso forward over the</li></ul>
-<p>hips with a flat back, legs staying planted. Use this — not spinal <code>flex</code> — for a deadlift, bent-over row, good-morning, or a bow.</p>
-<ul><li><code>hold neutral</code> — keep the joint at rest</li></ul>
+<ul><li><code>flex</code> / <code>extend</code>: bend / straighten (sagittal)</li><li><code>abduct</code> / <code>adduct</code>: away from / toward midline (frontal)</li><li><code>rotate-in</code> / <code>rotate-out</code>: internal / external rotation</li><li><code>supinate</code> / <code>pronate</code>: forearm turn (palm up / down)</li><li><code>dorsiflex</code> / <code>plantarflex</code>: ankle up / down</li><li><code>hinge</code>: <strong>hip hinge</strong> (on <code>pelvis</code> only): tip the torso forward over the</li></ul>
+<p>hips with a flat back, legs staying planted. Use this, not spinal <code>flex</code>, for a deadlift, bent-over row, good-morning, or a bow.</p>
+<ul><li><code>hold neutral</code>: keep the joint at rest</li></ul>
 <h2>Rules</h2>
 <ol><li>Break the movement into 2–5 concurrent <strong>phases</strong>; each <code>step</code> is one phase.</li><li>Set the joints that actually move in that phase; unset joints hold their</li></ol>
 <p>previous value.</p>
@@ -177,7 +177,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     knees: flex 25
     shoulders: flex 90
     ground-lock: feet
-    cue &quot;Hips back, flat back — let the arms hang to the bar&quot;
+    cue &quot;Hips back, flat back: let the arms hang to the bar&quot;
 
   step &quot;Lift&quot; 1.4s ease-out:
     pelvis: hinge 0
@@ -188,26 +188,26 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 
   repeat 8</code></pre>
 <h2>Reaching, props, lying poses &amp; hands</h2>
-<ul><li><strong>Reach a target</strong> — <code>reach: &lt;effector&gt; &lt;target&gt;</code> drives a hand or foot to a</li></ul>
-<p>world point via IK. Effectors: <code>hand_left hand_right foot_left foot_right</code>, or <code>hands</code> / <code>feet</code> for both sides at once. Targets: a body landmark bone (<code>ankle_left</code>, <code>knee_right</code>…), <code>floor</code>, or a prop anchor (<code>bar</code>, <code>seat</code>, <code>wall</code>). The solve is ROM-constrained — the arm/leg can never exceed the safe joint limits chasing a target, so an out-of-reach target just yields the closest healthy pose. Author the gross pose (e.g. a <code>pelvis: hinge</code>), then let <code>reach</code> finish the hand placement. Example — touch your toes:</p>
+<ul><li><strong>Reach a target</strong>: <code>reach: &lt;effector&gt; &lt;target&gt;</code> drives a hand or foot to a</li></ul>
+<p>world point via IK. Effectors: <code>hand_left hand_right foot_left foot_right</code>, or <code>hands</code> / <code>feet</code> for both sides at once. Targets: a body landmark bone (<code>ankle_left</code>, <code>knee_right</code>…), <code>floor</code>, or a prop anchor (<code>bar</code>, <code>seat</code>, <code>wall</code>). The solve is ROM-constrained: the arm/leg can never exceed the safe joint limits chasing a target, so an out-of-reach target just yields the closest healthy pose. Author the gross pose (e.g. a <code>pelvis: hinge</code>), then let <code>reach</code> finish the hand placement. Example, touch your toes:</p>
 <p>``<code>posecode step &quot;Fold&quot; 2.5s ease-in-out: pelvis: hinge 95 knees: flex 12 reach: hand_left ankle_left reach: hand_right ankle_right ground-lock: feet cue &quot;Hinge and reach toward the ankles&quot; </code>``</p>
-<ul><li><strong>Props</strong> — <code>prop chair | wall | bar | box | dip-bars</code> (top level). The chair</li></ul>
+<ul><li><strong>Props</strong>: <code>prop chair | wall | bar | box | dip-bars</code> (top level). The chair</li></ul>
 <p>sits behind the figure (sit-to-stand, box squat), the wall behind that (wall sit), the bar overhead, the box in front (step-ups), and the dip bars either side at hip-press height (<code>pin: hands bars</code> + elbow flex = triceps dips).</p>
-<ul><li><strong>Pins</strong> — <code>pin: &lt;effector&gt; &lt;anchor&gt;</code> moves the whole BODY so the effector sits</li></ul>
+<ul><li><strong>Pins</strong>: <code>pin: &lt;effector&gt; &lt;anchor&gt;</code> moves the whole BODY so the effector sits</li></ul>
 <p>on the anchor (vs <code>reach</code>, which moves just the limb). Same effectors as reach, including <code>hands</code> / <code>feet</code>. Use it for hanging and climbing: <code>pin: hands bar</code> + flexing the elbows = a pull-up; <code>pin: foot_right box</code> + straightening the leg = a step-up; <code>pin: hands bars</code> (dip bars) + bending the elbows = a triceps dip.</p>
-<ul><li><strong>Lying / seated</strong> — <code>pose start = supine | prone | seated</code> for floor and mat</li></ul>
+<ul><li><strong>Lying / seated</strong>: <code>pose start = supine | prone | seated</code> for floor and mat</li></ul>
 <p>work (glute bridge, dead bug, cobra, seated forward fold).</p>
-<ul><li><strong>Hands</strong> — <code>fingers: flex 80</code> makes a fist; curl individual fingers for shapes</li></ul>
-<p>(<code>index_right: flex 95</code>). Single-DOF per finger — good for grip and rough gesture, not exact sign language.</p>
+<ul><li><strong>Hands</strong>: <code>fingers: flex 80</code> makes a fist; curl individual fingers for shapes</li></ul>
+<p>(<code>index_right: flex 95</code>). Single-DOF per finger, good for grip and rough gesture, not exact sign language.</p>
 <h2>Authoring by domain</h2>
 <p>The same grammar covers many fields. A few patterns that read well:</p>
-<ul><li><strong>Anatomy / education</strong> — isolate one joint and sweep it through its range</li></ul>
+<ul><li><strong>Anatomy / education</strong>: isolate one joint and sweep it through its range</li></ul>
 <p>(<code>shoulders: abduct 160</code> → <code>0</code>). Name the plane in the cue. Great for teaching.</p>
-<ul><li><strong>Physiotherapy</strong> — gentle, single-joint reps; for one-sided work use a</li></ul>
+<ul><li><strong>Physiotherapy</strong>: gentle, single-joint reps; for one-sided work use a</li></ul>
 <p>singular joint (<code>knee_right: flex 95</code>) and skip <code>ground-lock</code> so the standing leg stays planted.</p>
-<ul><li><strong>Desk / posture</strong> — slow <code>stretch</code> documents with <code>ground-lock: feet</code>;</li></ul>
+<ul><li><strong>Desk / posture</strong>: slow <code>stretch</code> documents with <code>ground-lock: feet</code>;</li></ul>
 <p>contrast a &quot;collapsed&quot; phase with a &quot;tall&quot; reset.</p>
-<ul><li><strong>Sports / martial arts</strong> — short, snappy phases (0.3–0.6s) with <code>ease-out</code></li></ul>
+<ul><li><strong>Sports / martial arts</strong>: short, snappy phases (0.3–0.6s) with <code>ease-out</code></li></ul>
 <p>on the strike; chamber → extend → re-chamber → return.</p>
 <h3>Dance / choreography</h3>
 <p>Posecode shines for <strong>showing the movement in your head</strong>. Build a phrase as a sequence of phases, one per count or musical beat, and let later phases inherit unset joints:</p>
@@ -217,13 +217,13 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 <p>relevé to spin on the balls of the feet; <code>turn: 90</code> for a quarter-turn.</p>
 <ul><li><strong>Travel across the floor:</strong> <code>travel: &lt;x&gt; &lt;z&gt;</code> (metres from the start spot,</li></ul>
 <p>absolute). A box-step traces a square back home: <code>travel: 0.4 0</code> → <code>0.4 0.4</code> → <code>0 0.4</code> → <code>0 0</code>. A grapevine travels sideways; a walk cycle steps forward in +z. Add the stepping legs with FK on top.</p>
-<p>Both <code>turn</code> and <code>travel</code> are <strong>absolute and carried forward</strong> like joint angles, and both return home on the loop wrap, so phrases resolve cleanly. They work from <strong>standing</strong> poses only. Name each step by its count (<code>&quot;5-6 - relevé, arms en haut&quot;</code>) so the phrase reads like choreography. To extend a phrase, append more steps — the figure carries its pose forward. Use <code>ground-lock: feet</code> for grounded phrases (it still lets the figure turn and travel — it only keeps the feet on the floor vertically).</p>
+<p>Both <code>turn</code> and <code>travel</code> are <strong>absolute and carried forward</strong> like joint angles, and both return home on the loop wrap, so phrases resolve cleanly. They work from <strong>standing</strong> poses only. Name each step by its count (<code>&quot;5-6 - relevé, arms en haut&quot;</code>) so the phrase reads like choreography. To extend a phrase, append more steps; the figure carries its pose forward. Use <code>ground-lock: feet</code> for grounded phrases (it still lets the figure turn and travel; it only keeps the feet on the floor vertically).</p>
     </main>
     <footer class="site-footer">
       <div class="wrap">
         <p>Range-of-motion values are general literature data, not medical advice. Consult a
         qualified professional for physiotherapy or exercise prescription.</p>
-        <p><a href="/">Posecode</a> — MIT-licensed open core.</p>
+        <p><a href="/">Posecode</a>, MIT-licensed open core.</p>
       </div>
     </footer>
   </body>

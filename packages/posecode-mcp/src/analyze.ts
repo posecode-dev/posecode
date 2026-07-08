@@ -3,8 +3,8 @@
  *
  * Turns a `.posecode` document into the structured results the MCP tools
  * return: a validation summary (errors + ROM-safety clamps) and a render
- * result that adds a playground permalink. No MCP or I/O here — just parse →
- * shape — so it is trivially unit-testable.
+ * result that adds a playground permalink. No MCP or I/O here: just parse →
+ * shape, so it is trivially unit-testable.
  */
 
 import { parse, type Warning } from "posecode-parser";

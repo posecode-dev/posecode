@@ -1,5 +1,5 @@
 /**
- * Invariant checks — the "does it look like the movement it claims to be"
+ * Invariant checks: the "does it look like the movement it claims to be"
  * layer. Generic checks apply to every document; movement checks encode the
  * biomechanical signature of specific canonical movements (verified against
  * the playground render).
@@ -73,7 +73,7 @@ export function genericChecks(result: ProbeResult): CheckOutcome[] {
   for (const p of result.phases) {
     // The one universal contact invariant: nothing sinks through the floor.
     // (A stricter "declared effector is planted" check isn't portable across
-    // the library — the renderer grounds the visible MESH, so a planted foot
+    // the library: the renderer grounds the visible MESH, so a planted foot
     // leaves its ankle BONE ~0.04m up and a supporting hand leaves the wrist
     // bone higher still; stepping/travel movements lift feet by design.)
     out.push({
@@ -92,7 +92,7 @@ export function genericChecks(result: ProbeResult): CheckOutcome[] {
  */
 export const MOVEMENT_CHECKS: MovementChecks[] = [
   {
-    // `pelvis: hinge` — torso tips forward over vertical legs (deadlift phases
+    // `pelvis: hinge`: torso tips forward over vertical legs (deadlift phases
     // "Lower"/"Lift"). Regressing the hinge into a leg-swing or a backward
     // bend fails these loudly.
     movement: "deadlift",

@@ -2,7 +2,7 @@
   "name": "posecode-vscode",
   "private": true,
   "displayName": "Posecode",
-  "description": "Language support for the Posecode (.posecode) kinematic motion DSL — syntax highlighting, range-of-motion diagnostics, completion, and hover.",
+  "description": "Language support for the Posecode (.posecode) kinematic motion DSL: syntax highlighting, range-of-motion diagnostics, completion, and hover.",
   "version": "0.1.0",
   "license": "MIT",
   "engines": {

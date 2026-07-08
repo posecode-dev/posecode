@@ -115,9 +115,9 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     </header>
     <main class="wrap">
       <p class="eyebrow">Reference</p>
-<h1>Posecode Protocol Specification — v0.1</h1>
+<h1>Posecode Protocol Specification v0.1</h1>
 <p>Posecode is a small text language for describing a single person's <strong>kinematic movement</strong> so it can be rendered as an animated 3D figure in a web browser.</p>
-<p>It is to human movement what Mermaid is to diagrams: an LLM (or a human) writes a compact, readable document; a client-side parser + renderer turns it into a moving mannequin. The model never produces 3D matrices — it expresses the *semantic phases* of a movement, which it already understands.</p>
+<p>It is to human movement what Mermaid is to diagrams: an LLM (or a human) writes a compact, readable document; a client-side parser + renderer turns it into a moving mannequin. The model never produces 3D matrices: it expresses the *semantic phases* of a movement, which it already understands.</p>
 <ul><li><strong>Version keyword:</strong> documents declare nothing; this is <code>posecode 0.1</code>.</li><li><strong>File extension:</strong> <code>.posecode</code></li><li><strong>Compute model:</strong> generation is pure text (server-cheap); all 3D math runs</li></ul>
 <p>on the client (Three.js). See the project research §6.</p>
 <hr>
@@ -152,7 +152,7 @@ DURATION   = NUMBER &quot;s&quot; ;                                (* e.g. 2s, 1
 <tr><td><code>hips</code></td><td><code>hip_left</code>, <code>hip_right</code></td><td>yes</td></tr>
 <tr><td><code>knees</code></td><td><code>knee_left</code>, <code>knee_right</code></td><td>yes</td></tr>
 <tr><td><code>ankles</code></td><td><code>ankle_left</code>, <code>ankle_right</code></td><td>yes</td></tr>
-<tr><td>axial</td><td><code>pelvis</code>, <code>spine</code>, <code>chest</code>, <code>neck</code>, <code>head</code></td><td>—</td></tr>
+<tr><td>axial</td><td><code>pelvis</code>, <code>spine</code>, <code>chest</code>, <code>neck</code>, <code>head</code></td><td>n/a</td></tr>
 <tr><td><code>fingers</code> (or <code>fingers_left</code> / <code>fingers_right</code>)</td><td><code>thumb_*</code>, <code>index_*</code>, <code>middle_*</code>, <code>ring_*</code>, <code>pinky_*</code></td><td>yes</td></tr>
 </tbody></table></div>
 <p>Plural names move both sides symmetrically (left-side bones mirror the Y and Z axes). Use a singular <code>*_left</code> / <code>*_right</code> name to move one side. Each finger is a single curl (<code>flex</code>) joint; the thumb also takes <code>abduct</code>/<code>adduct</code>.</p>
@@ -166,21 +166,21 @@ DURATION   = NUMBER &quot;s&quot; ;                                (* e.g. 2s, 1
 <tr><td><code>supinate</code> / <code>pronate</code></td><td>Y</td><td>forearm turn</td></tr>
 <tr><td><code>dorsiflex</code> / <code>plantarflex</code></td><td>X</td><td>ankle up / down</td></tr>
 <tr><td><code>hinge</code></td><td>X</td><td>tip the torso forward over the hips (<code>pelvis</code> only)</td></tr>
-<tr><td><code>hold neutral</code></td><td>—</td><td>keep at rest</td></tr>
+<tr><td><code>hold neutral</code></td><td>n/a</td><td>keep at rest</td></tr>
 </tbody></table></div>
-<p><code>hinge</code> is a <strong>hip hinge</strong>: applied to the <code>pelvis</code>, it pivots the torso forward over the hip line while the legs stay planted and vertical (the renderer counter-rotates the hips). Use it — not spinal <code>flex</code> — for a flat-back forward bend: deadlift, bent-over row, good-morning, or a bow.</p>
+<p><code>hinge</code> is a <strong>hip hinge</strong>: applied to the <code>pelvis</code>, it pivots the torso forward over the hip line while the legs stay planted and vertical (the renderer counter-rotates the hips). Use it, not spinal <code>flex</code>, for a flat-back forward bend: deadlift, bent-over row, good-morning, or a bow.</p>
 <p><strong>Coordinate convention:</strong> rest pose is standing, arms at sides, facing +Z. The renderer's mannequin is built in this same convention so the parser's resolved Euler angles apply directly.</p>
 <hr>
 <h2>4. Range of Motion (safety)</h2>
 <p>Every angle is <strong>hard-clamped</strong> to a healthy Range of Motion before rendering; a clamp emits a warning (it does not fail the parse). Limits follow the research §5.1 normative tables. Selected ceilings (degrees):</p>
 <div class="table-wrap"><table><thead><tr><th>Joint</th><th>flex</th><th>extend</th><th>abduct</th><th>other</th></tr></thead><tbody>
 <tr><td>shoulder</td><td>180</td><td>60</td><td>180</td><td>rot-in 70 / rot-out 90</td></tr>
-<tr><td>elbow</td><td>154</td><td>10</td><td>—</td><td>supinate 92 / pronate 84</td></tr>
-<tr><td>hip</td><td>135</td><td>20</td><td>45</td><td>—</td></tr>
-<tr><td>knee</td><td>144</td><td>5</td><td>—</td><td>—</td></tr>
-<tr><td>ankle</td><td>—</td><td>—</td><td>—</td><td>dorsiflex 15 / plantarflex 50</td></tr>
-<tr><td>pelvis</td><td>—</td><td>—</td><td>—</td><td>hinge 120</td></tr>
-<tr><td>finger</td><td>100</td><td>20</td><td>—</td><td>—</td></tr>
+<tr><td>elbow</td><td>154</td><td>10</td><td>n/a</td><td>supinate 92 / pronate 84</td></tr>
+<tr><td>hip</td><td>135</td><td>20</td><td>45</td><td>n/a</td></tr>
+<tr><td>knee</td><td>144</td><td>5</td><td>n/a</td><td>n/a</td></tr>
+<tr><td>ankle</td><td>n/a</td><td>n/a</td><td>n/a</td><td>dorsiflex 15 / plantarflex 50</td></tr>
+<tr><td>pelvis</td><td>n/a</td><td>n/a</td><td>n/a</td><td>hinge 120</td></tr>
+<tr><td>finger</td><td>100</td><td>20</td><td>n/a</td><td>n/a</td></tr>
 <tr><td>thumb</td><td>80</td><td>20</td><td>50</td><td>adduct 30</td></tr>
 <tr><td>spine</td><td>90</td><td>30</td><td>35</td><td>rotate 45</td></tr>
 <tr><td>neck</td><td>50</td><td>60</td><td>45</td><td>rotate 80</td></tr>
@@ -188,21 +188,21 @@ DURATION   = NUMBER &quot;s&quot; ;                                (* e.g. 2s, 1
 <p>&gt; ⚠️ These are general literature values, not medical advice. Consult a &gt; qualified professional for physiotherapy or exercise prescription.</p>
 <hr>
 <h2>5. Rendering model</h2>
-<ol><li><strong>Forward kinematics</strong> — each phase sets joint angles; the renderer slerps</li></ol>
+<ol><li><strong>Forward kinematics</strong>: each phase sets joint angles; the renderer slerps</li></ol>
 <p>bone rotations between phases with the phase's easing.</p>
-<ol><li><strong>Grounding</strong> — the figure is dropped so its lowest point rests on the floor</li></ol>
+<ol><li><strong>Grounding</strong>: the figure is dropped so its lowest point rests on the floor</li></ol>
 <p>(a bounding-box drop), which grounds standing, plank, and the lying/seated poses alike.</p>
-<ol><li><strong>Ground-lock IK</strong> — effectors listed in <code>ground-lock</code> (<code>hands</code>, <code>feet</code>) are</li></ol>
+<ol><li><strong>Ground-lock IK</strong>: effectors listed in <code>ground-lock</code> (<code>hands</code>, <code>feet</code>) are</li></ol>
 <p>pinned to their planted floor position so they stay put while the body moves.</p>
-<ol><li><strong>Reach-IK</strong> — a <code>reach:</code> line drives an effector (`hand_left|hand_right|</li></ol>
-<p>foot_left|foot_right<code>, or the groups </code>hands<code>/</code>feet<code> for both sides) to a world <strong>target</strong> via Cyclic Coordinate Descent (CCD) over the arm/leg chain. A target is a body landmark bone (e.g. </code>ankle_left<code>), the keyword </code>floor<code>, or a prop anchor (</code>bar<code>, </code>seat<code>, </code>wall`). The solve is <strong>ROM-constrained</strong>: each iteration clamps every chain joint into its §4 Range-of-Motion limits (expressed as a per-axis box in the bone's local Euler frame), so a reach toward an unsafe or unreachable target settles on the closest *healthy* pose — solved angles obey the same hard limits as authored ones.</p>
-<ol><li><strong>Props</strong> — <code>prop chair|wall|bar|box|dip-bars</code> adds a scene object at a</li></ol>
+<ol><li><strong>Reach-IK</strong>: a <code>reach:</code> line drives an effector (`hand_left|hand_right|</li></ol>
+<p>foot_left|foot_right<code>, or the groups </code>hands<code>/</code>feet<code> for both sides) to a world <strong>target</strong> via Cyclic Coordinate Descent (CCD) over the arm/leg chain. A target is a body landmark bone (e.g. </code>ankle_left<code>), the keyword </code>floor<code>, or a prop anchor (</code>bar<code>, </code>seat<code>, </code>wall`). The solve is <strong>ROM-constrained</strong>: each iteration clamps every chain joint into its §4 Range-of-Motion limits (expressed as a per-axis box in the bone's local Euler frame), so a reach toward an unsafe or unreachable target settles on the closest *healthy* pose; solved angles obey the same hard limits as authored ones.</p>
+<ol><li><strong>Props</strong>: <code>prop chair|wall|bar|box|dip-bars</code> adds a scene object at a</li></ol>
 <p>fixed default placement (chair/wall behind, bar overhead, box in front, dip bars either side); its named anchors (<code>seat</code>, <code>wall</code>, <code>bar</code>, <code>box</code>, <code>bars</code>) become reach/pin targets.</p>
-<ol><li><strong>Pins</strong> — <code>pin: &lt;effector&gt; &lt;anchor&gt;</code> translates the whole figure so the</li></ol>
-<p>effector sits on the anchor (effectors accept the same <code>hands</code>/<code>feet</code> groups as reach — <code>pin: hands bar</code> pins both). Where ground-lock keeps a foot on the floor and reach moves a limb to a target, a <strong>pin moves the body</strong> while the contact stays put — so the figure hangs from a bar, pulls up toward it, rises onto a box, or lowers into a dip as the joints work.</p>
-<ol><li><strong>Spatial choreography</strong> — <code>turn: &lt;deg&gt;</code> rotates the figure's facing (yaw</li></ol>
-<p>about vertical) and <code>travel: &lt;x&gt; &lt;z&gt;</code> moves it across the floor (world metres from the load spot). Both are <strong>absolute targets carried across phases</strong> (like joint angles) and both return home on the loop wrap, so a box-step traces a square back to start and a pirouette spins a full turn. They layer under grounding (feet still rest on the floor) and power pirouettes, grapevines, traveling combos, and walk cycles. <strong>Standing poses only</strong> — combining with lying/seated bases (whose root is already tilted) is out of scope.</p>
-<ol><li><strong>Looping</strong> — the timeline loops base → phases → base; <code>repeat</code> is the rep</li></ol>
+<ol><li><strong>Pins</strong>: <code>pin: &lt;effector&gt; &lt;anchor&gt;</code> translates the whole figure so the</li></ol>
+<p>effector sits on the anchor (effectors accept the same <code>hands</code>/<code>feet</code> groups as reach: <code>pin: hands bar</code> pins both). Where ground-lock keeps a foot on the floor and reach moves a limb to a target, a <strong>pin moves the body</strong> while the contact stays put, so the figure hangs from a bar, pulls up toward it, rises onto a box, or lowers into a dip as the joints work.</p>
+<ol><li><strong>Spatial choreography</strong>: <code>turn: &lt;deg&gt;</code> rotates the figure's facing (yaw</li></ol>
+<p>about vertical) and <code>travel: &lt;x&gt; &lt;z&gt;</code> moves it across the floor (world metres from the load spot). Both are <strong>absolute targets carried across phases</strong> (like joint angles) and both return home on the loop wrap, so a box-step traces a square back to start and a pirouette spins a full turn. They layer under grounding (feet still rest on the floor) and power pirouettes, grapevines, traveling combos, and walk cycles. <strong>Standing poses only</strong>: combining with lying/seated bases (whose root is already tilted) is out of scope.</p>
+<ol><li><strong>Looping</strong>: the timeline loops base → phases → base; <code>repeat</code> is the rep</li></ol>
 <p>count surfaced to the UI.</p>
 <p><strong>Start poses:</strong> <code>neutral</code>, <code>standing</code>, <code>plank</code>, <code>supine</code> (face-up), <code>prone</code> (face-down), <code>seated</code> (long-sit on the floor).</p>
 <p><strong>IK note:</strong> Three.js's bundled <code>CCDIKSolver</code> targets <code>SkinnedMesh</code>; the Posecode mannequin is rigid capsule segments, so Posecode implements CCD directly over the Object3D bone hierarchy (<code>posecode-render/ik.ts</code>) for both ground-lock and reach. Two-person/dual-IK and collision detection remain deferred (research §5.2, §6.2).</p>
@@ -231,7 +231,7 @@ DURATION   = NUMBER &quot;s&quot; ;                                (* e.g. 2s, 1
       <div class="wrap">
         <p>Range-of-motion values are general literature data, not medical advice. Consult a
         qualified professional for physiotherapy or exercise prescription.</p>
-        <p><a href="/">Posecode</a> — MIT-licensed open core.</p>
+        <p><a href="/">Posecode</a>, MIT-licensed open core.</p>
       </div>
     </footer>
   </body>

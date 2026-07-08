@@ -14,7 +14,7 @@ import sideBend from "../../spec/examples/side-bend.posecode?raw";
 import deadlift from "../../spec/examples/deadlift.posecode?raw";
 import bentOverRow from "../../spec/examples/bent-over-row.posecode?raw";
 
-// Anatomy / education — single-joint range-of-motion demos.
+// Anatomy / education: single-joint range-of-motion demos.
 import shoulderAbduction from "../../spec/examples/shoulder-abduction-demo.posecode?raw";
 import hipFlexion from "../../spec/examples/hip-flexion-demo.posecode?raw";
 import spineRotation from "../../spec/examples/spine-rotation-demo.posecode?raw";
@@ -71,7 +71,7 @@ import fingerSpell from "../../spec/examples/finger-spell-demo.posecode?raw";
 import handWave from "../../spec/examples/hand-wave.posecode?raw";
 import pinchGrip from "../../spec/examples/pinch-grip.posecode?raw";
 
-// Strength & core (coverage-gap batch — see docs/coverage-gap.md).
+// Strength & core (coverage-gap batch, see docs/coverage-gap.md).
 import plankHold from "../../spec/examples/plank-hold.posecode?raw";
 import mountainClimber from "../../spec/examples/mountain-climber.posecode?raw";
 import crunch from "../../spec/examples/crunch.posecode?raw";
@@ -89,7 +89,7 @@ import pullUp from "../../spec/examples/pull-up.posecode?raw";
 import stepUp from "../../spec/examples/step-up.posecode?raw";
 import tricepsDips from "../../spec/examples/triceps-dips.posecode?raw";
 
-// Spatial choreography (turn & travel) — the figure turns and moves across the floor.
+// Spatial choreography (turn & travel): the figure turns and moves across the floor.
 import pirouette from "../../spec/examples/pirouette.posecode?raw";
 import boxStep from "../../spec/examples/box-step.posecode?raw";
 import grapevine from "../../spec/examples/grapevine.posecode?raw";
@@ -103,7 +103,7 @@ export type Difficulty = "Beginner" | "Intermediate" | "Advanced";
 export interface Preset {
   id: string;
   label: string;
-  /** Use-case domain (Fitness, Dance, Physiotherapy, …) — the primary grouping. */
+  /** Use-case domain (Fitness, Dance, Physiotherapy, …): the primary grouping. */
   domain: string;
   /** Standard fitness taxonomy, so the gallery can filter like an exercise DB. */
   bodyPart: string;

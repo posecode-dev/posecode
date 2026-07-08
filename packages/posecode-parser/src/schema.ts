@@ -1,5 +1,5 @@
 /**
- * Zod schema for the AST — a defensive boundary check before resolution.
+ * Zod schema for the AST: a defensive boundary check before resolution.
  *
  * The parser already produces a typed AST, but validating it here catches
  * malformed easings and structural surprises in one place (coding-style:

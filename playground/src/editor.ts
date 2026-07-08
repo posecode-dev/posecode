@@ -1,5 +1,5 @@
 /**
- * The Posecode code editor — a CodeMirror 6 setup that turns the plain textarea
+ * The Posecode code editor: a CodeMirror 6 setup that turns the plain textarea
  * into a real editor: syntax highlighting, inline ROM/error squiggles,
  * context-aware autocomplete, and hover docs. All language smarts come from
  * `posecode-language` (shared with the LSP), so the editor never reimplements them.
@@ -208,7 +208,7 @@ const posecodeHoverTip = hoverTooltip((view, pos) => {
     create() {
       const dom = document.createElement("div");
       dom.className = "cm-posecode-hover";
-      // Contents are markdown from our own vocab (no user free-text) — render bold.
+      // Contents are markdown from our own vocab (no user free-text): render bold.
       dom.innerHTML = escapeHtml(info.contents).replace(
         /\*\*(.+?)\*\*/g,
         "<strong>$1</strong>",
@@ -267,7 +267,7 @@ const posecodeTheme = EditorView.theme(
 
 // --- Active-phase highlight -------------------------------------------------
 // As the figure animates, the playground highlights the step block driving the
-// current moment — making the text↔motion mapping visible. Lines are 1-based.
+// current moment, making the text↔motion mapping visible. Lines are 1-based.
 
 const setPhaseHighlight = StateEffect.define<{ from: number; to: number } | null>();
 const phaseLineDeco = Decoration.line({ class: "cm-phase-active" });

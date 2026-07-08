@@ -10,7 +10,7 @@ describe("parseOptions", () => {
     // HTML boolean attrs: present (even empty string) is true, absent is false.
     const o = parseOptions({ controls: "", autorotate: "false" });
     expect(o.controls).toBe(true);
-    // A literal "false" value still disables — friendlier than pure HTML semantics.
+    // A literal "false" value still disables: friendlier than pure HTML semantics.
     expect(o.autoRotate).toBe(false);
   });
 

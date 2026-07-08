@@ -1,11 +1,11 @@
-# Posecode Protocol Specification — v0.1
+# Posecode Protocol Specification v0.1
 
 Posecode is a small text language for describing a single person's **kinematic
 movement** so it can be rendered as an animated 3D figure in a web browser.
 
 It is to human movement what Mermaid is to diagrams: an LLM (or a human) writes
 a compact, readable document; a client-side parser + renderer turns it into a
-moving mannequin. The model never produces 3D matrices — it expresses the
+moving mannequin. The model never produces 3D matrices: it expresses the
 *semantic phases* of a movement, which it already understands.
 
 - **Version keyword:** documents declare nothing; this is `posecode 0.1`.
@@ -56,7 +56,7 @@ phase, all joint targets apply concurrently.
 | `hips` | `hip_left`, `hip_right` | yes |
 | `knees` | `knee_left`, `knee_right` | yes |
 | `ankles` | `ankle_left`, `ankle_right` | yes |
-| axial | `pelvis`, `spine`, `chest`, `neck`, `head` | — |
+| axial | `pelvis`, `spine`, `chest`, `neck`, `head` | n/a |
 | `fingers` (or `fingers_left` / `fingers_right`) | `thumb_*`, `index_*`, `middle_*`, `ring_*`, `pinky_*` | yes |
 
 Plural names move both sides symmetrically (left-side bones mirror the Y and Z
@@ -79,11 +79,11 @@ where the previous phase left it).
 | `supinate` / `pronate` | Y | forearm turn |
 | `dorsiflex` / `plantarflex` | X | ankle up / down |
 | `hinge` | X | tip the torso forward over the hips (`pelvis` only) |
-| `hold neutral` | — | keep at rest |
+| `hold neutral` | n/a | keep at rest |
 
 `hinge` is a **hip hinge**: applied to the `pelvis`, it pivots the torso forward
 over the hip line while the legs stay planted and vertical (the renderer
-counter-rotates the hips). Use it — not spinal `flex` — for a flat-back forward
+counter-rotates the hips). Use it, not spinal `flex`, for a flat-back forward
 bend: deadlift, bent-over row, good-morning, or a bow.
 
 **Coordinate convention:** rest pose is standing, arms at sides, facing +Z. The
@@ -101,12 +101,12 @@ research §5.1 normative tables. Selected ceilings (degrees):
 | Joint | flex | extend | abduct | other |
 | --- | --- | --- | --- | --- |
 | shoulder | 180 | 60 | 180 | rot-in 70 / rot-out 90 |
-| elbow | 154 | 10 | — | supinate 92 / pronate 84 |
-| hip | 135 | 20 | 45 | — |
-| knee | 144 | 5 | — | — |
-| ankle | — | — | — | dorsiflex 15 / plantarflex 50 |
-| pelvis | — | — | — | hinge 120 |
-| finger | 100 | 20 | — | — |
+| elbow | 154 | 10 | n/a | supinate 92 / pronate 84 |
+| hip | 135 | 20 | 45 | n/a |
+| knee | 144 | 5 | n/a | n/a |
+| ankle | n/a | n/a | n/a | dorsiflex 15 / plantarflex 50 |
+| pelvis | n/a | n/a | n/a | hinge 120 |
+| finger | 100 | 20 | n/a | n/a |
 | thumb | 80 | 20 | 50 | adduct 30 |
 | spine | 90 | 30 | 35 | rotate 45 |
 | neck | 50 | 60 | 45 | rotate 80 |
@@ -118,14 +118,14 @@ research §5.1 normative tables. Selected ceilings (degrees):
 
 ## 5. Rendering model
 
-1. **Forward kinematics** — each phase sets joint angles; the renderer slerps
+1. **Forward kinematics**: each phase sets joint angles; the renderer slerps
    bone rotations between phases with the phase's easing.
-2. **Grounding** — the figure is dropped so its lowest point rests on the floor
+2. **Grounding**: the figure is dropped so its lowest point rests on the floor
    (a bounding-box drop), which grounds standing, plank, and the lying/seated
    poses alike.
-3. **Ground-lock IK** — effectors listed in `ground-lock` (`hands`, `feet`) are
+3. **Ground-lock IK**: effectors listed in `ground-lock` (`hands`, `feet`) are
    pinned to their planted floor position so they stay put while the body moves.
-4. **Reach-IK** — a `reach:` line drives an effector (`hand_left|hand_right|
+4. **Reach-IK**: a `reach:` line drives an effector (`hand_left|hand_right|
    foot_left|foot_right`, or the groups `hands`/`feet` for both sides) to a
    world **target** via Cyclic Coordinate Descent (CCD) over the arm/leg chain.
    A target is a body landmark bone (e.g. `ankle_left`), the keyword `floor`,
@@ -133,26 +133,26 @@ research §5.1 normative tables. Selected ceilings (degrees):
    each iteration clamps every chain joint into its §4 Range-of-Motion limits
    (expressed as a per-axis box in the bone's local Euler frame), so a reach
    toward an unsafe or unreachable target settles on the closest *healthy*
-   pose — solved angles obey the same hard limits as authored ones.
-5. **Props** — `prop chair|wall|bar|box|dip-bars` adds a scene object at a
+   pose; solved angles obey the same hard limits as authored ones.
+5. **Props**: `prop chair|wall|bar|box|dip-bars` adds a scene object at a
    fixed default placement (chair/wall behind, bar overhead, box in front,
    dip bars either side); its named anchors (`seat`, `wall`, `bar`, `box`,
    `bars`) become reach/pin targets.
-6. **Pins** — `pin: <effector> <anchor>` translates the whole figure so the
+6. **Pins**: `pin: <effector> <anchor>` translates the whole figure so the
    effector sits on the anchor (effectors accept the same `hands`/`feet` groups
-   as reach — `pin: hands bar` pins both). Where ground-lock keeps a foot on
+   as reach: `pin: hands bar` pins both). Where ground-lock keeps a foot on
    the floor and reach moves a limb to a target, a **pin moves the body** while
-   the contact stays put — so the figure hangs from a bar, pulls up toward it,
+   the contact stays put, so the figure hangs from a bar, pulls up toward it,
    rises onto a box, or lowers into a dip as the joints work.
-7. **Spatial choreography** — `turn: <deg>` rotates the figure's facing (yaw
+7. **Spatial choreography**: `turn: <deg>` rotates the figure's facing (yaw
    about vertical) and `travel: <x> <z>` moves it across the floor (world metres
    from the load spot). Both are **absolute targets carried across phases** (like
    joint angles) and both return home on the loop wrap, so a box-step traces a
    square back to start and a pirouette spins a full turn. They layer under
    grounding (feet still rest on the floor) and power pirouettes, grapevines,
-   traveling combos, and walk cycles. **Standing poses only** — combining with
+   traveling combos, and walk cycles. **Standing poses only**: combining with
    lying/seated bases (whose root is already tilted) is out of scope.
-8. **Looping** — the timeline loops base → phases → base; `repeat` is the rep
+8. **Looping**: the timeline loops base → phases → base; `repeat` is the rep
    count surfaced to the UI.
 
 **Start poses:** `neutral`, `standing`, `plank`, `supine` (face-up), `prone`

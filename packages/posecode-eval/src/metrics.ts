@@ -1,5 +1,5 @@
 /**
- * Geometric metrics over probed bone positions — the vocabulary the
+ * Geometric metrics over probed bone positions: the vocabulary the
  * invariant checks are written in. All angles in degrees, distances in metres.
  */
 
@@ -74,7 +74,7 @@ export function lowestPoint(pose: PhasePose): number {
   return min;
 }
 
-/** Average height of the two ankles — 0 when the feet are planted. */
+/** Average height of the two ankles (0 when the feet are planted). */
 export function feetHeight(pose: PhasePose): number {
   return (heightOf(pose, "ankle_left") + heightOf(pose, "ankle_right")) / 2;
 }

@@ -9,14 +9,14 @@
  * - **Hands + feet (push-up / plank):** pivot the whole rigid body about the
  *   foot line (the toes stay planted) until the hands reach the floor. As the
  *   elbows fold (FK), the hands rise toward the shoulders, so the body tips
- *   down around the toes — the torso lowers in one straight line, a real
+ *   down around the toes: the torso lowers in one straight line, a real
  *   push-up. Rotating about an X-axis through the foot midpoint keeps both
  *   feet exactly planted (they differ from the pivot only along X).
  * - **Feet only (squat / hinge / roll-down):** drop the body vertically so the
- *   feet stay planted while the legs keep their authored FK bend — the pelvis
+ *   feet stay planted while the legs keep their authored FK bend: the pelvis
  *   lowers. Legs are never CCD-solved (that would overwrite the pose).
  *
- * Both paths ground the visible MESH (bounding boxes), not just bone origins —
+ * Both paths ground the visible MESH (bounding boxes), not just bone origins:
  * an ankle bone sits ~0.04m above the sole, so anchoring bones alone left the
  * feet sunk into the floor.
  */
@@ -29,7 +29,7 @@ const ROOT_X = new THREE.Vector3(1, 0, 0);
 /**
  * Drop the whole figure so its lowest point rests on the floor. Using the
  * mesh bounding-box min (not just hand/foot joints) means ANY pose grounds
- * correctly — standing/plank rest on feet/hands, while supine/prone/seated
+ * correctly: standing/plank rest on feet/hands, while supine/prone/seated
  * poses rest on the back, chest, or glutes.
  */
 export function groundFigure(m: Mannequin): void {
@@ -106,7 +106,7 @@ export function applyGroundLock(m: Mannequin, active: string[]): void {
   }
 
   if (feet.length > 0) {
-    // Ground the FOOT MESH's lowest point, not the ankle bone's origin — the
+    // Ground the FOOT MESH's lowest point, not the ankle bone's origin: the
     // bone sits ~0.04m above the sole (foot box + capsule radius), so
     // anchoring the bone itself left the visible foot sunk into the floor.
     let minY = Infinity;

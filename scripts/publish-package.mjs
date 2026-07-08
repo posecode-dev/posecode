@@ -4,9 +4,9 @@
  * disturbing the source-first package.json the monorepo relies on for dev
  * (Vite/vitest/tsc all resolve these packages via "main": "./src/index.ts").
  *
- * npm has no built-in way to swap main/types/exports at publish time (that's
- * a Yarn Berry feature, not npm's — verified empirically: `npm pack` ignores
- * `publishConfig.main/types/exports`). So this script does it by hand: build
+ * npm has no built-in way to swap main/types/exports at publish time. That's
+ * a Yarn Berry feature, not npm's: verified empirically, `npm pack` ignores
+ * `publishConfig.main/types/exports`. So this script does it by hand: build
  * dist/, temporarily rewrite package.json to point at dist/, publish, then
  * always restore the original package.json, even on failure.
  *

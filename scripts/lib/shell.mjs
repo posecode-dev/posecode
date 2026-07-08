@@ -2,7 +2,7 @@
  * Shared HTML shell for statically-generated content pages (movement pages,
  * the library index, doc pages). These live under playground/public/ and are
  * copied through untouched by Vite, so they can't rely on hashed build
- * assets — the theme is a small inlined stylesheet instead, kept close to
+ * assets: the theme is a small inlined stylesheet instead, kept close to
  * the "Kinetic Lab" tokens in playground/src/style.css.
  */
 
@@ -151,7 +151,7 @@ export function pageShell({ title, description, canonicalPath, jsonLd, bodyHtml,
       <div class="wrap">
         <p>Range-of-motion values are general literature data, not medical advice. Consult a
         qualified professional for physiotherapy or exercise prescription.</p>
-        <p><a href="/">Posecode</a> — MIT-licensed open core.</p>
+        <p><a href="/">Posecode</a>, MIT-licensed open core.</p>
       </div>
     </footer>
   </body>
