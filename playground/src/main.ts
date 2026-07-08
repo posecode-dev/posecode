@@ -148,7 +148,17 @@ function scheduleRecompile(): void {
 
 function recompile(): void {
   window.clearTimeout(debounce); // cancel any pending run; we're compiling now
-  const { ir, errors, warnings: warns } = parse(editorApi.getValue());
+  const source = editorApi.getValue();
+  if (!source.trim()) {
+    // A deliberately blank editor (the "New" flow): a paste target, not an
+    // error state. Show a hint instead of parse errors and stop the playback.
+    warnings.innerHTML =
+      '<div class="row hint">Blank editor. Paste a movement from your AI chat, or pick one from the library.</div>';
+    viewer.pause();
+    setPlaying(false);
+    return;
+  }
+  const { ir, errors, warnings: warns } = parse(source);
   renderWarnings(warnings, errors, warns);
   if (ir) {
     viewer.load(ir);
@@ -317,6 +327,19 @@ libSearch.addEventListener("input", () => {
 });
 renderLibraryFilters();
 renderLibraryList();
+
+// --- New movement: clear the editor into a paste target for LLM output ---
+// The core loop is "Copy LLM prompt → ask an AI for a movement → paste it
+// back"; without this, pasting meant overwriting a preset by hand-selecting
+// its text first.
+$<HTMLButtonElement>("new-doc").addEventListener("click", () => {
+  currentPresetId = null;
+  libCurrent.textContent = "New movement";
+  editorApi.setValue("");
+  recompile(); // swaps the status row to the blank-editor hint immediately
+  setMobileView("editor"); // the paste target, front and center on phones
+  editorApi.focus();
+});
 
 // --- Mobile Editor/Viewer toggle (no-op visually on desktop, where both show) ---
 function setMobileView(view: "editor" | "viewer"): void {
