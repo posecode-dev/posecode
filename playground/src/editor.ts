@@ -14,6 +14,7 @@ import {
   highlightActiveLineGutter,
   drawSelection,
   hoverTooltip,
+  placeholder,
   Decoration,
   type DecorationSet,
 } from "@codemirror/view";
@@ -334,6 +335,10 @@ export function createPosecodeEditor(
         lintGutter(),
         posecodeHoverTip,
         posecodeTheme,
+        // Shown only while the document is empty: guides the paste-from-LLM flow.
+        placeholder(
+          'Paste a movement from your AI chat here, or start typing:\nposecode exercise "My movement"',
+        ),
         EditorView.lineWrapping,
         keymap.of([
           ...closeBracketsKeymap,

@@ -1,10 +1,15 @@
 /**
- * Procedural low-poly mannequin.
+ * Procedural stylized human figure.
  *
- * Built from rigid capsule/sphere segments parented to an Object3D bone
- * hierarchy: the "wooden artist mannequin" look. No external assets, no
- * skinning: each bone is a joint node, and limb meshes hang off the proximal
- * bone so they follow its local rotation (forward kinematics).
+ * Built from rigid tapered-capsule segments and ellipsoid body volumes
+ * parented to an Object3D bone hierarchy. No external assets, no skinning:
+ * each bone is a joint node, and limb meshes hang off the proximal bone so
+ * they follow its local rotation (forward kinematics).
+ *
+ * The look is "athletic figure" rather than "wooden mannequin": limbs taper
+ * toward the distal joint, the torso has a ribcage/waist/hip silhouette,
+ * deltoids round the shoulders, and a two-tone material split (skin vs.
+ * athletic wear) makes the anatomy read at a glance.
  *
  * Bone ids and the local-axis convention match `posecode-parser/joints.ts`.
  */
@@ -24,33 +29,37 @@ interface BoneSpec {
   parent: string | null;
   /** Offset from parent joint, in metres, in the parent's rest frame. */
   offset: [number, number, number];
-  /** Radius of the limb segment leading INTO this joint from its parent. */
+  /** Radius at the PROXIMAL end (parent joint) of the segment into this joint. */
   radius?: number;
+  /** Radius at the DISTAL end (this joint). Defaults to `radius` (no taper). */
+  radiusEnd?: number;
 }
 
 // Standing rest pose, Y-up, facing +Z. Roughly 1.75 m tall.
+// NOTE: joint offsets are load-bearing (poses, IK, ground-lock, tests key off
+// them); only the mesh radii/volumes below are cosmetic.
 const SKELETON: BoneSpec[] = [
   { id: "pelvis", parent: null, offset: [0, 0.95, 0] },
-  { id: "spine", parent: "pelvis", offset: [0, 0.14, 0], radius: 0.09 },
-  { id: "chest", parent: "spine", offset: [0, 0.18, 0], radius: 0.1 },
-  { id: "neck", parent: "chest", offset: [0, 0.16, 0], radius: 0.05 },
-  { id: "head", parent: "neck", offset: [0, 0.1, 0], radius: 0.045 },
+  { id: "spine", parent: "pelvis", offset: [0, 0.14, 0], radius: 0.105, radiusEnd: 0.085 },
+  { id: "chest", parent: "spine", offset: [0, 0.18, 0], radius: 0.085, radiusEnd: 0.1 },
+  { id: "neck", parent: "chest", offset: [0, 0.16, 0], radius: 0.038, radiusEnd: 0.034 },
+  { id: "head", parent: "neck", offset: [0, 0.1, 0], radius: 0.034 },
 
-  { id: "shoulder_left", parent: "chest", offset: [0.18, 0.12, 0], radius: 0.045 },
-  { id: "elbow_left", parent: "shoulder_left", offset: [0, -0.28, 0], radius: 0.04 },
-  { id: "wrist_left", parent: "elbow_left", offset: [0, -0.26, 0], radius: 0.035 },
+  { id: "shoulder_left", parent: "chest", offset: [0.18, 0.12, 0], radius: 0.042 },
+  { id: "elbow_left", parent: "shoulder_left", offset: [0, -0.28, 0], radius: 0.05, radiusEnd: 0.038 },
+  { id: "wrist_left", parent: "elbow_left", offset: [0, -0.26, 0], radius: 0.042, radiusEnd: 0.028 },
 
-  { id: "shoulder_right", parent: "chest", offset: [-0.18, 0.12, 0], radius: 0.045 },
-  { id: "elbow_right", parent: "shoulder_right", offset: [0, -0.28, 0], radius: 0.04 },
-  { id: "wrist_right", parent: "elbow_right", offset: [0, -0.26, 0], radius: 0.035 },
+  { id: "shoulder_right", parent: "chest", offset: [-0.18, 0.12, 0], radius: 0.042 },
+  { id: "elbow_right", parent: "shoulder_right", offset: [0, -0.28, 0], radius: 0.05, radiusEnd: 0.038 },
+  { id: "wrist_right", parent: "elbow_right", offset: [0, -0.26, 0], radius: 0.042, radiusEnd: 0.028 },
 
   { id: "hip_left", parent: "pelvis", offset: [0.1, -0.06, 0], radius: 0.06 },
-  { id: "knee_left", parent: "hip_left", offset: [0, -0.45, 0], radius: 0.05 },
-  { id: "ankle_left", parent: "knee_left", offset: [0, -0.43, 0], radius: 0.04 },
+  { id: "knee_left", parent: "hip_left", offset: [0, -0.45, 0], radius: 0.078, radiusEnd: 0.056 },
+  { id: "ankle_left", parent: "knee_left", offset: [0, -0.43, 0], radius: 0.052, radiusEnd: 0.032 },
 
   { id: "hip_right", parent: "pelvis", offset: [-0.1, -0.06, 0], radius: 0.06 },
-  { id: "knee_right", parent: "hip_right", offset: [0, -0.45, 0], radius: 0.05 },
-  { id: "ankle_right", parent: "knee_right", offset: [0, -0.43, 0], radius: 0.04 },
+  { id: "knee_right", parent: "hip_right", offset: [0, -0.45, 0], radius: 0.078, radiusEnd: 0.056 },
+  { id: "ankle_right", parent: "knee_right", offset: [0, -0.43, 0], radius: 0.052, radiusEnd: 0.032 },
 
   // Fingers: one curl DOF each (flex), splayed in X and angled slightly
   // forward (+Z, palm-side). Offsets are the FINGERTIP position; the bone is
@@ -77,16 +86,56 @@ function isFinger(id: string): boolean {
   return /^(thumb|index|middle|ring|pinky)_/.test(id);
 }
 
-/** Build the mannequin. `material` lets the playground theme it. */
+/** Two-tone palette: skin plus simple athletic wear. */
+interface FigureMaterials {
+  skin: THREE.Material;
+  top: THREE.Material;
+  shorts: THREE.Material;
+  shoes: THREE.Material;
+  hair: THREE.Material;
+  face: THREE.Material;
+  mouth: THREE.Material;
+}
+
+function defaultMaterials(): FigureMaterials {
+  const std = (color: number, roughness: number): THREE.MeshStandardMaterial =>
+    new THREE.MeshStandardMaterial({ color, roughness, metalness: 0 });
+  return {
+    skin: std(0xd9a98c, 0.55),
+    top: std(0x35707e, 0.6),
+    shorts: std(0x262c38, 0.7),
+    shoes: std(0xe8e5de, 0.5),
+    hair: std(0x2e2622, 0.65),
+    face: std(0x22262e, 0.6),
+    mouth: std(0xb5765f, 0.6),
+  };
+}
+
+/** Segments dressed by the athletic top (drawn INTO these joints). */
+const TOP_SEGMENTS = new Set(["spine", "chest", "neck"]);
+/** Segments dressed by the shorts. */
+const SHORTS_SEGMENTS = new Set(["knee_left", "knee_right"]);
+
+/** Pick the material for the segment drawn from `parent` into `id`. */
+function segmentMaterial(id: string, mats: FigureMaterials): THREE.Material {
+  if (TOP_SEGMENTS.has(id)) return mats.top;
+  if (SHORTS_SEGMENTS.has(id)) return mats.shorts;
+  return mats.skin;
+}
+
+/** Build the figure. `material` overrides the whole palette (embed theming). */
 export function buildMannequin(material?: THREE.Material): Mannequin {
-  const mat =
-    material ??
-    new THREE.MeshStandardMaterial({
-      color: 0xc6ced8,
-      roughness: 0.42,
-      metalness: 0.0,
-      flatShading: false,
-    });
+  const mats = material
+    ? {
+        skin: material,
+        top: material,
+        shorts: material,
+        shoes: material,
+        hair: material,
+        face: material,
+        mouth: material,
+      }
+    : defaultMaterials();
 
   const root = new THREE.Group();
   root.name = "posecode-mannequin";
@@ -107,7 +156,10 @@ export function buildMannequin(material?: THREE.Material): Mannequin {
 
     // Draw the segment from the parent joint to this joint, on the parent.
     if (spec.parent && spec.radius) {
-      const seg = makeSegment(offset.length(), spec.radius, mat);
+      const mat = segmentMaterial(spec.id, mats);
+      const seg = isFinger(spec.id)
+        ? makeSegment(offset.length(), spec.radius, mats.skin)
+        : makeTaperedSegment(offset.length(), spec.radius, spec.radiusEnd ?? spec.radius, mat);
       orientSegment(seg, offset);
       bones.get(spec.parent)!.add(seg);
     }
@@ -119,19 +171,17 @@ export function buildMannequin(material?: THREE.Material): Mannequin {
     if (!isFinger(spec.id) || !spec.radius) continue;
     const full = new THREE.Vector3(...spec.offset);
     const span = full.clone().multiplyScalar(1 - KNUCKLE_T);
-    const digit = makeSegment(span.length(), spec.radius * 0.92, mat);
+    const digit = makeSegment(span.length(), spec.radius * 0.92, mats.skin);
     orientSegment(digit, span);
     bones.get(spec.id)!.add(digit);
   }
 
-  // Head sphere + small hand/foot caps for readability.
-  addBall(bones.get("head")!, 0.12, mat);
-  addFace(bones.get("head")!);
-  addBall(bones.get("wrist_left")!, 0.05, mat);
-  addBall(bones.get("wrist_right")!, 0.05, mat);
-  addFoot(bones.get("ankle_left")!, mat);
-  addFoot(bones.get("ankle_right")!, mat);
-  addBall(bones.get("pelvis")!, 0.13, mat);
+  addTorso(bones, mats);
+  addHead(bones.get("head")!, mats);
+  addPalm(bones.get("wrist_left")!, mats.skin);
+  addPalm(bones.get("wrist_right")!, mats.skin);
+  addShoe(bones.get("ankle_left")!, mats);
+  addShoe(bones.get("ankle_right")!, mats);
 
   return {
     root,
@@ -150,48 +200,128 @@ function makeSegment(length: number, radius: number, mat: THREE.Material): THREE
   return new THREE.Mesh(geo, mat);
 }
 
-/** Position/orient a +Y capsule so it spans from the parent joint to `offset`. */
-function orientSegment(seg: THREE.Mesh, offset: THREE.Vector3): void {
+/**
+ * A limb segment that tapers from `rProx` at the parent joint to `rDist` at
+ * the child joint, with rounded hemisphere caps at both ends so elbows/knees
+ * stay smooth mid-flex. Oriented along +Y (proximal end at -Y), centred at
+ * origin so `orientSegment` places it exactly like a capsule.
+ */
+function makeTaperedSegment(
+  length: number,
+  rProx: number,
+  rDist: number,
+  mat: THREE.Material,
+): THREE.Object3D {
+  const group = new THREE.Group();
+  // +Y end maps to the CHILD joint after orientSegment (dir = offset).
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(rDist, rProx, length, 22, 1), mat);
+  group.add(shaft);
+  const capDist = new THREE.Mesh(new THREE.SphereGeometry(rDist, 22, 16), mat);
+  capDist.position.y = length / 2;
+  group.add(capDist);
+  const capProx = new THREE.Mesh(new THREE.SphereGeometry(rProx, 22, 16), mat);
+  capProx.position.y = -length / 2;
+  group.add(capProx);
+  return group;
+}
+
+/** Position/orient a +Y segment so it spans from the parent joint to `offset`. */
+function orientSegment(seg: THREE.Object3D, offset: THREE.Vector3): void {
   const dir = offset.clone().normalize();
   const up = new THREE.Vector3(0, 1, 0);
   seg.quaternion.setFromUnitVectors(up, dir);
   seg.position.copy(offset.clone().multiplyScalar(0.5));
 }
 
-function addBall(bone: THREE.Object3D, diameter: number, mat: THREE.Material): void {
-  const geo = new THREE.SphereGeometry(diameter / 2, 12, 10);
-  bone.add(new THREE.Mesh(geo, mat));
+/** A sphere scaled into an ellipsoid: the basic body-volume building block. */
+function addEllipsoid(
+  bone: THREE.Object3D,
+  radius: number,
+  scale: [number, number, number],
+  position: [number, number, number],
+  mat: THREE.Material,
+): THREE.Mesh {
+  const mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 24, 18), mat);
+  mesh.scale.set(...scale);
+  mesh.position.set(...position);
+  bone.add(mesh);
+  return mesh;
 }
 
 /**
- * A minimal face (nose wedge + two eye studs) on the head's front (+Z).
- * The bare sphere hid which way the figure faces, making neck rotations and
- * turns unreadable; darker studs poke just past the head surface so facing
- * reads at a glance from any camera angle.
+ * Torso volumes: hips on the pelvis, a ribcage spanning the chest, and
+ * deltoid caps on the shoulder joints. Together with the tapered waist
+ * segment these give the figure a human silhouette instead of a bead chain.
  */
-function addFace(head: THREE.Object3D): void {
-  const mat = new THREE.MeshStandardMaterial({ color: 0x39424e, roughness: 0.6 });
+function addTorso(bones: Map<string, THREE.Object3D>, mats: FigureMaterials): void {
+  // Hips: wide, slightly flattened, dressed in shorts.
+  addEllipsoid(bones.get("pelvis")!, 0.09, [1.4, 1.0, 1.05], [0, -0.02, 0], mats.shorts);
+  // Ribcage: broad across the shoulders, shallow front-to-back.
+  addEllipsoid(bones.get("chest")!, 0.1, [1.5, 1.22, 0.82], [0, 0.03, 0], mats.top);
+  // Deltoids round off the shoulder line.
+  addEllipsoid(bones.get("shoulder_left")!, 0.057, [1.02, 1.12, 1.02], [-0.006, -0.012, 0], mats.top);
+  addEllipsoid(bones.get("shoulder_right")!, 0.057, [1.02, 1.12, 1.02], [0.006, -0.012, 0], mats.top);
+}
+
+/**
+ * Head: an ellipsoid skull with a hair cap and a simple face (eyes + nose)
+ * on the front (+Z). The face keeps head yaw/turns readable from any angle;
+ * the hair breaks the "billiard ball" look and marks up-vs-down in inversions.
+ */
+function addHead(head: THREE.Object3D, mats: FigureMaterials): void {
+  const skull = new THREE.Mesh(new THREE.SphereGeometry(0.062, 20, 16), mats.skin);
+  skull.scale.set(0.92, 1.12, 0.98);
+  skull.position.y = 0.01;
+  head.add(skull);
+
+  // Hair: a slightly larger partial sphere hugging the top/back of the skull.
+  const hair = new THREE.Mesh(
+    new THREE.SphereGeometry(0.0655, 24, 16, 0, Math.PI * 2, 0, Math.PI * 0.55),
+    mats.hair,
+  );
+  hair.scale.set(0.95, 1.08, 1.02);
+  hair.position.set(0, 0.016, -0.008);
+  hair.rotation.x = -0.12;
+  head.add(hair);
+
   const face = new THREE.Group();
   face.name = "face";
 
-  // Head ball radius is 0.06 (see addBall(head, 0.12)).
-  const nose = new THREE.Mesh(new THREE.ConeGeometry(0.013, 0.035, 10), mat);
+  const nose = new THREE.Mesh(new THREE.ConeGeometry(0.011, 0.028, 10), mats.skin);
   nose.rotation.x = Math.PI / 2; // cone +Y → +Z
-  nose.position.set(0, -0.004, 0.064);
+  nose.position.set(0, -0.002, 0.062);
   face.add(nose);
 
+  // Eyes are named so the viewer's life layer can find and blink them.
   for (const sx of [-1, 1]) {
-    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.0095, 10, 8), mat);
-    eye.position.set(sx * 0.024, 0.016, 0.054);
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.0085, 10, 8), mats.face);
+    eye.name = sx < 0 ? "eye_left" : "eye_right";
+    eye.position.set(sx * 0.023, 0.018, 0.052);
     face.add(eye);
   }
+
+  // A muted mouth line completes the face without cartooning it.
+  const mouth = new THREE.Mesh(new THREE.CapsuleGeometry(0.0038, 0.016, 4, 8), mats.mouth);
+  mouth.rotation.z = Math.PI / 2;
+  mouth.scale.set(1, 1, 0.55);
+  mouth.position.set(0, -0.024, 0.055);
+  face.add(mouth);
 
   head.add(face);
 }
 
-function addFoot(bone: THREE.Object3D, mat: THREE.Material): void {
-  const geo = new THREE.BoxGeometry(0.07, 0.04, 0.16);
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.set(0, -0.02, 0.05);
-  bone.add(mesh);
+/** A flattened palm instead of a ball: hands read as hands, not maracas. */
+function addPalm(wrist: THREE.Object3D, mat: THREE.Material): void {
+  addEllipsoid(wrist, 0.045, [0.85, 1.05, 0.5], [0, -0.02, 0.004], mat);
+}
+
+/**
+ * A sneaker-shaped foot: rounded upper + thin sole. Sole depth matches the
+ * old foot box (bottom ≈ -0.04) so ground contact height is unchanged.
+ */
+function addShoe(ankle: THREE.Object3D, mats: FigureMaterials): void {
+  addEllipsoid(ankle, 0.05, [0.75, 0.55, 1.9], [0, -0.012, 0.05], mats.shoes);
+  const sole = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.012, 0.185), mats.face);
+  sole.position.set(0, -0.036, 0.05);
+  ankle.add(sole);
 }
