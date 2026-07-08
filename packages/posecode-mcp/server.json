@@ -1,7 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
   "name": "io.github.posecode-dev/posecode-mcp",
-  "description": "Author, ROM-validate, and render 3D human movement (.posecode): exercises, physiotherapy, posture, with a shareable playground link.",
+  "description": "Author, ROM-validate, and render 3D human movement (.posecode) with a shareable playground link.",
   "repository": {
     "url": "https://github.com/posecode-dev/posecode",
     "source": "github"
