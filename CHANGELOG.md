@@ -1,0 +1,49 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.1.0] - 2026-07-08
+
+### Added
+
+- **Language (`.posecode` DSL)**:
+  - Human-readable text-based kinematic motion definition syntax.
+  - Joint and rotation specifications (e.g. `hips: flex 80`, `knees: flex 95`).
+  - Support for `step` definitions with transition duration, easing curves (`ease-in-out`, `ease-out`, `ease-in`), and visual cues.
+  - Starting poses (`supine`, `prone`, `seated`, `standing`).
+  - Spatial choreography: `turn: <deg>` and `travel: <x> <z>` coordinates.
+  - Hand / finger curl articulation (single-DOF curls + `fingers` group).
+  - Scene props integration (`prop chair|wall|bar|box|dip-bars`).
+- **Parser (`posecode-parser`)**:
+  - Full TypeScript parser converting `.posecode` source text to a validated, range-of-motion-clamped intermediate representation (IR).
+  - Robust error recovery (never throws, instead reporting structured errors and warnings).
+  - Clinical range-of-motion safety clamping.
+- **Renderer (`posecode-render`)**:
+  - High-performance, client-side Three.js-based 3D mannequin rendering.
+  - Forward kinematics plus ground-lock Cyclic Coordinate Descent (CCD) Inverse Kinematics (IK).
+  - Range-of-motion constrained reach-to-target IK for limbs.
+  - Motion aliveness layer simulating breathing and subtle aliveness.
+- **Playground (`playground`)**:
+  - Live browser editor at `posecode.org/play` with split-pane view (code editor + 3D viewport).
+  - Real-time linting, compilation warnings, and shareable link generator using URL-safe compression (`posecode-share`).
+  - "Copy LLM prompt" tool to instantly get an interactive system prompt instructing models on how to write valid `.posecode`.
+  - "New" button to clear the editor for pasting external model outputs.
+  - Complete favicon, brand assets, and customized bare figure iconography.
+- **MCP Server (`posecode-mcp`)**:
+  - Model Context Protocol server exposing tools to external AI agents:
+    - `posecode_authoring_guide`: returns the grammar, joints, actions, and examples.
+    - `validate_posecode`: parses a document and returns errors plus range-of-motion safety clamps.
+    - `render_posecode`: compiles and returns a shareable preview link to the playground.
+- **Embed Component (`posecode-embed`)**:
+  - Framework-free `<posecode-player>` Web Component for embedding movements anywhere using a single script tag.
+  - Supports loading from a URL-safe share token, external `.posecode` file source, or inline DSL text.
+  - Lazy loading (Three.js loads only when the player scrolls into view).
+  - Accessibility first (supports `prefers-reduced-motion` and keyboard/mouse controls).
+  - Isolated Shadow DOM styling.
+- **Eval Harness (`posecode-eval`)**:
+  - Headless test and validation runner to measure kinematic fidelity.
+  - Real parser → FK → ground-lock pipeline evaluation.
+  - Geometric invariant assertions (e.g. shin angles, torso pitch, spine curl) scored programmatically to prevent regressions.

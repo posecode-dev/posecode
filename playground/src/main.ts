@@ -8,7 +8,7 @@
  */
 
 import { parse } from "posecode-parser";
-import { createViewer } from "posecode-render";
+import type { Viewer } from "posecode-render";
 import { buildNiceShareHash, resolveSharedSource } from "./nice-share.js";
 import { createPosecodeEditor, type PosecodeEditor } from "./editor.js";
 import { PRESETS } from "./presets.js";
@@ -36,9 +36,11 @@ const shareBtn = $<HTMLButtonElement>("share");
 const tabEditor = $<HTMLButtonElement>("tab-editor");
 const tabViewer = $<HTMLButtonElement>("tab-viewer");
 
-const viewer = createViewer(canvas);
-// Exposed for capture/e2e tooling (frame capture drives README GIFs).
-(window as unknown as Record<string, unknown>).__posecodeViewer = viewer;
+// Three.js is heavy (~530 kB). Like the landing page, we load the renderer
+// *after* the editor shell paints (dynamic import → its own chunk) so first
+// paint and interactivity aren't blocked by it. Until `boot()` resolves the
+// import, `viewer` is null and viewer-dependent work is skipped/deferred.
+let viewer: Viewer | null = null;
 let scrubbing = false;
 let repeat = 1;
 let rep = 1;
@@ -59,32 +61,35 @@ function paintScrub(): void {
   scrub.style.setProperty("--pct", `${Number(scrub.value) / 10}%`);
 }
 
-viewer.onPhase(({ phaseName, cue }) => {
-  phaseEl.textContent = phaseName === "reset" ? "" : phaseName;
-  cueEl.textContent = cue ?? "";
-  highlightChip(phaseName);
-  // Light up the step block driving this phase (cleared between loops / on reset).
-  const range = phaseName === "reset" ? undefined : phaseRanges.get(phaseName);
-  editorApi?.highlightPhase(range ? range.from : null, range?.to);
-});
-viewer.onTick((time, duration) => {
-  if (!scrubbing) {
-    scrub.value = String(Math.round((time / (duration || 1)) * 1000));
-    paintScrub();
-  }
-  clock.textContent = `${time.toFixed(1)}s`;
-});
-viewer.onLoop(() => {
-  rep = (rep % repeat) + 1;
-  updateReps();
-});
+/** Wire the viewer's playback callbacks. Runs once, after the renderer loads. */
+function wireViewer(v: Viewer): void {
+  v.onPhase(({ phaseName, cue }) => {
+    phaseEl.textContent = phaseName === "reset" ? "" : phaseName;
+    cueEl.textContent = cue ?? "";
+    highlightChip(phaseName);
+    // Light up the step block driving this phase (cleared between loops / on reset).
+    const range = phaseName === "reset" ? undefined : phaseRanges.get(phaseName);
+    editorApi?.highlightPhase(range ? range.from : null, range?.to);
+  });
+  v.onTick((time, duration) => {
+    if (!scrubbing) {
+      scrub.value = String(Math.round((time / (duration || 1)) * 1000));
+      paintScrub();
+    }
+    clock.textContent = `${time.toFixed(1)}s`;
+  });
+  v.onLoop(() => {
+    rep = (rep % repeat) + 1;
+    updateReps();
+  });
+}
 
 function updateReps(): void {
   reps.textContent = repeat > 1 ? `rep ${rep} / ${repeat}` : "";
 }
 
 function buildRibbonAndMarkers(): void {
-  const tl = viewer.getTimeline();
+  const tl = viewer?.getTimeline();
   ribbon.innerHTML = "";
   markers.innerHTML = "";
   if (!tl) return;
@@ -94,7 +99,7 @@ function buildRibbonAndMarkers(): void {
     chip.textContent = seg.name;
     chip.dataset.name = seg.name;
     chip.title = seg.cue ?? "";
-    chip.addEventListener("click", () => viewer.seek(seg.start + 1e-3));
+    chip.addEventListener("click", () => viewer?.seek(seg.start + 1e-3));
     ribbon.append(chip);
 
     if (seg.start > 0) {
@@ -154,13 +159,15 @@ function recompile(): void {
     // error state. Show a hint instead of parse errors and stop the playback.
     warnings.innerHTML =
       '<div class="row hint">Blank editor. Paste a movement from your AI chat, or pick one from the library.</div>';
-    viewer.pause();
+    viewer?.pause();
     setPlaying(false);
     return;
   }
   const { ir, errors, warnings: warns } = parse(source);
   renderWarnings(warnings, errors, warns);
-  if (ir) {
+  // Before the renderer finishes loading, we still parse + surface warnings;
+  // the viewer-dependent work re-runs once `boot()` calls recompile() again.
+  if (ir && viewer) {
     viewer.load(ir);
     viewer.setLoop(loop.checked);
     viewer.play();
@@ -353,9 +360,10 @@ setMobileView("viewer");
 
 // --- Transport ---
 playpause.addEventListener("click", () => {
-  setPlaying(viewer.toggle());
+  if (viewer) setPlaying(viewer.toggle());
 });
 scrub.addEventListener("input", () => {
+  if (!viewer) return;
   scrubbing = true;
   paintScrub();
   viewer.seek((Number(scrub.value) / 1000) * viewer.duration);
@@ -363,8 +371,8 @@ scrub.addEventListener("input", () => {
 scrub.addEventListener("change", () => {
   scrubbing = false;
 });
-loop.addEventListener("change", () => viewer.setLoop(loop.checked));
-speed.addEventListener("change", () => viewer.setSpeed(Number(speed.value)));
+loop.addEventListener("change", () => viewer?.setLoop(loop.checked));
+speed.addEventListener("change", () => viewer?.setSpeed(Number(speed.value)));
 
 // --- Button label feedback ---
 // Swap a button's label (the inner `.lbl` span when present, else the button
@@ -476,4 +484,17 @@ editorApi = createPosecodeEditor($("editor"), {
   doc: initialDoc,
   onChange: scheduleRecompile,
 });
+// Parse + surface warnings immediately so the editor is useful at first paint,
+// even though the 3D figure appears a beat later once the renderer chunk loads.
 recompile();
+
+// Boot the renderer after first paint: dynamic import keeps Three.js off the
+// critical path (its own chunk), mirroring the landing page. Once the viewer
+// exists we wire its callbacks and recompile so the current doc animates.
+void import("posecode-render").then(({ createViewer }) => {
+  viewer = createViewer(canvas);
+  // Exposed for capture/e2e tooling (frame capture drives README GIFs).
+  (window as unknown as Record<string, unknown>).__posecodeViewer = viewer;
+  wireViewer(viewer);
+  recompile();
+});

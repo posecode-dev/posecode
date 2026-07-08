@@ -5,7 +5,8 @@
       "name": "playground",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "-w", "playground"],
-      "port": 5173
+      "port": 5173,
+      "autoPort": true
     }
   ]
 }
