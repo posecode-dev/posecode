@@ -507,7 +507,10 @@ void import("./editor.js").then(({ createPosecodeEditor }) => {
 
 // Renderer: keep Three.js off the critical path, mirroring the landing page.
 void import("posecode-render").then(({ createViewer }) => {
-  viewer = createViewer(canvas);
+  // No idle camera orbit in the playground: the point here is judging the
+  // movement itself, and a permanently rotating scene reads as the figure
+  // swaying. The landing-page hero keeps its showcase orbit.
+  viewer = createViewer(canvas, { autoRotate: false });
   // Exposed for capture/e2e tooling (frame capture drives README GIFs).
   (window as unknown as Record<string, unknown>).__posecodeViewer = viewer;
   wireViewer(viewer);

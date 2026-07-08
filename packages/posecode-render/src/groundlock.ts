@@ -15,6 +15,14 @@
  * - **Feet only (squat / hinge / roll-down):** drop the body vertically so the
  *   feet stay planted while the legs keep their authored FK bend: the pelvis
  *   lowers. Legs are never CCD-solved (that would overwrite the pose).
+ *   With `anchors`, grounded feet are also held HORIZONTALLY: FK leg motion
+ *   (hip/knee) displaces the feet relative to the root, and without the
+ *   correction the feet skate across the floor while the pelvis stays put —
+ *   backwards from real movement, where planted feet stay fixed and the
+ *   pelvis travels (a squat sits the hips back, a hinge shifts them behind
+ *   the heels). Only feet near the floor anchor (a swing leg in a curl or
+ *   march must stay free), and only the average delta is corrected so
+ *   symmetric spreads (jumping jacks) don't fight the lock.
  *
  * Both paths ground the visible MESH (bounding boxes), not just bone origins:
  * an ankle bone sits ~0.04m above the sole, so anchoring bones alone left the
@@ -71,8 +79,19 @@ function rotateRootAboutPivot(m: Mannequin, pivot: THREE.Vector3, angle: number)
   m.root.updateMatrixWorld(true);
 }
 
-/** Apply ground-lock for the phase's active effector groups (see module doc). */
-export function applyGroundLock(m: Mannequin, active: string[]): void {
+/** A foot whose mesh bottom is within this height counts as planted. */
+const PLANTED_MAX_Y = 0.05;
+
+/**
+ * Apply ground-lock for the phase's active effector groups (see module doc).
+ * `anchors` (optional) maps effector bone ids to the world position each
+ * planted foot should hold, already transformed by the phase's yaw/travel.
+ */
+export function applyGroundLock(
+  m: Mannequin,
+  active: string[],
+  anchors?: ReadonlyMap<string, THREE.Vector3>,
+): void {
   if (active.length === 0) return;
   const ids = activeEffectorIds(m, active);
   const hands = ids.filter((id) => id.startsWith("wrist"));
@@ -120,5 +139,38 @@ export function applyGroundLock(m: Mannequin, active: string[]): void {
       m.root.position.y -= minY;
       m.root.updateMatrixWorld(true);
     }
+    if (anchors) plantFeetHorizontally(m, feet, anchors);
+  }
+}
+
+/**
+ * Translate the root in X/Z so grounded feet return to their anchors (see
+ * module doc). Runs after vertical grounding so "near the floor" is judged in
+ * the final vertical placement.
+ */
+function plantFeetHorizontally(
+  m: Mannequin,
+  feet: string[],
+  anchors: ReadonlyMap<string, THREE.Vector3>,
+): void {
+  const p = new THREE.Vector3();
+  let dx = 0;
+  let dz = 0;
+  let n = 0;
+  for (const id of feet) {
+    const anchor = anchors.get(id);
+    const node = m.bones.get(id);
+    if (!anchor || !node) continue;
+    const box = new THREE.Box3().setFromObject(node);
+    if (!Number.isFinite(box.min.y) || box.min.y > PLANTED_MAX_Y) continue; // swing foot
+    node.getWorldPosition(p);
+    dx += anchor.x - p.x;
+    dz += anchor.z - p.z;
+    n++;
+  }
+  if (n > 0) {
+    m.root.position.x += dx / n;
+    m.root.position.z += dz / n;
+    m.root.updateMatrixWorld(true);
   }
 }

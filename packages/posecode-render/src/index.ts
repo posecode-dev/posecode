@@ -225,6 +225,7 @@ export function createViewer(
     // "Ground-lock" means HOLD the effector where the grounded base pose placed
     // it, not drag it to y=0. groundFigure() already set the floor contact.
     groundTargets = new Map();
+    frameAnchorMap.clear(); // drop anchors for effectors no longer captured
     for (const ids of Object.values(mannequin.effectors)) {
       for (const id of ids) {
         const node = mannequin.bones.get(id);
@@ -236,6 +237,30 @@ export function createViewer(
   // Reused scratch for the per-frame facing rotation (yaw about world Y).
   const WORLD_Y = new THREE.Vector3(0, 1, 0);
   const YAW_Q = new THREE.Quaternion();
+
+  // Per-frame ground anchors: the captured load-time effector positions,
+  // carried along by the phase's yaw/travel so horizontal foot planting
+  // composes with choreography instead of fighting it. Values are mutated in
+  // place each frame; the map is rebuilt on load (captureGroundTargets).
+  const frameAnchorMap = new Map<string, THREE.Vector3>();
+  function frameAnchors(rootYaw: number, rootOffset: { x: number; z: number }): Map<string, THREE.Vector3> {
+    for (const [id, captured] of groundTargets) {
+      let v = frameAnchorMap.get(id);
+      if (!v) {
+        v = new THREE.Vector3();
+        frameAnchorMap.set(id, v);
+      }
+      v.copy(captured);
+      if (rootYaw !== 0) {
+        // Yaw spins the body about the vertical axis through the root, so the
+        // anchors must pivot with it (a quarter-turn carries the feet around).
+        v.sub(baseRootPos).applyAxisAngle(WORLD_Y, rootYaw).add(baseRootPos);
+      }
+      v.x += rootOffset.x;
+      v.z += rootOffset.z;
+    }
+    return frameAnchorMap;
+  }
 
   // Friendly DSL effector aliases → the distal bone whose world position is
   // driven to the reach target.
@@ -407,7 +432,7 @@ export function createViewer(
       mannequin.root.position.x += info.rootOffset.x;
       mannequin.root.position.z += info.rootOffset.z;
       mannequin.root.updateMatrixWorld(true);
-      applyGroundLockTo(mannequin, info.groundLock);
+      applyGroundLockTo(mannequin, info.groundLock, frameAnchors(info.rootYaw, info.rootOffset));
       applyPins(info.pins);
       // Safety net: nothing above ever intentionally pushes part of the body
       // below the floor, so clamp the root up whenever the lowest point dips
