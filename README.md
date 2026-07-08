@@ -127,3 +127,10 @@ sections (§4 DSL, §5 biomechanics, §6 client rendering, §7 strategy).
 > ⚠️ Posecode's range-of-motion values are general literature data, not medical
 > advice. Consult a qualified professional for physiotherapy or exercise
 > prescription.
+
+## Feedback & Support
+
+We'd love to hear your feedback! You can reach us in two ways:
+- **Email**: Send us an email at [hello@posecode.org](mailto:hello@posecode.org?subject=Posecode%20Feedback).
+- **GitHub Issues**: If you found a bug or have a feature request, please [open a GitHub Issue](https://github.com/posecode-dev/posecode/issues).
+

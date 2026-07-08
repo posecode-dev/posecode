@@ -140,6 +140,7 @@ export function pageShell({ title, description, canonicalPath, jsonLd, bodyHtml,
           <a href="/moves/">Movement library</a>
           <a href="/spec.html">Language spec</a>
           <a href="/llm-guide.html">LLM guide</a>
+          <a href="mailto:hello@posecode.org?subject=Posecode%20Feedback">Feedback</a>
           <a href="https://github.com/posecode-dev/posecode" target="_blank" rel="noopener">GitHub</a>
         </nav>
       </div>
@@ -151,7 +152,11 @@ export function pageShell({ title, description, canonicalPath, jsonLd, bodyHtml,
       <div class="wrap">
         <p>Range-of-motion values are general literature data, not medical advice. Consult a
         qualified professional for physiotherapy or exercise prescription.</p>
-        <p><a href="/">Posecode</a>, MIT-licensed open core.</p>
+        <p>
+          <a href="/">Posecode</a>, MIT-licensed open core &nbsp;·&nbsp;
+          <a href="mailto:hello@posecode.org?subject=Posecode%20Feedback">Feedback</a> &nbsp;·&nbsp;
+          <a href="https://github.com/posecode-dev/posecode/issues" target="_blank" rel="noopener">GitHub Issues</a>
+        </p>
       </div>
     </footer>
   </body>

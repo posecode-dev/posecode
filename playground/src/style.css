@@ -155,7 +155,8 @@ body {
 
 .btn .ico-link,
 .btn .ico-help,
-.btn .ico-plus {
+.btn .ico-plus,
+.btn .ico-feedback {
   width: 14px;
   height: 14px;
   background: currentColor;
@@ -165,7 +166,8 @@ body {
 }
 .btn:hover .ico-link,
 .btn:hover .ico-help,
-.btn:hover .ico-plus {
+.btn:hover .ico-plus,
+.btn:hover .ico-feedback {
   opacity: 1;
 }
 .btn .ico-plus {
@@ -176,6 +178,9 @@ body {
 }
 .btn .ico-help {
   --btn-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3'/%3E%3Cline x1='12' y1='17' x2='12.01' y2='17'/%3E%3C/svg%3E");
+}
+.btn .ico-feedback {
+  --btn-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'/%3E%3C/svg%3E");
 }
 
 .btn.primary {
