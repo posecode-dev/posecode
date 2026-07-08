@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Posecode">
+  <defs>
+    <linearGradient id="lime" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d6ff5e"/>
+      <stop offset="1" stop-color="#a9e02f"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="34%" r="62%">
+      <stop offset="0" stop-color="#c6f24a" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#c6f24a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="120" fill="#0a0d12"/>
+  <rect width="512" height="512" rx="120" fill="url(#glow)"/>
+  <rect x="4" y="4" width="504" height="504" rx="116" fill="none" stroke="#ffffff" stroke-opacity="0.06" stroke-width="2"/>
+  <g transform="translate(106 106) scale(3)">
+    <g fill="none" stroke="url(#lime)" stroke-width="6.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M50 34 V55"/>
+      <path d="M50 35 L34 26 L23 15"/>
+      <path d="M50 35 L66 26 L77 15"/>
+      <path d="M50 54 L36 72 L28 88"/>
+      <path d="M50 54 L64 72 L72 88"/>
+    </g>
+    <circle cx="50" cy="20" r="9" fill="url(#lime)"/>
+    <g fill="#0a0d12" stroke="url(#lime)" stroke-width="2.4">
+      <circle cx="34" cy="26" r="2.6"/>
+      <circle cx="66" cy="26" r="2.6"/>
+      <circle cx="36" cy="72" r="2.6"/>
+      <circle cx="64" cy="72" r="2.6"/>
+    </g>
+  </g>
+</svg>
