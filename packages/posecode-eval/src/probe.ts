@@ -68,6 +68,16 @@ export function probeMovement(source: string): ProbeResult {
   const baseRootPos = m.root.position.clone();
   const baseRootQuat = m.root.quaternion.clone();
 
+  // Mirror Viewer.captureGroundTargets(): the grounded base-pose effector
+  // positions are the anchors horizontal foot planting holds feet to.
+  const groundTargets = new Map<string, THREE.Vector3>();
+  for (const ids of Object.values(m.effectors)) {
+    for (const id of ids) {
+      const node = m.bones.get(id);
+      if (node) groundTargets.set(id, node.getWorldPosition(new THREE.Vector3()));
+    }
+  }
+
   // Sample the end of each phase, applying the viewer's per-frame root
   // pipeline: base root → yaw/travel → ground-lock → floor safety clamp.
   const yawQ = new THREE.Quaternion();
@@ -82,7 +92,19 @@ export function probeMovement(source: string): ProbeResult {
     m.root.position.x += info.rootOffset.x;
     m.root.position.z += info.rootOffset.z;
     m.root.updateMatrixWorld(true);
-    applyGroundLock(m, info.groundLock);
+    // Mirror the viewer's per-frame anchors: captured targets carried along
+    // by this phase's yaw/travel so planting composes with choreography.
+    const anchors = new Map<string, THREE.Vector3>();
+    for (const [id, captured] of groundTargets) {
+      const v = captured.clone();
+      if (info.rootYaw !== 0) {
+        v.sub(baseRootPos).applyAxisAngle(WORLD_Y, info.rootYaw).add(baseRootPos);
+      }
+      v.x += info.rootOffset.x;
+      v.z += info.rootOffset.z;
+      anchors.set(id, v);
+    }
+    applyGroundLock(m, info.groundLock, anchors);
     // Viewer safety net: never leave the lowest mesh point below the floor.
     m.root.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(m.root);
