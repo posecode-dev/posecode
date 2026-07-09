@@ -28,7 +28,11 @@ function initHero(): void {
   const heroCanvas = document.getElementById("hero-canvas") as HTMLCanvasElement | null;
   if (!heroCanvas) return;
   void import("posecode-render").then(({ createViewer }) => {
-    const viewer = createViewer(heroCanvas, { autoRotate: !prefersReducedMotion });
+    const viewer = createViewer(heroCanvas, {
+      autoRotate: !prefersReducedMotion,
+      // Realistic skinned figure; the procedural one covers until it loads.
+      characterUrl: "/models/character.glb",
+    });
     const phaseEl = document.getElementById("hero-phase");
     viewer.onPhase(({ phaseName }) => {
       if (phaseEl) phaseEl.textContent = phaseName === "reset" ? "" : phaseName;

@@ -64,6 +64,7 @@ definePosecodePlayer(); // idempotent
 | `controls` | `true` | Show the play/pause bar. |
 | `autorotate` | `true` | Slowly orbit the camera when idle. |
 | `speed` | `1` | Playback multiplier (`0.1`–`4`). |
+| `character` | *(hosted default)* | Realistic figure: a GLB URL (Mixamo rig), or `off` for the procedural mannequin. Load failures fall back to the mannequin. |
 | `playground` | `https://posecode.org/play` | Base URL for the "Edit ↗" link. |
 
 Boolean attributes accept `false` / `0` / `no` / `off` to turn them off, so

@@ -18,7 +18,17 @@ export interface PlayerOptions {
   autoRotate: boolean;
   /** Playback speed multiplier (0.1–4). */
   speed: number;
+  /**
+   * Realistic skinned figure: a GLB URL, the default hosted character when
+   * absent, or `""` (attribute `character="off"`) for the procedural figure.
+   * Load failures fall back to the procedural figure, so an offline page
+   * degrades instead of blanking.
+   */
+  characterUrl: string;
 }
+
+/** The character the hosted playground uses, served from the same origin. */
+export const DEFAULT_CHARACTER_URL = "https://posecode.org/models/character.glb";
 
 export const DEFAULT_OPTIONS: PlayerOptions = {
   autoplay: true,
@@ -26,6 +36,7 @@ export const DEFAULT_OPTIONS: PlayerOptions = {
   controls: true,
   autoRotate: true,
   speed: 1,
+  characterUrl: DEFAULT_CHARACTER_URL,
 };
 
 const SPEED_MIN = 0.1;
@@ -38,6 +49,7 @@ export interface RawAttributes {
   controls?: string | null;
   autorotate?: string | null;
   speed?: string | null;
+  character?: string | null;
 }
 
 const FALSEY = new Set(["false", "0", "no", "off"]);
@@ -54,6 +66,15 @@ function clamp(n: number, lo: number, hi: number): number {
 
 export function parseOptions(attrs: RawAttributes): PlayerOptions {
   const speedRaw = attrs.speed != null ? Number(attrs.speed) : NaN;
+  // `character` accepts a GLB URL, a falsey word to opt out, or absent for
+  // the hosted default.
+  const characterRaw = attrs.character?.trim();
+  const characterUrl =
+    characterRaw === undefined || characterRaw === null
+      ? DEFAULT_OPTIONS.characterUrl
+      : FALSEY.has(characterRaw.toLowerCase())
+        ? ""
+        : characterRaw;
   return {
     autoplay: boolAttr(attrs.autoplay, DEFAULT_OPTIONS.autoplay),
     loop: boolAttr(attrs.loop, DEFAULT_OPTIONS.loop),
@@ -62,5 +83,6 @@ export function parseOptions(attrs: RawAttributes): PlayerOptions {
     speed: Number.isFinite(speedRaw)
       ? clamp(speedRaw, SPEED_MIN, SPEED_MAX)
       : DEFAULT_OPTIONS.speed,
+    characterUrl,
   };
 }

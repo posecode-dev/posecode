@@ -3,8 +3,8 @@ posecode stretch "Touch your toes"
   pose start = standing
 
   step "Fold" 2.5s ease-in-out:
-    pelvis: hinge 120
-    knees: flex 60
+    pelvis: hinge 95
+    knees: flex 20
     neck: flex 15
     reach: hand_left ankle_left
     reach: hand_right ankle_right

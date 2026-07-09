@@ -22,7 +22,46 @@ export interface Mannequin {
   bones: Map<string, THREE.Object3D>;
   /** Effector group name → the distal joint nodes used for ground-lock. */
   effectors: Record<string, string[]>;
+  /** Body-part radii for the self-collision pass (metres). */
+  collision: CollisionRadii;
 }
+
+/** Capsule/sphere radii approximating the visible body for self-collision. */
+export interface CollisionRadii {
+  torso: number;
+  head: number;
+  thigh: number;
+  shin: number;
+  arm: number;
+}
+
+/**
+ * Overrides that rebuild the driver skeleton congruent with a loaded skinned
+ * character: joint offsets measured from the character's calibrated rest pose,
+ * plus the mesh extents that bounding-box grounding depends on.
+ */
+export interface Proportions {
+  /** boneId → offset from parent joint (metres, parent rest frame). */
+  offsets: Record<string, [number, number, number]>;
+  /** Vertical extent of the visible foot below the ankle joint. */
+  soleDrop?: number;
+  /** Vertical extent of the head above the head joint (skull + hair). */
+  headLength?: number;
+  /** Collision radii matching the character's mesh. */
+  collision?: CollisionRadii;
+}
+
+/** Radii for the chunky procedural figure (capsule segments + ellipsoids). */
+const DEFAULT_COLLISION: CollisionRadii = {
+  torso: 0.13,
+  head: 0.105,
+  thigh: 0.075,
+  shin: 0.055,
+  arm: 0.038,
+};
+
+/** Foot-mesh depth below the ankle bone in the default shoe (see addShoe). */
+const DEFAULT_SOLE_DROP = 0.042;
 
 interface BoneSpec {
   id: string;
@@ -123,8 +162,13 @@ function segmentMaterial(id: string, mats: FigureMaterials): THREE.Material {
   return mats.skin;
 }
 
-/** Build the figure. `material` overrides the whole palette (embed theming). */
-export function buildMannequin(material?: THREE.Material): Mannequin {
+/**
+ * Build the figure. `material` overrides the whole palette (embed theming).
+ * `proportions` rebuilds the skeleton congruent with a loaded skinned
+ * character (see character.ts); the procedural meshes are then hidden but keep
+ * feeding the bounding-box grounding, so contact solving matches the mesh.
+ */
+export function buildMannequin(material?: THREE.Material, proportions?: Proportions): Mannequin {
   const mats = material
     ? {
         skin: material,
@@ -146,7 +190,7 @@ export function buildMannequin(material?: THREE.Material): Mannequin {
     const bone = new THREE.Object3D();
     bone.name = spec.id;
     // Finger bones sit at the knuckle; the offset names the fingertip.
-    const offset = new THREE.Vector3(...spec.offset);
+    const offset = new THREE.Vector3(...(proportions?.offsets[spec.id] ?? spec.offset));
     if (isFinger(spec.id)) offset.multiplyScalar(KNUCKLE_T);
     bone.position.copy(offset);
 
@@ -169,7 +213,7 @@ export function buildMannequin(material?: THREE.Material): Mannequin {
   // finger curl visibly folds at the knuckle.
   for (const spec of SKELETON) {
     if (!isFinger(spec.id) || !spec.radius) continue;
-    const full = new THREE.Vector3(...spec.offset);
+    const full = new THREE.Vector3(...(proportions?.offsets[spec.id] ?? spec.offset));
     const span = full.clone().multiplyScalar(1 - KNUCKLE_T);
     const digit = makeSegment(span.length(), spec.radius * 0.92, mats.skin);
     orientSegment(digit, span);
@@ -177,11 +221,11 @@ export function buildMannequin(material?: THREE.Material): Mannequin {
   }
 
   addTorso(bones, mats);
-  addHead(bones.get("head")!, mats);
+  addHead(bones.get("head")!, mats, proportions?.headLength);
   addPalm(bones.get("wrist_left")!, mats.skin);
   addPalm(bones.get("wrist_right")!, mats.skin);
-  addShoe(bones.get("ankle_left")!, mats);
-  addShoe(bones.get("ankle_right")!, mats);
+  addShoe(bones.get("ankle_left")!, mats, proportions?.soleDrop);
+  addShoe(bones.get("ankle_right")!, mats, proportions?.soleDrop);
 
   return {
     root,
@@ -190,6 +234,7 @@ export function buildMannequin(material?: THREE.Material): Mannequin {
       hands: ["wrist_left", "wrist_right"],
       feet: ["ankle_left", "ankle_right"],
     },
+    collision: proportions?.collision ?? DEFAULT_COLLISION,
   };
 }
 
@@ -271,9 +316,12 @@ function addTorso(bones: Map<string, THREE.Object3D>, mats: FigureMaterials): vo
  * on the front (+Z). The face keeps head yaw/turns readable from any angle;
  * the hair breaks the "billiard ball" look and marks up-vs-down in inversions.
  */
-function addHead(head: THREE.Object3D, mats: FigureMaterials): void {
+function addHead(head: THREE.Object3D, mats: FigureMaterials, headLength?: number): void {
   const skull = new THREE.Mesh(new THREE.SphereGeometry(0.062, 20, 16), mats.skin);
-  skull.scale.set(0.92, 1.12, 0.98);
+  // With `headLength`, stretch the skull so its top matches a character's real
+  // head extent: supine/prone grounding then rests the visible head correctly.
+  const scaleY = headLength ? Math.max(1.12, (headLength - 0.01) / 0.062) : 1.12;
+  skull.scale.set(0.92, scaleY, 0.98);
   skull.position.y = 0.01;
   head.add(skull);
 
@@ -320,11 +368,15 @@ function addPalm(wrist: THREE.Object3D, mat: THREE.Material): void {
 
 /**
  * A sneaker-shaped foot: rounded upper + thin sole. Sole depth matches the
- * old foot box (bottom ≈ -0.04) so ground contact height is unchanged.
+ * old foot box (bottom ≈ -0.04) so ground contact height is unchanged. With
+ * `soleDrop`, the whole shoe shifts down so its bottom sits that far below the
+ * ankle joint: characters carry their ankle higher above the floor, and the
+ * bounding-box grounding must plant THEIR sole, not the default one.
  */
-function addShoe(ankle: THREE.Object3D, mats: FigureMaterials): void {
-  addEllipsoid(ankle, 0.05, [0.75, 0.55, 1.9], [0, -0.012, 0.05], mats.shoes);
+function addShoe(ankle: THREE.Object3D, mats: FigureMaterials, soleDrop?: number): void {
+  const dy = soleDrop !== undefined ? -(soleDrop - DEFAULT_SOLE_DROP) : 0;
+  addEllipsoid(ankle, 0.05, [0.75, 0.55, 1.9], [0, -0.012 + dy, 0.05], mats.shoes);
   const sole = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.012, 0.185), mats.face);
-  sole.position.set(0, -0.036, 0.05);
+  sole.position.set(0, -0.036 + dy, 0.05);
   ankle.add(sole);
 }

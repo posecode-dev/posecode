@@ -510,7 +510,14 @@ void import("posecode-render").then(({ createViewer }) => {
   // No idle camera orbit in the playground: the point here is judging the
   // movement itself, and a permanently rotating scene reads as the figure
   // swaying. The landing-page hero keeps its showcase orbit.
-  viewer = createViewer(canvas, { autoRotate: false });
+  // Realistic skinned figure by default; `?figure=classic` keeps the
+  // procedural mannequin (debugging aid, and a fallback link for slow pages).
+  const classicFigure =
+    new URLSearchParams(location.search).get("figure") === "classic";
+  viewer = createViewer(canvas, {
+    autoRotate: false,
+    ...(classicFigure ? {} : { characterUrl: "/models/character.glb" }),
+  });
   // Exposed for capture/e2e tooling (frame capture drives README GIFs).
   (window as unknown as Record<string, unknown>).__posecodeViewer = viewer;
   wireViewer(viewer);

@@ -105,6 +105,7 @@ export class PosecodePlayerElement extends HTMLElement {
       controls: this.getAttribute("controls"),
       autorotate: this.getAttribute("autorotate"),
       speed: this.getAttribute("speed"),
+      character: this.getAttribute("character"),
     });
   }
 
@@ -178,6 +179,7 @@ export class PosecodePlayerElement extends HTMLElement {
     const { createViewer } = await import("posecode-render");
     const viewer = createViewer(this.#canvas, {
       autoRotate: opts.autoRotate && !reduceMotion,
+      ...(opts.characterUrl ? { characterUrl: opts.characterUrl } : {}),
     });
     this.#viewer = viewer;
     viewer.onPhase(({ phaseName }) => {

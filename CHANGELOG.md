@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Realistic human figure**: the playground, landing hero, and `<posecode-player>` embeds now render a fully rigged, textured human character (hands with articulated fingers, sneakers, face) instead of the procedural capsule mannequin. All solving (FK, ground-lock, pins, reach-IK) still runs on the driver skeleton, rebuilt to the character's exact proportions and retargeted bone-for-bone every frame; the procedural figure remains as an automatic fallback (and via `?figure=classic` / `character="off"`).
+- **Self-collision resolution**: a capsule-based de-penetration pass keeps forearms/hands out of the torso, head, and legs (and shins out of each other), clamped to healthy ROM, so limbs no longer pass through the body mid-movement.
+- `viewer.characterActive`, `createViewer({ characterUrl })`, and the embed `character` attribute.
+- `scripts/capture-gifs.mjs` (`npm run gifs`): reproducible headless regeneration of the README movement GIFs from the live renderer.
+
+### Fixed
+
+- Deadlift arms now hang toward the bar during the hinge (were authored as shoulder extension, flying up behind the back).
+- Crunch keeps the feet planted with bent knees (shins previously folded through the floor and jacked the body up).
+- Touch-toes folds like a human (hinge depth and knee bend were over-authored, collapsing the figure).
+
 ## [0.1.0] - 2026-07-08
 
 ### Added
