@@ -5,10 +5,16 @@ posecode exercise "Lying leg raise"
   step "Raise" 1.2s ease-out:
     hips: flex 90
     knees: flex 0
+    shoulders: rotate-in 70
+    elbows: pronate 80
+    reach: hands floor
     cue "Lift the straight legs toward vertical, low back pressed down"
 
   step "Lower" 1.4s ease-in:
     hips: flex 20
+    shoulders: rotate-in 70
+    elbows: pronate 80
+    reach: hands floor
     cue "Lower the legs slowly without arching the back"
 
   repeat 10

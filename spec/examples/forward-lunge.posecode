@@ -10,7 +10,8 @@ posecode exercise "Forward lunge"
     ankle_right: dorsiflex 14
     spine: extend 4
     travel: 0 0.3
-    ground-lock: feet
+    pin: foot_left floor
+    reach: foot_right floor
     cue "Step forward and lower the back knee toward the floor"
 
   step "Drive up" 1.4s ease-out:

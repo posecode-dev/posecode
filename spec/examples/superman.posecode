@@ -3,7 +3,7 @@ posecode exercise "Superman"
   pose start = prone
 
   step "Lift" 1.5s ease-out:
-    shoulders: flex 150
+    shoulders: abduct 130
     spine: extend 20
     chest: extend 15
     neck: extend 25
@@ -11,7 +11,7 @@ posecode exercise "Superman"
     cue "Lift the arms, chest, and legs off the floor"
 
   step "Lower" 1.5s ease-in:
-    shoulders: flex 0
+    shoulders: abduct 0
     spine: flex 0
     chest: flex 0
     neck: flex 0

@@ -12,8 +12,8 @@ posecode exercise "Bicycle crunch"
     cue "Hands by the ears, knees over the hips, shoulders lifted"
 
   step "Right to left" 0.8s ease-in-out:
-    spine: rotate-out 20
-    chest: rotate-out 12
+    spine: rotate-in 20
+    chest: rotate-in 12
     hip_left: flex 110
     knee_left: flex 90
     hip_right: flex 15
@@ -21,8 +21,8 @@ posecode exercise "Bicycle crunch"
     cue "Right elbow toward the left knee; the right leg extends long"
 
   step "Left to right" 0.8s ease-in-out:
-    spine: rotate-in 20
-    chest: rotate-in 12
+    spine: rotate-out 20
+    chest: rotate-out 12
     hip_right: flex 110
     knee_right: flex 90
     hip_left: flex 15
