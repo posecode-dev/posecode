@@ -71,6 +71,13 @@ export interface Character {
   proportions: Proportions;
   /** Copy the driver's current pose onto the character skeleton. */
   sync(driver: Mannequin): void;
+  /**
+   * The character's first skinned mesh, the retarget target for mocap clips
+   * (see clips.ts). Null on bare skeletons, which then can't play clips.
+   */
+  skinnedMesh: THREE.SkinnedMesh | null;
+  /** Bones `sync` writes every frame; the mocap layer blends against these. */
+  drivenNodes: ReadonlySet<THREE.Object3D>;
   /** Free GPU resources. */
   dispose(): void;
 }
@@ -372,10 +379,23 @@ export function rigCharacter(charScene: THREE.Object3D): Character {
     group.updateMatrixWorld(true);
   }
 
+  // Surface for the optional mocap-clip layer (clips.ts): the retarget target
+  // mesh and the set of bones sync() rewrites each frame.
+  let skinnedMesh: THREE.SkinnedMesh | null = null;
+  charScene.traverse((o) => {
+    if (!skinnedMesh && (o as THREE.SkinnedMesh).isSkinnedMesh) {
+      skinnedMesh = o as THREE.SkinnedMesh;
+    }
+  });
+  const drivenNodes = new Set<THREE.Object3D>(mapped.map((m) => m.node));
+  for (const ph of phalanges) drivenNodes.add(ph.node);
+
   return {
     group,
     proportions,
     sync,
+    skinnedMesh,
+    drivenNodes,
     dispose() {
       group.traverse((o) => {
         const mesh = o as THREE.Mesh;

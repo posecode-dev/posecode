@@ -19,6 +19,13 @@ import { buildTimeline, type BuiltTimeline, type PhaseSegment } from "./timeline
 import { solveCCD, type JointLimits } from "./ik.js";
 import { buildProps, type PropScene } from "./props.js";
 import { loadCharacter, type Character } from "./character.js";
+import {
+  loadClipSource,
+  retargetMocapClip,
+  createClipLayer,
+  type ClipLayer,
+  type ClipSource,
+} from "./clips.js";
 import { depenetrate } from "./depenetrate.js";
 
 const DEG = Math.PI / 180;
@@ -47,6 +54,8 @@ export interface Viewer {
   get time(): number;
   /** True once the skinned character (characterUrl) is loaded and visible. */
   get characterActive(): boolean;
+  /** True while a retargeted mocap clip is driving (or fading over) the pose. */
+  get clipActive(): boolean;
   getTimeline(): TimelineInfo | null;
   /**
    * Render the current time synchronously and return the frame as a PNG data
@@ -72,6 +81,15 @@ export interface ViewerOptions {
    * skeleton, rebuilt to the character's exact proportions (see character.ts).
    */
   characterUrl?: string;
+  /**
+   * Mocap clip library: clip name (as written in a document's `clip "<name>"`
+   * directive) → FBX/GLB asset URL. When a loaded document names a clip found
+   * here and the skinned character is active, the viewer retargets the clip
+   * onto the character and crossfades it over the procedural pose. Documents
+   * naming clips absent from this map — and any load/retarget failure — play
+   * the procedural keyframes as always, so clips can never blank a movement.
+   */
+  clips?: Record<string, string>;
 }
 
 export function createViewer(
@@ -161,6 +179,58 @@ export function createViewer(
   // the character's proportions, its meshes are hidden (they keep feeding the
   // bounding-box grounding), and the character mirrors it every frame.
   let character: Character | null = null;
+
+  // Mocap-clip layer (optional, character-only). When the loaded document
+  // names a clip present in opts.clips, the asset is fetched once, retargeted
+  // onto the character skeleton, and crossfaded over the procedural pose. The
+  // weight eases toward its target each frame, so switching documents (or a
+  // clip arriving mid-play) fades rather than pops; every failure path leaves
+  // the procedural keyframes driving the figure.
+  const CLIP_FADE_PER_SEC = 2.5; // full crossfade in ~0.4s
+  let clipLayer: ClipLayer | null = null;
+  let clipLayerName: string | null = null;
+  let clipWeight = 0;
+  let clipTargetWeight = 0;
+  let clipToken = 0;
+  const clipSources = new Map<string, Promise<ClipSource>>();
+
+  /** (Re)aim the clip layer at the current document's `clip` request. */
+  function requestClip(ir: PosecodeIR | null): void {
+    clipToken++;
+    const token = clipToken;
+    const name = ir?.clip;
+    const url = name ? opts.clips?.[name] : undefined;
+    if (!name || !url || !character?.skinnedMesh) {
+      clipTargetWeight = 0;
+      return;
+    }
+    if (clipLayerName === name && clipLayer) {
+      clipTargetWeight = 1;
+      return;
+    }
+    clipTargetWeight = 0; // fade out whatever plays while the new clip loads
+    let source = clipSources.get(url);
+    if (!source) {
+      source = loadClipSource(url);
+      clipSources.set(url, source);
+    }
+    source
+      .then((src) => {
+        const mesh = character?.skinnedMesh;
+        if (token !== clipToken || !mesh || !character) return;
+        const retargeted = retargetMocapClip(mesh, src.root, src.clip);
+        clipLayer?.dispose();
+        clipLayer = createClipLayer(mesh, retargeted, character.drivenNodes);
+        clipLayerName = name;
+        clipWeight = 0;
+        clipTargetWeight = 1;
+      })
+      .catch(() => {
+        // Missing/broken clip asset: the procedural keyframes keep playing.
+        // Deliberately silent, matching the characterUrl fallback.
+        clipSources.delete(url);
+      });
+  }
 
   // --- Life layer: breathing + blinking so the figure reads as alive even
   // when the movement is paused. Both are MESH-only effects. Breathing must
@@ -481,6 +551,17 @@ export function createViewer(
     }
     // Mirror the fully-solved driver pose onto the skinned character.
     character?.sync(mannequin);
+    // Mocap layer: ease the crossfade weight, then blend the retargeted clip
+    // over the procedural pose sync() just wrote. Timeline time drives the
+    // mixer so pause/scrub/export stay deterministic.
+    if (character && clipLayer) {
+      const step = frameDt * CLIP_FADE_PER_SEC;
+      const gap = clipTargetWeight - clipWeight;
+      clipWeight += Math.sign(gap) * Math.min(Math.abs(gap), step);
+      clipLayer.apply(time, clipWeight);
+      if (clipWeight > 0) character.group.updateMatrixWorld(true);
+    }
+    frameDt = 0;
     if (easeCamera) {
       controls.target.lerp(desiredTarget, 0.07);
       camera.position.lerp(desiredPos, 0.07);
@@ -493,9 +574,13 @@ export function createViewer(
 
   let raf = 0;
   let lastT = performance.now();
+  // Wall-clock delta consumed by frame() for the clip crossfade; zeroed after
+  // each frame so captureFrame() renders without advancing the fade.
+  let frameDt = 0;
   function loopFn(now: number): void {
     const dt = Math.min(0.05, (now - lastT) / 1000);
     lastT = now;
+    frameDt = dt;
     if (playing && timeline) {
       time += dt * speed;
       if (time >= timeline.duration) {
@@ -544,6 +629,7 @@ export function createViewer(
       captureGroundTargets();
       baseRootPos.copy(mannequin.root.position);
       baseRootQuat.copy(mannequin.root.quaternion);
+      requestClip(ir);
       frameCamera();
     },
     play() {
@@ -580,6 +666,9 @@ export function createViewer(
     get characterActive() {
       return character !== null;
     },
+    get clipActive() {
+      return clipLayer !== null && (clipWeight > 0 || clipTargetWeight > 0);
+    },
     getTimeline() {
       if (!timeline) return null;
       return {
@@ -604,6 +693,7 @@ export function createViewer(
     dispose() {
       cancelAnimationFrame(raf);
       controls.dispose();
+      clipLayer?.dispose();
       character?.dispose();
       renderer.dispose();
     },
@@ -671,5 +761,12 @@ export { buildTimeline } from "./timeline.js";
 export { solveCCD, type IkChain, type JointLimits } from "./ik.js";
 export { buildProps, type PropScene } from "./props.js";
 export { loadCharacter, rigCharacter, type Character } from "./character.js";
+export {
+  loadClipSource,
+  retargetMocapClip,
+  createClipLayer,
+  type ClipLayer,
+  type ClipSource,
+} from "./clips.js";
 export { depenetrate } from "./depenetrate.js";
 export type { PhaseSegment } from "./timeline.js";

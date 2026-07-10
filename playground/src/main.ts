@@ -517,6 +517,12 @@ void import("posecode-render").then(({ createViewer }) => {
   viewer = createViewer(canvas, {
     autoRotate: false,
     ...(classicFigure ? {} : { characterUrl: "/models/character.glb" }),
+    // Mocap-clip library: a document's `clip "<name>"` directive picks a
+    // retargeted animation from here, crossfaded over the procedural pose (see
+    // clips.ts). Only fetched when a loaded movement names the clip, so this
+    // never slows the default page. Disabled with the classic figure, which has
+    // no skinned mesh to retarget onto.
+    ...(classicFigure ? {} : { clips: { walk: "/clips/walk.fbx" } }),
   });
   // Exposed for capture/e2e tooling (frame capture drives README GIFs).
   (window as unknown as Record<string, unknown>).__posecodeViewer = viewer;

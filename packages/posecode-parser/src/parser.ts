@@ -50,6 +50,8 @@ export interface AstDoc {
   rig: string;
   startPose?: string;
   props: string[];
+  /** Optional mocap clip name (`clip "<name>"`), resolved to an asset by hosts. */
+  clip?: string;
   repeat: number;
   steps: AstStep[];
 }
@@ -122,6 +124,13 @@ export function parseToAst(source: string): ParseAstResult {
         const p = word(t[1]);
         if (!p) errors.push({ line: ln.line, message: "prop requires a type" });
         else doc.props.push(p);
+        break;
+      }
+      case "clip": {
+        // `clip "<name>"`: an optional mocap clip the renderer may play
+        // (retargeted) instead of / blended with the procedural phases.
+        if (t[1]?.type === "str") doc.clip = t[1].value;
+        else errors.push({ line: ln.line, message: 'expected `clip "<name>"`' });
         break;
       }
       case "pose": {
