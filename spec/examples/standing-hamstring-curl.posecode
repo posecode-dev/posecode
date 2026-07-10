@@ -4,12 +4,12 @@ posecode exercise "Standing hamstring curl"
 
   step "Curl" 1.4s ease-out:
     knee_right: flex 95
-    ground-lock: feet
+    pin: foot_left floor
     cue "Bend the right knee, drawing the heel toward the glute"
 
   step "Lower" 1.6s ease-in:
     knee_right: flex 0
-    ground-lock: feet
+    pin: foot_left floor
     cue "Lower the foot back to the floor"
 
   repeat 10

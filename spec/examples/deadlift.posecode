@@ -17,7 +17,7 @@ posecode exercise "Deadlift"
     knees: flex 0
     ankles: plantarflex 0
     shoulders: flex 0
-    elbows: pronate 0
+    elbows: pronate 80
     neck: extend 0
     ground-lock: feet
     cue "Drive the hips forward to stand tall, bar close to the body"

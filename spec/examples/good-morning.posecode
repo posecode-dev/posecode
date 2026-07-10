@@ -5,6 +5,7 @@ posecode exercise "Good morning"
   step "Hinge" 2s ease-in-out:
     pelvis: hinge 80
     knees: flex 15
+    ankles: plantarflex 15
     shoulders: abduct 45
     elbows: flex 110
     neck: extend 10
@@ -14,8 +15,9 @@ posecode exercise "Good morning"
   step "Stand" 1.8s ease-out:
     pelvis: hinge 0
     knees: flex 0
-    shoulders: abduct 0
-    elbows: flex 0
+    ankles: plantarflex 0
+    shoulders: abduct 45
+    elbows: flex 110
     neck: extend 0
     ground-lock: feet
     cue "Squeeze the glutes to return to standing tall"

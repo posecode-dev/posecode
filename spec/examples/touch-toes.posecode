@@ -5,6 +5,7 @@ posecode stretch "Touch your toes"
   step "Fold" 2.5s ease-in-out:
     pelvis: hinge 95
     knees: flex 20
+    ankles: plantarflex 20
     neck: flex 15
     reach: hand_left ankle_left
     reach: hand_right ankle_right
@@ -14,6 +15,7 @@ posecode stretch "Touch your toes"
   step "Rise" 2s ease-out:
     pelvis: hinge 0
     knees: flex 0
+    ankles: plantarflex 0
     neck: flex 0
     ground-lock: feet
     cue "Stack the spine back up to standing tall"

@@ -5,8 +5,10 @@ posecode exercise "Bent-over row"
   step "Set the hinge" 1.6s ease-in-out:
     pelvis: hinge 70
     knees: flex 20
+    ankles: plantarflex 20
     shoulders: flex 65
     elbows: flex 10
+    elbows: pronate 80
     neck: extend 12
     ground-lock: feet
     cue "Hinge to a flat back, let the arms hang straight down"
@@ -14,20 +16,24 @@ posecode exercise "Bent-over row"
   step "Row" 0.9s ease-out:
     shoulders: extend 10
     elbows: flex 95
+    elbows: pronate 80
     ground-lock: feet
     cue "Drive the elbows up past the ribs, squeeze the shoulder blades"
 
   step "Lower" 1s ease-in:
     shoulders: flex 65
     elbows: flex 10
+    elbows: pronate 80
     ground-lock: feet
     cue "Lower the bar under control, keep the back flat"
 
   step "Stand" 1s ease-out:
     pelvis: hinge 0
     knees: flex 0
+    ankles: plantarflex 0
     shoulders: flex 0
     elbows: flex 0
+    elbows: pronate 0
     neck: extend 0
     ground-lock: feet
     cue "Stand up tall between sets"

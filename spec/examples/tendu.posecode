@@ -9,6 +9,7 @@ posecode exercise "Tendu"
     ankle_right: plantarflex 45
     shoulders: abduct 70
     elbows: flex 14
+    pin: foot_left floor
     cue "Brush the right foot forward to a fully pointed tendu, leg turned out"
 
   step "Close" 1.6s ease-in-out:
@@ -17,6 +18,7 @@ posecode exercise "Tendu"
     ankle_right: plantarflex 0
     shoulders: abduct 0
     elbows: flex 0
+    ground-lock: feet
     cue "Draw the foot back to first position, heel down"
 
   repeat 4

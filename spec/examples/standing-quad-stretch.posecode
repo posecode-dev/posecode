@@ -6,13 +6,13 @@ posecode stretch "Standing quad stretch"
     knee_right: flex 144
     hip_right: extend 20
     reach: hand_right ankle_right
-    ground-lock: feet
+    pin: foot_left floor
     cue "Bend the right knee back and reach the hand for the ankle"
 
   step "Release" 2s ease-out:
     knee_right: flex 0
     hip_right: extend 0
-    ground-lock: feet
+    pin: foot_left floor
     cue "Release the foot and return to standing"
 
   repeat 2

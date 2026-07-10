@@ -13,7 +13,7 @@ posecode exercise "Dance phrase (8-count)"
   step "3-4 - demi-plié" 2s ease-in-out:
     hips: flex 18
     knees: flex 50
-    ankles: dorsiflex 12
+    ankles: plantarflex 50
     shoulders: flex 28
     elbows: flex 30
     ground-lock: feet
