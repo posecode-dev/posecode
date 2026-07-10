@@ -7,7 +7,7 @@ posecode exercise "Crunch"
     knees: flex 90
     spine: flex 30
     chest: flex 20
-    neck: flex 20
+    neck: flex 8
     shoulders: flex 45
     ground-lock: feet
     cue "Curl the shoulders off the floor, ribs toward the hips"

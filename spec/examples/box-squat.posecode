@@ -7,7 +7,8 @@ posecode exercise "Box squat"
     hips: flex 85
     knees: flex 90
     ankles: dorsiflex 12
-    spine: flex 10
+    pelvis: hinge 20
+    spine: flex 0
     shoulders: flex 70
     ground-lock: feet
     cue "Push the hips back and sit lightly onto the box"
@@ -16,6 +17,7 @@ posecode exercise "Box squat"
     hips: flex 0
     knees: flex 0
     ankles: dorsiflex 0
+    pelvis: hinge 0
     spine: flex 0
     shoulders: flex 0
     ground-lock: feet

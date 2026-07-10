@@ -7,7 +7,8 @@ posecode posture "Chair pose"
     knees: flex 70
     ankles: dorsiflex 12
     shoulders: flex 170
-    spine: flex 10
+    pelvis: hinge 15
+    spine: extend 5
     ground-lock: feet
     cue "Sit the hips back and down, reach the arms overhead"
 
@@ -16,7 +17,8 @@ posecode posture "Chair pose"
     knees: flex 0
     ankles: dorsiflex 0
     shoulders: flex 0
-    spine: flex 0
+    pelvis: hinge 0
+    spine: extend 0
     ground-lock: feet
     cue "Press through the feet to stand, arms float down"
 

@@ -6,9 +6,10 @@ posecode exercise "Forward lunge"
     hip_right: flex 45
     knee_right: flex 95
     hip_left: extend 15
-    knee_left: flex 45
+    knee_left: flex 80
     ankle_right: dorsiflex 14
     spine: extend 4
+    travel: 0 0.3
     ground-lock: feet
     cue "Step forward and lower the back knee toward the floor"
 
@@ -19,6 +20,7 @@ posecode exercise "Forward lunge"
     knee_left: flex 0
     ankle_right: dorsiflex 0
     spine: flex 0
+    travel: 0 0
     ground-lock: feet
     cue "Push through the front heel to stand tall"
 
