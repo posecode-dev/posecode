@@ -9,6 +9,8 @@ posecode stretch "Cobra"
     shoulders: flex 110
     elbows: flex 40
     elbows: pronate 80
+    pin: pelvis floor
+    pin: feet floor
     reach: hands floor
     cue "Press the palms into the floor and lift the chest, shoulders rolling back"
 
@@ -19,6 +21,8 @@ posecode stretch "Cobra"
     shoulders: flex 0
     elbows: flex 0
     elbows: pronate 80
+    pin: pelvis floor
+    pin: feet floor
     reach: hands floor
     cue "Lower the chest back to the floor with control"
 

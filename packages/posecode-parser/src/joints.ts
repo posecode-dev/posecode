@@ -103,6 +103,9 @@ const EFFECTOR_SIDES = [
   "hand_right",
   "foot_left",
   "foot_right",
+  // Axial support point for floor-based poses such as cobra. Unlike a reach,
+  // pinning the pelvis moves the root while the spine and limbs articulate.
+  "pelvis",
 ] as const;
 
 /** Symmetric effector groups → the per-side effectors they expand to. */

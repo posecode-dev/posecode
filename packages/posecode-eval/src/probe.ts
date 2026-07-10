@@ -7,9 +7,10 @@
  * and returns world-space bone positions at the end of every phase. This is
  * the ground truth the invariant checks score against.
  *
- * Known gap vs the viewer: contact pins and reach-IK are scene-dependent
- * (their anchors can live on props), so the probe skips them; pinned/reaching
- * movements are covered by the parse/clamp invariants only.
+ * Prop-backed pins and reach-IK remain scene-dependent. Floor/body-landmark
+ * pins are deterministic, however, so the probe resolves those exactly like
+ * the viewer; this lets contact regressions in floor work (cobra, etc.) fail
+ * the scorecard instead of being hidden behind `usesSceneIk`.
  */
 
 import * as THREE from "three";
@@ -109,6 +110,40 @@ export function probeMovement(source: string): ProbeResult {
       anchors.set(id, v);
     }
     applyGroundLock(m, info.groundLock, anchors);
+    // Resolve scene-independent pins. Unknown names here are prop anchors and
+    // intentionally remain for browser-level coverage.
+    if (info.pins.length > 0) {
+      const delta = new THREE.Vector3();
+      let pinCount = 0;
+      for (const pin of info.pins) {
+        const effectorId = pin.effector === "hand_left"
+          ? "wrist_left"
+          : pin.effector === "hand_right"
+            ? "wrist_right"
+            : pin.effector === "foot_left"
+              ? "ankle_left"
+              : pin.effector === "foot_right"
+                ? "ankle_right"
+                : pin.effector;
+        const effector = m.bones.get(effectorId);
+        if (!effector) continue;
+        let target: THREE.Vector3 | null = null;
+        if (pin.anchor === "floor") {
+          target = effector.getWorldPosition(new THREE.Vector3());
+          target.y = 0;
+        } else {
+          const landmark = m.bones.get(pin.anchor);
+          if (landmark) target = landmark.getWorldPosition(new THREE.Vector3());
+        }
+        if (!target) continue;
+        delta.add(target.sub(effector.getWorldPosition(new THREE.Vector3())));
+        pinCount++;
+      }
+      if (pinCount > 0) {
+        m.root.position.add(delta.multiplyScalar(1 / pinCount));
+        m.root.updateMatrixWorld(true);
+      }
+    }
     // Viewer safety net: never leave the lowest mesh point below the floor.
     m.root.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(m.root);

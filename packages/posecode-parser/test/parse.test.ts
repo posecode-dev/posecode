@@ -168,6 +168,17 @@ describe("parse", () => {
 });
 
 describe("reach/pin effectors", () => {
+  it("accepts the pelvis as an axial contact pin", () => {
+    const src = `posecode stretch "Cobra"
+  rig humanoid
+  pose start = prone
+  step "Lift" 1s ease-in-out:
+    pin: pelvis floor`;
+    const result = parse(src);
+    expect(result.errors).toEqual([]);
+    expect(result.ir?.phases[0]?.pins).toEqual([{ effector: "pelvis", anchor: "floor" }]);
+  });
+
   it("expands `hands` / `feet` into per-side effectors", () => {
     const { ir, errors } = parse(
       [
