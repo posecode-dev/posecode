@@ -3,6 +3,7 @@ posecode exercise "Crunch"
   pose start = supine
 
   step "Curl up" 1s ease-out:
+    hips: flex 45
     knees: flex 90
     spine: flex 30
     chest: flex 20
@@ -12,7 +13,8 @@ posecode exercise "Crunch"
     cue "Curl the shoulders off the floor, ribs toward the hips"
 
   step "Lower" 1.2s ease-in:
-    knees: flex 0
+    hips: flex 45
+    knees: flex 90
     spine: flex 0
     chest: flex 0
     neck: flex 0

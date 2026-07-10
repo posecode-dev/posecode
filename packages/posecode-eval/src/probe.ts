@@ -18,6 +18,7 @@ import {
   applyGroundLock,
   buildMannequin,
   buildTimeline,
+  depenetrate,
   groundFigure,
 } from "posecode-render";
 
@@ -64,6 +65,7 @@ export function probeMovement(source: string): ProbeResult {
   m.root.rotation.set(rx * DEG, ry * DEG, rz * DEG);
   tl.sample(0, m.bones);
   m.root.updateMatrixWorld(true);
+  depenetrate(m);
   groundFigure(m);
   const baseRootPos = m.root.position.clone();
   const baseRootQuat = m.root.quaternion.clone();
@@ -92,6 +94,8 @@ export function probeMovement(source: string): ProbeResult {
     m.root.position.x += info.rootOffset.x;
     m.root.position.z += info.rootOffset.z;
     m.root.updateMatrixWorld(true);
+    // Self-collision resolution, then contact solving (same order as the viewer).
+    depenetrate(m);
     // Mirror the viewer's per-frame anchors: captured targets carried along
     // by this phase's yaw/travel so planting composes with choreography.
     const anchors = new Map<string, THREE.Vector3>();

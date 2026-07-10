@@ -16,10 +16,13 @@
     "dev": "npm run dev -w playground",
     "build": "npm run build -w playground",
     "eval": "tsx packages/posecode-eval/src/cli.ts",
-    "typecheck": "for p in packages/*/tsconfig.json playground/tsconfig.json editors/*/tsconfig.json; do tsc --noEmit -p \"$p\" || exit 1; done"
+    "typecheck": "for p in packages/*/tsconfig.json playground/tsconfig.json editors/*/tsconfig.json; do tsc --noEmit -p \"$p\" || exit 1; done",
+    "gifs": "node scripts/capture-gifs.mjs"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^2.1.8",
+    "gifenc": "^1.0.3",
+    "playwright-core": "^1.61.1",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"

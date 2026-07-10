@@ -124,6 +124,8 @@ Two safety layers ship with the language:
 The protocol and both libraries are **MIT-licensed**: the open core. See [`spec/SPEC.md`](spec/SPEC.md) for the full language and [`spec/llm-authoring.md`](spec/llm-authoring.md) for the authoring prompt.
 For where Posecode spreads fastest and the per-domain go-to-market plan, see [`docs/market-research.md`](docs/market-research.md); for the engine roadmap, [`ROADMAP.md`](ROADMAP.md).
 
+The 3D figure is the [Adobe Mixamo](https://www.mixamo.com) anatomical mannequin character, exported from Mixamo and used under the Mixamo license (royalty-free in projects). The renderer also ships a zero-asset procedural figure, used automatically wherever the character can't load — and it accepts any Mixamo-rigged GLB via `characterUrl`.
+
 ---
 
 ## Scope (v0.1)

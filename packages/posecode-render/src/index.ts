@@ -18,6 +18,8 @@ import { applyGroundLock as applyGroundLockTo, groundFigure as groundFigureOf } 
 import { buildTimeline, type BuiltTimeline, type PhaseSegment } from "./timeline.js";
 import { solveCCD, type JointLimits } from "./ik.js";
 import { buildProps, type PropScene } from "./props.js";
+import { loadCharacter, type Character } from "./character.js";
+import { depenetrate } from "./depenetrate.js";
 
 const DEG = Math.PI / 180;
 
@@ -43,6 +45,8 @@ export interface Viewer {
   get playing(): boolean;
   get duration(): number;
   get time(): number;
+  /** True once the skinned character (characterUrl) is loaded and visible. */
+  get characterActive(): boolean;
   getTimeline(): TimelineInfo | null;
   /**
    * Render the current time synchronously and return the frame as a PNG data
@@ -60,6 +64,14 @@ export interface Viewer {
 export interface ViewerOptions {
   /** Slowly orbit the camera when idle. Defaults to true. */
   autoRotate?: boolean;
+  /**
+   * URL of a rigged human character GLB (Mixamo bone naming) to render instead
+   * of the procedural figure. Loaded asynchronously; until it resolves — and if
+   * it fails — the viewer shows the procedural figure, so a missing or slow
+   * asset can never blank the scene. All solving still runs on the driver
+   * skeleton, rebuilt to the character's exact proportions (see character.ts).
+   */
+  characterUrl?: string;
 }
 
 export function createViewer(
@@ -144,6 +156,12 @@ export function createViewer(
   enableShadows(mannequin.root);
   scene.add(mannequin.root);
 
+  // Skinned character layer (optional). While loading (and on failure) the
+  // procedural figure stays; once ready, the driver skeleton is rebuilt with
+  // the character's proportions, its meshes are hidden (they keep feeding the
+  // bounding-box grounding), and the character mirrors it every frame.
+  let character: Character | null = null;
+
   // --- Life layer: breathing + blinking so the figure reads as alive even
   // when the movement is paused. Both are MESH-only effects. Breathing must
   // never rotate skeleton bones: an earlier version breathed via tiny
@@ -153,11 +171,11 @@ export function createViewer(
   // ribcage mesh cannot disturb any joint, so authored poses stay exact.
   const BREATH_PERIOD = 3.8; // seconds per breath cycle
   const BLINK_DURATION = 0.13;
-  const eyes = ["eye_left", "eye_right"]
+  let eyes = ["eye_left", "eye_right"]
     .map((n) => mannequin.root.getObjectByName(n))
     .filter((o): o is THREE.Object3D => Boolean(o));
-  const ribcage = mannequin.root.getObjectByName("ribcage");
-  const ribcageRestScale = ribcage ? ribcage.scale.clone() : null;
+  let ribcage = mannequin.root.getObjectByName("ribcage");
+  let ribcageRestScale = ribcage ? ribcage.scale.clone() : null;
   let nextBlink = performance.now() / 1000 + 2;
 
   function applyLife(nowSec: number): void {
@@ -178,6 +196,9 @@ export function createViewer(
   }
 
   let timeline: BuiltTimeline | null = null;
+  // The last loaded document, kept so the viewer can re-solve base pose and
+  // ground anchors when the character (with its own proportions) arrives.
+  let lastIR: PosecodeIR | null = null;
   let groundTargets = new Map<string, THREE.Vector3>();
   // World-space anchor points contributed by scene props (chair seat, bar grip,
   // wall surface). Populated when a doc declares props; empty otherwise.
@@ -432,6 +453,9 @@ export function createViewer(
       mannequin.root.position.x += info.rootOffset.x;
       mannequin.root.position.z += info.rootOffset.z;
       mannequin.root.updateMatrixWorld(true);
+      // Self-collision: nudge limbs out of the body BEFORE contact solving so
+      // ground-lock and pins see the corrected pose (same order as load()).
+      depenetrate(mannequin);
       applyGroundLockTo(mannequin, info.groundLock, frameAnchors(info.rootYaw, info.rootOffset));
       applyPins(info.pins);
       // Safety net: nothing above ever intentionally pushes part of the body
@@ -455,6 +479,8 @@ export function createViewer(
         phaseCb({ phaseName: info.phaseName, ...(info.cue ? { cue: info.cue } : {}) });
       }
     }
+    // Mirror the fully-solved driver pose onto the skinned character.
+    character?.sync(mannequin);
     if (easeCamera) {
       controls.target.lerp(desiredTarget, 0.07);
       camera.position.lerp(desiredPos, 0.07);
@@ -490,6 +516,7 @@ export function createViewer(
 
   const api: Viewer = {
     load(ir: PosecodeIR) {
+      lastIR = ir;
       timeline = buildTimeline(ir);
       time = 0;
       lastPhaseName = "";
@@ -512,6 +539,7 @@ export function createViewer(
       applyBaseRoot();
       timeline.sample(0, mannequin.bones);
       mannequin.root.updateMatrixWorld(true);
+      depenetrate(mannequin);
       groundFigureOf(mannequin);
       captureGroundTargets();
       baseRootPos.copy(mannequin.root.position);
@@ -549,6 +577,9 @@ export function createViewer(
     get time() {
       return time;
     },
+    get characterActive() {
+      return character !== null;
+    },
     getTimeline() {
       if (!timeline) return null;
       return {
@@ -573,9 +604,41 @@ export function createViewer(
     dispose() {
       cancelAnimationFrame(raf);
       controls.dispose();
+      character?.dispose();
       renderer.dispose();
     },
   };
+
+  // Kick off the character load (if requested). On success, swap the driver
+  // skeleton for one congruent with the character, hide the procedural meshes
+  // (still feeding the bounding-box grounding), and re-solve the current
+  // document against the new proportions. On failure, the procedural figure
+  // simply remains: the scene is never blank.
+  if (opts.characterUrl) {
+    void loadCharacter(opts.characterUrl)
+      .then((char) => {
+        scene.remove(mannequin.root);
+        disposeTree(mannequin.root);
+        mannequin = buildMannequin(undefined, char.proportions);
+        mannequin.root.traverse((obj) => {
+          if ((obj as THREE.Mesh).isMesh) obj.visible = false;
+        });
+        scene.add(mannequin.root);
+        scene.add(char.group);
+        character = char;
+        // The life layer's mesh handles died with the procedural figure.
+        eyes = [];
+        ribcage = undefined;
+        ribcageRestScale = null;
+        if (lastIR) api.load(lastIR);
+        else char.sync(mannequin);
+      })
+      .catch(() => {
+        // Keep the procedural figure. Deliberately silent: an offline embed
+        // or a blocked CDN should degrade, not error.
+      });
+  }
+
   return api;
 }
 
@@ -603,8 +666,10 @@ function disposeTree(root: THREE.Object3D): void {
 
 export { buildMannequin } from "./mannequin.js";
 export { applyGroundLock, groundFigure } from "./groundlock.js";
-export type { Mannequin } from "./mannequin.js";
+export type { Mannequin, Proportions, CollisionRadii } from "./mannequin.js";
 export { buildTimeline } from "./timeline.js";
 export { solveCCD, type IkChain, type JointLimits } from "./ik.js";
 export { buildProps, type PropScene } from "./props.js";
+export { loadCharacter, rigCharacter, type Character } from "./character.js";
+export { depenetrate } from "./depenetrate.js";
 export type { PhaseSegment } from "./timeline.js";
