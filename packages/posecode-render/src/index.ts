@@ -346,8 +346,12 @@ export function createViewer(
     effector: THREE.Object3D,
   ): THREE.Vector3 | null {
     if (target === "floor") {
+      // Rest the effector's MESH on the floor, not its bone origin: the hand
+      // mesh extends below the wrist bone, so a bone target of y=0 would sink
+      // the palm and force the floor safety clamp to lift the whole body.
       const p = effector.getWorldPosition(new THREE.Vector3());
-      p.y = 0;
+      const box = new THREE.Box3().setFromObject(effector);
+      p.y = Number.isFinite(box.min.y) ? Math.max(0, p.y - box.min.y) : 0;
       return p;
     }
     const anchor = propAnchors.get(target);
@@ -458,6 +462,14 @@ export function createViewer(
       depenetrate(mannequin);
       applyGroundLockTo(mannequin, info.groundLock, frameAnchors(info.rootYaw, info.rootOffset));
       applyPins(info.pins);
+      // Reach-IK BEFORE the floor safety clamp. When authored FK pushes a
+      // reaching limb through the floor (cobra: prone + shoulders flex 50),
+      // the limb must bend to meet the floor. Running reaches after the clamp
+      // let the clamp "solve" the penetration first by hoisting the whole
+      // rigid body into the air — legs floating, the classic levitating-cobra
+      // bug. Ground-lock and pins have already fixed the root placement that
+      // floor/landmark targets resolve against.
+      applyReaches(info.reaches);
       // Safety net: nothing above ever intentionally pushes part of the body
       // below the floor, so clamp the root up whenever the lowest point dips
       // below y=0, a no-op whenever the pose is legitimately grounded or
@@ -473,7 +485,6 @@ export function createViewer(
         mannequin.root.position.y -= box.min.y;
         mannequin.root.updateMatrixWorld(true);
       }
-      applyReaches(info.reaches);
       if (info.phaseName !== lastPhaseName) {
         lastPhaseName = info.phaseName;
         phaseCb({ phaseName: info.phaseName, ...(info.cue ? { cue: info.cue } : {}) });
