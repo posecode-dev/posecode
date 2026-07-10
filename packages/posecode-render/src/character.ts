@@ -79,9 +79,13 @@ const Y_UP = new THREE.Vector3(0, 1, 0);
 const Y_DOWN = new THREE.Vector3(0, -1, 0);
 const Z_FWD = new THREE.Vector3(0, 0, 1);
 
-/** Strip the mixamo namespace: "mixamorig:LeftArm"/"mixamorigLeftArm" → "LeftArm". */
+/**
+ * Strip the mixamo namespace: "mixamorig:LeftArm", "mixamorigLeftArm", and
+ * numbered re-exports like "mixamorig1:LeftArm" all → "LeftArm". (Colons are
+ * already removed by GLTFLoader's name sanitizer at runtime.)
+ */
 function plainName(name: string): string {
-  return name.replace(/^mixamorig:?/i, "");
+  return name.replace(/^mixamorig\d*:?/i, "");
 }
 
 interface MappedBone {
