@@ -10,8 +10,8 @@ posecode exercise "Dead bug"
 
   step "Extend right arm & left leg" 1.2s ease-in-out:
     shoulder_right: flex 150
-    hip_left: flex 25
-    knee_left: flex 30
+    hip_left: flex 20
+    knee_left: flex 5
     cue "Lower the right arm overhead and the left leg toward the floor"
 
   step "Switch" 1.2s ease-in-out:
@@ -19,8 +19,8 @@ posecode exercise "Dead bug"
     hip_left: flex 90
     knee_left: flex 90
     shoulder_left: flex 150
-    hip_right: flex 25
-    knee_right: flex 30
+    hip_right: flex 20
+    knee_right: flex 5
     cue "Return and switch: left arm and right leg reach out"
 
   step "Return" 1s ease-out:

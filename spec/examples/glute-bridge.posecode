@@ -4,7 +4,7 @@ posecode exercise "Glute bridge"
 
   step "Bridge up" 1.6s ease-out:
     knees: flex 90
-    hips: extend 15
+    hips: extend 20
     spine: extend 10
     ground-lock: feet
     cue "Press through the feet and lift the hips toward the ceiling"
