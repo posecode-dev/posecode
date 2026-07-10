@@ -4,10 +4,12 @@ posecode exercise "Standing hip abduction"
 
   step "Lift" 1.6s ease-in-out:
     hip_right: abduct 40
+    pin: foot_left floor
     cue "Lift the right leg out to the side, keep the torso tall"
 
   step "Lower" 1.6s ease-in-out:
     hip_right: abduct 0
+    ground-lock: feet
     cue "Lower the leg back to the midline"
 
   repeat 10

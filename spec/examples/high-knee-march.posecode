@@ -6,6 +6,7 @@ posecode exercise "High-knee march"
     hip_right: flex 90
     knee_right: flex 90
     shoulder_left: flex 40
+    pin: foot_left floor
     cue "Drive the right knee up to hip height, opposite arm swings"
 
   step "Switch" 0.7s ease-in-out:
@@ -15,12 +16,14 @@ posecode exercise "High-knee march"
     hip_left: flex 90
     knee_left: flex 90
     shoulder_right: flex 40
+    pin: foot_right floor
     cue "Plant and drive the left knee up"
 
   step "Down" 0.6s ease-out:
     hip_left: flex 0
     knee_left: flex 0
     shoulder_right: flex 0
+    ground-lock: feet
     cue "Return to a tall, ready stance"
 
   repeat 6

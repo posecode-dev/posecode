@@ -6,21 +6,29 @@ posecode exercise "Box step taps"
   step "Right tap" 0.6s ease-out:
     hip_right: flex 70
     knee_right: flex 90
+    ankle_right: plantarflex 50
+    pin: foot_left floor
     cue "Tap the right foot lightly on top of the box"
 
   step "Right down" 0.5s ease-in:
     hip_right: flex 0
     knee_right: flex 0
+    ankle_right: plantarflex 0
+    ground-lock: feet
     cue "Return the right foot to the floor"
 
   step "Left tap" 0.6s ease-out:
     hip_left: flex 70
     knee_left: flex 90
+    ankle_left: plantarflex 50
+    pin: foot_right floor
     cue "Tap the left foot on the box"
 
   step "Left down" 0.5s ease-in:
     hip_left: flex 0
     knee_left: flex 0
+    ankle_left: plantarflex 0
+    ground-lock: feet
     cue "Back to the floor: keep a light, quick rhythm"
 
   repeat 6

@@ -3,11 +3,12 @@ posecode stretch "Cobra"
   pose start = prone
 
   step "Lift" 2.5s ease-in-out:
-    spine: extend 30
+    spine: extend 25
     chest: extend 15
-    neck: extend 25
-    shoulders: flex 50
-    elbows: flex 25
+    neck: extend 20
+    shoulders: flex 110
+    elbows: flex 40
+    elbows: pronate 80
     reach: hands floor
     cue "Press the palms into the floor and lift the chest, shoulders rolling back"
 
@@ -17,6 +18,7 @@ posecode stretch "Cobra"
     neck: extend 0
     shoulders: flex 0
     elbows: flex 0
+    elbows: pronate 80
     reach: hands floor
     cue "Lower the chest back to the floor with control"
 

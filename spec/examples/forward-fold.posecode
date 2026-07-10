@@ -8,6 +8,7 @@ posecode stretch "Standing roll-down"
     neck: flex 20
     shoulders: flex 95
     knees: flex 10
+    ankles: plantarflex 10
     ground-lock: feet
     cue "Drop the chin and round down one vertebra at a time"
 
@@ -17,6 +18,7 @@ posecode stretch "Standing roll-down"
     neck: flex 0
     shoulders: flex 0
     knees: flex 0
+    ankles: plantarflex 0
     ground-lock: feet
     cue "Stack the spine back up to standing"
 

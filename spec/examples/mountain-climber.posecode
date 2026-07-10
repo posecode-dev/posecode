@@ -5,7 +5,9 @@ posecode exercise "Mountain climber"
   step "Right knee in" 0.5s ease-out:
     hip_right: flex 60
     knee_right: flex 75
-    ground-lock: hands, feet
+    elbows: pronate 80
+    pin: foot_left floor
+    pin: hands floor
     cue "Drive the right knee toward the chest"
 
   step "Switch" 0.5s ease-in-out:
@@ -13,12 +15,15 @@ posecode exercise "Mountain climber"
     knee_right: flex 0
     hip_left: flex 60
     knee_left: flex 75
-    ground-lock: hands, feet
+    elbows: pronate 80
+    pin: foot_right floor
+    pin: hands floor
     cue "Switch fast: left knee drives in"
 
   step "Out" 0.5s ease-in:
     hip_left: flex 0
     knee_left: flex 0
+    elbows: pronate 80
     ground-lock: hands, feet
     cue "Return to a strong plank"
 

@@ -13,6 +13,8 @@ posecode stretch "Standing spinal twist"
   step "Twist left" 3s ease-in-out:
     spine: rotate-in 40
     chest: rotate-in 30
+    shoulders: abduct 80
+    elbows: flex 90
     ground-lock: feet
     cue "Pass through center and rotate to the other side"
 
