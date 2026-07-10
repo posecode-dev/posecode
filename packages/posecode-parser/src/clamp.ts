@@ -52,6 +52,7 @@ export function resolve(ast: AstDoc): ResolveResult {
     rig: ast.rig,
     ...(ast.startPose ? { startPose: ast.startPose } : {}),
     props: ast.props,
+    ...(ast.clip ? { clip: ast.clip } : {}),
     repeat: ast.repeat,
     phases,
   };

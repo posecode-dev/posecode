@@ -209,3 +209,36 @@ describe("reach/pin effectors", () => {
     expect(errors[0]!.message).toContain("tentacle");
   });
 });
+
+describe("clip directive", () => {
+  const doc = (clipLine: string): string =>
+    [
+      'posecode exercise "Walk"',
+      "  rig humanoid",
+      "  pose start = standing",
+      clipLine,
+      '  step "Step" 1s linear:',
+      "    hips: flex 20",
+      "  repeat 1",
+    ].join("\n");
+
+  it("parses a document-level clip name into the IR", () => {
+    const { ir, errors } = parse(doc('  clip "walk"'));
+    expect(errors).toEqual([]);
+    expect(ir!.clip).toBe("walk");
+  });
+
+  it("omits clip from the IR when the directive is absent", () => {
+    const { ir, errors } = parse(doc(""));
+    expect(errors).toEqual([]);
+    expect(ir!.clip).toBeUndefined();
+  });
+
+  it("rejects a clip directive without a quoted name", () => {
+    const { ir, errors } = parse(doc("  clip walk"));
+    expect(ir).toBeNull();
+    expect(errors).toHaveLength(1);
+    expect(errors[0]!.line).toBe(4);
+    expect(errors[0]!.message).toContain("clip");
+  });
+});

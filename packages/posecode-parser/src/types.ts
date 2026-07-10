@@ -82,6 +82,14 @@ export interface PosecodeIR {
   startPose?: string;
   /** Scene props declared with `prop <type>`, e.g. ["chair", "bar"]. */
   props: string[];
+  /**
+   * Optional mocap clip name declared with `clip "<name>"`. A renderer MAY
+   * play a retargeted animation clip of this name (resolved by the host to an
+   * asset URL) instead of, or blended with, the procedural phase keyframes.
+   * Renderers without a matching clip ignore it: phases always fully describe
+   * the movement, so the procedural path remains the source of truth.
+   */
+  clip?: string;
   repeat: number;
   phases: Phase[];
 }

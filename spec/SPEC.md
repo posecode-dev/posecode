@@ -23,10 +23,11 @@ Posecode is line- and indentation-oriented. Comments start with `#` or `//`.
 document   = header { directive } ;
 header     = "posecode" kind STRING ;
 kind       = "exercise" | "stretch" | "posture" ;       (* free-form word *)
-directive  = rig | prop | pose | step | repeat ;
+directive  = rig | prop | pose | clip | step | repeat ;
 rig        = "rig" WORD ;
 prop       = "prop" WORD ;                              (* chair|wall|bar|box|dip-bars, repeatable *)
 pose       = "pose" "start" "=" WORD ;                  (* neutral|standing|plank|supine|prone|seated *)
+clip       = "clip" STRING ;                            (* optional mocap clip; renderer may retarget & blend *)
 repeat     = "repeat" NUMBER ;
 step       = "step" STRING DURATION easing ":" { child } ;
 easing     = "linear" | "ease-in" | "ease-out" | "ease-in-out" ;

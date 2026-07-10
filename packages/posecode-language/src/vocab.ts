@@ -22,7 +22,7 @@ export const REACH_EFFECTORS = EFFECTOR_NAMES;
 export const PROPS = ["chair", "wall", "bar", "box", "dip-bars"];
 
 /** Top-level directives (excluding the `posecode` header keyword). */
-export const TOP_KEYWORDS = ["rig", "prop", "pose", "step", "repeat"];
+export const TOP_KEYWORDS = ["rig", "prop", "pose", "clip", "step", "repeat"];
 
 /** Keywords valid as step children. */
 export const CHILD_KEYWORDS = ["ground-lock", "reach", "pin", "turn", "travel", "cue"];
@@ -34,6 +34,7 @@ export const KEYWORD_DOCS: Record<string, string> = {
   prop: "Adds a scene object: `prop chair | wall | bar | box | dip-bars`. Supplies reach/pin anchors.",
   pose: "Sets the starting pose: `pose start = standing | neutral | plank | supine | prone | seated`.",
   start: "Used in `pose start = <pose>`.",
+  clip: 'Optional mocap clip: `clip "walk"`. A renderer with a matching retargeted animation plays it crossfaded over the procedural pose; others ignore it.',
   step: 'A movement phase: `step "<name>" <Ns> <easing>:`.',
   repeat: "How many times the movement loops.",
   "ground-lock": "Pins effectors (hands / feet) to the floor for this phase.",
