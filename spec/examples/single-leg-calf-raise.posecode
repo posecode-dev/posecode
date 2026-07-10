@@ -5,14 +5,12 @@ posecode exercise "Single-leg calf raise"
   step "Rise" 1.1s ease-out:
     ankle_right: plantarflex 40
     knee_left: flex 60
-    hip_left: flex 30
     pin: foot_right floor
     cue "Balance on the right foot and rise onto the ball of the foot"
 
   step "Lower" 1.3s ease-in:
     ankle_right: plantarflex 0
     knee_left: flex 60
-    hip_left: flex 30
     pin: foot_right floor
     cue "Lower the right heel slowly under control"
 

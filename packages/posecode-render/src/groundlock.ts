@@ -95,16 +95,20 @@ export function applyGroundLock(
   if (active.length === 0) return;
   const ids = activeEffectorIds(m, active);
   const hands = ids.filter((id) => id.startsWith("wrist"));
+  const forearms = ids.filter((id) => id.startsWith("elbow"));
   const feet = ids.filter((id) => id.startsWith("ankle"));
+  const upperSupports = forearms.length > 0 ? forearms : hands;
 
-  if (hands.length > 0 && feet.length > 0) {
+  if (upperSupports.length > 0 && feet.length > 0) {
     const pivot = avgWorld(m, feet);
-    // Newton iterations: rotate about the toes until avg hand height = 0.
+    // Newton iterations: rotate about the toes until the authored upper-body
+    // support reaches the floor (palms for high plank, elbows for forearm
+    // plank). The final bbox correction accounts for the support mesh radius.
     for (let i = 0; i < 8; i++) {
-      const y0 = avgWorld(m, hands).y;
+      const y0 = avgWorld(m, upperSupports).y;
       if (Math.abs(y0) < 0.004) break;
       rotateRootAboutPivot(m, pivot, 0.01);
-      const y1 = avgWorld(m, hands).y;
+      const y1 = avgWorld(m, upperSupports).y;
       rotateRootAboutPivot(m, pivot, -0.01);
       const deriv = (y1 - y0) / 0.01;
       if (Math.abs(deriv) < 1e-4) break;

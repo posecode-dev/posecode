@@ -3,7 +3,7 @@
  * invariant checks are written in. All angles in degrees, distances in metres.
  */
 
-import type { PhasePose, Vec3 } from "./probe.js";
+import type { PhasePose, ProbeResult, Quat, Vec3 } from "./probe.js";
 
 const RAD2DEG = 180 / Math.PI;
 
@@ -65,6 +65,157 @@ export function spineCurlDeg(pose: PhasePose): number {
 /** Height of a bone above the floor. */
 export function heightOf(pose: PhasePose, id: string): number {
   return bone(pose, id)[1];
+}
+
+/** World-space distance between two body landmarks. */
+export function distanceBetween(pose: PhasePose, a: string, b: string): number {
+  return norm(sub(bone(pose, a), bone(pose, b)));
+}
+
+function rotateByQuat(v: Vec3, q: Quat): Vec3 {
+  const [x, y, z, w] = q;
+  const tx = 2 * (y * v[2] - z * v[1]);
+  const ty = 2 * (z * v[0] - x * v[2]);
+  const tz = 2 * (x * v[1] - y * v[0]);
+  return [
+    v[0] + w * tx + (y * tz - z * ty),
+    v[1] + w * ty + (z * tx - x * tz),
+    v[2] + w * tz + (x * ty - y * tx),
+  ];
+}
+
+/** Angle between the palm face normal and the downward floor normal. */
+export function palmFloorAngleDeg(pose: PhasePose, side: "left" | "right"): number {
+  const q = pose.boneQuaternions.get(`wrist_${side}`);
+  if (!q) return 180;
+  // The flattened palm's face normal is mirrored local X on the two wrists.
+  return angleBetweenDeg(rotateByQuat(side === "left" ? [1, 0, 0] : [-1, 0, 0], q), [0, -1, 0]);
+}
+
+const MASS_WEIGHTS: ReadonlyArray<readonly [string, number]> = [
+  ["pelvis", 0.22], ["spine", 0.13], ["chest", 0.2], ["head", 0.08],
+  ["hip_left", 0.07], ["hip_right", 0.07], ["knee_left", 0.05], ["knee_right", 0.05],
+  ["shoulder_left", 0.025], ["shoulder_right", 0.025],
+  ["elbow_left", 0.025], ["elbow_right", 0.025],
+  ["ankle_left", 0.015], ["ankle_right", 0.015],
+];
+
+/** Approximate whole-body COM from anthropometrically weighted landmarks. */
+export function centerOfMass(pose: PhasePose): Vec3 {
+  let x = 0, y = 0, z = 0, total = 0;
+  for (const [id, weight] of MASS_WEIGHTS) {
+    const p = pose.bones.get(id);
+    if (!p) continue;
+    x += p[0] * weight; y += p[1] * weight; z += p[2] * weight; total += weight;
+  }
+  return total > 0 ? [x / total, y / total, z / total] : [0, 0, 0];
+}
+
+function supportBoneIds(pose: PhasePose): string[] {
+  const ids = new Set<string>();
+  const addGroup = (name: string) => {
+    if (name === "feet") { ids.add("ankle_left"); ids.add("ankle_right"); }
+    if (name === "hands") { ids.add("wrist_left"); ids.add("wrist_right"); }
+    if (name === "forearms") { ids.add("elbow_left"); ids.add("elbow_right"); }
+  };
+  pose.groundLock.forEach(addGroup);
+  for (const reach of pose.reaches) {
+    if (reach.target !== "floor") continue;
+    addGroup(reach.effector);
+    const mapped = reach.effector.replace("hand_", "wrist_").replace("foot_", "ankle_");
+    if (pose.bones.has(mapped)) ids.add(mapped);
+  }
+  for (const pin of pose.pins) {
+    addGroup(pin.effector);
+    const mapped = pin.effector.replace("hand_", "wrist_").replace("foot_", "ankle_");
+    if (pose.bones.has(mapped)) ids.add(mapped);
+  }
+  // Floor poses also distribute load through the torso/pelvis even when the
+  // authored contact declaration only mentions hands or feet.
+  for (const id of ["pelvis", "chest", "head"]) {
+    const p = pose.bones.get(id);
+    if (p && p[1] < 0.5) ids.add(id);
+  }
+  return [...ids];
+}
+
+/** Horizontal COM distance outside the active support bounding box (0 = inside). */
+export function balanceOverflow(pose: PhasePose): number {
+  const supports = supportBoneIds(pose).map((id) => bone(pose, id));
+  if (supports.length < 2) return 0;
+  const com = centerOfMass(pose);
+  const margin = 0.14;
+  const minX = Math.min(...supports.map((p) => p[0])) - margin;
+  const maxX = Math.max(...supports.map((p) => p[0])) + margin;
+  const minZ = Math.min(...supports.map((p) => p[2])) - margin;
+  const maxZ = Math.max(...supports.map((p) => p[2])) + margin;
+  const dx = Math.max(minX - com[0], 0, com[0] - maxX);
+  const dz = Math.max(minZ - com[2], 0, com[2] - maxZ);
+  return Math.hypot(dx, dz);
+}
+
+/** Clearance between the head sphere and known prop geometry; Infinity if none. */
+export function headPropClearance(result: ProbeResult, pose: PhasePose): number {
+  const h = bone(pose, "head");
+  let clearance = Infinity;
+  if (result.propTypes.includes("bar")) {
+    const closestX = Math.max(-0.6, Math.min(0.6, h[0]));
+    clearance = Math.min(clearance, Math.hypot(h[0] - closestX, h[1] - 2.3, h[2]) - 0.13);
+  }
+  if (result.propTypes.includes("wall")) {
+    clearance = Math.min(clearance, Math.abs(h[2] - (-0.29)) - 0.105);
+  }
+  if (result.propTypes.includes("chair")) {
+    const dx = Math.max(Math.abs(h[0]) - 0.21, 0);
+    const dy = Math.max(Math.abs(h[1] - 0.78) - 0.25, 0);
+    const dz = Math.max(Math.abs(h[2] - (-0.34)) - 0.03, 0);
+    clearance = Math.min(clearance, Math.hypot(dx, dy, dz) - 0.105);
+  }
+  return clearance;
+}
+
+/** Fastest landmark's average speed from the previous endpoint into this phase. */
+export function phaseMaxLandmarkSpeed(previous: PhasePose | null, pose: PhasePose): number {
+  if (!previous || pose.durationSec <= 0) return 0;
+  let max = 0;
+  for (const [id, p] of pose.bones) {
+    const before = previous.bones.get(id);
+    if (before) max = Math.max(max, norm(sub(p, before)) / pose.durationSec);
+  }
+  return max;
+}
+
+export function footSkateDistance(previous: PhasePose, pose: PhasePose, side: "left" | "right"): number {
+  const id = `ankle_${side}`;
+  const local = (p: Vec3, phase: PhasePose): readonly [number, number] => {
+    const x = p[0] - phase.rootOffset[0], z = p[2] - phase.rootOffset[2];
+    const c = Math.cos(-phase.rootYaw), s = Math.sin(-phase.rootYaw);
+    return [x * c - z * s, x * s + z * c];
+  };
+  const a = local(bone(previous, id), previous), b = local(bone(pose, id), pose);
+  return Math.hypot(b[0] - a[0], b[1] - a[1]);
+}
+
+/** Drift of the planted foot-pair center, ignoring intentional stance-width changes. */
+export function feetCenterSkateDistance(previous: PhasePose, pose: PhasePose): number {
+  const delta = (side: "left" | "right") => {
+    const id = `ankle_${side}`;
+    const a = bone(previous, id), b = bone(pose, id);
+    const unyaw = (p: Vec3, phase: PhasePose) => {
+      const x = p[0] - phase.rootOffset[0], z = p[2] - phase.rootOffset[2];
+      const c = Math.cos(-phase.rootYaw), s = Math.sin(-phase.rootYaw);
+      return [x * c - z * s, x * s + z * c] as const;
+    };
+    const aa = unyaw(a, previous), bb = unyaw(b, pose);
+    return [bb[0] - aa[0], bb[1] - aa[1]] as const;
+  };
+  const l = delta("left"), r = delta("right");
+  return Math.hypot((l[0] + r[0]) / 2, (l[1] + r[1]) / 2);
+}
+
+export function footIsSupported(pose: PhasePose, side: "left" | "right"): boolean {
+  return pose.groundLock.includes("feet") || pose.pins.some((p) =>
+    (p.effector === "feet" || p.effector === `foot_${side}`) && p.anchor === "floor");
 }
 
 /** Lowest bone height in the pose (should never be much below 0). */

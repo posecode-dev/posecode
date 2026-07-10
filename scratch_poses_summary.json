@@ -1,0 +1,2341 @@
+[
+  {
+    "file": "arm-circles.posecode",
+    "header": "posecode exercise \"Arm circles\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Up & forward",
+        "actions": [
+          "shoulders: flex 120"
+        ]
+      },
+      {
+        "name": "Out to sides",
+        "actions": [
+          "shoulders: flex 0",
+          "shoulders: abduct 120"
+        ]
+      },
+      {
+        "name": "Down & round",
+        "actions": [
+          "shoulders: abduct 0"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "bent-over-row.posecode",
+    "header": "posecode exercise \"Bent-over row\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Set the hinge",
+        "actions": [
+          "pelvis: hinge 70",
+          "knees: flex 20",
+          "shoulders: extend 55",
+          "elbows: flex 10",
+          "neck: extend 12",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Row",
+        "actions": [
+          "shoulders: extend 15",
+          "elbows: flex 95",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Lower",
+        "actions": [
+          "shoulders: extend 55",
+          "elbows: flex 10",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Stand",
+        "actions": [
+          "pelvis: hinge 0",
+          "knees: flex 0",
+          "shoulders: extend 0",
+          "elbows: flex 0",
+          "neck: extend 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "biceps-curl.posecode",
+    "header": "posecode exercise \"Biceps curl\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Curl",
+        "actions": [
+          "elbows: flex 135"
+        ]
+      },
+      {
+        "name": "Lower",
+        "actions": [
+          "elbows: flex 15",
+          "cue \"Lower under control: don't swing\""
+        ]
+      }
+    ]
+  },
+  {
+    "file": "bicycle-crunch.posecode",
+    "header": "posecode exercise \"Bicycle crunch\"",
+    "start_pose": "supine",
+    "steps": [
+      {
+        "name": "Set",
+        "actions": [
+          "hips: flex 90",
+          "knees: flex 90",
+          "shoulders: flex 100",
+          "elbows: flex 90",
+          "spine: flex 12",
+          "neck: flex 20"
+        ]
+      },
+      {
+        "name": "Right to left",
+        "actions": [
+          "spine: rotate-out 20",
+          "hip_left: flex 110",
+          "knee_left: flex 90",
+          "hip_right: flex 25",
+          "knee_right: flex 20"
+        ]
+      },
+      {
+        "name": "Left to right",
+        "actions": [
+          "spine: rotate-in 20",
+          "hip_right: flex 110",
+          "knee_right: flex 90",
+          "hip_left: flex 25",
+          "knee_left: flex 20",
+          "cue \"Switch: left elbow toward the right knee\""
+        ]
+      },
+      {
+        "name": "Center",
+        "actions": [
+          "spine: rotate-in 0",
+          "hip_right: flex 90",
+          "knee_right: flex 90",
+          "hip_left: flex 90",
+          "knee_left: flex 90"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "bow.posecode",
+    "header": "posecode posture \"Standing bow\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Bow",
+        "actions": [
+          "pelvis: hinge 35",
+          "neck: flex 15",
+          "shoulders: extend 5",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Rise",
+        "actions": [
+          "pelvis: hinge 0",
+          "neck: flex 0",
+          "shoulders: extend 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "box-squat.posecode",
+    "header": "posecode exercise \"Box squat\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Sit back",
+        "actions": [
+          "hips: flex 85",
+          "knees: flex 90",
+          "ankles: dorsiflex 12",
+          "spine: flex 10",
+          "shoulders: flex 70",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Stand",
+        "actions": [
+          "hips: flex 0",
+          "knees: flex 0",
+          "ankles: dorsiflex 0",
+          "spine: flex 0",
+          "shoulders: flex 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "box-step-taps.posecode",
+    "header": "posecode exercise \"Box step taps\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Right tap",
+        "actions": [
+          "hip_right: flex 70",
+          "knee_right: flex 90"
+        ]
+      },
+      {
+        "name": "Right down",
+        "actions": [
+          "hip_right: flex 0",
+          "knee_right: flex 0"
+        ]
+      },
+      {
+        "name": "Left tap",
+        "actions": [
+          "hip_left: flex 70",
+          "knee_left: flex 90"
+        ]
+      },
+      {
+        "name": "Left down",
+        "actions": [
+          "hip_left: flex 0",
+          "knee_left: flex 0",
+          "cue \"Back to the floor: keep a light, quick rhythm\""
+        ]
+      }
+    ]
+  },
+  {
+    "file": "box-step.posecode",
+    "header": "posecode exercise \"Box step\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Step forward-right",
+        "actions": [
+          "hip_right: flex 35",
+          "knee_right: flex 40",
+          "shoulder_left: flex 25",
+          "shoulder_right: extend 15",
+          "travel: -0.35 0.35",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Close the feet",
+        "actions": [
+          "hip_right: flex 0",
+          "knee_right: flex 0",
+          "shoulders: flex 0",
+          "travel: -0.35 0.35",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Step back-left",
+        "actions": [
+          "hip_left: flex 35",
+          "knee_left: flex 40",
+          "shoulder_right: flex 25",
+          "shoulder_left: extend 15",
+          "travel: 0 0",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Close home",
+        "actions": [
+          "hip_left: flex 0",
+          "knee_left: flex 0",
+          "shoulders: flex 0",
+          "travel: 0 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "chair-pose.posecode",
+    "header": "posecode posture \"Chair pose\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Sink",
+        "actions": [
+          "hips: flex 55",
+          "knees: flex 70",
+          "ankles: dorsiflex 12",
+          "shoulders: flex 170",
+          "spine: flex 10",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Rise",
+        "actions": [
+          "hips: flex 0",
+          "knees: flex 0",
+          "ankles: dorsiflex 0",
+          "shoulders: flex 0",
+          "spine: flex 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "chair-sit-to-stand.posecode",
+    "header": "posecode exercise \"Sit to stand\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Sit",
+        "actions": [
+          "hips: flex 90",
+          "knees: flex 95",
+          "ankles: dorsiflex 14",
+          "spine: flex 12",
+          "shoulders: flex 60",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Stand",
+        "actions": [
+          "hips: flex 0",
+          "knees: flex 0",
+          "ankles: dorsiflex 0",
+          "spine: flex 0",
+          "shoulders: flex 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "chasse.posecode",
+    "header": "posecode exercise \"Chass\u00e9\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Reach & push",
+        "actions": [
+          "hip_right: flex 30",
+          "knee_right: flex 25",
+          "ankle_left: plantarflex 20",
+          "shoulders: abduct 60",
+          "elbows: flex 18",
+          "travel: 0.5 0",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Gallop close",
+        "actions": [
+          "hip_right: flex 0",
+          "knee_right: flex 0",
+          "ankle_left: plantarflex 0",
+          "travel: 0.9 0",
+          "ground-lock: feet",
+          "cue \"Chase the trailing foot to the lead: feet meet in the air\""
+        ]
+      },
+      {
+        "name": "Reach & push back",
+        "actions": [
+          "hip_left: flex 30",
+          "knee_left: flex 25",
+          "ankle_right: plantarflex 20",
+          "travel: 0.4 0",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Gallop home",
+        "actions": [
+          "hip_left: flex 0",
+          "knee_left: flex 0",
+          "ankle_right: plantarflex 0",
+          "shoulders: abduct 0",
+          "elbows: flex 0",
+          "travel: 0 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "chest-opener.posecode",
+    "header": "posecode stretch \"Chest opener\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Open",
+        "actions": [
+          "shoulders: extend 40",
+          "chest: extend 18",
+          "spine: extend 12",
+          "ground-lock: feet",
+          "cue \"Reach the arms back and lift the chest: open the front line\""
+        ]
+      },
+      {
+        "name": "Release",
+        "actions": [
+          "shoulders: extend 0",
+          "chest: flex 0",
+          "spine: flex 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "cobra.posecode",
+    "header": "posecode stretch \"Cobra\"",
+    "start_pose": "prone",
+    "steps": [
+      {
+        "name": "Lift",
+        "actions": [
+          "spine: extend 30",
+          "chest: extend 15",
+          "neck: extend 25",
+          "shoulders: flex 50",
+          "elbows: flex 25",
+          "reach: hands floor"
+        ]
+      },
+      {
+        "name": "Lower",
+        "actions": [
+          "spine: extend 0",
+          "chest: extend 0",
+          "neck: extend 0",
+          "shoulders: flex 0",
+          "elbows: flex 0",
+          "reach: hands floor"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "cross-body-reach.posecode",
+    "header": "posecode stretch \"Cross-body reach\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Reach across right",
+        "actions": [
+          "shoulder_right: flex 80",
+          "reach: hand_right shoulder_left",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Return",
+        "actions": [
+          "shoulder_right: flex 0",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Reach across left",
+        "actions": [
+          "shoulder_left: flex 80",
+          "reach: hand_left shoulder_right",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Center",
+        "actions": [
+          "shoulder_left: flex 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "crunch.posecode",
+    "header": "posecode exercise \"Crunch\"",
+    "start_pose": "supine",
+    "steps": [
+      {
+        "name": "Curl up",
+        "actions": [
+          "hips: flex 45",
+          "knees: flex 90",
+          "spine: flex 30",
+          "chest: flex 20",
+          "neck: flex 20",
+          "shoulders: flex 45",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Lower",
+        "actions": [
+          "hips: flex 45",
+          "knees: flex 90",
+          "spine: flex 0",
+          "chest: flex 0",
+          "neck: flex 0",
+          "shoulders: flex 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "dance-phrase.posecode",
+    "header": "posecode exercise \"Dance phrase (8-count)\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "1-2 - breath, arms to second",
+        "actions": [
+          "hips: rotate-out 25",
+          "shoulders: abduct 80",
+          "elbows: flex 16",
+          "spine: extend 4",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "3-4 - demi-pli\u00e9",
+        "actions": [
+          "hips: flex 18",
+          "knees: flex 50",
+          "ankles: dorsiflex 12",
+          "shoulders: flex 28",
+          "elbows: flex 30",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "5-6 - relev\u00e9, arms en haut",
+        "actions": [
+          "hips: flex 0",
+          "knees: flex 0",
+          "ankles: plantarflex 28",
+          "shoulders: flex 155",
+          "elbows: flex 20",
+          "spine: extend 5",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "7-8 - close",
+        "actions": [
+          "ankles: plantarflex 0",
+          "hips: rotate-out 0",
+          "shoulders: flex 0",
+          "elbows: flex 0",
+          "spine: flex 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "dead-bug.posecode",
+    "header": "posecode exercise \"Dead bug\"",
+    "start_pose": "supine",
+    "steps": [
+      {
+        "name": "Set",
+        "actions": [
+          "shoulders: flex 90",
+          "hips: flex 90",
+          "knees: flex 90"
+        ]
+      },
+      {
+        "name": "Extend right arm & left leg",
+        "actions": [
+          "shoulder_right: flex 150",
+          "hip_left: flex 25",
+          "knee_left: flex 30"
+        ]
+      },
+      {
+        "name": "Switch",
+        "actions": [
+          "shoulder_right: flex 90",
+          "hip_left: flex 90",
+          "knee_left: flex 90",
+          "shoulder_left: flex 150",
+          "hip_right: flex 25",
+          "knee_right: flex 30",
+          "cue \"Return and switch: left arm and right leg reach out\""
+        ]
+      },
+      {
+        "name": "Return",
+        "actions": [
+          "shoulder_left: flex 90",
+          "hip_right: flex 90",
+          "knee_right: flex 90"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "dead-hang.posecode",
+    "header": "posecode exercise \"Dead hang\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Reach",
+        "actions": [
+          "shoulders: flex 175",
+          "elbows: flex 5",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Hang",
+        "actions": [
+          "shoulders: flex 175",
+          "elbows: flex 5",
+          "pin: hands bar"
+        ]
+      },
+      {
+        "name": "Down",
+        "actions": [
+          "shoulders: flex 0",
+          "elbows: flex 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "deadlift.posecode",
+    "header": "posecode exercise \"Deadlift\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Lower",
+        "actions": [
+          "pelvis: hinge 75",
+          "knees: flex 25",
+          "shoulders: flex 70",
+          "neck: extend 12",
+          "ground-lock: feet",
+          "cue \"Push the hips back and hinge with a flat back: let the arms hang to the bar\""
+        ]
+      },
+      {
+        "name": "Lift",
+        "actions": [
+          "pelvis: hinge 0",
+          "knees: flex 0",
+          "shoulders: flex 0",
+          "neck: extend 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "demi-plie.posecode",
+    "header": "posecode exercise \"Demi-pli\u00e9\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Pli\u00e9",
+        "actions": [
+          "hips: flex 20",
+          "hips: rotate-out 30",
+          "knees: flex 55",
+          "ankles: dorsiflex 12",
+          "shoulders: abduct 70",
+          "elbows: flex 15",
+          "spine: extend 4",
+          "ground-lock: feet",
+          "cue \"Turn out from the hips and bend the knees over the toes: heels down\""
+        ]
+      },
+      {
+        "name": "Straighten",
+        "actions": [
+          "hips: flex 0",
+          "hips: rotate-out 0",
+          "knees: flex 0",
+          "ankles: dorsiflex 0",
+          "shoulders: abduct 0",
+          "elbows: flex 0",
+          "spine: flex 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "elbow-flexion-pronation.posecode",
+    "header": "posecode stretch \"Elbow flexion & forearm rotation (ROM demo)\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Flex & supinate",
+        "actions": [
+          "elbows: flex 140",
+          "elbows: supinate 80",
+          "cue \"Bend the elbows and turn the palms up: flexion with supination\""
+        ]
+      },
+      {
+        "name": "Extend & pronate",
+        "actions": [
+          "elbows: flex 10",
+          "elbows: pronate 80",
+          "cue \"Straighten and turn the palms down: extension with pronation\""
+        ]
+      }
+    ]
+  },
+  {
+    "file": "finger-spell-demo.posecode",
+    "header": "posecode posture \"Finger-spelling (approx.)\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Present the hand",
+        "actions": [
+          "shoulder_right: flex 15",
+          "elbow_right: flex 140"
+        ]
+      },
+      {
+        "name": "Letter A",
+        "actions": [
+          "index_right: flex 95",
+          "middle_right: flex 95",
+          "ring_right: flex 95",
+          "pinky_right: flex 95",
+          "thumb_right: flex 0",
+          "cue \"A: fingers curled into a fist, thumb resting alongside\""
+        ]
+      },
+      {
+        "name": "Letter B",
+        "actions": [
+          "index_right: flex 0",
+          "middle_right: flex 0",
+          "ring_right: flex 0",
+          "pinky_right: flex 0",
+          "thumb_right: flex 60",
+          "cue \"B: fingers straight and together, thumb across the palm\""
+        ]
+      },
+      {
+        "name": "Letter I",
+        "actions": [
+          "index_right: flex 95",
+          "middle_right: flex 95",
+          "ring_right: flex 95",
+          "pinky_right: flex 0",
+          "thumb_right: flex 60",
+          "cue \"I: only the little finger stands up\""
+        ]
+      },
+      {
+        "name": "Relax",
+        "actions": [
+          "fingers_right: flex 0",
+          "shoulder_right: flex 0",
+          "elbow_right: flex 0"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "forward-fold.posecode",
+    "header": "posecode stretch \"Standing roll-down\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Roll down",
+        "actions": [
+          "spine: flex 45",
+          "chest: flex 30",
+          "neck: flex 20",
+          "shoulders: flex 95",
+          "knees: flex 10",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Roll up",
+        "actions": [
+          "spine: flex 0",
+          "chest: flex 0",
+          "neck: flex 0",
+          "shoulders: flex 0",
+          "knees: flex 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "forward-lunge.posecode",
+    "header": "posecode exercise \"Forward lunge\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Lunge",
+        "actions": [
+          "hip_right: flex 45",
+          "knee_right: flex 95",
+          "hip_left: extend 15",
+          "knee_left: flex 45",
+          "ankle_right: dorsiflex 14",
+          "spine: extend 4",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Drive up",
+        "actions": [
+          "hip_right: flex 0",
+          "knee_right: flex 0",
+          "hip_left: extend 0",
+          "knee_left: flex 0",
+          "ankle_right: dorsiflex 0",
+          "spine: flex 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "front-kick.posecode",
+    "header": "posecode exercise \"Front kick\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Chamber",
+        "actions": [
+          "hip_right: flex 95",
+          "knee_right: flex 90"
+        ]
+      },
+      {
+        "name": "Extend",
+        "actions": [
+          "hip_right: flex 100",
+          "knee_right: flex 5",
+          "cue \"Snap the lower leg out: strike with the ball of the foot\""
+        ]
+      },
+      {
+        "name": "Re-chamber",
+        "actions": [
+          "hip_right: flex 95",
+          "knee_right: flex 90"
+        ]
+      },
+      {
+        "name": "Return",
+        "actions": [
+          "hip_right: flex 0",
+          "knee_right: flex 0"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "glute-bridge.posecode",
+    "header": "posecode exercise \"Glute bridge\"",
+    "start_pose": "supine",
+    "steps": [
+      {
+        "name": "Bridge up",
+        "actions": [
+          "knees: flex 90",
+          "hips: extend 15",
+          "spine: extend 10",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Lower",
+        "actions": [
+          "hips: extend 0",
+          "spine: flex 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "good-morning.posecode",
+    "header": "posecode exercise \"Good morning\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Hinge",
+        "actions": [
+          "pelvis: hinge 80",
+          "knees: flex 15",
+          "shoulders: abduct 45",
+          "elbows: flex 110",
+          "neck: extend 10",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Stand",
+        "actions": [
+          "pelvis: hinge 0",
+          "knees: flex 0",
+          "shoulders: abduct 0",
+          "elbows: flex 0",
+          "neck: extend 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "grapevine.posecode",
+    "header": "posecode exercise \"Grapevine\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Step out",
+        "actions": [
+          "hip_left: abduct 30",
+          "shoulders: abduct 40",
+          "travel: 0.4 0",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Cross behind",
+        "actions": [
+          "hip_left: abduct 0",
+          "hip_right: rotate-in 20",
+          "knee_right: flex 25",
+          "travel: 0.8 0",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Step out again",
+        "actions": [
+          "hip_right: rotate-in 0",
+          "knee_right: flex 0",
+          "hip_left: abduct 30",
+          "travel: 1.2 0",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Return home",
+        "actions": [
+          "hip_left: abduct 0",
+          "shoulders: abduct 0",
+          "travel: 0 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "hand-wave.posecode",
+    "header": "posecode posture \"Hand wave\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Raise",
+        "actions": [
+          "shoulder_right: flex 150",
+          "elbow_right: flex 20",
+          "fingers_right: flex 0"
+        ]
+      },
+      {
+        "name": "Wave out",
+        "actions": [
+          "fingers_right: flex 30"
+        ]
+      },
+      {
+        "name": "Wave in",
+        "actions": [
+          "fingers_right: flex 0",
+          "cue \"...and back again: a friendly wave\""
+        ]
+      },
+      {
+        "name": "Lower",
+        "actions": [
+          "shoulder_right: flex 0",
+          "elbow_right: flex 0"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "hanging-knee-raise.posecode",
+    "header": "posecode exercise \"Hanging knee raise\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Reach",
+        "actions": [
+          "shoulders: flex 175",
+          "elbows: flex 5",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Grip",
+        "actions": [
+          "shoulders: flex 175",
+          "elbows: flex 5",
+          "pin: hand_left bar",
+          "pin: hand_right bar"
+        ]
+      },
+      {
+        "name": "Raise knees",
+        "actions": [
+          "hips: flex 90",
+          "knees: flex 90",
+          "shoulders: flex 175",
+          "elbows: flex 5",
+          "pin: hand_left bar",
+          "pin: hand_right bar"
+        ]
+      },
+      {
+        "name": "Lower",
+        "actions": [
+          "hips: flex 0",
+          "knees: flex 0",
+          "shoulders: flex 175",
+          "elbows: flex 5",
+          "pin: hand_left bar",
+          "pin: hand_right bar"
+        ]
+      },
+      {
+        "name": "Release",
+        "actions": [
+          "shoulders: flex 0",
+          "elbows: flex 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "heel-raises.posecode",
+    "header": "posecode exercise \"Heel raises\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Rise",
+        "actions": [
+          "ankles: plantarflex 35",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Lower",
+        "actions": [
+          "ankles: plantarflex 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "high-knee-march.posecode",
+    "header": "posecode exercise \"High-knee march\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Right knee up",
+        "actions": [
+          "hip_right: flex 90",
+          "knee_right: flex 90",
+          "shoulder_left: flex 40"
+        ]
+      },
+      {
+        "name": "Switch",
+        "actions": [
+          "hip_right: flex 0",
+          "knee_right: flex 0",
+          "shoulder_left: flex 0",
+          "hip_left: flex 90",
+          "knee_left: flex 90",
+          "shoulder_right: flex 40"
+        ]
+      },
+      {
+        "name": "Down",
+        "actions": [
+          "hip_left: flex 0",
+          "knee_left: flex 0",
+          "shoulder_right: flex 0"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "hip-abduction.posecode",
+    "header": "posecode exercise \"Standing hip abduction\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Lift",
+        "actions": [
+          "hip_right: abduct 40"
+        ]
+      },
+      {
+        "name": "Lower",
+        "actions": [
+          "hip_right: abduct 0"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "hip-flexion-demo.posecode",
+    "header": "posecode stretch \"Hip flexion (ROM demo)\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Lift",
+        "actions": [
+          "hip_right: flex 90",
+          "cue \"Raise the straight right leg forward: sagittal-plane hip flexion\""
+        ]
+      },
+      {
+        "name": "Lower",
+        "actions": [
+          "hip_right: flex 0"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "horse-stance.posecode",
+    "header": "posecode posture \"Horse stance\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Sink",
+        "actions": [
+          "hips: flex 30",
+          "hips: abduct 25",
+          "knees: flex 90",
+          "ankles: dorsiflex 10",
+          "spine: extend 5",
+          "shoulders: flex 80",
+          "elbows: flex 90",
+          "ground-lock: feet",
+          "cue \"Sink into a wide, low stance: thighs working, back tall, guard up\""
+        ]
+      },
+      {
+        "name": "Rise",
+        "actions": [
+          "hips: flex 0",
+          "hips: abduct 0",
+          "knees: flex 0",
+          "ankles: dorsiflex 0",
+          "spine: flex 0",
+          "shoulders: flex 0",
+          "elbows: flex 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "jab-cross.posecode",
+    "header": "posecode exercise \"Jab-cross\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Jab",
+        "actions": [
+          "shoulder_left: flex 85",
+          "elbow_left: flex 15",
+          "spine: rotate-out 10"
+        ]
+      },
+      {
+        "name": "Recoil jab",
+        "actions": [
+          "shoulder_left: flex 0",
+          "elbow_left: flex 90",
+          "spine: rotate-out 0"
+        ]
+      },
+      {
+        "name": "Cross",
+        "actions": [
+          "shoulder_right: flex 90",
+          "elbow_right: flex 10",
+          "spine: rotate-in 35"
+        ]
+      },
+      {
+        "name": "Recoil cross",
+        "actions": [
+          "shoulder_right: flex 0",
+          "elbow_right: flex 90",
+          "spine: rotate-in 0"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "jumping-jacks.posecode",
+    "header": "posecode exercise \"Jumping jacks\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Out",
+        "actions": [
+          "shoulders: abduct 160",
+          "hips: abduct 30",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "In",
+        "actions": [
+          "shoulders: abduct 0",
+          "hips: abduct 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "knee-flexion-demo.posecode",
+    "header": "posecode stretch \"Knee flexion (ROM demo)\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Flex",
+        "actions": [
+          "knee_right: flex 130",
+          "cue \"Bend the right knee, heel toward the glutes: the knee's single plane\""
+        ]
+      },
+      {
+        "name": "Extend",
+        "actions": [
+          "knee_right: flex 0"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "lateral-raise.posecode",
+    "header": "posecode exercise \"Lateral raise\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Raise",
+        "actions": [
+          "shoulders: abduct 90",
+          "elbows: flex 10"
+        ]
+      },
+      {
+        "name": "Lower",
+        "actions": [
+          "shoulders: abduct 0",
+          "elbows: flex 0"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "make-a-fist.posecode",
+    "header": "posecode posture \"Make a fist\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Close",
+        "actions": [
+          "fingers: flex 80"
+        ]
+      },
+      {
+        "name": "Open",
+        "actions": [
+          "fingers: flex 0"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "mountain-climber.posecode",
+    "header": "posecode exercise \"Mountain climber\"",
+    "start_pose": "plank",
+    "steps": [
+      {
+        "name": "Right knee in",
+        "actions": [
+          "hip_right: flex 60",
+          "knee_right: flex 75",
+          "ground-lock: hands, feet"
+        ]
+      },
+      {
+        "name": "Switch",
+        "actions": [
+          "hip_right: flex 0",
+          "knee_right: flex 0",
+          "hip_left: flex 60",
+          "knee_left: flex 75",
+          "ground-lock: hands, feet",
+          "cue \"Switch fast: left knee drives in\""
+        ]
+      },
+      {
+        "name": "Out",
+        "actions": [
+          "hip_left: flex 0",
+          "knee_left: flex 0",
+          "ground-lock: hands, feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "neck-rotation.posecode",
+    "header": "posecode stretch \"Neck rotation\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Look right",
+        "actions": [
+          "neck: rotate-out 60",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Look left",
+        "actions": [
+          "neck: rotate-in 60",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Center",
+        "actions": [
+          "neck: rotate-in 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "neck-side-stretch.posecode",
+    "header": "posecode stretch \"Neck side stretch\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Ear to right",
+        "actions": [
+          "neck: adduct 40",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Ear to left",
+        "actions": [
+          "neck: abduct 40",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Center",
+        "actions": [
+          "neck: abduct 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "overhead-reach-reset.posecode",
+    "header": "posecode stretch \"Overhead reach reset\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Reach up",
+        "actions": [
+          "shoulders: flex 175",
+          "spine: extend 10",
+          "neck: extend 15",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Lower",
+        "actions": [
+          "shoulders: flex 0",
+          "spine: flex 0",
+          "neck: flex 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "pinch-grip.posecode",
+    "header": "posecode posture \"Pinch grip\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Pinch",
+        "actions": [
+          "thumb_right: flex 55",
+          "thumb_right: adduct 25",
+          "index_right: flex 60"
+        ]
+      },
+      {
+        "name": "Release",
+        "actions": [
+          "thumb_right: flex 0",
+          "thumb_right: adduct 0",
+          "index_right: flex 0"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "pirouette.posecode",
+    "header": "posecode exercise \"Pirouette\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Prep - pli\u00e9",
+        "actions": [
+          "hips: rotate-out 25",
+          "knees: flex 45",
+          "ankles: dorsiflex 10",
+          "shoulders: flex 40",
+          "elbows: flex 35",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Spot & spin",
+        "actions": [
+          "knees: flex 0",
+          "ankles: plantarflex 30",
+          "shoulders: flex 95",
+          "elbows: flex 40",
+          "turn: 360",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Land",
+        "actions": [
+          "ankles: plantarflex 0",
+          "hips: rotate-out 0",
+          "shoulders: flex 0",
+          "elbows: flex 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "plank-hold.posecode",
+    "header": "posecode posture \"Plank hold\"",
+    "start_pose": "plank",
+    "steps": [
+      {
+        "name": "Brace",
+        "actions": [
+          "spine: hold neutral",
+          "hips: hold neutral",
+          "ground-lock: hands, feet",
+          "cue \"Brace the core: one straight line from head to heels\""
+        ]
+      },
+      {
+        "name": "Hold",
+        "actions": [
+          "spine: hold neutral",
+          "ground-lock: hands, feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "port-de-bras.posecode",
+    "header": "posecode stretch \"Port de bras\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "First position",
+        "actions": [
+          "shoulders: flex 30",
+          "elbows: flex 35",
+          "hips: rotate-out 20",
+          "ground-lock: feet",
+          "cue \"Arms rounded low in front: first position, shoulders soft\""
+        ]
+      },
+      {
+        "name": "Second position",
+        "actions": [
+          "shoulders: flex 0",
+          "shoulders: abduct 85",
+          "elbows: flex 16",
+          "ground-lock: feet",
+          "cue \"Open the arms out to the sides: second position, wrists lifted\""
+        ]
+      },
+      {
+        "name": "Fifth en haut",
+        "actions": [
+          "shoulders: abduct 0",
+          "shoulders: flex 160",
+          "elbows: flex 20",
+          "ground-lock: feet",
+          "cue \"Float the arms into a rounded frame overhead: fifth position\""
+        ]
+      },
+      {
+        "name": "Lower",
+        "actions": [
+          "shoulders: flex 0",
+          "elbows: flex 0",
+          "hips: rotate-out 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "posture-reset.posecode",
+    "header": "posecode posture \"Desk posture reset\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Slouch",
+        "actions": [
+          "spine: flex 22",
+          "chest: flex 16",
+          "neck: flex 28",
+          "shoulders: flex 22",
+          "ground-lock: feet",
+          "cue \"The collapsed desk posture: rounded back, head drifting forward\""
+        ]
+      },
+      {
+        "name": "Stack tall",
+        "actions": [
+          "spine: flex 0",
+          "chest: extend 8",
+          "neck: flex 0",
+          "shoulders: flex 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "posture.posecode",
+    "header": "posecode posture \"Neutral standing posture\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Align",
+        "actions": [
+          "spine: hold neutral",
+          "chest: extend 10",
+          "neck: flex 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "pull-up.posecode",
+    "header": "posecode exercise \"Pull-up\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Reach",
+        "actions": [
+          "shoulders: flex 175",
+          "elbows: flex 5",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Hang",
+        "actions": [
+          "shoulders: flex 175",
+          "elbows: flex 5",
+          "pin: hands bar"
+        ]
+      },
+      {
+        "name": "Pull up",
+        "actions": [
+          "shoulders: flex 150",
+          "elbows: flex 130",
+          "pin: hands bar"
+        ]
+      },
+      {
+        "name": "Lower",
+        "actions": [
+          "shoulders: flex 175",
+          "elbows: flex 5",
+          "pin: hands bar"
+        ]
+      },
+      {
+        "name": "Release",
+        "actions": [
+          "shoulders: flex 0",
+          "elbows: flex 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "quarter-turns.posecode",
+    "header": "posecode posture \"Quarter turns\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Face right",
+        "actions": [
+          "hips: flex 12",
+          "knees: flex 20",
+          "shoulders: abduct 30",
+          "turn: 90",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Face back",
+        "actions": [
+          "knees: flex 0",
+          "hips: flex 0",
+          "shoulders: abduct 0",
+          "turn: 180",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Face left",
+        "actions": [
+          "hips: flex 12",
+          "knees: flex 20",
+          "shoulders: abduct 30",
+          "turn: 270",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Face front",
+        "actions": [
+          "knees: flex 0",
+          "hips: flex 0",
+          "shoulders: abduct 0",
+          "turn: 360",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "releve.posecode",
+    "header": "posecode exercise \"Relev\u00e9\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Rise",
+        "actions": [
+          "ankles: plantarflex 30",
+          "hips: rotate-out 25",
+          "knees: extend 0",
+          "shoulders: abduct 75",
+          "elbows: flex 12",
+          "spine: extend 4",
+          "ground-lock: feet",
+          "cue \"Turn out and rise onto the balls of the feet: lengthen up tall\""
+        ]
+      },
+      {
+        "name": "Lower",
+        "actions": [
+          "ankles: plantarflex 0",
+          "hips: rotate-out 0",
+          "shoulders: abduct 0",
+          "elbows: flex 0",
+          "spine: flex 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "seated-forward-fold.posecode",
+    "header": "posecode stretch \"Seated forward fold\"",
+    "start_pose": "seated",
+    "steps": [
+      {
+        "name": "Fold",
+        "actions": [
+          "spine: flex 60",
+          "chest: flex 25",
+          "neck: flex 15",
+          "shoulders: flex 60"
+        ]
+      },
+      {
+        "name": "Rise",
+        "actions": [
+          "spine: flex 0",
+          "chest: flex 0",
+          "neck: flex 0",
+          "shoulders: flex 0"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "shoulder-abduction-demo.posecode",
+    "header": "posecode stretch \"Shoulder abduction (ROM demo)\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Abduct",
+        "actions": [
+          "shoulders: abduct 160",
+          "cue \"Arms sweep out and up to the sides: frontal-plane abduction\""
+        ]
+      },
+      {
+        "name": "Adduct",
+        "actions": [
+          "shoulders: abduct 0"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "shoulder-rolls.posecode",
+    "header": "posecode stretch \"Shoulder rolls\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Lift & forward",
+        "actions": [
+          "shoulders: flex 25",
+          "chest: extend 8",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Back & down",
+        "actions": [
+          "shoulders: extend 20",
+          "chest: extend 12",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Reset",
+        "actions": [
+          "shoulders: flex 0",
+          "chest: flex 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "shoulder-stretch.posecode",
+    "header": "posecode stretch \"Standing shoulder flexion\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Raise",
+        "actions": [
+          "shoulders: flex 170",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Lower",
+        "actions": [
+          "shoulders: flex 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "side-bend.posecode",
+    "header": "posecode stretch \"Standing side bend\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Reach over",
+        "actions": [
+          "shoulders: flex 175",
+          "spine: abduct 30",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Return",
+        "actions": [
+          "shoulders: flex 0",
+          "spine: abduct 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "single-leg-calf-raise.posecode",
+    "header": "posecode exercise \"Single-leg calf raise\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Rise",
+        "actions": [
+          "ankle_right: plantarflex 40",
+          "knee_left: flex 90"
+        ]
+      },
+      {
+        "name": "Lower",
+        "actions": [
+          "ankle_right: plantarflex 0",
+          "knee_left: flex 90"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "spinal-twist.posecode",
+    "header": "posecode stretch \"Standing spinal twist\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Twist right",
+        "actions": [
+          "spine: rotate-out 40",
+          "chest: rotate-out 30",
+          "shoulders: abduct 80",
+          "elbows: flex 90",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Twist left",
+        "actions": [
+          "spine: rotate-in 40",
+          "chest: rotate-in 30",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Center",
+        "actions": [
+          "spine: rotate-in 0",
+          "chest: rotate-in 0",
+          "shoulders: abduct 0",
+          "elbows: flex 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "spine-rotation-demo.posecode",
+    "header": "posecode stretch \"Spine rotation (ROM demo)\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Rotate right",
+        "actions": [
+          "spine: rotate-out 45",
+          "ground-lock: feet",
+          "cue \"Rotate the trunk to the right: transverse-plane spinal rotation\""
+        ]
+      },
+      {
+        "name": "Rotate left",
+        "actions": [
+          "spine: rotate-in 45",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Center",
+        "actions": [
+          "spine: rotate-in 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "squat.posecode",
+    "header": "posecode exercise \"Body-weight squat\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Descend",
+        "actions": [
+          "hips: flex 80",
+          "knees: flex 95",
+          "ankles: dorsiflex 14",
+          "spine: flex 20",
+          "shoulders: flex 70",
+          "neck: extend 10",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Drive up",
+        "actions": [
+          "hips: flex 0",
+          "knees: flex 0",
+          "ankles: dorsiflex 0",
+          "spine: flex 0",
+          "shoulders: flex 0",
+          "neck: extend 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "standing-hamstring-curl.posecode",
+    "header": "posecode exercise \"Standing hamstring curl\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Curl",
+        "actions": [
+          "knee_right: flex 95"
+        ]
+      },
+      {
+        "name": "Lower",
+        "actions": [
+          "knee_right: flex 0"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "standing-quad-stretch.posecode",
+    "header": "posecode stretch \"Standing quad stretch\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Catch the foot",
+        "actions": [
+          "knee_right: flex 144",
+          "hip_right: extend 20",
+          "reach: hand_right ankle_right"
+        ]
+      },
+      {
+        "name": "Release",
+        "actions": [
+          "knee_right: flex 0",
+          "hip_right: extend 0"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "step-up.posecode",
+    "header": "posecode exercise \"Step-up\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Plant the foot",
+        "actions": [
+          "hip_right: flex 70",
+          "knee_right: flex 90"
+        ]
+      },
+      {
+        "name": "Drive up",
+        "actions": [
+          "hip_right: flex 8",
+          "knee_right: flex 8",
+          "hip_left: flex 35",
+          "knee_left: flex 45",
+          "pin: foot_right box"
+        ]
+      },
+      {
+        "name": "Step down",
+        "actions": [
+          "hip_right: flex 70",
+          "knee_right: flex 90",
+          "hip_left: flex 0",
+          "knee_left: flex 0",
+          "pin: foot_right box"
+        ]
+      },
+      {
+        "name": "Off the box",
+        "actions": [
+          "hip_right: flex 0",
+          "knee_right: flex 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "superman.posecode",
+    "header": "posecode exercise \"Superman\"",
+    "start_pose": "prone",
+    "steps": [
+      {
+        "name": "Lift",
+        "actions": [
+          "shoulders: flex 150",
+          "spine: extend 20",
+          "chest: extend 15",
+          "neck: extend 25",
+          "hips: extend 18"
+        ]
+      },
+      {
+        "name": "Lower",
+        "actions": [
+          "shoulders: flex 0",
+          "spine: flex 0",
+          "chest: flex 0",
+          "neck: flex 0",
+          "hips: extend 0"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "supine-leg-raise.posecode",
+    "header": "posecode exercise \"Lying leg raise\"",
+    "start_pose": "supine",
+    "steps": [
+      {
+        "name": "Raise",
+        "actions": [
+          "hips: flex 90",
+          "knees: flex 0"
+        ]
+      },
+      {
+        "name": "Lower",
+        "actions": [
+          "hips: flex 20"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "tendu.posecode",
+    "header": "posecode exercise \"Tendu\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Point front",
+        "actions": [
+          "hip_right: flex 22",
+          "hip_right: rotate-out 30",
+          "knee_right: extend 0",
+          "ankle_right: plantarflex 45",
+          "shoulders: abduct 70",
+          "elbows: flex 14"
+        ]
+      },
+      {
+        "name": "Close",
+        "actions": [
+          "hip_right: flex 0",
+          "hip_right: rotate-out 0",
+          "ankle_right: plantarflex 0",
+          "shoulders: abduct 0",
+          "elbows: flex 0"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "touch-toes.posecode",
+    "header": "posecode stretch \"Touch your toes\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Fold",
+        "actions": [
+          "pelvis: hinge 95",
+          "knees: flex 20",
+          "neck: flex 15",
+          "reach: hand_left ankle_left",
+          "reach: hand_right ankle_right",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Rise",
+        "actions": [
+          "pelvis: hinge 0",
+          "knees: flex 0",
+          "neck: flex 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "triceps-dips.posecode",
+    "header": "posecode exercise \"Triceps dips\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Support",
+        "actions": [
+          "shoulders: abduct 5",
+          "elbows: flex 5",
+          "knees: flex 70",
+          "ankles: plantarflex 20",
+          "pin: hands bars"
+        ]
+      },
+      {
+        "name": "Lower",
+        "actions": [
+          "shoulders: extend 30",
+          "shoulders: abduct 5",
+          "elbows: flex 90",
+          "knees: flex 70",
+          "pin: hands bars"
+        ]
+      },
+      {
+        "name": "Press",
+        "actions": [
+          "shoulders: extend 0",
+          "shoulders: abduct 5",
+          "elbows: flex 5",
+          "knees: flex 70",
+          "pin: hands bars"
+        ]
+      },
+      {
+        "name": "Dismount",
+        "actions": [
+          "shoulders: abduct 0",
+          "elbows: flex 0",
+          "knees: flex 0",
+          "ankles: plantarflex 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "walk-cycle.posecode",
+    "header": "posecode exercise \"Walk & turn\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Step right",
+        "actions": [
+          "hip_right: flex 30",
+          "knee_right: flex 15",
+          "hip_left: extend 12",
+          "shoulder_left: flex 25",
+          "shoulder_right: extend 20",
+          "travel: 0 0.4",
+          "ground-lock: feet",
+          "cue \"Walk forward: right foot leads, opposite arm swings through\""
+        ]
+      },
+      {
+        "name": "Step left",
+        "actions": [
+          "hip_left: flex 30",
+          "knee_left: flex 15",
+          "hip_right: extend 12",
+          "shoulder_right: flex 25",
+          "shoulder_left: extend 20",
+          "travel: 0 0.8",
+          "ground-lock: feet",
+          "cue \"Left foot leads, arms swap: keep travelling forward\""
+        ]
+      },
+      {
+        "name": "About-face",
+        "actions": [
+          "hips: flex 0",
+          "knees: flex 0",
+          "shoulders: flex 0",
+          "turn: 180",
+          "travel: 0 0.8",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Walk back",
+        "actions": [
+          "hip_right: flex 30",
+          "knee_right: flex 15",
+          "hip_left: extend 12",
+          "shoulder_left: flex 25",
+          "shoulder_right: extend 20",
+          "turn: 180",
+          "travel: 0 0.4",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Arrive & square up",
+        "actions": [
+          "hips: flex 0",
+          "knees: flex 0",
+          "shoulders: flex 0",
+          "turn: 360",
+          "travel: 0 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "wall-sit.posecode",
+    "header": "posecode posture \"Wall sit\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "Slide down",
+        "actions": [
+          "hips: flex 90",
+          "knees: flex 90",
+          "ankles: dorsiflex 12",
+          "shoulders: flex 80",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "Hold & rise",
+        "actions": [
+          "hips: flex 0",
+          "knees: flex 0",
+          "ankles: dorsiflex 0",
+          "shoulders: flex 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "waltz-box.posecode",
+    "header": "posecode stretch \"Waltz box step\"",
+    "start_pose": "standing",
+    "steps": [
+      {
+        "name": "1 - forward, rise",
+        "actions": [
+          "hip_right: flex 25",
+          "knee_right: flex 20",
+          "ankles: plantarflex 12",
+          "shoulders: abduct 55",
+          "elbows: flex 20",
+          "travel: 0 0.4",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "2 - side, lower",
+        "actions": [
+          "hip_right: flex 0",
+          "knee_right: flex 0",
+          "ankles: plantarflex 0",
+          "travel: -0.4 0.4",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "3 - back, rise",
+        "actions": [
+          "hip_left: flex 25",
+          "knee_left: flex 20",
+          "ankles: plantarflex 12",
+          "travel: -0.4 0",
+          "ground-lock: feet"
+        ]
+      },
+      {
+        "name": "4 - close home",
+        "actions": [
+          "hip_left: flex 0",
+          "knee_left: flex 0",
+          "ankles: plantarflex 0",
+          "shoulders: abduct 0",
+          "elbows: flex 0",
+          "travel: 0 0",
+          "ground-lock: feet"
+        ]
+      }
+    ]
+  }
+]

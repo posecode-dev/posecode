@@ -38,8 +38,16 @@ const PLANK: PoseSpec = {
   },
 };
 
-// Standing, ready position (alias of neutral for now).
-const STANDING: PoseSpec = NEUTRAL;
+// Relaxed standing: forearms are half-pronated so each palm faces the thigh
+// instead of the anatomical-model default (palms facing straight forward).
+// Left/right Y signs mirror in the rig, matching `elbows: pronate 80`.
+const STANDING: PoseSpec = {
+  root: { position: [0, 0, 0], rotationDeg: [0, 0, 0] },
+  joints: {
+    elbow_left: [0, 80, 0],
+    elbow_right: [0, -80, 0],
+  },
+};
 
 // Lying face-up. Rotating the standing figure -90° about X lays it on its back:
 // the original front (+Z) ends up facing the ceiling (+Y) and the head points

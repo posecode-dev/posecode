@@ -7,6 +7,11 @@ import {
   runEval,
   torsoPitchDeg,
   kneeFlexionDeg,
+  balanceOverflow,
+  footSkateDistance,
+  headPropClearance,
+  palmFloorAngleDeg,
+  phaseMaxLandmarkSpeed,
   spineCurlDeg,
 } from "../src/index.js";
 
@@ -53,6 +58,22 @@ describe("metrics", () => {
 
   it("a hinge keeps the spine straight (no curl)", () => {
     expect(spineCurlDeg(hinged)).toBeLessThan(5);
+  });
+
+  it("measures semantic contact, balance, prop clearance, and transition speed", () => {
+    const fixtures = loadFixtures(examplesDir);
+    const movement = (name: string) => probeMovement(fixtures.find((f) => f.movement === name)!.source);
+
+    const legRaise = movement("supine-leg-raise").phases[0]!;
+    expect(palmFloorAngleDeg(legRaise, "left")).toBeLessThan(5);
+
+    const deadlift = movement("deadlift");
+    expect(footSkateDistance(deadlift.phases[0]!, deadlift.phases[1]!, "left")).toBeLessThan(0.2);
+    expect(balanceOverflow(deadlift.phases[0]!)).toBeLessThan(0.3);
+    expect(phaseMaxLandmarkSpeed(deadlift.phases[0]!, deadlift.phases[1]!)).toBeLessThan(4);
+
+    const pullUp = movement("pull-up");
+    expect(Math.min(...pullUp.phases.map((p) => headPropClearance(pullUp, p)))).toBeGreaterThan(-0.01);
   });
 });
 

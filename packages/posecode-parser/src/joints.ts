@@ -101,6 +101,8 @@ export function expandJoint(name: string): string[] {
 const EFFECTOR_SIDES = [
   "hand_left",
   "hand_right",
+  "elbow_left",
+  "elbow_right",
   "foot_left",
   "foot_right",
   // Axial support point for floor-based poses such as cobra. Unlike a reach,
@@ -111,6 +113,7 @@ const EFFECTOR_SIDES = [
 /** Symmetric effector groups → the per-side effectors they expand to. */
 const EFFECTOR_GROUPS: Record<string, string[]> = {
   hands: ["hand_left", "hand_right"],
+  forearms: ["elbow_left", "elbow_right"],
   feet: ["foot_left", "foot_right"],
 };
 

@@ -30,11 +30,18 @@ describe("mannequin", () => {
   it("declares hand and foot effector groups", () => {
     const m = buildMannequin();
     expect(m.effectors.hands).toEqual(["wrist_left", "wrist_right"]);
+    expect(m.effectors.forearms).toEqual(["elbow_left", "elbow_right"]);
     expect(m.effectors.feet).toEqual(["ankle_left", "ankle_right"]);
   });
 });
 
 describe("timeline", () => {
+  it("starts standing poses with relaxed palms facing the thighs", () => {
+    const joints = poseFor("standing").joints!;
+    expect(joints.elbow_left).toEqual([0, 80, 0]);
+    expect(joints.elbow_right).toEqual([0, -80, 0]);
+  });
+
   const PUSHUP = [
     'posecode exercise "Push-up"',
     "  rig humanoid",

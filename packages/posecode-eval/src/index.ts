@@ -1,15 +1,24 @@
 /** posecode-eval: public API. */
 
 export { probeMovement } from "./probe.js";
-export type { ProbeResult, PhasePose, Vec3 } from "./probe.js";
+export type { ProbeResult, PhasePose, Quat, Vec3 } from "./probe.js";
 export {
   angleBetweenDeg,
+  balanceOverflow,
   bone,
+  centerOfMass,
+  distanceBetween,
   feetHeight,
+  feetCenterSkateDistance,
+  footIsSupported,
+  footSkateDistance,
+  headPropClearance,
   heightOf,
   jointAngleDeg,
   kneeFlexionDeg,
   lowestPoint,
+  palmFloorAngleDeg,
+  phaseMaxLandmarkSpeed,
   segmentTiltDeg,
   spineCurlDeg,
   torsoPitchDeg,

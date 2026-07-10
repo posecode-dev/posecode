@@ -168,6 +168,20 @@ describe("parse", () => {
 });
 
 describe("reach/pin effectors", () => {
+  it("expands forearms into the two elbow support points", () => {
+    const src = `posecode posture "Forearm plank"
+  rig humanoid
+  pose start = plank
+  step "Hold" 1s linear:
+    pin: forearms floor`;
+    const result = parse(src);
+    expect(result.errors).toEqual([]);
+    expect(result.ir?.phases[0]?.pins).toEqual([
+      { effector: "elbow_left", anchor: "floor" },
+      { effector: "elbow_right", anchor: "floor" },
+    ]);
+  });
+
   it("accepts the pelvis as an axial contact pin", () => {
     const src = `posecode stretch "Cobra"
   rig humanoid

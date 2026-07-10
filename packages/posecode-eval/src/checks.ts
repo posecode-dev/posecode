@@ -7,9 +7,17 @@
 
 import type { PhasePose, ProbeResult } from "./probe.js";
 import {
+  balanceOverflow,
+  distanceBetween,
+  feetCenterSkateDistance,
+  footIsSupported,
+  footSkateDistance,
+  headPropClearance,
   heightOf,
   kneeFlexionDeg,
   lowestPoint,
+  palmFloorAngleDeg,
+  phaseMaxLandmarkSpeed,
   segmentTiltDeg,
   spineCurlDeg,
   torsoPitchDeg,
@@ -81,6 +89,81 @@ export function genericChecks(result: ProbeResult): CheckOutcome[] {
       pass: lowestPoint(p) > -0.05,
       detail: `lowest bone ${lowestPoint(p).toFixed(3)}m (want > -0.05)`,
     });
+
+    const floorHands = new Set<string>();
+    for (const r of p.reaches) {
+      if (r.target !== "floor") continue;
+      if (r.effector === "hands" || r.effector === "hand_left") floorHands.add("left");
+      if (r.effector === "hands" || r.effector === "hand_right") floorHands.add("right");
+    }
+    for (const pin of p.pins) {
+      if (pin.anchor !== "floor") continue;
+      if (pin.effector === "hands" || pin.effector === "hand_left") floorHands.add("left");
+      if (pin.effector === "hands" || pin.effector === "hand_right") floorHands.add("right");
+    }
+    for (const side of floorHands) {
+      const angle = palmFloorAngleDeg(p, side as "left" | "right");
+      out.push({
+        id: `palm-normal:${p.name}:${side}`,
+        pass: angle < 55,
+        detail: `${angle.toFixed(1)}° from palm-down (want < 55°)`,
+      });
+    }
+
+    const overflow = balanceOverflow(p);
+    out.push({
+      id: `balance:${p.name}`,
+      pass: overflow < 0.3,
+      detail: `COM ${overflow.toFixed(3)}m outside support base (want < 0.30m)`,
+    });
+
+    const clearance = headPropClearance(result, p);
+    if (Number.isFinite(clearance)) {
+      out.push({
+        id: `head-prop-clearance:${p.name}`,
+        pass: clearance > -0.01,
+        detail: `${clearance.toFixed(3)}m clearance (want > -0.01m)`,
+      });
+    }
+  }
+
+  for (let i = 1; i < result.phases.length; i++) {
+    const previous = result.phases[i - 1]!;
+    const current = result.phases[i]!;
+    const bothSupported = (["left", "right"] as const).every((side) =>
+      footIsSupported(previous, side) && footIsSupported(current, side));
+    if (bothSupported) {
+      const skate = feetCenterSkateDistance(previous, current);
+      out.push({
+        id: `foot-skate:${current.name}:pair`,
+        pass: skate < 0.08,
+        detail: `${skate.toFixed(3)}m planted support-center drift (want < 0.08m)`,
+      });
+    }
+    for (const side of ["left", "right"] as const) {
+      const explicitlyPinned = (phase: PhasePose) => phase.pins.some((p) =>
+        (p.effector === "feet" || p.effector === `foot_${side}`) && p.anchor === "floor");
+      if (!explicitlyPinned(previous) || !explicitlyPinned(current)) continue;
+      const skate = footSkateDistance(previous, current, side);
+      out.push({
+        id: `foot-skate:${current.name}:${side}`,
+        pass: skate < 0.08,
+        detail: `${skate.toFixed(3)}m pinned-foot drift (want < 0.08m)`,
+      });
+    }
+    const speed = phaseMaxLandmarkSpeed(previous, current);
+    out.push({
+      id: `transition-speed:${current.name}`,
+      pass: speed < 4,
+      detail: `${speed.toFixed(2)}m/s fastest landmark (want < 4.0m/s)`,
+    });
+    if (current.easing === "linear" && speed > 0.15) {
+      out.push({
+        id: `transition-easing:${current.name}`,
+        pass: false,
+        detail: `moving linear phase enters at ${speed.toFixed(2)}m/s (use eased transition)`,
+      });
+    }
   }
   return out;
 }
@@ -113,6 +196,13 @@ export const MOVEMENT_CHECKS: MovementChecks[] = [
         "< 20° leg tilt",
       ),
       phaseCheck("stands-back-up", "Lift", torsoPitchDeg, (v) => v < 12, "< 12° pitch"),
+      phaseCheck(
+        "feet-stay-planted",
+        "Lower",
+        (p) => Math.max(heightOf(p, "ankle_left"), heightOf(p, "ankle_right")),
+        (v) => v < 0.15,
+        "both ankles < 0.15m",
+      ),
     ],
   },
   {
@@ -193,6 +283,44 @@ export const MOVEMENT_CHECKS: MovementChecks[] = [
         (v) => v > 0.5,
         "wrist |x| > 0.5m",
       ),
+    ],
+  },
+  {
+    movement: "plank-hold",
+    checks: [
+      phaseCheck(
+        "forearms-support-body",
+        "Hold",
+        (p) => Math.max(heightOf(p, "elbow_left"), heightOf(p, "elbow_right")),
+        (v) => v < 0.08,
+        "both elbows < 0.08m",
+      ),
+    ],
+  },
+  {
+    movement: "crunch",
+    checks: [
+      phaseCheck("pelvis-stays-down", "Curl up", (p) => heightOf(p, "pelvis"), (v) => v < 0.18, "pelvis < 0.18m"),
+      phaseCheck(
+        "feet-stay-down",
+        "Curl up",
+        (p) => Math.max(heightOf(p, "ankle_left"), heightOf(p, "ankle_right")),
+        (v) => v < 0.18,
+        "both ankles < 0.18m",
+      ),
+    ],
+  },
+  {
+    movement: "bicycle-crunch",
+    checks: [
+      phaseCheck("right-elbow-nears-left-knee", "Right to left", (p) => distanceBetween(p, "elbow_right", "knee_left"), (v) => v < 0.45, "distance < 0.45m"),
+      phaseCheck("left-elbow-nears-right-knee", "Left to right", (p) => distanceBetween(p, "elbow_left", "knee_right"), (v) => v < 0.45, "distance < 0.45m"),
+    ],
+  },
+  {
+    movement: "superman",
+    checks: [
+      phaseCheck("pelvis-remains-supported", "Lift", (p) => heightOf(p, "pelvis"), (v) => v < 0.16, "pelvis < 0.16m"),
     ],
   },
 ];

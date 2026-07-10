@@ -7,33 +7,43 @@
  * and returns world-space bone positions at the end of every phase. This is
  * the ground truth the invariant checks score against.
  *
- * Prop-backed pins and reach-IK remain scene-dependent. Floor/body-landmark
- * pins are deterministic, however, so the probe resolves those exactly like
- * the viewer; this lets contact regressions in floor work (cobra, etc.) fail
- * the scorecard instead of being hidden behind `usesSceneIk`.
+ * Floor, body-landmark, and built-in prop pins are deterministic, so the probe
+ * resolves those exactly like the viewer. Reach-IK remains the one intentional
+ * gap; phase orientations still receive semantic palm-contact alignment.
  */
 
 import * as THREE from "three";
-import { parse, type ParseError, type Warning } from "posecode-parser";
+import { parse, type Easing, type ParseError, type PinTarget, type ReachTarget, type Warning } from "posecode-parser";
 import {
   applyGroundLock,
+  alignFloorPalms,
   buildMannequin,
+  buildProps,
   buildTimeline,
   depenetrate,
   groundFigure,
 } from "posecode-render";
 
 export type Vec3 = readonly [x: number, y: number, z: number];
+export type Quat = readonly [x: number, y: number, z: number, w: number];
 
 export interface PhasePose {
   /** Phase name from the document. */
   name: string;
+  durationSec: number;
+  easing: Easing;
   /** Effector groups ground-locked during this phase. */
   groundLock: readonly string[];
+  pins: readonly PinTarget[];
+  reaches: readonly ReachTarget[];
+  rootOffset: Vec3;
+  rootYaw: number;
   /** True when the phase relies on pins/reach-IK the probe cannot solve. */
   usesSceneIk: boolean;
   /** World-space position of every bone at the END of this phase. */
   bones: ReadonlyMap<string, Vec3>;
+  /** World-space orientation of every bone at the end of the phase. */
+  boneQuaternions: ReadonlyMap<string, Quat>;
 }
 
 export interface ProbeResult {
@@ -41,6 +51,7 @@ export interface ProbeResult {
   errors: readonly ParseError[];
   warnings: readonly Warning[];
   phases: readonly PhasePose[];
+  propTypes: readonly string[];
 }
 
 const DEG = Math.PI / 180;
@@ -51,11 +62,12 @@ const WORLD_Y = new THREE.Vector3(0, 1, 0);
 export function probeMovement(source: string): ProbeResult {
   const { ir, errors, warnings } = parse(source);
   if (!ir || errors.length > 0) {
-    return { ok: false, errors, warnings, phases: [] };
+    return { ok: false, errors, warnings, phases: [], propTypes: [] };
   }
 
   const m = buildMannequin();
   const tl = buildTimeline(ir);
+  const propScene = buildProps(ir.props);
 
   // Mirror Viewer.load(): reset bones, apply the base-pose root, pose at t=0,
   // then drop the figure onto the floor and remember the grounded base root.
@@ -84,7 +96,8 @@ export function probeMovement(source: string): ProbeResult {
   // Sample the end of each phase, applying the viewer's per-frame root
   // pipeline: base root → yaw/travel → ground-lock → floor safety clamp.
   const yawQ = new THREE.Quaternion();
-  const phases: PhasePose[] = tl.segments.map((seg) => {
+  const phases: PhasePose[] = tl.segments.map((seg, phaseIndex) => {
+    const authored = ir.phases[phaseIndex]!;
     const info = tl.sample(seg.end - EPS, m.bones);
     m.root.position.copy(baseRootPos);
     m.root.quaternion.copy(baseRootQuat);
@@ -131,6 +144,8 @@ export function probeMovement(source: string): ProbeResult {
         if (pin.anchor === "floor") {
           target = effector.getWorldPosition(new THREE.Vector3());
           target.y = 0;
+        } else if (propScene.anchors.has(pin.anchor)) {
+          target = propScene.anchors.get(pin.anchor)!.clone();
         } else {
           const landmark = m.bones.get(pin.anchor);
           if (landmark) target = landmark.getWorldPosition(new THREE.Vector3());
@@ -144,6 +159,7 @@ export function probeMovement(source: string): ProbeResult {
         m.root.updateMatrixWorld(true);
       }
     }
+    alignFloorPalms(m, info.reaches, info.pins);
     // Viewer safety net: never leave the lowest mesh point below the floor.
     m.root.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(m.root);
@@ -153,13 +169,30 @@ export function probeMovement(source: string): ProbeResult {
     }
     return {
       name: seg.name,
+      durationSec: authored.durationSec,
+      easing: authored.easing,
       groundLock: [...info.groundLock],
+      pins: [...info.pins],
+      reaches: [...info.reaches],
+      rootOffset: [info.rootOffset.x, 0, info.rootOffset.z],
+      rootYaw: info.rootYaw,
       usesSceneIk: info.pins.length > 0 || info.reaches.length > 0,
       bones: snapshotBones(m.bones),
+      boneQuaternions: snapshotBoneQuaternions(m.bones),
     };
   });
 
-  return { ok: true, errors, warnings, phases };
+  return { ok: true, errors, warnings, phases, propTypes: [...ir.props] };
+}
+
+function snapshotBoneQuaternions(bones: Map<string, THREE.Object3D>): Map<string, Quat> {
+  const out = new Map<string, Quat>();
+  const q = new THREE.Quaternion();
+  for (const [id, node] of bones) {
+    node.getWorldQuaternion(q);
+    out.set(id, [q.x, q.y, q.z, q.w]);
+  }
+  return out;
 }
 
 function snapshotBones(bones: Map<string, THREE.Object3D>): Map<string, Vec3> {

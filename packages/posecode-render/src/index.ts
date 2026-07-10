@@ -27,6 +27,7 @@ import {
   type ClipSource,
 } from "./clips.js";
 import { depenetrate } from "./depenetrate.js";
+import { alignFloorPalms } from "./contacts.js";
 
 const DEG = Math.PI / 180;
 
@@ -378,7 +379,9 @@ export function createViewer(
     const side = effectorBone.endsWith("_left") ? "left" : "right";
     const ids = effectorBone.startsWith("wrist")
       ? [`shoulder_${side}`, `elbow_${side}`]
-      : effectorBone.startsWith("ankle")
+      : effectorBone.startsWith("elbow")
+        ? [`shoulder_${side}`]
+        : effectorBone.startsWith("ankle")
         ? [`hip_${side}`, `knee_${side}`]
         : [];
     const joints: THREE.Object3D[] = [];
@@ -540,6 +543,7 @@ export function createViewer(
       // bug. Ground-lock and pins have already fixed the root placement that
       // floor/landmark targets resolve against.
       applyReaches(info.reaches);
+      alignFloorPalms(mannequin, info.reaches, info.pins);
       // Safety net: nothing above ever intentionally pushes part of the body
       // below the floor, so clamp the root up whenever the lowest point dips
       // below y=0, a no-op whenever the pose is legitimately grounded or
@@ -780,4 +784,5 @@ export {
   type ClipSource,
 } from "./clips.js";
 export { depenetrate } from "./depenetrate.js";
+export { alignFloorPalms } from "./contacts.js";
 export type { PhaseSegment } from "./timeline.js";

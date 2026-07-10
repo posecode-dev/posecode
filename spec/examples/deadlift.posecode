@@ -5,7 +5,7 @@ posecode exercise "Deadlift"
   step "Lower" 1.8s ease-in-out:
     pelvis: hinge 75
     knees: flex 25
-    ankles: plantarflex 25
+    ankles: plantarflex 0
     shoulders: flex 70
     elbows: pronate 80
     neck: extend 12
