@@ -272,6 +272,7 @@ code {
 /* Live studio card */
 .hero-stage {
   position: relative;
+  min-width: 0;
 }
 .studio {
   position: relative;
@@ -761,12 +762,12 @@ a.dev-card:hover {
 }
 .eyebrow { color: var(--text-2); letter-spacing: 2.4px; }
 .headline {
-  max-width: 10ch;
-  font-size: clamp(52px, 6.4vw, 88px);
+  max-width: 11ch;
+  font-size: clamp(52px, 5.8vw, 82px);
   line-height: .92;
   letter-spacing: -.055em;
 }
-.headline .hl { color: var(--text); }
+.headline .hl { color: var(--text); white-space: normal; }
 .headline .hl::after { display: none; }
 .subhead { font-size: clamp(17px, 1.5vw, 20px); line-height: 1.55; }
 .hero-meta { border-top: 1px solid var(--border); padding-top: 18px; }
