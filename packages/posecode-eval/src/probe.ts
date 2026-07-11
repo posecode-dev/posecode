@@ -13,7 +13,7 @@
  */
 
 import * as THREE from "three";
-import { parse, type Easing, type ParseError, type PinTarget, type ReachTarget, type Warning } from "posecode-parser";
+import { parse, type TimingMode, type ParseError, type PinTarget, type ReachTarget, type Warning } from "posecode-parser";
 import {
   applyGroundLock,
   alignFloorPalms,
@@ -31,7 +31,7 @@ export interface PhasePose {
   /** Phase name from the document. */
   name: string;
   durationSec: number;
-  easing: Easing;
+  easing: TimingMode;
   /** Effector groups ground-locked during this phase. */
   groundLock: readonly string[];
   pins: readonly PinTarget[];

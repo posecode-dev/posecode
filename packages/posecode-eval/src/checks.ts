@@ -161,7 +161,7 @@ export function genericChecks(result: ProbeResult): CheckOutcome[] {
       out.push({
         id: `transition-easing:${current.name}`,
         pass: false,
-        detail: `moving linear phase enters at ${speed.toFixed(2)}m/s (use eased transition)`,
+        detail: `moving linear phase enters at ${speed.toFixed(2)}m/s (use a flow/settle/drive mode)`,
       });
     }
   }
