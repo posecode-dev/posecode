@@ -87,7 +87,6 @@ async function main() {
     const steps = parseSteps(p.source);
     const repeat = parseRepeat(p.source);
     const name = slugTitle(p.label);
-    const hash = `#doc=${p.id}`;
     const url = `/moves/${p.id}.html`;
 
     const stepsHtml = steps
@@ -129,7 +128,7 @@ async function main() {
         that LLMs like ChatGPT, Claude, and Gemini can write to describe human movement as text.
         Every joint angle below is hard-clamped to a safe range of motion.</p>
 
-      <a class="btn" href="/play.html${hash}">▶ Open ${esc(name)} in the playground →</a>
+      <a class="btn" href="/play/${p.id}">▶ Open ${esc(name)} in the playground →</a>
 
       <h2>How to do it</h2>
       <ol class="steps">
@@ -189,7 +188,7 @@ ${stepsHtml}
       <p>Every example in the Posecode library, grouped by practice. Each page shows the phases,
         coaching cues, and the exact <code>.posecode</code> source, plus a live 3D playback.
         Prefer to search and filter interactively? Use the
-        <a href="/play.html">playground's movement library</a> instead.</p>
+        <a href="/play">playground's movement library</a> instead.</p>
       ${groupsHtml}
     `,
   });
