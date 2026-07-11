@@ -176,7 +176,7 @@ export function probeMovement(source: string): ProbeResult {
       reaches: [...info.reaches],
       rootOffset: [info.rootOffset.x, 0, info.rootOffset.z],
       rootYaw: info.rootYaw,
-      usesSceneIk: info.pins.length > 0 || info.reaches.length > 0,
+      usesSceneIk: info.pins.length > 0 || info.reaches.length > 0 || info.grips.length > 0,
       bones: snapshotBones(m.bones),
       boneQuaternions: snapshotBoneQuaternions(m.bones),
     };

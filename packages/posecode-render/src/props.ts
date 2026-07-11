@@ -54,7 +54,13 @@ export function buildProps(types: string[], material?: THREE.Material): PropScen
         post.position.set(x, barH / 2, 0);
         group.add(post);
       }
+      // Centre anchor (back-compat) plus two shoulder-width grip points so a
+      // `grip: hands bar` lands each hand on its own spot instead of both at
+      // centre. GRIP_HALF ≈ half a shoulder width.
+      const GRIP_HALF = 0.18;
       anchors.set("bar", new THREE.Vector3(0, barH, 0));
+      anchors.set("bar_left", new THREE.Vector3(GRIP_HALF, barH, 0));
+      anchors.set("bar_right", new THREE.Vector3(-GRIP_HALF, barH, 0));
     } else if (type === "wall") {
       const wall = box(2.2, 2.6, 0.1, mat);
       wall.position.set(0, 1.3, -0.34);

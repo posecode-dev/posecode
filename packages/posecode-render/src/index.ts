@@ -12,7 +12,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { eulerRomFor } from "posecode-parser";
-import type { PosecodeIR, ReachTarget, PinTarget } from "posecode-parser";
+import type { PosecodeIR, ReachTarget, PinTarget, GripTarget } from "posecode-parser";
 import { buildMannequin, type Mannequin } from "./mannequin.js";
 import { applyGroundLock as applyGroundLockTo, groundFigure as groundFigureOf } from "./groundlock.js";
 import { buildTimeline, type BuiltTimeline, type PhaseSegment } from "./timeline.js";
@@ -27,7 +27,7 @@ import {
   type ClipSource,
 } from "./clips.js";
 import { depenetrate } from "./depenetrate.js";
-import { alignFloorPalms, levelPlantedFeet } from "./contacts.js";
+import { alignFloorPalms, levelPlantedFeet, wrapGrip } from "./contacts.js";
 
 const DEG = Math.PI / 180;
 
@@ -482,6 +482,50 @@ export function createViewer(
     }
   }
 
+  /**
+   * Bar grips: unlike a pin (body translate only), a grip makes each hand hold
+   * the bar. (1) Translate the body by the average wrist→anchor delta — the
+   * authored elbow flex raises the wrists, so the body rises: the pull-up. (2)
+   * Per-hand arm IK drives each wrist exactly onto its own two-point anchor
+   * (`bar_left`/`bar_right`), so the hands grip shoulder-width and the arms angle
+   * naturally instead of pointing straight up. (3) Wrap the fingers round the bar.
+   */
+  function applyGrips(grips: GripTarget[]): void {
+    if (grips.length === 0) return;
+    const resolveGrip = (anchor: string, effector: THREE.Object3D): THREE.Vector3 | null =>
+      resolveReachTarget(anchor, effector) ??
+      resolveReachTarget(anchor.replace(/_(left|right)$/, ""), effector);
+    // 1. Body translate (the vertical pull).
+    const delta = new THREE.Vector3();
+    let n = 0;
+    for (const g of grips) {
+      const effectorBone = EFFECTOR_BONE[g.effector] ?? g.effector;
+      const effector = mannequin.bones.get(effectorBone);
+      if (!effector) continue;
+      const target = resolveGrip(g.anchor, effector);
+      if (!target) continue;
+      delta.add(target.clone().sub(effector.getWorldPosition(new THREE.Vector3())));
+      n++;
+    }
+    if (n > 0) {
+      mannequin.root.position.add(delta.multiplyScalar(1 / n));
+      mannequin.root.updateMatrixWorld(true);
+    }
+    // 2. Per-hand arm IK onto each grip point (ROM-clamped via reachChain).
+    for (const g of grips) {
+      const effectorBone = EFFECTOR_BONE[g.effector] ?? g.effector;
+      const effector = mannequin.bones.get(effectorBone);
+      if (!effector) continue;
+      const target = resolveGrip(g.anchor, effector);
+      if (!target) continue;
+      const { joints, limits } = reachChain(effectorBone);
+      if (joints.length === 0) continue;
+      solveCCD({ joints, limits, effector, target }, 12);
+    }
+    // 3. Finger wrap.
+    wrapGrip(mannequin, grips);
+  }
+
   function frameCamera(): void {
     // Auto-frame the figure: fit its bounding box, keep a pleasant angle.
     // Include any scene prop too: a pull-up bar sits well above the figure's
@@ -535,6 +579,7 @@ export function createViewer(
       depenetrate(mannequin);
       applyGroundLockTo(mannequin, info.groundLock, frameAnchors(info.rootYaw, info.rootOffset));
       applyPins(info.pins);
+      applyGrips(info.grips);
       // Reach-IK BEFORE the floor safety clamp. When authored FK pushes a
       // reaching limb through the floor (cobra: prone + shoulders flex 50),
       // the limb must bend to meet the floor. Running reaches after the clamp

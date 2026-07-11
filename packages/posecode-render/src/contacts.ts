@@ -1,6 +1,6 @@
 /** Semantic contact-orientation helpers shared by viewer and eval. */
 import * as THREE from "three";
-import { eulerRomFor, type PinTarget, type ReachTarget } from "posecode-parser";
+import { eulerRomFor, type PinTarget, type ReachTarget, type GripTarget } from "posecode-parser";
 import type { Mannequin } from "./mannequin.js";
 
 const DOWN = new THREE.Vector3(0, -1, 0);
@@ -100,6 +100,40 @@ export function levelPlantedFeet(m: Mannequin, activeGroundLock: readonly string
     }
     ankle.quaternion.copy(local);
     changed = true;
+  }
+  if (changed) m.root.updateMatrixWorld(true);
+}
+
+/** Finger curl (radians about the knuckle X axis) that wraps a gripping hand. */
+export const FINGER_CURL = 1.35;
+/** Thumb opposition curl (radians) toward the fingers. */
+export const THUMB_CURL = 0.9;
+const FINGERS = ["index", "middle", "ring", "pinky"] as const;
+
+/**
+ * Curl the fingers of each gripping hand around the bar. Grips are per-side
+ * after resolution (`hand_left` / `hand_right`), so the side comes straight off
+ * the effector. The four fingers flex at the knuckle and the thumb opposes,
+ * turning the open reach pose into a closed grip on the bar.
+ */
+export function wrapGrip(m: Mannequin, grips: readonly GripTarget[]): void {
+  let changed = false;
+  for (const g of grips) {
+    const side = /_(left|right)$/.exec(g.effector)?.[1];
+    if (!side) continue;
+    for (const f of FINGERS) {
+      const bone = m.bones.get(`${f}_${side}`);
+      if (bone) {
+        bone.rotation.set(FINGER_CURL, 0, 0);
+        changed = true;
+      }
+    }
+    const thumb = m.bones.get(`thumb_${side}`);
+    if (thumb) {
+      // Thumb wraps from the opposite side: curl plus a sideways opposition.
+      thumb.rotation.set(THUMB_CURL, 0, side === "left" ? -THUMB_CURL : THUMB_CURL);
+      changed = true;
+    }
   }
   if (changed) m.root.updateMatrixWorld(true);
 }

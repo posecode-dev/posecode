@@ -8,7 +8,7 @@
  */
 
 import * as THREE from "three";
-import type { PosecodeIR, ReachTarget, PinTarget, TimingMode } from "posecode-parser";
+import type { PosecodeIR, ReachTarget, PinTarget, GripTarget, TimingMode } from "posecode-parser";
 import { poseFor, type PoseSpec } from "./poses.js";
 import { squad, squadControl } from "./squad.js";
 
@@ -25,6 +25,7 @@ interface Keyframe {
   groundLock: string[];
   reaches: ReachTarget[];
   pins: PinTarget[];
+  grips: GripTarget[];
   /** Root facing (yaw about world Y, radians) at this keyframe. */
   yaw: number;
   /** Root ground offset (world X/Z metres) from the load spot at this keyframe. */
@@ -56,6 +57,7 @@ export interface BuiltTimeline {
     groundLock: string[];
     reaches: ReachTarget[];
     pins: PinTarget[];
+    grips: GripTarget[];
     /** Interpolated root facing (yaw about world Y, radians). */
     rootYaw: number;
     /** Interpolated root ground offset (world X/Z metres) from the load spot. */
@@ -117,6 +119,7 @@ export function buildTimeline(ir: PosecodeIR): BuiltTimeline {
     groundLock: [],
     reaches: [],
     pins: [],
+    grips: [],
     yaw: 0,
     pos: { x: 0, z: 0 },
   });
@@ -139,6 +142,7 @@ export function buildTimeline(ir: PosecodeIR): BuiltTimeline {
       groundLock: phase.groundLock,
       reaches: phase.reaches,
       pins: phase.pins,
+      grips: phase.grips,
       yaw: currYaw * DEG,
       pos: { ...currPos },
     });
@@ -160,6 +164,7 @@ export function buildTimeline(ir: PosecodeIR): BuiltTimeline {
     groundLock: [],
     reaches: [],
     pins: [],
+    grips: [],
     yaw: wrapYaw,
     pos: { x: 0, z: 0 },
   });
@@ -244,6 +249,7 @@ export function buildTimeline(ir: PosecodeIR): BuiltTimeline {
         groundLock: b.groundLock,
         reaches: b.reaches,
         pins: b.pins,
+        grips: b.grips,
         rootYaw,
         rootOffset,
       };

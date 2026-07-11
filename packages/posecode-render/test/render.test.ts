@@ -6,7 +6,7 @@ import { solveCCD } from "../src/ik.js";
 import { poseFor } from "../src/poses.js";
 import { buildProps } from "../src/props.js";
 import { applyGroundLock, groundFigure } from "../src/groundlock.js";
-import { levelPlantedFeet } from "../src/contacts.js";
+import { levelPlantedFeet, wrapGrip } from "../src/contacts.js";
 import { parse, eulerRomFor } from "posecode-parser";
 
 const DEG = Math.PI / 180;
@@ -785,5 +785,31 @@ describe("foot-flat correction (L3.1)", () => {
     // Leveling makes the sole markedly flatter than raw ground-lock leaves it.
     expect(soleDot()).toBeGreaterThan(before);
     expect(soleDot()).toBeGreaterThan(0.9);
+  });
+});
+
+describe("bar grip (L3.2)", () => {
+  it("exposes two-point bar grip anchors shoulder-width apart", () => {
+    const { anchors } = buildProps(["bar"]);
+    const l = anchors.get("bar_left");
+    const r = anchors.get("bar_right");
+    expect(l).toBeDefined();
+    expect(r).toBeDefined();
+    expect(l!.x).toBeGreaterThan(0); // left hand grips the +X side
+    expect(r!.x).toBeLessThan(0);
+    expect(Math.abs(l!.x - r!.x)).toBeCloseTo(0.36, 2);
+    expect(l!.y).toBeCloseTo(r!.y, 5); // same bar height
+  });
+
+  it("wraps the fingers of a gripping hand into a curl", () => {
+    const m = buildMannequin();
+    const restIndex = m.bones.get("index_left")!.rotation.x;
+    const restThumb = m.bones.get("thumb_left")!.rotation.x;
+    wrapGrip(m, [{ effector: "hand_left", anchor: "bar_left" }]);
+    expect(m.bones.get("index_left")!.rotation.x).toBeGreaterThan(restIndex + 0.5);
+    expect(m.bones.get("middle_left")!.rotation.x).toBeGreaterThan(0.5);
+    expect(m.bones.get("thumb_left")!.rotation.x).toBeGreaterThan(restThumb + 0.3);
+    // the un-gripped right hand is untouched
+    expect(m.bones.get("index_right")!.rotation.x).toBeCloseTo(0, 5);
   });
 });
