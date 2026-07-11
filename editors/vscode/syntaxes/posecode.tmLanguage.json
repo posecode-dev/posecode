@@ -29,7 +29,7 @@
     },
     "keywords": {
       "name": "keyword.control.posecode",
-      "match": "\\b(posecode|rig|pose|start|step|repeat|ground-lock|cue|hold)\\b"
+      "match": "\\b(posecode|rig|prop|pose|start|step|repeat|clip|ground-lock|reach|pin|grip|turn|travel|cue|hold)\\b"
     },
     "kinds": {
       "name": "storage.type.posecode",

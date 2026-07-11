@@ -135,3 +135,26 @@ describe("timing modes (L2)", () => {
     expect(hint?.message).toContain("settle");
   });
 });
+
+describe("grip directive (L3.2)", () => {
+  it("offers grip as a step child keyword", () => {
+    const doc = ['posecode exercise "x"', "  rig humanoid", '  step "Hang" 1s flow:', "    "].join("\n");
+    const line = doc.split("\n")[3]!;
+    const labels = getCompletions(doc, 3, line.length).map((i) => i.label);
+    expect(labels).toContain("grip");
+  });
+
+  it("completes effectors after `grip:`", () => {
+    const doc = ['posecode exercise "x"', "  rig humanoid", '  step "Hang" 1s flow:', "    grip: "].join("\n");
+    const line = doc.split("\n")[3]!;
+    const labels = getCompletions(doc, 3, line.length).map((i) => i.label);
+    expect(labels).toContain("hands");
+  });
+
+  it("hovers grip with its doc", () => {
+    const doc = ['posecode exercise "x"', "  rig humanoid", '  step "Hang" 1s flow:', "    grip: hands bar"].join("\n");
+    const line = doc.split("\n")[3]!;
+    const h = getHover(doc, 3, line.indexOf("grip") + 1);
+    expect(h?.contents.toLowerCase()).toContain("bar");
+  });
+});

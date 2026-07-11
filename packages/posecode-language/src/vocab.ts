@@ -32,7 +32,7 @@ export const PROPS = ["chair", "wall", "bar", "box", "dip-bars"];
 export const TOP_KEYWORDS = ["rig", "prop", "pose", "clip", "step", "repeat"];
 
 /** Keywords valid as step children. */
-export const CHILD_KEYWORDS = ["ground-lock", "reach", "pin", "turn", "travel", "cue"];
+export const CHILD_KEYWORDS = ["ground-lock", "reach", "pin", "grip", "turn", "travel", "cue"];
 
 /** Short docs surfaced on hover and as completion detail. */
 export const KEYWORD_DOCS: Record<string, string> = {
@@ -53,6 +53,7 @@ export const KEYWORD_DOCS: Record<string, string> = {
   reach:
     "Drives an effector to a target via ROM-constrained IK: `reach: hand_left ankle_left`, `reach: hands floor`.",
   pin: "Moves the body so an effector sits on an anchor: `pin: hands bar` (hang, pull up, step up, dip).",
+  grip: "Holds a bar/rail: `grip: hands bar`. Each hand gets its own two-point anchor (bar_left/bar_right), the arm bends via IK onto it, and the fingers wrap the bar. Use for pull-up, dead-hang, hanging knee raise.",
   turn: "Turns the figure to face a new direction: `turn: 360` (degrees, yaw about vertical). Absolute, carried across phases. Standing poses only.",
   travel: "Moves the figure across the floor: `travel: 0.4 0` (world x z metres from the start spot). Absolute, carried across phases. Standing poses only.",
   cue: "A short coaching cue shown while this phase plays.",
