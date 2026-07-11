@@ -27,7 +27,7 @@ import {
   type ClipSource,
 } from "./clips.js";
 import { depenetrate } from "./depenetrate.js";
-import { alignFloorPalms } from "./contacts.js";
+import { alignFloorPalms, levelPlantedFeet } from "./contacts.js";
 
 const DEG = Math.PI / 180;
 
@@ -544,6 +544,10 @@ export function createViewer(
       // floor/landmark targets resolve against.
       applyReaches(info.reaches);
       alignFloorPalms(mannequin, info.reaches, info.pins);
+      // Plantigrade correction: keep planted soles flat to the floor so grounded
+      // lower-body poses (squat, lunge, deadlift) don't balance on the toes.
+      // Runs before the floor clamp so the leveled sole is what rests on y=0.
+      levelPlantedFeet(mannequin, info.groundLock);
       // Safety net: nothing above ever intentionally pushes part of the body
       // below the floor, so clamp the root up whenever the lowest point dips
       // below y=0, a no-op whenever the pose is legitimately grounded or
@@ -641,6 +645,7 @@ export function createViewer(
       mannequin.root.updateMatrixWorld(true);
       depenetrate(mannequin);
       groundFigureOf(mannequin);
+      levelPlantedFeet(mannequin, ir.phases[0]?.groundLock ?? []);
       captureGroundTargets();
       baseRootPos.copy(mannequin.root.position);
       baseRootQuat.copy(mannequin.root.quaternion);

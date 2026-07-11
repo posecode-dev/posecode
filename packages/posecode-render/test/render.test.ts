@@ -6,6 +6,7 @@ import { solveCCD } from "../src/ik.js";
 import { poseFor } from "../src/poses.js";
 import { buildProps } from "../src/props.js";
 import { applyGroundLock, groundFigure } from "../src/groundlock.js";
+import { levelPlantedFeet } from "../src/contacts.js";
 import { parse, eulerRomFor } from "posecode-parser";
 
 const DEG = Math.PI / 180;
@@ -749,5 +750,40 @@ describe("spline interpolation (L2)", () => {
     const eps = 1e-3;
     const v = read(1).angleTo(read(1 - eps)) / eps; // velocity arriving at the settle kf
     expect(v).toBeLessThan(0.2);
+  });
+});
+
+describe("foot-flat correction (L3.1)", () => {
+  it("rests a squatting foot flatter on the floor (not on the toes)", () => {
+    const src = [
+      'posecode exercise "sq"',
+      "  rig humanoid",
+      "  pose start = standing",
+      '  step "Descend" 1s settle:',
+      "    hips: flex 80",
+      "    knees: flex 95",
+      "    pelvis: hinge 25",
+      "    ground-lock: feet",
+    ].join("\n");
+    const { ir } = parse(src);
+    const tl = buildTimeline(ir!);
+    const m = buildMannequin();
+    tl.sample(1, m.bones);
+    m.root.updateMatrixWorld(true);
+    groundFigure(m);
+    applyGroundLock(m, ["feet"]);
+    const soleDot = () => {
+      const ankle = m.bones.get("ankle_left")!;
+      return new THREE.Vector3(0, -1, 0)
+        .applyQuaternion(ankle.getWorldQuaternion(new THREE.Quaternion()))
+        .normalize()
+        .dot(new THREE.Vector3(0, -1, 0));
+    };
+    const before = soleDot();
+    levelPlantedFeet(m, ["feet"]);
+    m.root.updateMatrixWorld(true);
+    // Leveling makes the sole markedly flatter than raw ground-lock leaves it.
+    expect(soleDot()).toBeGreaterThan(before);
+    expect(soleDot()).toBeGreaterThan(0.9);
   });
 });
