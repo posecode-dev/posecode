@@ -8,7 +8,7 @@ import { expandJoint, romFor, boneType } from "posecode-parser";
 import {
   JOINT_NAMES,
   ACTION_NAMES,
-  EASINGS,
+  MODES,
   KINDS,
   POSES,
   KEYWORD_DOCS,
@@ -73,8 +73,8 @@ export function getHover(
   if (keywordDoc) return md(`**${token}**: ${keywordDoc}`);
   if (KINDS.includes(token)) return md(`Movement kind **${token}**.`);
   if (POSES.includes(token)) return md(`Start pose **${token}**.`);
-  if ((EASINGS as readonly string[]).includes(token)) {
-    return md(`Easing **${token}**.`);
+  if ((MODES as readonly string[]).includes(token)) {
+    return md(`**${token}** — ${KEYWORD_DOCS[token] ?? "timing mode"}`);
   }
   return null;
 }

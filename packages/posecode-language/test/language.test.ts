@@ -63,9 +63,9 @@ describe("getCompletions", () => {
     );
   });
 
-  it("suggests easings inside a step header", () => {
+  it("suggests timing modes inside a step header", () => {
     expect(onLine('  step "y" 2s ', 14)).toEqual(
-      expect.arrayContaining(["ease-in", "linear"]),
+      expect.arrayContaining(["flow", "settle", "linear"]),
     );
   });
 
@@ -102,5 +102,36 @@ describe("getHover", () => {
 
   it("returns null over whitespace", () => {
     expect(getHover("    ", 0, 2)).toBeNull();
+  });
+});
+
+describe("timing modes (L2)", () => {
+  const modeDoc = ['posecode exercise "x"', "  rig humanoid", "  step \"A\" 1s "].join("\n");
+
+  it("completes timing modes after a step duration", () => {
+    const lineText = modeDoc.split("\n")[2]!;
+    const got = getCompletions(modeDoc, 2, lineText.length).map((i) => i.label);
+    expect(got).toEqual(
+      expect.arrayContaining(["flow", "settle", "drive", "snap", "linear"]),
+    );
+  });
+
+  it("hovers a mode", () => {
+    const doc = 'posecode exercise "x"\n  rig humanoid\n  step "A" 1s flow:';
+    const line = doc.split("\n")[2]!;
+    const h = getHover(doc, 2, line.indexOf("flow") + 1);
+    expect(h?.contents.toLowerCase()).toContain("flow");
+  });
+
+  it("flags a deprecated easing name with a hint", () => {
+    const doc = [
+      'posecode exercise "x"',
+      "  rig humanoid",
+      '  step "A" 1s ease-in-out:',
+      "    knees: flex 10",
+    ].join("\n");
+    const diags = getDiagnostics(doc);
+    const hint = diags.find((d) => d.severity === "hint");
+    expect(hint?.message).toContain("settle");
   });
 });

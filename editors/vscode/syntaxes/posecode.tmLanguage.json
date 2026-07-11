@@ -45,7 +45,7 @@
     },
     "constants": {
       "name": "constant.language.posecode",
-      "match": "\\b(ease-in-out|ease-in|ease-out|linear|neutral|standing|plank|hands|feet|humanoid)\\b"
+      "match": "\\b(flow|settle|drive|snap|linear|ease-in-out|ease-in|ease-out|neutral|standing|plank|hands|feet|humanoid)\\b"
     },
     "numbers": {
       "name": "constant.numeric.posecode",

@@ -4,9 +4,16 @@
  * drift from what the language actually accepts.
  */
 
-import { JOINT_NAMES, ACTION_NAMES, EASINGS, EFFECTOR_NAMES } from "posecode-parser";
+import {
+  JOINT_NAMES,
+  ACTION_NAMES,
+  EASINGS,
+  MODES,
+  LEGACY_MODE_ALIASES,
+  EFFECTOR_NAMES,
+} from "posecode-parser";
 
-export { JOINT_NAMES, ACTION_NAMES, EASINGS };
+export { JOINT_NAMES, ACTION_NAMES, EASINGS, MODES, LEGACY_MODE_ALIASES };
 
 /** Movement kinds in the header (`posecode <kind> "..."`). */
 export const KINDS = ["exercise", "stretch", "posture"];
@@ -35,7 +42,12 @@ export const KEYWORD_DOCS: Record<string, string> = {
   pose: "Sets the starting pose: `pose start = standing | neutral | plank | supine | prone | seated`.",
   start: "Used in `pose start = <pose>`.",
   clip: 'Optional mocap clip: `clip "walk"`. A renderer with a matching retargeted animation plays it crossfaded over the procedural pose; others ignore it.',
-  step: 'A movement phase: `step "<name>" <Ns> <easing>:`.',
+  step: 'A movement phase: `step "<name>" <Ns> <mode>:` where mode is flow | settle | drive | snap | linear.',
+  flow: "Timing mode: pass through this pose with continuous velocity (flowing motion).",
+  settle: "Timing mode: decelerate to a genuine rest at this pose (a deliberate pause).",
+  drive: "Timing mode: accelerate from rest — the concentric effort of a rep.",
+  snap: "Timing mode: fast, near-immediate arrival — an accent.",
+  linear: "Timing mode: constant velocity — intentionally mechanical.",
   repeat: "How many times the movement loops.",
   "ground-lock": "Pins effectors (hands / feet) to the floor for this phase.",
   reach:

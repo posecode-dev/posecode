@@ -22,4 +22,5 @@ export {
   JOINT_NAMES,
   ACTION_NAMES,
   EASINGS,
+  MODES,
 } from "./vocab.js";

@@ -10,7 +10,7 @@ import {
   POSES,
   EFFECTORS,
   REACH_EFFECTORS,
-  EASINGS,
+  MODES,
   JOINT_NAMES,
   ACTION_NAMES,
   TOP_KEYWORDS,
@@ -80,7 +80,7 @@ export function getCompletions(
     case "pose":
       return POSES.map((p) => item(p, "pose"));
     case "easing":
-      return EASINGS.map((e) => item(e, "easing"));
+      return MODES.map((e) => item(e, "easing"));
     case "effector":
       return EFFECTORS.map((e) => item(e, "effector"));
     case "reach-effector":
