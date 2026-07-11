@@ -27,7 +27,7 @@ import {
   type ClipSource,
 } from "./clips.js";
 import { depenetrate } from "./depenetrate.js";
-import { alignFloorPalms, levelPlantedFeet, wrapGrip, relaxHands } from "./contacts.js";
+import { alignFloorPalms, levelPlantedFeet, wrapGrip, relaxHands, swingArms } from "./contacts.js";
 
 const DEG = Math.PI / 180;
 
@@ -270,6 +270,8 @@ export function createViewer(
   // Finger bones the loaded document explicitly poses (make-a-fist, finger-spell,
   // hand-wave): the L4.1 resting-hand curl leaves these alone.
   let authoredFingers = new Set<string>();
+  // Shoulders the document poses: L4.2 arm-swing leaves these to the author.
+  let authoredShoulders = new Set<string>();
   // The last loaded document, kept so the viewer can re-solve base pose and
   // ground anchors when the character (with its own proportions) arrives.
   let lastIR: PosecodeIR | null = null;
@@ -596,6 +598,8 @@ export function createViewer(
       // lower-body poses (squat, lunge, deadlift) don't balance on the toes.
       // Runs before the floor clamp so the leveled sole is what rests on y=0.
       levelPlantedFeet(mannequin, info.groundLock);
+      // L4.2 aliveness: contralateral arm swing during locomotion (free arms only).
+      swingArms(mannequin, authoredShoulders, gripSidesOf(info.grips));
       // L4.1 aliveness: relax idle hands into a natural curl (grips still wrap).
       relaxHands(mannequin, gripSidesOf(info.grips), authoredFingers);
       // Safety net: nothing above ever intentionally pushes part of the body
@@ -697,6 +701,8 @@ export function createViewer(
       groundFigureOf(mannequin);
       levelPlantedFeet(mannequin, ir.phases[0]?.groundLock ?? []);
       authoredFingers = new Set(timeline.bonesUsed.filter(isFingerId));
+      authoredShoulders = new Set(timeline.bonesUsed.filter((id) => id.startsWith("shoulder_")));
+      swingArms(mannequin, authoredShoulders, gripSidesOf(ir.phases[0]?.grips ?? []));
       relaxHands(mannequin, gripSidesOf(ir.phases[0]?.grips ?? []), authoredFingers);
       captureGroundTargets();
       baseRootPos.copy(mannequin.root.position);

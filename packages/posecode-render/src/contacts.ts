@@ -176,3 +176,38 @@ export function relaxHands(
   }
   if (changed) m.root.updateMatrixWorld(true);
 }
+
+/** Fraction of the contralateral hip's sagittal angle carried into arm swing. */
+export const SWING_GAIN = 0.4;
+const SWING_EULER = new THREE.Euler();
+const HIP_EULER = new THREE.Euler();
+
+/**
+ * Contralateral arm swing: during locomotion the arms counter-swing to the legs
+ * (right leg forward ↔ left arm forward). Adds a swing to each free shoulder
+ * proportional to the OPPOSITE hip's sagittal (local X) angle, so any move that
+ * animates the hips (walk, march, box-step) gets natural arm swing for free.
+ * Skips shoulders the document authors and any gripping side.
+ */
+export function swingArms(
+  m: Mannequin,
+  authoredShoulders: ReadonlySet<string>,
+  gripSides: ReadonlySet<"left" | "right">,
+): void {
+  let changed = false;
+  for (const side of ["left", "right"] as const) {
+    if (gripSides.has(side)) continue;
+    const shoulderId = `shoulder_${side}`;
+    if (authoredShoulders.has(shoulderId)) continue;
+    const shoulder = m.bones.get(shoulderId);
+    const contraHip = m.bones.get(`hip_${side === "left" ? "right" : "left"}`);
+    if (!shoulder || !contraHip) continue;
+    HIP_EULER.setFromQuaternion(contraHip.quaternion, "XYZ");
+    if (Math.abs(HIP_EULER.x) < 1e-3) continue; // legs still → no swing
+    SWING_EULER.setFromQuaternion(shoulder.quaternion, "XYZ");
+    SWING_EULER.x += HIP_EULER.x * SWING_GAIN;
+    shoulder.quaternion.setFromEuler(SWING_EULER);
+    changed = true;
+  }
+  if (changed) m.root.updateMatrixWorld(true);
+}

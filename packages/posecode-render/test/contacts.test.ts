@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import * as THREE from "three";
 import { buildMannequin } from "../src/mannequin.js";
-import { levelPlantedFeet, relaxHands } from "../src/contacts.js";
+import { levelPlantedFeet, relaxHands, swingArms } from "../src/contacts.js";
 import { groundFigure } from "../src/groundlock.js";
 
 const DEG = Math.PI / 180;
@@ -73,5 +73,35 @@ describe("relaxHands (L4.1)", () => {
     m.bones.get("index_left")!.rotation.x = 1.4; // authored fist
     relaxHands(m, new Set(), new Set(["index_left"]));
     expect(m.bones.get("index_left")!.rotation.x).toBeCloseTo(1.4, 5);
+  });
+});
+
+describe("swingArms (L4.2)", () => {
+  it("adds contralateral arm swing when a hip is flexed and the arm is free", () => {
+    const m = buildMannequin();
+    // Flex the right hip forward (walking: right leg forward → left arm forward).
+    m.bones.get("hip_right")!.rotation.x = -0.6;
+    const before = m.bones.get("shoulder_left")!.rotation.x;
+    swingArms(m, new Set(), new Set());
+    const after = m.bones.get("shoulder_left")!.rotation.x;
+    expect(Math.abs(after - before)).toBeGreaterThan(0.05); // swung
+    // swings the same sagittal direction as the contralateral hip (forward)
+    expect(Math.sign(after - before)).toBe(Math.sign(-0.6));
+  });
+
+  it("respects an authored shoulder (no swing)", () => {
+    const m = buildMannequin();
+    m.bones.get("hip_right")!.rotation.x = -0.6;
+    m.bones.get("shoulder_left")!.rotation.x = 0.9; // authored
+    swingArms(m, new Set(["shoulder_left"]), new Set());
+    expect(m.bones.get("shoulder_left")!.rotation.x).toBeCloseTo(0.9, 5);
+  });
+
+  it("skips a gripping side", () => {
+    const m = buildMannequin();
+    m.bones.get("hip_right")!.rotation.x = -0.6;
+    const before = m.bones.get("shoulder_left")!.rotation.x;
+    swingArms(m, new Set(), new Set(["left"]));
+    expect(m.bones.get("shoulder_left")!.rotation.x).toBeCloseTo(before, 5);
   });
 });
