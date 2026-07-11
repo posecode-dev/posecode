@@ -1,75 +1,72 @@
 /* ============================================================================
    Posecode Playground — "Kinetic Lab"
-   A premium kinematic motion-capture studio. Overhauled with Apple-inspired 
-   glassmorphism, a futuristic violet-indigo palette, responsive segmented 
-   controls, and springy interactive details.
+   A cinematic motion-capture studio: deep slate that blends into the 3D
+   viewport, a single signature lime accent used like a tracking marker, and
+   one orchestrated page-load reveal. Type: Hanken Grotesk + JetBrains Mono.
    ========================================================================== */
 
 :root {
-  /* Surfaces — tuned to flow into the Three.js scene (bg #06080b) */
-  --bg: #030406;
-  --bg-viewer: #06080b;
-  --panel: rgba(10, 15, 30, 0.45); /* True glassmorphic base */
-  --panel-2: rgba(20, 28, 48, 0.6);
-  --panel-3: rgba(28, 40, 68, 0.75);
-  --border: rgba(255, 255, 255, 0.05); /* Reflective hairline edges */
-  --border-2: rgba(255, 255, 255, 0.12);
+  /* Surfaces — tuned to flow into the Three.js scene (bg #0c0f15) */
+  --bg: #0a0d12;
+  --bg-viewer: #0c0f15;
+  --panel: #0f141b;
+  --panel-2: #141a23;
+  --panel-3: #1b222d;
+  --border: #1e2530;
+  --border-2: #2a323f;
 
   /* Ink */
-  --text: #f3f4f6;
-  --text-2: #9ca3af;
-  --muted: #6b7280;
+  --text: #e9eef4;
+  --text-2: #9aa6b4;
+  --muted: #616d7c;
 
-  /* Signature kinetic violet/indigo accent */
-  --accent: #6366f1;
-  --accent-2: #a855f7;
-  --accent-ink: #ffffff;
-  --accent-glow: rgba(99, 102, 241, 0.4);
-  --accent-veil: rgba(99, 102, 241, 0.12);
-  --accent-faint: rgba(99, 102, 241, 0.04);
+  /* Signature kinetic accent */
+  --accent: #c6f24a;
+  --accent-2: #a9e02f;
+  --accent-ink: #0a0d12;
+  --accent-glow: rgba(198, 242, 74, 0.45);
+  --accent-veil: rgba(198, 242, 74, 0.16);
+  --accent-faint: rgba(198, 242, 74, 0.07);
 
   /* Status */
-  --warn: #f59e0b; /* Amber */
-  --error: #ef4444; /* Coral Red */
+  --warn: #ffcc66;
+  --error: #ff6f6f;
 
   /* Track for the custom slider */
-  --track: rgba(255, 255, 255, 0.08);
+  --track: #232b37;
 
   --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
-  --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --sans: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
 
-  --radius: 14px;
-  --radius-sm: 10px;
-  --shadow-1: 0 4px 12px rgba(0, 0, 0, 0.3);
-  --shadow-2: 0 20px 50px rgba(0, 0, 0, 0.7);
-  --ease: cubic-bezier(0.16, 1, 0.3, 1); /* Elastic spring-out */
+  --radius: 10px;
+  --radius-sm: 8px;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 10px 30px -12px rgba(0, 0, 0, 0.7);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
 
-  /* Material systems */
-  --edge: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  --edge-strong: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  /* Material system — the light that separates a "flat panel" from a real,
+     machined surface. `--edge` is the hairline catch-light along a top edge;
+     `--sheen` a barely-there vertical gradient that gives panels a subtle
+     top-lit read. Used consistently so every chrome surface feels milled. */
+  --edge: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --edge-strong: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   --hairline: rgba(255, 255, 255, 0.06);
-  --sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.015), rgba(255, 255, 255, 0));
-  --shadow-float: 0 4px 20px rgba(0, 0, 0, 0.4), 0 20px 45px -10px rgba(0, 0, 0, 0.8);
+  --sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.022), rgba(255, 255, 255, 0));
+  --shadow-float: 0 2px 4px rgba(0, 0, 0, 0.3), 0 12px 34px -14px rgba(0, 0, 0, 0.8);
 
-  /* Accent discipline */
-  --accent-line: rgba(99, 102, 241, 0.35);
-  --accent-wash: rgba(99, 102, 241, 0.1);
-
-  /* Syntax colors (mapped to editor.ts) */
-  --t-kw: #818cf8;
-  --t-kind: #22d3ee;
-  --t-act: #fbbf24;
-  --t-joint: #c084fc;
-  --t-atom: #34d399;
-  --t-num: #f97316;
-  --t-str: #f472b6;
-  --t-punct: #6b7280;
+  /* Accent discipline: three tiers, brightest reserved. Signature moments only
+     get `--accent` at full strength; supporting states step down to line/wash
+     so the lime reads as a rare tracking marker, not a coat of paint. */
+  --accent-line: rgba(198, 242, 74, 0.35);
+  --accent-wash: rgba(198, 242, 74, 0.1);
 }
 
 * {
   box-sizing: border-box;
 }
 
+/* Links inherit ink and stay undecorated unless a component opts in — no raw
+   UA blue anywhere. */
 a {
   color: inherit;
   text-decoration: none;
@@ -99,50 +96,52 @@ body {
   inset: 0;
   z-index: -2;
   background:
-    radial-gradient(100vw 70vh at 78% -10%, rgba(99, 102, 241, 0.07), transparent 60%),
-    radial-gradient(80vw 60vh at 8% 110%, rgba(168, 85, 247, 0.06), transparent 55%),
+    radial-gradient(120vw 80vh at 78% -10%, rgba(198, 242, 74, 0.06), transparent 60%),
+    radial-gradient(80vw 60vh at 8% 110%, rgba(70, 110, 160, 0.08), transparent 55%),
     var(--bg);
 }
 .bg-fx::after {
   content: "";
   position: absolute;
   inset: 0;
-  opacity: 0.02;
+  opacity: 0.035;
   mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* --- Buttons (Premium Pill design) ---------------------------------------- */
+/* --- Buttons (the thing that screamed "school project") ------------------ */
 .btn {
   font-family: var(--sans);
   font-size: 13px;
   font-weight: 600;
-  letter-spacing: -0.1px;
+  letter-spacing: 0.1px;
   color: var(--text);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--panel-2);
   border: 1px solid var(--border-2);
-  border-radius: 999px; /* Pill */
-  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 7px;
   white-space: nowrap;
   transition:
-    transform 0.15s var(--ease),
-    border-color 0.2s var(--ease),
-    background 0.2s var(--ease),
-    box-shadow 0.2s var(--ease),
-    color 0.2s var(--ease);
+    transform 0.12s var(--ease),
+    border-color 0.16s var(--ease),
+    background 0.16s var(--ease),
+    box-shadow 0.16s var(--ease),
+    color 0.16s var(--ease);
 }
+/* Secondary buttons lift on a neutral surface — lime is reserved for the
+   primary CTA so it stays a signal, not decoration. */
 .btn:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--border-2);
+  background: var(--panel-3);
   color: #fff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), var(--edge-strong);
+  box-shadow: var(--edge-strong), var(--shadow-1);
 }
 .btn:active {
-  transform: scale(0.96);
+  transform: translateY(1px);
 }
 .btn:focus-visible {
   outline: none;
@@ -150,7 +149,7 @@ body {
   box-shadow: 0 0 0 2px var(--accent-wash);
 }
 .btn.sm {
-  padding: 5px 12px;
+  padding: 5px 10px;
   font-size: 12px;
 }
 
@@ -186,17 +185,17 @@ body {
 
 .btn.primary {
   color: var(--accent-ink);
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
   border-color: transparent;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.3) inset, 0 6px 18px -8px var(--accent-glow);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.25) inset, 0 6px 18px -8px var(--accent-glow);
 }
 .btn.primary:hover {
   color: var(--accent-ink);
-  filter: brightness(1.08);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.4) inset, 0 10px 24px -6px var(--accent-glow);
+  filter: brightness(1.06);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.3) inset, 0 10px 26px -8px var(--accent-glow);
 }
 
-/* --- Custom select (Pill styling) ----------------------------------------- */
+/* --- Custom select -------------------------------------------------------- */
 .select-wrap {
   position: relative;
   display: inline-flex;
@@ -204,18 +203,18 @@ body {
 .select-wrap::after {
   content: "";
   position: absolute;
-  right: 13px;
+  right: 11px;
   top: 50%;
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-right: 1.5px solid var(--text-2);
   border-bottom: 1.5px solid var(--text-2);
   transform: translateY(-65%) rotate(45deg);
   pointer-events: none;
-  transition: border-color 0.2s var(--ease);
+  transition: border-color 0.16s var(--ease);
 }
 .select-wrap:hover::after {
-  border-color: var(--accent-2);
+  border-color: var(--accent);
 }
 select {
   appearance: none;
@@ -224,40 +223,39 @@ select {
   font-size: 13px;
   font-weight: 600;
   color: var(--text);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--panel-2);
   border: 1px solid var(--border-2);
-  border-radius: 999px; /* Pill */
-  padding: 6px 30px 6px 14px;
+  border-radius: var(--radius-sm);
+  padding: 8px 32px 8px 12px;
   cursor: pointer;
-  transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease), background 0.2s var(--ease);
+  transition: border-color 0.16s var(--ease), box-shadow 0.16s var(--ease);
 }
 select:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--accent);
 }
 .select-wrap.sm select {
-  padding: 4px 26px 4px 12px;
-  font-size: 11.5px;
+  padding: 5px 26px 5px 10px;
+  font-size: 12px;
 }
 .select-wrap.sm::after {
-  right: 11px;
-  width: 5px;
-  height: 5px;
+  right: 9px;
+  width: 6px;
+  height: 6px;
 }
 
-/* --- Top bar (Floating Blur Header) --------------------------------------- */
+/* --- Top bar -------------------------------------------------------------- */
 .topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 20px;
+  padding: 12px 20px;
   border-bottom: 1px solid var(--border);
   background:
     var(--sheen),
-    rgba(10, 14, 22, 0.65);
+    linear-gradient(180deg, rgba(19, 24, 32, 0.94), rgba(11, 15, 21, 0.82));
   box-shadow: var(--edge);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   z-index: 10;
 }
 
@@ -272,25 +270,24 @@ select:hover {
   color: var(--accent);
   font-size: 15px;
   align-self: center;
-  filter: drop-shadow(0 0 10px var(--accent-glow));
+  filter: drop-shadow(0 0 8px var(--accent-glow));
   animation: pulse 3.4s ease-in-out infinite;
 }
 .brand .wordmark {
   font-weight: 800;
   font-size: 18px;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.4px;
 }
 .brand .tag {
   color: var(--muted);
   font-family: var(--mono);
-  font-weight: 600;
-  font-size: 10px;
-  letter-spacing: 0.8px;
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
-  padding: 1px 8px;
+  padding: 2px 7px;
   border: 1px solid var(--border-2);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.02);
 }
 
 .topbar-actions {
@@ -299,23 +296,24 @@ select:hover {
   align-items: center;
 }
 
-/* Movement-library trigger */
+/* Movement-library trigger — the one content control in the topbar. Reads like
+   a select (kicker, current movement, caret) but opens the full browse panel. */
 .lib-btn {
   display: inline-flex;
   align-items: center;
   gap: 10px;
   font-family: var(--sans);
   color: var(--text);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--panel-2);
   border: 1px solid var(--border-2);
-  border-radius: 999px; /* Pill */
-  padding: 7px 16px;
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
   cursor: pointer;
-  transition: border-color 0.2s var(--ease), background 0.2s var(--ease);
+  transition: border-color 0.16s var(--ease), background 0.16s var(--ease);
 }
 .lib-btn:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--accent-line);
+  background: var(--panel-3);
 }
 .lib-btn:focus-visible {
   outline: none;
@@ -323,9 +321,9 @@ select:hover {
   box-shadow: 0 0 0 2px var(--accent-wash);
 }
 .lib-btn-kicker {
-  font-size: 9.5px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.7px;
   text-transform: uppercase;
   color: var(--muted);
 }
@@ -338,33 +336,33 @@ select:hover {
   white-space: nowrap;
 }
 .lib-caret {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   margin-top: -3px;
   border-right: 1.5px solid var(--text-2);
   border-bottom: 1.5px solid var(--text-2);
   transform: rotate(45deg);
-  transition: border-color 0.2s var(--ease);
+  transition: border-color 0.16s var(--ease);
 }
 .lib-btn:hover .lib-caret {
-  border-color: var(--accent-2);
+  border-color: var(--accent);
 }
 .count {
-  color: var(--accent-2);
+  color: var(--accent);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
-/* Divider in the floating topbar */
+/* Divider between content-selection controls and the action buttons. */
 .tb-divider {
   align-self: stretch;
   width: 1px;
-  margin: 6px 4px;
+  margin: 4px 4px;
   background: linear-gradient(
     180deg,
     transparent,
-    rgba(255, 255, 255, 0.1) 25%,
-    rgba(255, 255, 255, 0.1) 75%,
+    var(--border-2) 25%,
+    var(--border-2) 75%,
     transparent
   );
 }
@@ -374,19 +372,20 @@ select:hover {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 20px;
+  padding: 9px 20px;
   font-size: 13px;
   color: var(--text-2);
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(0, 0, 0, 0.16);
   border-bottom: 1px solid var(--border);
 }
+/* A small lime tick leads the strip instead of a full lime headline. */
 .intro::before {
   content: "";
   flex: none;
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--accent-2);
+  background: var(--accent);
   box-shadow: 0 0 8px var(--accent-glow);
 }
 .intro b {
@@ -397,14 +396,14 @@ select:hover {
   margin-left: auto;
   background: none;
   border: none;
-  color: var(--accent-2);
+  color: var(--accent);
   padding: 0;
   font-family: var(--sans);
   font-weight: 700;
   font-size: 13px;
   cursor: pointer;
   white-space: nowrap;
-  transition: filter 0.2s var(--ease);
+  transition: filter 0.15s var(--ease);
 }
 .intro .link:hover {
   filter: brightness(1.2);
@@ -429,7 +428,7 @@ select:hover {
 .layout {
   flex: 1;
   display: grid;
-  grid-template-columns: minmax(340px, 0.82fr) 1.18fr;
+  grid-template-columns: minmax(340px, 0.85fr) 1.15fr;
   min-height: 0;
 }
 
@@ -447,15 +446,15 @@ select:hover {
   gap: 10px;
   padding: 9px 16px;
   border-bottom: 1px solid var(--border);
-  background: rgba(10, 14, 22, 0.45);
+  background: var(--sheen), var(--panel);
   box-shadow: var(--edge);
 }
 .traffic {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #ff5f56;
-  box-shadow: 16px 0 0 #ffbd2e, 32px 0 0 #27c93f;
+  background: var(--border-2);
+  box-shadow: 16px 0 0 var(--border-2), 32px 0 0 var(--border-2);
   margin-right: 28px;
 }
 .file-name {
@@ -473,13 +472,13 @@ select:hover {
   font-size: 10px;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: var(--accent-2);
+  color: var(--accent);
 }
 .live i {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--accent-2);
+  background: var(--accent);
   box-shadow: 0 0 8px var(--accent-glow);
   animation: pulse 1.8s ease-in-out infinite;
 }
@@ -489,8 +488,8 @@ select:hover {
   min-height: 0;
   display: flex;
   position: relative;
-  transition: box-shadow 0.2s var(--ease);
 }
+/* CodeMirror host — fills the pane; the editor theme lives in editor.ts */
 #editor {
   flex: 1;
   min-height: 0;
@@ -503,12 +502,13 @@ select:hover {
 #editor .cm-editor.cm-focused {
   outline: none;
 }
-/* The active phase block running inside the editor */
+/* The step block driving the currently-animating phase (synced to playback). */
 #editor .cm-phase-active {
   background: var(--accent-faint);
-  box-shadow: inset 3px 0 0 0 var(--accent-2);
-  transition: background 0.3s var(--ease);
+  box-shadow: inset 2px 0 0 0 var(--accent);
+  transition: background 0.2s var(--ease);
 }
+/* Inset focus glow on the editor surface */
 .editor-wrap:focus-within {
   box-shadow: inset 0 0 0 1px var(--accent-veil), inset 0 14px 30px -28px var(--accent-glow);
 }
@@ -521,11 +521,11 @@ select:hover {
   font-family: var(--mono);
   font-size: 12px;
   line-height: 1.5;
-  background: rgba(10, 14, 22, 0.4);
+  background: var(--panel);
 }
 .warnings:empty::before {
   content: "✓  parses clean, no warnings";
-  color: var(--t-atom); /* Clean green */
+  color: var(--accent);
   opacity: 0.85;
 }
 .warnings .row {
@@ -557,7 +557,7 @@ select:hover {
   display: block;
   min-height: 0;
 }
-/* Visual vignette overlay */
+/* Top vignette so HUD text stays legible over bright poses */
 .viewer-veil {
   position: absolute;
   top: 0;
@@ -565,47 +565,39 @@ select:hover {
   right: 0;
   height: 130px;
   pointer-events: none;
-  background: linear-gradient(180deg, rgba(3, 4, 6, 0.7), transparent);
+  background: linear-gradient(180deg, rgba(8, 10, 14, 0.6), transparent);
 }
 
-/* visionOS-style floating HUD panels */
 .hud {
   position: absolute;
   top: 18px;
   left: 20px;
   pointer-events: none;
   max-width: 60ch;
-  background: rgba(10, 14, 22, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: var(--radius);
-  padding: 10px 16px;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: var(--shadow-1);
-  z-index: 5;
 }
 .phase {
   font-weight: 800;
-  font-size: 16px;
-  letter-spacing: -0.3px;
-  display: flex;
-  align-items: center;
+  font-size: 17px;
+  letter-spacing: -0.2px;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6);
 }
 .phase:not(:empty)::before {
   content: "";
   display: inline-block;
   width: 7px;
   height: 7px;
-  margin-right: 8px;
+  margin-right: 9px;
   border-radius: 50%;
-  background: var(--accent-2);
-  box-shadow: 0 0 8px var(--accent-glow);
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent-glow);
+  vertical-align: middle;
 }
 .cue {
   color: var(--text-2);
-  font-size: 12.5px;
+  font-size: 13px;
   line-height: 1.45;
   margin-top: 4px;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.6);
 }
 
 .reps {
@@ -614,73 +606,69 @@ select:hover {
   right: 20px;
   font-family: var(--mono);
   font-size: 11px;
-  font-weight: 600;
   letter-spacing: 0.5px;
-  color: var(--text);
-  background: rgba(10, 14, 22, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-2);
+  background: rgba(10, 13, 18, 0.55);
+  border: 1px solid var(--border-2);
   border-radius: 999px;
-  padding: 6px 14px;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  padding: 5px 12px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   pointer-events: none;
-  z-index: 5;
-  box-shadow: var(--shadow-1);
 }
 .reps:empty {
   display: none;
 }
 
-/* --- Phase ribbon (floating Dock elements) -------------------------------- */
+/* --- Phase ribbon --------------------------------------------------------- */
 .ribbon {
   display: flex;
   gap: 7px;
-  padding: 14px 16px 6px;
+  padding: 12px 16px 4px;
   flex-wrap: wrap;
-  z-index: 4;
 }
 .ribbon .chip {
   font-family: var(--sans);
   font-size: 12px;
   font-weight: 600;
   color: var(--text-2);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--panel-2);
   border: 1px solid var(--border-2);
-  border-radius: 999px; /* Pill */
-  padding: 5px 12px 5px 10px;
+  border-radius: 999px;
+  padding: 5px 13px 5px 12px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 7px;
   transition:
-    color 0.2s var(--ease),
-    border-color 0.2s var(--ease),
-    background 0.2s var(--ease),
-    box-shadow 0.2s var(--ease),
-    transform 0.15s var(--ease);
+    color 0.15s var(--ease),
+    border-color 0.15s var(--ease),
+    background 0.15s var(--ease),
+    box-shadow 0.15s var(--ease);
 }
+/* A status dot on every chip: dim by default, lit lime when active. Carries the
+   "which phase is playing" signal without a loud solid fill. */
 .ribbon .chip::before {
   content: "";
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.25);
-  transition: background 0.25s var(--ease), box-shadow 0.25s var(--ease);
+  background: var(--border-2);
+  transition: background 0.2s var(--ease), box-shadow 0.2s var(--ease);
 }
 .ribbon .chip:hover {
   color: var(--text);
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.06);
-  transform: translateY(-1px);
+  border-color: var(--border-2);
+  background: var(--panel-3);
 }
 .ribbon .chip.active {
   color: var(--text);
   background: var(--accent-wash);
   border-color: var(--accent-line);
-  box-shadow: 0 2px 10px -4px var(--accent-glow);
+  box-shadow: var(--edge);
 }
 .ribbon .chip.active::before {
-  background: var(--accent-2);
+  background: var(--accent);
   box-shadow: 0 0 8px var(--accent-glow);
 }
 
@@ -689,54 +677,59 @@ select:hover {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 12px 20px;
+  padding: 13px 20px;
   border-top: 1px solid var(--border);
   background:
     var(--sheen),
-    rgba(10, 14, 22, 0.65);
+    linear-gradient(180deg, rgba(17, 22, 30, 0.9), rgba(9, 12, 17, 0.96));
   box-shadow: var(--edge);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  z-index: 5;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
-/* Circular media-player button */
+/* Circular media-player transport — a single confident lime disc instead of a
+   wide, shouty pill. Reads as a precision control, not a toy button. */
 .btn-play {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex: none;
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   color: var(--accent-ink);
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+  background: radial-gradient(120% 120% at 50% 22%, var(--accent), var(--accent-2));
   border: none;
   border-radius: 50%;
   cursor: pointer;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    0 4px 12px -3px var(--accent-glow);
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.15),
+    0 4px 14px -4px var(--accent-glow);
   transition:
-    transform 0.15s var(--ease),
-    filter 0.2s var(--ease),
+    transform 0.14s var(--ease),
+    filter 0.16s var(--ease),
     box-shadow 0.2s var(--ease);
 }
 .btn-play:hover {
-  filter: brightness(1.08);
+  filter: brightness(1.05);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.4),
-    0 0 0 4px var(--accent-wash),
-    0 8px 18px -4px var(--accent-glow);
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.15),
+    0 0 0 5px var(--accent-wash),
+    0 8px 22px -6px var(--accent-glow);
 }
 .btn-play:active {
-  transform: scale(0.92);
+  transform: scale(0.94);
 }
 .btn-play:focus-visible {
   outline: none;
   box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
     0 0 0 3px var(--bg),
     0 0 0 5px var(--accent);
 }
+/* The word label is redundant next to a universal glyph — hide it, keep it for
+   screen readers via aria-label on the button. */
 .btn-play .lbl {
   position: absolute;
   width: 1px;
@@ -746,12 +739,13 @@ select:hover {
   white-space: nowrap;
 }
 .btn-play .ico {
-  width: 14px;
-  height: 14px;
+  width: 15px;
+  height: 15px;
   background: currentColor;
   -webkit-mask: center / contain no-repeat var(--icon);
   mask: center / contain no-repeat var(--icon);
 }
+/* Optically center the play triangle in the disc. */
 .btn-play[data-playing="false"] .ico {
   transform: translateX(1px);
 }
@@ -762,7 +756,7 @@ select:hover {
   --icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='6' y='5' width='4' height='14' rx='1'/%3E%3Crect x='14' y='5' width='4' height='14' rx='1'/%3E%3C/svg%3E");
 }
 
-/* Custom scrubber */
+/* Custom scrubber — fill driven by --pct (set in main.ts) */
 .scrub-wrap {
   position: relative;
   flex: 1;
@@ -780,9 +774,9 @@ select:hover {
   z-index: 2;
 }
 #scrub::-webkit-slider-runnable-track {
-  height: 4px;
+  height: 5px;
   border-radius: 999px;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
   background: linear-gradient(
     90deg,
     var(--accent) 0%,
@@ -793,24 +787,24 @@ select:hover {
 }
 #scrub::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 12px;
-  height: 12px;
+  width: 13px;
+  height: 13px;
   margin-top: -4px;
   border-radius: 50%;
   background: #fff;
   box-shadow:
-    0 0 0 3px var(--accent-2),
-    0 1px 3px rgba(0, 0, 0, 0.4),
-    0 0 10px var(--accent-glow);
+    0 0 0 3px var(--accent),
+    0 1px 3px rgba(0, 0, 0, 0.5),
+    0 0 12px var(--accent-glow);
   transition: box-shadow 0.15s var(--ease), transform 0.15s var(--ease);
 }
 #scrub:hover::-webkit-slider-thumb {
-  transform: scale(1.15);
+  transform: scale(1.12);
   box-shadow:
-    0 0 0 3px var(--accent-2),
-    0 0 0 6px rgba(168, 85, 247, 0.15),
-    0 1px 3px rgba(0, 0, 0, 0.4),
-    0 0 14px var(--accent-glow);
+    0 0 0 3px var(--accent),
+    0 0 0 7px var(--accent-wash),
+    0 1px 3px rgba(0, 0, 0, 0.5),
+    0 0 16px var(--accent-glow);
 }
 #scrub::-moz-range-track {
   height: 4px;
@@ -820,15 +814,15 @@ select:hover {
 #scrub::-moz-range-progress {
   height: 4px;
   border-radius: 999px;
-  background: var(--accent-2);
+  background: var(--accent);
 }
 #scrub::-moz-range-thumb {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border: none;
   border-radius: 50%;
-  background: var(--accent-2);
-  box-shadow: 0 0 0 4px var(--accent-veil), 0 0 10px var(--accent-glow);
+  background: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-veil), 0 0 12px var(--accent-glow);
 }
 
 .markers {
@@ -836,7 +830,7 @@ select:hover {
   left: 0;
   right: 0;
   top: 50%;
-  height: 10px;
+  height: 12px;
   transform: translateY(-50%);
   pointer-events: none;
   z-index: 1;
@@ -845,9 +839,9 @@ select:hover {
   position: absolute;
   top: 0;
   width: 2px;
-  height: 10px;
+  height: 12px;
   background: var(--muted);
-  opacity: 0.5;
+  opacity: 0.6;
   border-radius: 1px;
 }
 
@@ -860,23 +854,20 @@ select:hover {
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.2px;
   padding-left: 16px;
-  border-left: 1px solid var(--border-2);
+  border-left: 1px solid var(--hairline);
 }
-
 .loop,
 .speed {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 700;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.6px;
   text-transform: uppercase;
   color: var(--muted);
   user-select: none;
 }
-
-/* Custom iOS Snappy Switch for loops */
 .loop input {
   appearance: none;
   -webkit-appearance: none;
@@ -887,7 +878,7 @@ select:hover {
   border: 1px solid var(--border-2);
   position: relative;
   cursor: pointer;
-  transition: background 0.2s var(--ease), border-color 0.2s var(--ease);
+  transition: background 0.18s var(--ease), border-color 0.18s var(--ease);
 }
 .loop input::after {
   content: "";
@@ -898,24 +889,24 @@ select:hover {
   height: 12px;
   border-radius: 50%;
   background: var(--text-2);
-  transition: transform 0.2s var(--ease), background 0.2s var(--ease);
+  transition: transform 0.18s var(--ease), background 0.18s var(--ease);
 }
 .loop input:checked {
-  background: rgba(168, 85, 247, 0.2);
-  border-color: var(--accent-2);
+  background: var(--accent-veil);
+  border-color: var(--accent);
 }
 .loop input:checked::after {
   transform: translateX(14px);
-  background: var(--accent-2);
+  background: var(--accent);
 }
 
-/* --- Slide-over Panels (Glassmorphism) ------------------------------------ */
+/* --- Slide-over ----------------------------------------------------------- */
 .scrim {
   position: fixed;
   inset: 0;
-  background: rgba(3, 4, 6, 0.6);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(4, 6, 9, 0.6);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   z-index: 40;
   animation: fade 0.2s var(--ease);
 }
@@ -925,15 +916,13 @@ select:hover {
   right: 0;
   height: 100%;
   width: min(480px, 92vw);
-  background: rgba(10, 14, 22, 0.75);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background: linear-gradient(180deg, var(--panel), var(--bg));
   border-left: 1px solid var(--border-2);
   z-index: 50;
   display: flex;
   flex-direction: column;
-  box-shadow: -20px 0 60px rgba(0, 0, 0, 0.6);
-  animation: slidein 0.35s var(--ease);
+  box-shadow: -30px 0 60px -20px rgba(0, 0, 0, 0.7);
+  animation: slidein 0.32s var(--ease);
 }
 .slideover-head {
   display: flex;
@@ -972,7 +961,7 @@ select:hover {
   width: 26px;
   height: 26px;
   border-radius: 8px;
-  background: var(--accent-wash);
+  background: var(--accent-veil);
   border: 1px solid var(--accent);
   color: var(--accent);
   font-weight: 800;
@@ -985,7 +974,7 @@ select:hover {
   font-weight: 700;
 }
 .steps em {
-  color: var(--accent-2);
+  color: var(--accent);
   font-style: normal;
   font-weight: 600;
 }
@@ -995,7 +984,7 @@ select:hover {
 }
 .steps code {
   font-size: 12px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--panel-2);
   border: 1px solid var(--border);
   padding: 1px 6px;
   border-radius: 5px;
@@ -1012,7 +1001,7 @@ select:hover {
   align-items: center;
   justify-content: space-between;
   padding: 10px 14px;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--panel-2);
   font-size: 12px;
   color: var(--text-2);
   border-bottom: 1px solid var(--border);
@@ -1024,7 +1013,7 @@ select:hover {
   font-size: 11.5px;
   line-height: 1.55;
   color: var(--text-2);
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg);
   max-height: 46vh;
   overflow: auto;
   white-space: pre-wrap;
@@ -1043,11 +1032,11 @@ select:hover {
   font-family: var(--sans);
   font-size: 13.5px;
   color: var(--text);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--panel-2);
   border: 1px solid var(--border-2);
   border-radius: var(--radius-sm);
-  padding: 9px 14px;
-  transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+  padding: 9px 12px;
+  transition: border-color 0.16s var(--ease), box-shadow 0.16s var(--ease);
 }
 #lib-search::placeholder {
   color: var(--muted);
@@ -1057,11 +1046,12 @@ select:hover {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px var(--accent-wash);
 }
+/* Chip rows scroll sideways instead of wrapping, so filters stay one glance tall. */
 .chip-row {
   display: flex;
   gap: 6px;
   overflow-x: auto;
-  padding-bottom: 4px;
+  padding-bottom: 2px;
   scrollbar-width: none;
 }
 .chip-row::-webkit-scrollbar {
@@ -1073,20 +1063,20 @@ select:hover {
   font-size: 12px;
   font-weight: 600;
   color: var(--text-2);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--panel-2);
   border: 1px solid var(--border-2);
   border-radius: 999px;
   padding: 5px 12px;
   cursor: pointer;
   white-space: nowrap;
   transition:
-    color 0.2s var(--ease),
-    border-color 0.2s var(--ease),
-    background 0.2s var(--ease);
+    color 0.15s var(--ease),
+    border-color 0.15s var(--ease),
+    background 0.15s var(--ease);
 }
 .fchip:hover {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--panel-3);
 }
 .fchip[aria-pressed="true"] {
   color: var(--text);
@@ -1119,14 +1109,14 @@ select:hover {
   border-radius: var(--radius-sm);
   padding: 9px 10px;
   cursor: pointer;
-  transition: background 0.15s var(--ease);
+  transition: background 0.14s var(--ease);
 }
 .lib-item:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--panel-2);
 }
 .lib-item[aria-current="true"] {
   background: var(--accent-wash);
-  box-shadow: inset 2.5px 0 0 0 var(--accent-2);
+  box-shadow: inset 2px 0 0 0 var(--accent);
 }
 .lib-item .li-name {
   font-family: var(--sans);
@@ -1156,20 +1146,23 @@ select:hover {
 
 /* --- Scrollbars ----------------------------------------------------------- */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--border-2);
   border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.16);
+  background: #38424f;
+  background-clip: padding-box;
 }
 
 /* --- Focus visibility ----------------------------------------------------- */
 :focus-visible {
-  outline: 2px solid var(--accent-2);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -1204,7 +1197,7 @@ select:hover {
   to { opacity: 1; transform: scale(1); }
 }
 
-/* Page loads visual reveals */
+/* Orchestrated page-load reveal */
 @media (prefers-reduced-motion: no-preference) {
   .topbar { animation: rise 0.5s var(--ease) both; }
   .intro { animation: rise 0.5s var(--ease) 0.06s both; }
@@ -1213,43 +1206,41 @@ select:hover {
   .transport { animation: rise 0.5s var(--ease) 0.3s both; }
 }
 
-/* --- Segmented mobile controls (visionOS pill tabs) ----------------------- */
+/* --- Mobile Editor/Viewer segmented control (hidden on desktop) ----------- */
 .mobile-tabs {
   display: none;
-  gap: 4px;
-  padding: 6px 12px;
+  gap: 5px;
+  padding: 8px 16px;
   border-bottom: 1px solid var(--border);
-  background: rgba(10, 14, 22, 0.4);
-  backdrop-filter: blur(8px);
-  margin: 8px 16px;
-  border-radius: 999px; /* Floating segmented bar */
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-1);
+  background: var(--panel);
 }
 .mtab {
   flex: 1;
   font-family: var(--sans);
-  font-weight: 600;
-  font-size: 12.5px;
-  letter-spacing: -0.1px;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.2px;
   color: var(--text-2);
-  background: transparent;
-  border: none;
-  border-radius: 999px;
-  padding: 8px;
+  background: var(--panel-2);
+  border: 1px solid var(--border-2);
+  border-radius: 8px;
+  padding: 10px;
   cursor: pointer;
-  transition: color 0.2s var(--ease), background 0.2s var(--ease),
-    box-shadow 0.2s var(--ease);
+  transition: color 0.15s var(--ease), background 0.15s var(--ease),
+    border-color 0.15s var(--ease);
 }
 .mtab[aria-selected="true"] {
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: var(--shadow-1), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  color: var(--accent-ink);
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  border-color: transparent;
+  box-shadow: 0 4px 14px -6px var(--accent-glow);
 }
 
 /* --- Responsive ----------------------------------------------------------- */
 @media (max-width: 860px) {
+  /* Topbar: brand on its own line; below it one row with the Movement button
+     plus the two icon actions, then the primary CTA. Two dropdown-free rows
+     instead of the old three rows of selects. */
   .topbar {
     flex-wrap: wrap;
     gap: 10px 10px;
@@ -1267,15 +1258,17 @@ select:hover {
     justify-content: flex-start;
   }
   .lib-btn-kicker {
-    display: none;
+    display: none; /* the caret already says "this opens a picker" */
   }
   .lib-btn-name {
     flex: 1;
     max-width: none;
   }
+  /* The vertical divider only makes sense in the single-row desktop layout. */
   .tb-divider {
     display: none;
   }
+  /* Compact "How to use" + "Share" to icon-only so the controls fit one row. */
   #how-to,
   #share {
     flex: 0 0 auto;
@@ -1295,7 +1288,7 @@ select:hover {
     justify-content: center;
   }
 
-  /* Library bottom sheet on mobile */
+  /* The movement library becomes a bottom sheet on phones. */
   .slideover.library {
     top: auto;
     left: 0;
@@ -1306,7 +1299,7 @@ select:hover {
     border-left: none;
     border-top: 1px solid var(--border-2);
     border-radius: 16px 16px 0 0;
-    animation: sheetup 0.35s var(--ease);
+    animation: sheetup 0.32s var(--ease);
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
   .lib-tools {
@@ -1320,6 +1313,7 @@ select:hover {
     margin-left: 0;
   }
 
+  /* One pane at a time, full height, toggled by the segmented control. */
   .mobile-tabs {
     display: flex;
   }
@@ -1340,6 +1334,7 @@ select:hover {
   .hud {
     max-width: 80vw;
   }
+  /* Keep the transport clear of the iOS home indicator. */
   .transport {
     gap: 10px;
     padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
