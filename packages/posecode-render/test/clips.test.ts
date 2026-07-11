@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import * as THREE from "three";
-import { retargetMocapClip, createClipLayer } from "../src/clips.js";
+import { retargetMocapClip, createClipLayer, selectMotionClip } from "../src/clips.js";
 
 const DEG = Math.PI / 180;
 
@@ -98,6 +98,14 @@ function track(clip: THREE.AnimationClip, name: string): THREE.KeyframeTrack | u
 }
 
 describe("retargetMocapClip", () => {
+  it("chooses a moving take over a longer embedded bind-pose take", () => {
+    const staticTake = new THREE.AnimationClip("Take 001", 8, [
+      new THREE.VectorKeyframeTrack("mixamorigHips.position", [0, 8], [0, 1, 0, 0, 1, 0]),
+    ]);
+    const movingTake = makeSourceClip();
+    expect(selectMotionClip([staticTake, movingTake])?.name).toBe("walk");
+  });
+
   it("emits mixer-ready .bones[] tracks for bones the source animates", () => {
     const { clip } = retargeted();
     expect(track(clip, ".bones[mixamorigLeftArm].quaternion")).toBeDefined();

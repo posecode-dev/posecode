@@ -12,14 +12,7 @@ export function alignFloorPalms(
   reaches: readonly ReachTarget[],
   pins: readonly PinTarget[],
 ): void {
-  const sides = new Set<"left" | "right">();
-  const collect = (effector: string, target: string) => {
-    if (target !== "floor") return;
-    if (effector === "hands" || effector === "hand_left") sides.add("left");
-    if (effector === "hands" || effector === "hand_right") sides.add("right");
-  };
-  reaches.forEach((r) => collect(r.effector, r.target));
-  pins.forEach((p) => collect(p.effector, p.anchor));
+  const sides = contactSides(reaches, pins, (target) => target === "floor", "hand");
 
   for (const side of sides) {
     const wrist = m.bones.get(`wrist_${side}`);
@@ -31,8 +24,68 @@ export function alignFloorPalms(
     const current = localNormal.applyQuaternion(world).normalize();
     const correction = new THREE.Quaternion().setFromUnitVectors(current, DOWN);
     const desiredWorld = correction.multiply(world);
-    const parentWorld = wrist.parent.getWorldQuaternion(new THREE.Quaternion());
-    wrist.quaternion.copy(parentWorld.invert().multiply(desiredWorld));
+    setWorldQuaternion(wrist, desiredWorld);
+  }
+  if (sides.size > 0) m.root.updateMatrixWorld(true);
+}
+
+/**
+ * Keep contacting feet flat and facing with the body. The ankle joint remains
+ * in place, so hip/knee motion and weight shift are preserved; only the sole's
+ * terminal orientation is corrected.
+ */
+export function alignFloorSoles(
+  m: Mannequin,
+  groundLock: readonly string[],
+  reaches: readonly ReachTarget[] = [],
+  pins: readonly PinTarget[] = [],
+): void {
+  const sides = contactSides(reaches, pins, (target) => target === "floor", "foot");
+  if (groundLock.includes("feet")) {
+    sides.add("left");
+    sides.add("right");
+  }
+  if (sides.size === 0) return;
+
+  const rootForward = FORWARD.clone().applyQuaternion(
+    m.root.getWorldQuaternion(new THREE.Quaternion()),
+  );
+  rootForward.y = 0;
+  if (rootForward.lengthSq() < 1e-8) rootForward.copy(FORWARD);
+  rootForward.normalize();
+  const worldX = UP.clone().cross(rootForward).normalize();
+  const desiredWorld = new THREE.Quaternion().setFromRotationMatrix(
+    new THREE.Matrix4().makeBasis(worldX, UP, rootForward),
+  );
+  for (const side of sides) {
+    const ankle = m.bones.get(`ankle_${side}`);
+    if (ankle) setWorldQuaternion(ankle, desiredWorld);
+  }
+  m.root.updateMatrixWorld(true);
+}
+
+/**
+ * Orient bar-contacting wrists as an overhand grip: fingers point up toward
+ * the bar and the palm faces away from the body. Finger curl remains authored
+ * independently, so this composes with grip strength / release animation.
+ */
+export function alignBarGrips(
+  m: Mannequin,
+  reaches: readonly ReachTarget[],
+  pins: readonly PinTarget[],
+): void {
+  const sides = contactSides(reaches, pins, (target) => target === "bar", "hand");
+  for (const side of sides) {
+    const wrist = m.bones.get(`wrist_${side}`);
+    if (!wrist) continue;
+    // Local palm normal is mirrored X; local -Y follows wrist→fingers.
+    const worldX = side === "left" ? FORWARD.clone() : FORWARD.clone().negate();
+    const worldY = UP.clone().negate();
+    const worldZ = worldX.clone().cross(worldY).normalize();
+    const desiredWorld = new THREE.Quaternion().setFromRotationMatrix(
+      new THREE.Matrix4().makeBasis(worldX, worldY, worldZ),
+    );
+    setWorldQuaternion(wrist, desiredWorld);
   }
   if (sides.size > 0) m.root.updateMatrixWorld(true);
 }

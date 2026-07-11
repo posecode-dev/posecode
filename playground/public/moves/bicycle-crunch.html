@@ -98,6 +98,7 @@ footer.site-footer{border-top:1px solid var(--border);padding:26px 0 40px;margin
 footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-width:70ch}
 @media(max-width:600px){.wrap{padding:0 18px}}
 </style>
+    <link rel="stylesheet" href="/content-theme.css" />
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to do a Bicycle crunch","description":"How to do the bicycle crunch (fitness): 4 phases targeting the obliques, body weight, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs.","step":[{"@type":"HowToStep","name":"Set","text":"Hands by the ears, knees over the hips, shoulders lifted"},{"@type":"HowToStep","name":"Right to left","text":"Right elbow toward the left knee; the right leg extends long"},{"@type":"HowToStep","name":"Left to right","text":"Switch: left elbow toward the right knee"},{"@type":"HowToStep","name":"Center","text":"Return to center, knees stacked over the hips"}]}</script>
     <script>
       window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
@@ -109,7 +110,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <div class="wrap">
         <a class="brand" href="/"><svg class="logo" aria-hidden="true" viewBox="0 0 100 100" width="18" height="18" fill="none"><g stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path d="M50 34V55"/><path d="M50 35L34 26L23 15"/><path d="M50 35L66 26L77 15"/><path d="M50 54L36 72L28 88"/><path d="M50 54L64 72L72 88"/></g><circle cx="50" cy="20" r="10" fill="currentColor"/></svg> Posecode</a>
         <nav class="links" aria-label="Primary">
-          <a href="/play.html">Playground</a>
+          <a href="/play">Playground</a>
           <a href="/moves/">Movement library</a>
           <a href="/spec.html">Language spec</a>
           <a href="/llm-guide.html">LLM guide</a>
@@ -129,7 +130,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
         that LLMs like ChatGPT, Claude, and Gemini can write to describe human movement as text.
         Every joint angle below is hard-clamped to a safe range of motion.</p>
 
-      <a class="btn" href="/play.html#doc=bicycle-crunch">▶ Open Bicycle crunch in the playground →</a>
+      <a class="btn" href="/play/bicycle-crunch">▶ Open Bicycle crunch in the playground →</a>
 
       <h2>How to do it</h2>
       <ol class="steps">
@@ -163,28 +164,34 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     knees: flex 90
     shoulders: flex 100
     elbows: flex 90
-    spine: flex 12
+    spine: flex 25
+    chest: flex 15
     neck: flex 20
     cue &quot;Hands by the ears, knees over the hips, shoulders lifted&quot;
 
   step &quot;Right to left&quot; 0.8s ease-in-out:
-    spine: rotate-out 20
+    spine: rotate-in 30
+    chest: rotate-in 20
     hip_left: flex 110
     knee_left: flex 90
-    hip_right: flex 25
-    knee_right: flex 20
+    hip_right: flex 15
+    knee_right: flex 5
+    reach: elbow_right knee_left
     cue &quot;Right elbow toward the left knee; the right leg extends long&quot;
 
   step &quot;Left to right&quot; 0.8s ease-in-out:
-    spine: rotate-in 20
+    spine: rotate-out 30
+    chest: rotate-out 20
     hip_right: flex 110
     knee_right: flex 90
-    hip_left: flex 25
-    knee_left: flex 20
+    hip_left: flex 15
+    knee_left: flex 5
+    reach: elbow_left knee_right
     cue &quot;Switch: left elbow toward the right knee&quot;
 
   step &quot;Center&quot; 0.6s ease-out:
     spine: rotate-in 0
+    chest: rotate-in 0
     hip_right: flex 90
     knee_right: flex 90
     hip_left: flex 90

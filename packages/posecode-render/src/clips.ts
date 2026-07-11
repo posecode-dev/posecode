@@ -3,7 +3,7 @@
  * walk) on the skinned character instead of — or crossfaded with — the
  * procedural DSL keyframes.
  *
- * Pipeline: `loadClipSource` fetches an FBX/GLB and picks its longest
+ * Pipeline: `loadClipSource` fetches an FBX/GLB and picks its strongest moving
  * AnimationClip; `retargetMocapClip` bakes it onto the character's skeleton
  * with SkeletonUtils.retargetClip (both rigs follow Mixamo naming, so bones
  * pair up by suffix); `createClipLayer` plays the result through a
@@ -29,12 +29,51 @@ function plainName(name: string): string {
 export interface ClipSource {
   /** The loaded asset's scene root (holds the source skeleton). */
   root: THREE.Object3D;
-  /** The longest animation found in the asset. */
+  /** The most motion-rich animation found in the asset. */
   clip: THREE.AnimationClip;
 }
 
 /**
- * Load a mocap asset (.fbx or .glb/.gltf) and pick its longest clip. Rejects
+ * Prefer the take with real changing bone tracks over long bind-pose/default
+ * takes commonly embedded beside a Mixamo animation in FBX exports.
+ */
+export function selectMotionClip(animations: readonly THREE.AnimationClip[]): THREE.AnimationClip | null {
+  let best: THREE.AnimationClip | null = null;
+  let bestScore = -Infinity;
+  for (const clip of animations) {
+    let movingTracks = 0;
+    let motion = 0;
+    for (const track of clip.tracks) {
+      const frames = track.times.length;
+      const stride = frames > 0 ? track.values.length / frames : 0;
+      if (frames < 2 || stride < 1) continue;
+      let trackMotion = 0;
+      for (let frame = 1; frame < frames; frame++) {
+        let deltaSq = 0;
+        for (let component = 0; component < stride; component++) {
+          const a = track.values[(frame - 1) * stride + component]!;
+          const b = track.values[frame * stride + component]!;
+          deltaSq += (b - a) * (b - a);
+        }
+        trackMotion += Math.sqrt(deltaSq);
+      }
+      trackMotion /= frames - 1;
+      if (trackMotion > 1e-5) {
+        movingTracks++;
+        motion += Math.min(trackMotion, 10);
+      }
+    }
+    const score = movingTracks * 100 + motion + Math.min(clip.duration, 10) * 0.001;
+    if (score > bestScore) {
+      best = clip;
+      bestScore = score;
+    }
+  }
+  return best;
+}
+
+/**
+ * Load a mocap asset (.fbx or .glb/.gltf) and pick its most motion-rich clip. Rejects
  * when the asset has no animations; callers treat any rejection as "keep the
  * procedural path".
  */
@@ -51,7 +90,7 @@ export async function loadClipSource(url: string): Promise<ClipSource> {
     root = gltf.scene;
     animations = gltf.animations;
   }
-  const clip = [...animations].sort((a, b) => b.duration - a.duration)[0];
+  const clip = selectMotionClip(animations);
   if (!clip) throw new Error(`clip asset has no animations: ${url}`);
   return { root, clip };
 }

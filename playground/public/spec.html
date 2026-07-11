@@ -98,6 +98,7 @@ footer.site-footer{border-top:1px solid var(--border);padding:26px 0 40px;margin
 footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-width:70ch}
 @media(max-width:600px){.wrap{padding:0 18px}}
 </style>
+    <link rel="stylesheet" href="/content-theme.css" />
     
     <script>
       window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
@@ -109,7 +110,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <div class="wrap">
         <a class="brand" href="/"><svg class="logo" aria-hidden="true" viewBox="0 0 100 100" width="18" height="18" fill="none"><g stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path d="M50 34V55"/><path d="M50 35L34 26L23 15"/><path d="M50 35L66 26L77 15"/><path d="M50 54L36 72L28 88"/><path d="M50 54L64 72L72 88"/></g><circle cx="50" cy="20" r="10" fill="currentColor"/></svg> Posecode</a>
         <nav class="links" aria-label="Primary">
-          <a href="/play.html">Playground</a>
+          <a href="/play">Playground</a>
           <a href="/moves/">Movement library</a>
           <a href="/spec.html">Language spec</a>
           <a href="/llm-guide.html">LLM guide</a>
@@ -131,10 +132,11 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 <pre class="code-block" data-lang="ebnf"><code>document   = header { directive } ;
 header     = &quot;posecode&quot; kind STRING ;
 kind       = &quot;exercise&quot; | &quot;stretch&quot; | &quot;posture&quot; ;       (* free-form word *)
-directive  = rig | prop | pose | step | repeat ;
+directive  = rig | prop | pose | clip | step | repeat ;
 rig        = &quot;rig&quot; WORD ;
 prop       = &quot;prop&quot; WORD ;                              (* chair|wall|bar|box|dip-bars, repeatable *)
 pose       = &quot;pose&quot; &quot;start&quot; &quot;=&quot; WORD ;                  (* neutral|standing|plank|supine|prone|seated *)
+clip       = &quot;clip&quot; STRING ;                            (* optional mocap clip; renderer may retarget &amp; blend *)
 repeat     = &quot;repeat&quot; NUMBER ;
 step       = &quot;step&quot; STRING DURATION easing &quot;:&quot; { child } ;
 easing     = &quot;linear&quot; | &quot;ease-in&quot; | &quot;ease-out&quot; | &quot;ease-in-out&quot; ;
@@ -190,7 +192,7 @@ DURATION   = NUMBER &quot;s&quot; ;                                (* e.g. 2s, 1
 <tr><td>spine</td><td>90</td><td>30</td><td>35</td><td>rotate 45</td></tr>
 <tr><td>neck</td><td>50</td><td>60</td><td>45</td><td>rotate 80</td></tr>
 </tbody></table></div>
-<p>&gt; ⚠️ These are general literature values, not medical advice. Consult a &gt; qualified professional for physiotherapy or exercise prescription.</p>
+<p>&gt;  These are general literature values, not medical advice. Consult a &gt; qualified professional for physiotherapy or exercise prescription.</p>
 <hr>
 <h2>5. Rendering model</h2>
 <ol><li><strong>Forward kinematics</strong>: each phase sets joint angles; the renderer slerps</li></ol>
@@ -204,11 +206,12 @@ DURATION   = NUMBER &quot;s&quot; ;                                (* e.g. 2s, 1
 <ol><li><strong>Props</strong>: <code>prop chair|wall|bar|box|dip-bars</code> adds a scene object at a</li></ol>
 <p>fixed default placement (chair/wall behind, bar overhead, box in front, dip bars either side); its named anchors (<code>seat</code>, <code>wall</code>, <code>bar</code>, <code>box</code>, <code>bars</code>) become reach/pin targets.</p>
 <ol><li><strong>Pins</strong>: <code>pin: &lt;effector&gt; &lt;anchor&gt;</code> translates the whole figure so the</li></ol>
-<p>effector sits on the anchor (effectors accept the same <code>hands</code>/<code>feet</code> groups as reach: <code>pin: hands bar</code> pins both). Where ground-lock keeps a foot on the floor and reach moves a limb to a target, a <strong>pin moves the body</strong> while the contact stays put, so the figure hangs from a bar, pulls up toward it, rises onto a box, or lowers into a dip as the joints work.</p>
+<p>effector sits on the anchor (effectors accept the same <code>hands</code>/<code>feet</code> groups as reach: <code>pin: hands bar</code> pins both). Where ground-lock keeps a foot on the floor and reach moves a limb to a target, a <strong>pin moves the body</strong> while the contact stays put, so the figure hangs from a bar, pulls up toward it, rises onto a box, or lowers into a dip as the joints work. Symmetric bar contacts resolve to side-specific anchors automatically (<code>bar.left</code> / <code>bar.right</code>, <code>bars.left</code> / <code>bars.right</code>). Contact post-processing also keeps floor-contacting soles level and gives bar-contacting wrists a stable overhand orientation; existing Posecode syntax remains unchanged.</p>
 <ol><li><strong>Spatial choreography</strong>: <code>turn: &lt;deg&gt;</code> rotates the figure's facing (yaw</li></ol>
 <p>about vertical) and <code>travel: &lt;x&gt; &lt;z&gt;</code> moves it across the floor (world metres from the load spot). Both are <strong>absolute targets carried across phases</strong> (like joint angles) and both return home on the loop wrap, so a box-step traces a square back to start and a pirouette spins a full turn. They layer under grounding (feet still rest on the floor) and power pirouettes, grapevines, traveling combos, and walk cycles. <strong>Standing poses only</strong>: combining with lying/seated bases (whose root is already tilted) is out of scope.</p>
 <ol><li><strong>Looping</strong>: the timeline loops base → phases → base; <code>repeat</code> is the rep</li></ol>
 <p>count surfaced to the UI.</p>
+<p>When a mocap clip is active, the renderer selects the take containing the most actual bone motion (rather than blindly choosing the longest embedded take), retargets and blends it, then restores solved terminal contacts on the visible character. Mocap therefore cannot overwrite a planted sole or pinned grip.</p>
 <p><strong>Start poses:</strong> <code>neutral</code>, <code>standing</code>, <code>plank</code>, <code>supine</code> (face-up), <code>prone</code> (face-down), <code>seated</code> (long-sit on the floor).</p>
 <p><strong>IK note:</strong> Three.js's bundled <code>CCDIKSolver</code> targets <code>SkinnedMesh</code>; the Posecode mannequin is rigid capsule segments, so Posecode implements CCD directly over the Object3D bone hierarchy (<code>posecode-render/ik.ts</code>) for both ground-lock and reach. Two-person/dual-IK and collision detection remain deferred (research §5.2, §6.2).</p>
 <hr>

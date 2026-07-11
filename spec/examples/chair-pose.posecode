@@ -5,7 +5,7 @@ posecode posture "Chair pose"
   step "Sink" 3s ease-in-out:
     hips: flex 55
     knees: flex 70
-    ankles: plantarflex 50
+    ankles: dorsiflex 15
     shoulders: flex 170
     pelvis: hinge 15
     spine: extend 5

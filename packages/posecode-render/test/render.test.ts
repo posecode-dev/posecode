@@ -4,7 +4,7 @@ import { buildMannequin } from "../src/mannequin.js";
 import { buildTimeline } from "../src/timeline.js";
 import { solveCCD } from "../src/ik.js";
 import { poseFor } from "../src/poses.js";
-import { buildProps } from "../src/props.js";
+import { buildProps, syncPropAttachments } from "../src/props.js";
 import { applyGroundLock, groundFigure } from "../src/groundlock.js";
 import { levelPlantedFeet, wrapGrip } from "../src/contacts.js";
 import { parse, eulerRomFor } from "posecode-parser";
@@ -399,11 +399,59 @@ describe("props", () => {
     const { anchors, group } = buildProps(["chair", "bar", "wall"]);
     expect(anchors.has("seat")).toBe(true);
     expect(anchors.has("bar")).toBe(true);
+    expect(anchors.has("bar.left")).toBe(true);
+    expect(anchors.has("bar.right")).toBe(true);
+    expect(anchors.get("bar.left")!.x).toBeGreaterThan(anchors.get("bar.right")!.x);
     expect(anchors.has("wall")).toBe(true);
     expect(anchors.get("bar")!.y).toBeGreaterThan(1.5); // overhead
     expect(group.children.length).toBeGreaterThan(0);
   });
 
+  it("attaches held sword and gun props to the solved wrist socket", () => {
+    const props = buildProps(["sword", "gun"]);
+    const m = buildMannequin();
+    m.root.position.set(0.4, 0.2, -0.3);
+    m.root.updateMatrixWorld(true);
+    syncPropAttachments(props, m.bones);
+    expect(props.attachments).toHaveLength(2);
+    const wrist = m.bones.get("wrist_right")!.getWorldPosition(new THREE.Vector3());
+    for (const attachment of props.attachments) {
+      expect(attachment.object.position.distanceTo(wrist)).toBeLessThan(0.2);
+    }
+  });
+
+});
+
+describe("oriented contacts", () => {
+  it("keeps grounded soles flat and facing with the figure", () => {
+    const m = buildMannequin();
+    m.bones.get("hip_left")!.rotation.x = -70 * DEG;
+    m.bones.get("knee_left")!.rotation.x = 90 * DEG;
+    m.root.rotation.y = 35 * DEG;
+    m.root.updateMatrixWorld(true);
+    alignFloorSoles(m, ["feet"]);
+    const q = m.bones.get("ankle_left")!.getWorldQuaternion(new THREE.Quaternion());
+    const up = new THREE.Vector3(0, 1, 0).applyQuaternion(q);
+    expect(up.y).toBeGreaterThan(0.999);
+  });
+
+  it("orients both palms into a stable overhand bar grip", () => {
+    const m = buildMannequin();
+    m.root.updateMatrixWorld(true);
+    const pins = [
+      { effector: "hand_left", anchor: "bar" },
+      { effector: "hand_right", anchor: "bar" },
+    ];
+    alignBarGrips(m, [], pins);
+    for (const side of ["left", "right"] as const) {
+      const q = m.bones.get(`wrist_${side}`)!.getWorldQuaternion(new THREE.Quaternion());
+      const localNormal = side === "left"
+        ? new THREE.Vector3(1, 0, 0)
+        : new THREE.Vector3(-1, 0, 0);
+      const normal = localNormal.applyQuaternion(q);
+      expect(normal.z).toBeGreaterThan(0.999);
+    }
+  });
 });
 
 describe("ccd ik", () => {

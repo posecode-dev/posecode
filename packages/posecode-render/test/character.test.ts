@@ -159,4 +159,24 @@ describe("character retargeting", () => {
     // The ankle rides well above the sole (character feet, not the default shoe).
     expect(p.soleDrop).toBeGreaterThan(0.05);
   });
+
+  it("restores visible contacts after a mocap pose overwrites them", () => {
+    const char = rigCharacter(makeTposeSkeleton());
+    const driver = buildMannequin(undefined, char.proportions);
+    driver.root.position.set(0.2, 0.1, -0.15);
+    driver.bones.get("shoulder_left")!.rotation.x = -120 * DEG;
+    driver.root.updateMatrixWorld(true);
+    char.sync(driver);
+
+    const hand = char.group.getObjectByName("mixamorigLeftHand")!;
+    const solvedWorld = hand.getWorldQuaternion(new THREE.Quaternion());
+    char.group.position.add(new THREE.Vector3(0.3, -0.2, 0.25));
+    hand.rotation.set(0.7, -0.4, 0.2);
+    char.group.updateMatrixWorld(true);
+
+    char.correctContacts(driver, ["wrist_left"]);
+    expect(jointGap(driver, char, "wrist_left", "LeftHand")).toBeLessThan(1e-3);
+    const correctedWorld = hand.getWorldQuaternion(new THREE.Quaternion());
+    expect(correctedWorld.angleTo(solvedWorld)).toBeLessThan(1e-3);
+  });
 });

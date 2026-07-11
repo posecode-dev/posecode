@@ -10,7 +10,12 @@
 import { parse } from "posecode-parser";
 import { inject } from "@vercel/analytics";
 import type { Viewer } from "posecode-render";
-import { buildNiceShareHash, resolveSharedSource } from "./nice-share.js";
+import {
+  buildNicePlayPath,
+  buildNiceShareHash,
+  resolveSharedPath,
+  resolveSharedSource,
+} from "./nice-share.js";
 import type { PosecodeEditor } from "./editor.js";
 import { PRESETS } from "./presets.js";
 import { renderWarnings } from "./warnings.js";
@@ -155,6 +160,16 @@ let debounce = 0;
 function scheduleRecompile(): void {
   window.clearTimeout(debounce);
   debounce = window.setTimeout(recompile, 250);
+}
+
+/** Keep the address bar and library label in sync with editor changes. */
+function handleEditorChange(source: string): void {
+  const preset = PRESETS.find((p) => p.source === source);
+  currentPresetId = preset?.id ?? null;
+  libCurrent.textContent =
+    preset?.label ?? (source.trim() ? "Custom movement" : "New movement");
+  history.replaceState(null, "", buildNicePlayPath(source));
+  scheduleRecompile();
 }
 
 function recompile(): void {
@@ -334,6 +349,7 @@ function loadPreset(id: string): void {
   currentPresetId = preset.id;
   libCurrent.textContent = preset.label;
   editorApi?.setValue(preset.source);
+  history.replaceState(null, "", buildNicePlayPath(preset.source));
   recompile();
   setMobileView("viewer"); // on phones, jump to the figure after picking
 }
@@ -353,6 +369,7 @@ $<HTMLButtonElement>("new-doc").addEventListener("click", () => {
   currentPresetId = null;
   libCurrent.textContent = "New movement";
   editorApi?.setValue("");
+  history.replaceState(null, "", "/play");
   recompile(); // swaps the status row to the blank-editor hint immediately
   setMobileView("editor"); // the paste target, front and center on phones
   editorApi?.focus();
@@ -411,9 +428,11 @@ copyBtn.addEventListener("click", () => copyPrompt(copyBtn));
 async function shareLink(): Promise<void> {
   if (!editorApi) return; // editor still loading; nothing to snapshot yet
   try {
-    const hash = buildNiceShareHash(editorApi.getValue());
-    const url = `${location.origin}${location.pathname}${hash}`;
-    history.replaceState(null, "", hash);
+    const source = editorApi.getValue();
+    const path = buildNicePlayPath(source);
+    const hash = path === "/play" ? buildNiceShareHash(source) : "";
+    const url = `${location.origin}${path}${hash}`;
+    history.replaceState(null, "", `${path}${hash}`);
     await navigator.clipboard.writeText(url);
     flash(shareBtn, "Link copied ✓");
   } catch (err) {
@@ -474,10 +493,10 @@ $<HTMLButtonElement>("intro-dismiss").addEventListener("click", () => {
   intro.hidden = true;
 });
 
-// Boot: a shared link (?#doc=…) wins over the default preset. A link built
-// from a known movement (`#doc=squat`) resolves straight to that preset, so
-// it opens exactly like picking it from the library would.
-const sharedSource = resolveSharedSource(window.location.hash);
+// Boot: an old-style shared hash or a friendly `/play/:movement` route wins
+// over the default preset, opening exactly like a library selection.
+const sharedSource =
+  resolveSharedSource(window.location.hash) ?? resolveSharedPath(window.location.pathname);
 let initialDoc: string;
 if (sharedSource) {
   const preset = PRESETS.find((p) => p.source === sharedSource);
@@ -500,7 +519,7 @@ if (sharedSource) {
 void import("./editor.js").then(({ createPosecodeEditor }) => {
   editorApi = createPosecodeEditor($("editor"), {
     doc: initialDoc,
-    onChange: scheduleRecompile,
+    onChange: handleEditorChange,
   });
   recompile();
 });
@@ -516,7 +535,14 @@ void import("posecode-render").then(({ createViewer }) => {
     new URLSearchParams(location.search).get("figure") === "classic";
   viewer = createViewer(canvas, {
     autoRotate: false,
-    ...(classicFigure ? {} : { characterUrl: "/models/character.glb" }),
+    ...(classicFigure
+      ? {}
+      : {
+          characterUrl: "/models/character.glb",
+          // Avoid flashing the procedural/classic figure while the default
+          // mannequin asset loads. It still appears if the GLB genuinely fails.
+          showProceduralWhileLoading: false,
+        }),
     // Mocap-clip library: a document's `clip "<name>"` directive picks a
     // retargeted animation from here, crossfaded over the procedural pose (see
     // clips.ts). Only fetched when a loaded movement names the clip, so this

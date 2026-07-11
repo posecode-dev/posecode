@@ -98,6 +98,7 @@ footer.site-footer{border-top:1px solid var(--border);padding:26px 0 40px;margin
 footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-width:70ch}
 @media(max-width:600px){.wrap{padding:0 18px}}
 </style>
+    <link rel="stylesheet" href="/content-theme.css" />
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to do a Tendu","description":"How to do the tendu (dance): 2 phases targeting the hip flexors, body weight, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs.","step":[{"@type":"HowToStep","name":"Point front","text":"Brush the right foot forward to a fully pointed tendu, leg turned out"},{"@type":"HowToStep","name":"Close","text":"Draw the foot back to first position, heel down"}]}</script>
     <script>
       window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
@@ -109,7 +110,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <div class="wrap">
         <a class="brand" href="/"><svg class="logo" aria-hidden="true" viewBox="0 0 100 100" width="18" height="18" fill="none"><g stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path d="M50 34V55"/><path d="M50 35L34 26L23 15"/><path d="M50 35L66 26L77 15"/><path d="M50 54L36 72L28 88"/><path d="M50 54L64 72L72 88"/></g><circle cx="50" cy="20" r="10" fill="currentColor"/></svg> Posecode</a>
         <nav class="links" aria-label="Primary">
-          <a href="/play.html">Playground</a>
+          <a href="/play">Playground</a>
           <a href="/moves/">Movement library</a>
           <a href="/spec.html">Language spec</a>
           <a href="/llm-guide.html">LLM guide</a>
@@ -129,7 +130,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
         that LLMs like ChatGPT, Claude, and Gemini can write to describe human movement as text.
         Every joint angle below is hard-clamped to a safe range of motion.</p>
 
-      <a class="btn" href="/play.html#doc=tendu">▶ Open Tendu in the playground →</a>
+      <a class="btn" href="/play/tendu">▶ Open Tendu in the playground →</a>
 
       <h2>How to do it</h2>
       <ol class="steps">
@@ -157,6 +158,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     ankle_right: plantarflex 45
     shoulders: abduct 70
     elbows: flex 14
+    pin: foot_left floor
     cue &quot;Brush the right foot forward to a fully pointed tendu, leg turned out&quot;
 
   step &quot;Close&quot; 1.6s ease-in-out:
@@ -165,6 +167,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     ankle_right: plantarflex 0
     shoulders: abduct 0
     elbows: flex 0
+    ground-lock: feet
     cue &quot;Draw the foot back to first position, heel down&quot;
 
   repeat 4

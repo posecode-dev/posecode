@@ -98,6 +98,7 @@ footer.site-footer{border-top:1px solid var(--border);padding:26px 0 40px;margin
 footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-width:70ch}
 @media(max-width:600px){.wrap{padding:0 18px}}
 </style>
+    <link rel="stylesheet" href="/content-theme.css" />
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to do a Box squat","description":"How to do the box squat (fitness): 2 phases targeting the quadriceps, chair, beginner level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs.","step":[{"@type":"HowToStep","name":"Sit back","text":"Push the hips back and sit lightly onto the box"},{"@type":"HowToStep","name":"Stand","text":"Drive up to standing without bouncing off the box"}]}</script>
     <script>
       window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
@@ -109,7 +110,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <div class="wrap">
         <a class="brand" href="/"><svg class="logo" aria-hidden="true" viewBox="0 0 100 100" width="18" height="18" fill="none"><g stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path d="M50 34V55"/><path d="M50 35L34 26L23 15"/><path d="M50 35L66 26L77 15"/><path d="M50 54L36 72L28 88"/><path d="M50 54L64 72L72 88"/></g><circle cx="50" cy="20" r="10" fill="currentColor"/></svg> Posecode</a>
         <nav class="links" aria-label="Primary">
-          <a href="/play.html">Playground</a>
+          <a href="/play">Playground</a>
           <a href="/moves/">Movement library</a>
           <a href="/spec.html">Language spec</a>
           <a href="/llm-guide.html">LLM guide</a>
@@ -129,7 +130,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
         that LLMs like ChatGPT, Claude, and Gemini can write to describe human movement as text.
         Every joint angle below is hard-clamped to a safe range of motion.</p>
 
-      <a class="btn" href="/play.html#doc=box-squat">▶ Open Box squat in the playground →</a>
+      <a class="btn" href="/play/box-squat">▶ Open Box squat in the playground →</a>
 
       <h2>How to do it</h2>
       <ol class="steps">
@@ -154,8 +155,9 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   step &quot;Sit back&quot; 1.6s ease-in-out:
     hips: flex 85
     knees: flex 90
-    ankles: dorsiflex 12
-    spine: flex 10
+    ankles: dorsiflex 15
+    pelvis: hinge 20
+    spine: flex 0
     shoulders: flex 70
     ground-lock: feet
     cue &quot;Push the hips back and sit lightly onto the box&quot;
@@ -163,7 +165,8 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   step &quot;Stand&quot; 1.4s ease-out:
     hips: flex 0
     knees: flex 0
-    ankles: dorsiflex 0
+    ankles: plantarflex 0
+    pelvis: hinge 0
     spine: flex 0
     shoulders: flex 0
     ground-lock: feet

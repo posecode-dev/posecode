@@ -18,7 +18,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        // Two pages: the landing (/) and the playground (/play.html).
+        // Build files behind the public `/` and `/play[/movement]` routes.
         main: resolve(here, "index.html"),
         play: resolve(here, "play.html"),
       },

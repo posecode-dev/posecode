@@ -145,6 +145,10 @@ research §5.1 normative tables. Selected ceilings (degrees):
    the floor and reach moves a limb to a target, a **pin moves the body** while
    the contact stays put, so the figure hangs from a bar, pulls up toward it,
    rises onto a box, or lowers into a dip as the joints work.
+   Symmetric bar contacts resolve to side-specific anchors automatically
+   (`bar.left` / `bar.right`, `bars.left` / `bars.right`). Contact post-processing
+   also keeps floor-contacting soles level and gives bar-contacting wrists a
+   stable overhand orientation; existing Posecode syntax remains unchanged.
 7. **Spatial choreography**: `turn: <deg>` rotates the figure's facing (yaw
    about vertical) and `travel: <x> <z>` moves it across the floor (world metres
    from the load spot). Both are **absolute targets carried across phases** (like
@@ -155,6 +159,11 @@ research §5.1 normative tables. Selected ceilings (degrees):
    lying/seated bases (whose root is already tilted) is out of scope.
 8. **Looping**: the timeline loops base → phases → base; `repeat` is the rep
    count surfaced to the UI.
+
+When a mocap clip is active, the renderer selects the take containing the most
+actual bone motion (rather than blindly choosing the longest embedded take),
+retargets and blends it, then restores solved terminal contacts on the visible
+character. Mocap therefore cannot overwrite a planted sole or pinned grip.
 
 **Start poses:** `neutral`, `standing`, `plank`, `supine` (face-up), `prone`
 (face-down), `seated` (long-sit on the floor).

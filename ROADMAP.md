@@ -39,7 +39,9 @@ These are the unlocks, roughly in order of leverage:
 3. ~~**Scene props with contact anchors**~~:  **shipped (starter set).** `prop
    chair|wall|bar` adds a scene object with named anchors (`seat`, `wall`, `bar`).
    Powers `sit-to-stand`, `box-squat`, `wall-sit`, `dead-hang`, `hanging-knee-raise`.
-   Next: more props (bench, rings, bands), load cues, anchor-aware ground-lock.
+   Bar and dip-bar contacts now resolve to independent left/right anchors with
+   terminal wrist orientation; mocap is contact-corrected after blending.
+   Next: more props (bench, rings, bands), load cues, arbitrary surface shapes.
 4. ~~**Lying & seated base poses**~~:  **shipped.** `supine | prone | seated`
    start poses (grounded by a bounding-box drop). Powers `glute-bridge`,
    `dead-bug`, `cobra`, `seated-forward-fold`. Next: quadruped + chair-seated.
@@ -51,8 +53,9 @@ These are the unlocks, roughly in order of leverage:
    both absolute + carried across phases and returning home on the loop wrap.
    Powers `pirouette`, `box-step`, `grapevine`, `waltz-box`, `chasse`,
    `walk-cycle`, `quarter-turns`: pirouettes, traveling combos, and gait.
-   Standing poses only. Next: footstep-locked travel (true gait), motion
-   aliveness (velocity-continuous flow + weight shift).
+   Standing poses only. Floor-contacting soles are orientation-locked and the
+   visible mocap rig is re-planted after blending. Next: a larger curated clip
+   library, explicit gait phase metadata, and motion matching/inertialization.
 7. **Two-person + collision**: partner stretches, assisted rehab, contact sports
    (still deferred in the spec).
 

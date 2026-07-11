@@ -6,7 +6,8 @@ posecode exercise "Sit to stand"
   step "Sit" 2s ease-in-out:
     hips: flex 90
     knees: flex 95
-    ankles: plantarflex 50
+    ankles: dorsiflex 15
+    pelvis: hinge 15
     spine: flex 12
     shoulders: flex 60
     ground-lock: feet
@@ -16,6 +17,7 @@ posecode exercise "Sit to stand"
     hips: flex 0
     knees: flex 0
     ankles: plantarflex 0
+    pelvis: hinge 0
     spine: flex 0
     shoulders: flex 0
     ground-lock: feet

@@ -92,6 +92,28 @@ export function palmFloorAngleDeg(pose: PhasePose, side: "left" | "right"): numb
   return angleBetweenDeg(rotateByQuat(side === "left" ? [1, 0, 0] : [-1, 0, 0], q), [0, -1, 0]);
 }
 
+/** Angle between the sole's local up axis and world up (0 = foot flat). */
+export function soleUpAngleDeg(pose: PhasePose, side: "left" | "right"): number {
+  const q = pose.boneQuaternions.get(`ankle_${side}`);
+  if (!q) return 180;
+  return angleBetweenDeg(rotateByQuat([0, 1, 0], q), [0, 1, 0]);
+}
+
+/** Overhand bar grip: angle between the palm face normal and character-forward. */
+export function palmBarAngleDeg(pose: PhasePose, side: "left" | "right"): number {
+  const q = pose.boneQuaternions.get(`wrist_${side}`);
+  if (!q) return 180;
+  const localNormal: Vec3 = side === "left" ? [1, 0, 0] : [-1, 0, 0];
+  return angleBetweenDeg(rotateByQuat(localNormal, q), [0, 0, 1]);
+}
+
+/** Distance from a wrist to its side-specific pull-up-bar grip anchor. */
+export function barGripError(pose: PhasePose, side: "left" | "right"): number {
+  const wrist = bone(pose, `wrist_${side}`);
+  const anchor: Vec3 = [side === "left" ? 0.24 : -0.24, 2.255, 0.025];
+  return norm(sub(wrist, anchor));
+}
+
 const MASS_WEIGHTS: ReadonlyArray<readonly [string, number]> = [
   ["pelvis", 0.22], ["spine", 0.13], ["chest", 0.2], ["head", 0.08],
   ["hip_left", 0.07], ["hip_right", 0.07], ["knee_left", 0.05], ["knee_right", 0.05],

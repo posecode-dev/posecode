@@ -98,6 +98,7 @@ footer.site-footer{border-top:1px solid var(--border);padding:26px 0 40px;margin
 footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-width:70ch}
 @media(max-width:600px){.wrap{padding:0 18px}}
 </style>
+    <link rel="stylesheet" href="/content-theme.css" />
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to do a Hanging knee raise","description":"How to do the hanging knee raise (fitness): 5 phases targeting the abdominals, bar, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs.","step":[{"@type":"HowToStep","name":"Reach","text":"Reach up and grip the bar"},{"@type":"HowToStep","name":"Grip","text":"Hang from the bar overhead, arms long, body still"},{"@type":"HowToStep","name":"Raise knees","text":"Draw both knees up toward the chest"},{"@type":"HowToStep","name":"Lower","text":"Lower the legs under control, staying in a steady hang"},{"@type":"HowToStep","name":"Release","text":"Drop off the bar and rest"}]}</script>
     <script>
       window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
@@ -109,7 +110,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <div class="wrap">
         <a class="brand" href="/"><svg class="logo" aria-hidden="true" viewBox="0 0 100 100" width="18" height="18" fill="none"><g stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path d="M50 34V55"/><path d="M50 35L34 26L23 15"/><path d="M50 35L66 26L77 15"/><path d="M50 54L36 72L28 88"/><path d="M50 54L64 72L72 88"/></g><circle cx="50" cy="20" r="10" fill="currentColor"/></svg> Posecode</a>
         <nav class="links" aria-label="Primary">
-          <a href="/play.html">Playground</a>
+          <a href="/play">Playground</a>
           <a href="/moves/">Movement library</a>
           <a href="/spec.html">Language spec</a>
           <a href="/llm-guide.html">LLM guide</a>
@@ -129,7 +130,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
         that LLMs like ChatGPT, Claude, and Gemini can write to describe human movement as text.
         Every joint angle below is hard-clamped to a safe range of motion.</p>
 
-      <a class="btn" href="/play.html#doc=hanging-knee-raise">▶ Open Hanging knee raise in the playground →</a>
+      <a class="btn" href="/play/hanging-knee-raise">▶ Open Hanging knee raise in the playground →</a>
 
       <h2>How to do it</h2>
       <ol class="steps">
@@ -166,12 +167,16 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   step &quot;Reach&quot; 0.8s ease-out:
     shoulders: flex 175
     elbows: flex 5
+    elbows: pronate 80
+    fingers: flex 80
     ground-lock: feet
     cue &quot;Reach up and grip the bar&quot;
 
   step &quot;Grip&quot; 0.7s ease-in-out:
     shoulders: flex 175
     elbows: flex 5
+    elbows: pronate 80
+    fingers: flex 80
     pin: hand_left bar
     pin: hand_right bar
     cue &quot;Hang from the bar overhead, arms long, body still&quot;
@@ -181,6 +186,8 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     knees: flex 90
     shoulders: flex 175
     elbows: flex 5
+    elbows: pronate 80
+    fingers: flex 80
     pin: hand_left bar
     pin: hand_right bar
     cue &quot;Draw both knees up toward the chest&quot;
@@ -190,6 +197,8 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     knees: flex 0
     shoulders: flex 175
     elbows: flex 5
+    elbows: pronate 80
+    fingers: flex 80
     pin: hand_left bar
     pin: hand_right bar
     cue &quot;Lower the legs under control, staying in a steady hang&quot;
@@ -197,6 +206,8 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   step &quot;Release&quot; 0.8s ease-in:
     shoulders: flex 0
     elbows: flex 0
+    elbows: pronate 0
+    fingers: flex 0
     ground-lock: feet
     cue &quot;Drop off the bar and rest&quot;
 

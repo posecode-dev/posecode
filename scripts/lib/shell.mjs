@@ -129,6 +129,7 @@ export function pageShell({ title, description, canonicalPath, jsonLd, bodyHtml,
       rel="stylesheet"
     />
     <style>${BASE_CSS}</style>
+    <link rel="stylesheet" href="/content-theme.css" />
     ${ld}
     <script>
       window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
