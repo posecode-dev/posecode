@@ -7,7 +7,6 @@ posecode exercise "Hanging knee raise"
     shoulders: flex 175
     elbows: flex 5
     elbows: pronate 80
-    fingers: flex 80
     ground-lock: feet
     cue "Reach up and grip the bar"
 
@@ -15,9 +14,8 @@ posecode exercise "Hanging knee raise"
     shoulders: flex 175
     elbows: flex 5
     elbows: pronate 80
-    fingers: flex 80
-    pin: hand_left bar
-    pin: hand_right bar
+    grip: hand_left bar
+    grip: hand_right bar
     cue "Hang from the bar overhead, arms long, body still"
 
   step "Raise knees" 1.2s ease-out:
@@ -26,9 +24,8 @@ posecode exercise "Hanging knee raise"
     shoulders: flex 175
     elbows: flex 5
     elbows: pronate 80
-    fingers: flex 80
-    pin: hand_left bar
-    pin: hand_right bar
+    grip: hand_left bar
+    grip: hand_right bar
     cue "Draw both knees up toward the chest"
 
   step "Lower" 1.4s ease-in:
@@ -37,9 +34,8 @@ posecode exercise "Hanging knee raise"
     shoulders: flex 175
     elbows: flex 5
     elbows: pronate 80
-    fingers: flex 80
-    pin: hand_left bar
-    pin: hand_right bar
+    grip: hand_left bar
+    grip: hand_right bar
     cue "Lower the legs under control, staying in a steady hang"
 
   step "Release" 0.8s ease-in:
