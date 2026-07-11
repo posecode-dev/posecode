@@ -27,7 +27,7 @@ import {
   type ClipSource,
 } from "./clips.js";
 import { depenetrate } from "./depenetrate.js";
-import { alignFloorPalms, levelPlantedFeet, wrapGrip, relaxHands, swingArms } from "./contacts.js";
+import { alignFloorPalms, levelPlantedFeet, wrapGrip, relaxHands, swingArms, aimHead } from "./contacts.js";
 
 const DEG = Math.PI / 180;
 
@@ -279,6 +279,8 @@ export function createViewer(
   let authoredFingers = new Set<string>();
   // Shoulders the document poses: L4.2 arm-swing leaves these to the author.
   let authoredShoulders = new Set<string>();
+  // True when the document poses the head/neck: L4.3 look-at then stays off.
+  let authoredHead = false;
   // The last loaded document, kept so the viewer can re-solve base pose and
   // ground anchors when the character (with its own proportions) arrives.
   let lastIR: PosecodeIR | null = null;
@@ -538,6 +540,31 @@ export function createViewer(
     wrapGrip(mannequin, grips);
   }
 
+  /**
+   * L4.3 look-at: turn the head toward the action. Collects the world points of
+   * this phase's active grips/reaches (up at the bar, down at a floor reach) and
+   * aims the head at their average. Skipped when the document poses the head/neck.
+   */
+  function applyLookAt(info: { grips: GripTarget[]; reaches: ReachTarget[] }): void {
+    if (authoredHead) return;
+    const pts: THREE.Vector3[] = [];
+    const collect = (effectorName: string, anchorName: string): void => {
+      const bone = EFFECTOR_BONE[effectorName] ?? effectorName;
+      const eff = mannequin.bones.get(bone);
+      if (!eff) return;
+      const t =
+        resolveReachTarget(anchorName, eff) ??
+        resolveReachTarget(anchorName.replace(/_(left|right)$/, ""), eff);
+      if (t) pts.push(t);
+    };
+    for (const g of info.grips) collect(g.effector, g.anchor);
+    for (const r of info.reaches) collect(r.effector, r.target);
+    if (pts.length === 0) return;
+    const focus = new THREE.Vector3();
+    for (const p of pts) focus.add(p);
+    aimHead(mannequin, focus.multiplyScalar(1 / pts.length));
+  }
+
   function frameCamera(): void {
     // Auto-frame the figure: fit its bounding box, keep a pleasant angle.
     // Include any scene prop too: a pull-up bar sits well above the figure's
@@ -609,6 +636,8 @@ export function createViewer(
       swingArms(mannequin, authoredShoulders, gripSidesOf(info.grips));
       // L4.1 aliveness: relax idle hands into a natural curl (grips still wrap).
       relaxHands(mannequin, gripSidesOf(info.grips), authoredFingers);
+      // L4.3 aliveness: turn the head toward the active contact (bar / floor reach).
+      applyLookAt(info);
       // Safety net: nothing above ever intentionally pushes part of the body
       // below the floor, so clamp the root up whenever the lowest point dips
       // below y=0, a no-op whenever the pose is legitimately grounded or
@@ -709,8 +738,10 @@ export function createViewer(
       levelPlantedFeet(mannequin, ir.phases[0]?.groundLock ?? []);
       authoredFingers = new Set(timeline.bonesUsed.filter(isFingerId));
       authoredShoulders = new Set(timeline.bonesUsed.filter((id) => id.startsWith("shoulder_")));
+      authoredHead = timeline.bonesUsed.some((id) => id === "head" || id === "neck");
       swingArms(mannequin, authoredShoulders, gripSidesOf(ir.phases[0]?.grips ?? []));
       relaxHands(mannequin, gripSidesOf(ir.phases[0]?.grips ?? []), authoredFingers);
+      applyLookAt({ grips: ir.phases[0]?.grips ?? [], reaches: ir.phases[0]?.reaches ?? [] });
       captureGroundTargets();
       baseRootPos.copy(mannequin.root.position);
       baseRootQuat.copy(mannequin.root.quaternion);

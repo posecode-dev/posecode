@@ -211,3 +211,33 @@ export function swingArms(
   }
   if (changed) m.root.updateMatrixWorld(true);
 }
+
+/** Max head turn toward a look target (radians) so the neck never over-rotates. */
+export const MAX_LOOK = 55 * (Math.PI / 180);
+const LOOK_FWD = new THREE.Vector3(0, 0, 1);
+
+/**
+ * Turn the head toward a world focus point (look-at): aims the face (+Z) at the
+ * target, clamped to MAX_LOOK so the head tracks the action (up at the bar in a
+ * pull-up, down at the hands in a floor fold) without spinning unnaturally.
+ */
+export function aimHead(m: Mannequin, focus: THREE.Vector3): void {
+  const head = m.bones.get("head");
+  if (!head?.parent) return;
+  const headPos = head.getWorldPosition(new THREE.Vector3());
+  const desired = focus.clone().sub(headPos);
+  if (desired.lengthSq() < 1e-6) return;
+  desired.normalize();
+  const world = head.getWorldQuaternion(new THREE.Quaternion());
+  const currentZ = LOOK_FWD.clone().applyQuaternion(world).normalize();
+  const full = new THREE.Quaternion().setFromUnitVectors(currentZ, desired);
+  const angle = 2 * Math.acos(THREE.MathUtils.clamp(Math.abs(full.w), -1, 1));
+  const correction =
+    angle > MAX_LOOK
+      ? new THREE.Quaternion().slerpQuaternions(new THREE.Quaternion(), full, MAX_LOOK / angle)
+      : full;
+  const desiredWorld = correction.multiply(world);
+  const parentWorld = head.parent.getWorldQuaternion(new THREE.Quaternion());
+  head.quaternion.copy(parentWorld.invert().multiply(desiredWorld));
+  m.root.updateMatrixWorld(true);
+}

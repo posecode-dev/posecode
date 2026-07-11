@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import * as THREE from "three";
 import { buildMannequin } from "../src/mannequin.js";
-import { levelPlantedFeet, relaxHands, swingArms } from "../src/contacts.js";
+import { levelPlantedFeet, relaxHands, swingArms, aimHead } from "../src/contacts.js";
 import { groundFigure } from "../src/groundlock.js";
 
 const DEG = Math.PI / 180;
@@ -103,5 +103,35 @@ describe("swingArms (L4.2)", () => {
     const before = m.bones.get("shoulder_left")!.rotation.x;
     swingArms(m, new Set(), new Set(["left"]));
     expect(m.bones.get("shoulder_left")!.rotation.x).toBeCloseTo(before, 5);
+  });
+});
+
+describe("aimHead (L4.3 look-at)", () => {
+  it("turns the head toward a focus point (face +Z tracks the target)", () => {
+    const m = buildMannequin();
+    m.root.updateMatrixWorld(true);
+    const head = m.bones.get("head")!;
+    const headPos = head.getWorldPosition(new THREE.Vector3());
+    const focus = headPos.clone().add(new THREE.Vector3(0, 1.2, 0.6));
+    const faceDir = () =>
+      new THREE.Vector3(0, 0, 1)
+        .applyQuaternion(head.getWorldQuaternion(new THREE.Quaternion()))
+        .normalize();
+    const want = focus.clone().sub(headPos).normalize();
+    const before = faceDir().dot(want);
+    aimHead(m, focus);
+    m.root.updateMatrixWorld(true);
+    expect(faceDir().dot(want)).toBeGreaterThan(before);
+  });
+
+  it("clamps the look so the head never spins past its range", () => {
+    const m = buildMannequin();
+    m.root.updateMatrixWorld(true);
+    const head = m.bones.get("head")!;
+    const headPos = head.getWorldPosition(new THREE.Vector3());
+    const behind = headPos.clone().add(new THREE.Vector3(0, 0, -2));
+    aimHead(m, behind);
+    const e = new THREE.Euler().setFromQuaternion(m.bones.get("head")!.quaternion, "XYZ");
+    expect(Math.hypot(e.x, e.y, e.z)).toBeLessThan(1.2);
   });
 });
