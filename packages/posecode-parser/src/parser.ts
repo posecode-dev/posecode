@@ -37,6 +37,7 @@ export interface AstStep {
   groundLock: string[];
   reaches: AstReach[];
   pins: AstPin[];
+  grips: AstPin[];
   /** Root facing (yaw about world Y, degrees) at the end of this phase. */
   turn?: number;
   /** Root ground position (world X/Z metres) at the end of this phase. */
@@ -182,6 +183,7 @@ export function parseToAst(source: string): ParseAstResult {
           groundLock: [],
           reaches: [],
           pins: [],
+          grips: [],
           line: ln.line,
         };
         doc.steps.push(current);
@@ -244,6 +246,20 @@ function parseStepChild(ln: Line, current: AstStep | null): ParseError | null {
       return { line: ln.line, message: "expected `pin: <effector> <anchor>`" };
     }
     current.pins.push({ effector, anchor, line: ln.line });
+    return null;
+  }
+
+  if (head === "grip") {
+    // `grip: <effector> <anchor>`: hold a bar/rail — arm IK to a two-point
+    // anchor + finger wrap. Parsed exactly like `pin`; the side-anchor rewrite
+    // happens in resolution.
+    if (!current) return { line: ln.line, message: "`grip` outside of a step" };
+    const effector = t[2]?.type === "word" ? t[2].value : null;
+    const anchor = t[3]?.type === "word" ? t[3].value : null;
+    if (t[1]?.type !== "colon" || !effector || !anchor) {
+      return { line: ln.line, message: "expected `grip: <effector> <anchor>`" };
+    }
+    current.grips.push({ effector, anchor, line: ln.line });
     return null;
   }
 

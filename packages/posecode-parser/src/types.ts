@@ -49,6 +49,17 @@ export interface PinTarget {
   anchor: string;
 }
 
+/**
+ * A grip contact: a hand holds a bar/rail. Unlike a pin (which only translates
+ * the body to an anchor), a grip also bends the arm via IK so each hand lands on
+ * its own two-point anchor (`bar_left`/`bar_right`) and wraps the fingers around
+ * the bar. Powers pull-up, dead-hang, hanging knee raise.
+ */
+export interface GripTarget {
+  effector: string;
+  anchor: string;
+}
+
 /** One concurrent phase of a movement (e.g. "Lower" in a push-up). */
 export interface Phase {
   name: string;
@@ -61,6 +72,8 @@ export interface Phase {
   reaches: ReachTarget[];
   /** Contact pins active during this phase (translate the body to the anchor). */
   pins: PinTarget[];
+  /** Grip contacts active this phase (arm IK to a two-point bar anchor + finger wrap). */
+  grips: GripTarget[];
   /**
    * Root facing (yaw about world Y, degrees) at the end of this phase, an
    * absolute target carried forward across phases. Powers turns / pirouettes.

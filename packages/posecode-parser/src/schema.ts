@@ -62,6 +62,7 @@ const stepSchema = z.object({
   groundLock: z.array(z.string()),
   reaches: z.array(reachSchema),
   pins: z.array(pinSchema),
+  grips: z.array(pinSchema),
   turn: z.number().optional(),
   travel: z.object({ x: z.number(), z: z.number() }).optional(),
   cue: z.string().optional(),

@@ -301,3 +301,48 @@ describe("timing modes", () => {
     expect(errors[0]!.message.toLowerCase()).toContain("mode");
   });
 });
+
+describe("grip directive", () => {
+  it("resolves `grip: hands bar` to two per-side grips with sided anchors", () => {
+    const src = [
+      'posecode exercise "Pull-up"',
+      "  rig humanoid",
+      "  prop bar",
+      "  pose start = standing",
+      '  step "Hang" 1s flow:',
+      "    grip: hands bar",
+    ].join("\n");
+    const { ir, errors } = parse(src);
+    expect(errors).toEqual([]);
+    expect(ir!.phases[0]!.grips).toEqual([
+      { effector: "hand_left", anchor: "bar_left" },
+      { effector: "hand_right", anchor: "bar_right" },
+    ]);
+  });
+
+  it("keeps a side-specific grip anchor verbatim", () => {
+    const src = [
+      'posecode exercise "One-arm"',
+      "  rig humanoid",
+      "  prop bar",
+      '  step "Hang" 1s flow:',
+      "    grip: hand_left bar_left",
+    ].join("\n");
+    const { ir, errors } = parse(src);
+    expect(errors).toEqual([]);
+    expect(ir!.phases[0]!.grips).toEqual([{ effector: "hand_left", anchor: "bar_left" }]);
+  });
+
+  it("errors on an unknown grip effector with its line", () => {
+    const src = [
+      'posecode exercise "Bad"',
+      "  rig humanoid",
+      '  step "Hang" 1s flow:',
+      "    grip: tentacle bar",
+    ].join("\n");
+    const { errors } = parse(src);
+    expect(errors.length).toBeGreaterThan(0);
+    expect(errors[0]!.line).toBe(4);
+    expect(errors[0]!.message).toContain("tentacle");
+  });
+});

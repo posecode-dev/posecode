@@ -39,6 +39,7 @@ export type {
   JointTarget,
   ReachTarget,
   PinTarget,
+  GripTarget,
   Phase,
   PosecodeIR,
   Warning,
