@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import * as THREE from "three";
 import { buildMannequin } from "../src/mannequin.js";
-import { levelPlantedFeet } from "../src/contacts.js";
+import { levelPlantedFeet, relaxHands } from "../src/contacts.js";
 import { groundFigure } from "../src/groundlock.js";
 
 const DEG = Math.PI / 180;
@@ -49,5 +49,29 @@ describe("levelPlantedFeet", () => {
     const before = m.bones.get("ankle_left")!.quaternion.clone();
     levelPlantedFeet(m, ["feet"]);
     expect(m.bones.get("ankle_left")!.quaternion.angleTo(before)).toBeLessThan(1e-3);
+  });
+});
+
+describe("relaxHands (L4.1)", () => {
+  it("curls the fingers of an idle, un-authored hand into a natural rest", () => {
+    const m = buildMannequin();
+    expect(m.bones.get("index_left")!.rotation.x).toBeCloseTo(0, 5); // flat at rest
+    relaxHands(m, new Set(), new Set());
+    expect(m.bones.get("index_left")!.rotation.x).toBeGreaterThan(0.1);
+    expect(m.bones.get("middle_right")!.rotation.x).toBeGreaterThan(0.1);
+  });
+
+  it("leaves a gripping hand for wrapGrip (skips grip sides)", () => {
+    const m = buildMannequin();
+    relaxHands(m, new Set(["left"]), new Set());
+    expect(m.bones.get("index_left")!.rotation.x).toBeCloseTo(0, 5); // untouched
+    expect(m.bones.get("index_right")!.rotation.x).toBeGreaterThan(0.1); // right relaxed
+  });
+
+  it("does not override an explicitly authored finger", () => {
+    const m = buildMannequin();
+    m.bones.get("index_left")!.rotation.x = 1.4; // authored fist
+    relaxHands(m, new Set(), new Set(["index_left"]));
+    expect(m.bones.get("index_left")!.rotation.x).toBeCloseTo(1.4, 5);
   });
 });

@@ -137,3 +137,42 @@ export function wrapGrip(m: Mannequin, grips: readonly GripTarget[]): void {
   }
   if (changed) m.root.updateMatrixWorld(true);
 }
+
+/** Relaxed resting finger curl (radians) for an idle hand. */
+export const REST_CURL = 0.32;
+
+/**
+ * Give idle hands a natural relaxed curl instead of a flat splayed palm. Applied
+ * every frame to any hand that is NOT gripping this phase (those are wrapped by
+ * `wrapGrip`) and whose fingers are NOT explicitly authored (make-a-fist,
+ * finger-spell, hand-wave keep their pose). A mesh-only-style aliveness layer:
+ * it writes only finger-bone locals, so it can never disturb the solved pose.
+ */
+export function relaxHands(
+  m: Mannequin,
+  gripSides: ReadonlySet<"left" | "right">,
+  authoredFingers: ReadonlySet<string>,
+): void {
+  let changed = false;
+  for (const side of ["left", "right"] as const) {
+    if (gripSides.has(side)) continue;
+    for (const f of FINGERS) {
+      const id = `${f}_${side}`;
+      if (authoredFingers.has(id)) continue;
+      const bone = m.bones.get(id);
+      if (bone) {
+        bone.rotation.set(REST_CURL, 0, 0);
+        changed = true;
+      }
+    }
+    const thumbId = `thumb_${side}`;
+    if (!authoredFingers.has(thumbId)) {
+      const thumb = m.bones.get(thumbId);
+      if (thumb) {
+        thumb.rotation.set(REST_CURL * 0.6, 0, side === "left" ? -REST_CURL : REST_CURL);
+        changed = true;
+      }
+    }
+  }
+  if (changed) m.root.updateMatrixWorld(true);
+}

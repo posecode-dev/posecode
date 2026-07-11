@@ -27,7 +27,7 @@ import {
   type ClipSource,
 } from "./clips.js";
 import { depenetrate } from "./depenetrate.js";
-import { alignFloorPalms, levelPlantedFeet, wrapGrip } from "./contacts.js";
+import { alignFloorPalms, levelPlantedFeet, wrapGrip, relaxHands } from "./contacts.js";
 
 const DEG = Math.PI / 180;
 
@@ -267,6 +267,9 @@ export function createViewer(
   }
 
   let timeline: BuiltTimeline | null = null;
+  // Finger bones the loaded document explicitly poses (make-a-fist, finger-spell,
+  // hand-wave): the L4.1 resting-hand curl leaves these alone.
+  let authoredFingers = new Set<string>();
   // The last loaded document, kept so the viewer can re-solve base pose and
   // ground anchors when the character (with its own proportions) arrives.
   let lastIR: PosecodeIR | null = null;
@@ -593,6 +596,8 @@ export function createViewer(
       // lower-body poses (squat, lunge, deadlift) don't balance on the toes.
       // Runs before the floor clamp so the leveled sole is what rests on y=0.
       levelPlantedFeet(mannequin, info.groundLock);
+      // L4.1 aliveness: relax idle hands into a natural curl (grips still wrap).
+      relaxHands(mannequin, gripSidesOf(info.grips), authoredFingers);
       // Safety net: nothing above ever intentionally pushes part of the body
       // below the floor, so clamp the root up whenever the lowest point dips
       // below y=0, a no-op whenever the pose is legitimately grounded or
@@ -691,6 +696,8 @@ export function createViewer(
       depenetrate(mannequin);
       groundFigureOf(mannequin);
       levelPlantedFeet(mannequin, ir.phases[0]?.groundLock ?? []);
+      authoredFingers = new Set(timeline.bonesUsed.filter(isFingerId));
+      relaxHands(mannequin, gripSidesOf(ir.phases[0]?.grips ?? []), authoredFingers);
       captureGroundTargets();
       baseRootPos.copy(mannequin.root.position);
       baseRootQuat.copy(mannequin.root.quaternion);
@@ -795,6 +802,21 @@ export function createViewer(
   }
 
   return api;
+}
+
+/** True for a finger bone id (thumb/index/middle/ring/pinky_left|right). */
+function isFingerId(id: string): boolean {
+  return /^(thumb|index|middle|ring|pinky)_/.test(id);
+}
+
+/** The hand sides ("left"/"right") gripping this phase, from its grip targets. */
+function gripSidesOf(grips: readonly { effector: string }[]): Set<"left" | "right"> {
+  const sides = new Set<"left" | "right">();
+  for (const g of grips) {
+    if (g.effector.endsWith("_left") || g.effector === "hands") sides.add("left");
+    if (g.effector.endsWith("_right") || g.effector === "hands") sides.add("right");
+  }
+  return sides;
 }
 
 function enableShadows(root: THREE.Object3D): void {
