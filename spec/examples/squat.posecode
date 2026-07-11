@@ -5,7 +5,6 @@ posecode exercise "Body-weight squat"
   step "Descend" 1.6s settle:
     hips: flex 80
     knees: flex 95
-    ankles: plantarflex 50
     pelvis: hinge 25
     spine: flex 0
     shoulders: flex 70
@@ -16,7 +15,6 @@ posecode exercise "Body-weight squat"
   step "Drive up" 1.2s drive:
     hips: flex 0
     knees: flex 0
-    ankles: plantarflex 0
     pelvis: hinge 0
     spine: flex 0
     shoulders: flex 0

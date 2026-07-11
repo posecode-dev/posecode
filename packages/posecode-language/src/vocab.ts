@@ -49,7 +49,7 @@ export const KEYWORD_DOCS: Record<string, string> = {
   snap: "Timing mode: fast, near-immediate arrival — an accent.",
   linear: "Timing mode: constant velocity — intentionally mechanical.",
   repeat: "How many times the movement loops.",
-  "ground-lock": "Pins effectors (hands / feet) to the floor for this phase.",
+  "ground-lock": "Pins effectors (hands / feet) to the floor for this phase. Planted feet auto-level flat to the floor unless the ankle is plantarflexed (tiptoe).",
   reach:
     "Drives an effector to a target via ROM-constrained IK: `reach: hand_left ankle_left`, `reach: hands floor`.",
   pin: "Moves the body so an effector sits on an anchor: `pin: hands bar` (hang, pull up, step up, dip).",
