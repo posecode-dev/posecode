@@ -84,6 +84,14 @@ export interface ViewerOptions {
    */
   characterUrl?: string;
   /**
+   * Show the procedural figure while `characterUrl` loads. Defaults to true
+   * for embeds and offline-friendly consumers. Set false when a brief empty
+   * stage is preferable to flashing the procedural figure before the skinned
+   * character appears. The procedural figure is still revealed if loading
+   * fails, so the viewer never remains permanently blank.
+   */
+  showProceduralWhileLoading?: boolean;
+  /**
    * Mocap clip library: clip name (as written in a document's `clip "<name>"`
    * directive) → FBX/GLB asset URL. When a loaded document names a clip found
    * here and the skinned character is active, the viewer retargets the clip
@@ -174,6 +182,9 @@ export function createViewer(
 
   let mannequin: Mannequin = buildMannequin();
   enableShadows(mannequin.root);
+  if (opts.characterUrl && opts.showProceduralWhileLoading === false) {
+    setMannequinMeshesVisible(mannequin.root, false);
+  }
   scene.add(mannequin.root);
 
   // Skinned character layer (optional). While loading (and on failure) the
@@ -768,8 +779,9 @@ export function createViewer(
         else char.sync(mannequin);
       })
       .catch(() => {
-        // Keep the procedural figure. Deliberately silent: an offline embed
-        // or a blocked CDN should degrade, not error.
+        // Reveal the fallback if it was hidden during loading. Deliberately
+        // silent: an offline embed or blocked CDN should degrade, not error.
+        setMannequinMeshesVisible(mannequin.root, true);
       });
   }
 
@@ -782,6 +794,12 @@ function enableShadows(root: THREE.Object3D): void {
       obj.castShadow = true;
       obj.receiveShadow = true;
     }
+  });
+}
+
+function setMannequinMeshesVisible(root: THREE.Object3D, visible: boolean): void {
+  root.traverse((obj) => {
+    if ((obj as THREE.Mesh).isMesh) obj.visible = visible;
   });
 }
 

@@ -535,7 +535,14 @@ void import("posecode-render").then(({ createViewer }) => {
     new URLSearchParams(location.search).get("figure") === "classic";
   viewer = createViewer(canvas, {
     autoRotate: false,
-    ...(classicFigure ? {} : { characterUrl: "/models/character.glb" }),
+    ...(classicFigure
+      ? {}
+      : {
+          characterUrl: "/models/character.glb",
+          // Avoid flashing the procedural/classic figure while the default
+          // mannequin asset loads. It still appears if the GLB genuinely fails.
+          showProceduralWhileLoading: false,
+        }),
     // Mocap-clip library: a document's `clip "<name>"` directive picks a
     // retargeted animation from here, crossfaded over the procedural pose (see
     // clips.ts). Only fetched when a loaded movement names the clip, so this

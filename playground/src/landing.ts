@@ -29,8 +29,9 @@ function initHero(): void {
   void import("posecode-render").then(({ createViewer }) => {
     const viewer = createViewer(heroCanvas, {
       autoRotate: !prefersReducedMotion,
-      // Realistic skinned figure; the procedural one covers until it loads.
+      // Realistic skinned figure without flashing the procedural fallback.
       characterUrl: "/models/character.glb",
+      showProceduralWhileLoading: false,
     });
     const phaseEl = document.getElementById("hero-phase");
     viewer.onPhase(({ phaseName }) => {
