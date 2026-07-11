@@ -8,10 +8,32 @@
  */
 
 import { z } from "zod";
-import type { ParseError } from "./types.js";
+import type { ParseError, TimingMode } from "./types.js";
 import type { AstDoc } from "./parser.js";
 
-export const EASINGS = ["linear", "ease-in", "ease-out", "ease-in-out"] as const;
+export const MODES = ["flow", "settle", "drive", "snap", "linear"] as const;
+
+/** Deprecated easing names → canonical mode. Kept so existing docs never break. */
+export const LEGACY_MODE_ALIASES: Record<string, TimingMode> = {
+  "ease-in": "drive",
+  "ease-out": "settle",
+  "ease-in-out": "settle",
+  linear: "linear",
+};
+
+/** Back-compat: the old exported name, now the union of accepted written tokens. */
+export const EASINGS = [...MODES, "ease-in", "ease-out", "ease-in-out"] as const;
+
+/** Map a written token to a canonical mode + whether it was a legacy alias. */
+export function normalizeMode(raw: string): { mode: TimingMode | null; legacy: boolean } {
+  if ((MODES as readonly string[]).includes(raw)) {
+    return { mode: raw as TimingMode, legacy: false };
+  }
+  const alias = LEGACY_MODE_ALIASES[raw];
+  // "linear" is canonical, not a deprecation — only non-canonical aliases are legacy.
+  if (alias) return { mode: alias, legacy: raw !== "linear" };
+  return { mode: null, legacy: false };
+}
 
 const jointTargetSchema = z.object({
   joint: z.string().min(1),
@@ -35,7 +57,7 @@ const pinSchema = z.object({
 const stepSchema = z.object({
   name: z.string(),
   durationSec: z.number().positive(),
-  easing: z.enum(EASINGS),
+  easing: z.enum(MODES),
   targets: z.array(jointTargetSchema),
   groundLock: z.array(z.string()),
   reaches: z.array(reachSchema),

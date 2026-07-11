@@ -11,7 +11,9 @@ export const POSECODE_VERSION = "0.1";
 
 export type Axis = "x" | "y" | "z";
 
-export type Easing = "linear" | "ease-in" | "ease-out" | "ease-in-out";
+export type TimingMode = "flow" | "settle" | "drive" | "snap" | "linear";
+/** @deprecated use TimingMode. Kept as an alias for one release. */
+export type Easing = TimingMode;
 
 /** Euler rotation in degrees, local to a bone's rest orientation. */
 export interface EulerDeg {

@@ -34,6 +34,7 @@ export function parse(source: string): ParseResult {
 export type {
   Axis,
   Easing,
+  TimingMode,
   EulerDeg,
   JointTarget,
   ReachTarget,
@@ -57,4 +58,4 @@ export {
   boneType,
 } from "./joints.js";
 export { romFor, clampAngle, eulerRomFor, type RomLimit, type EulerRom } from "./rom.js";
-export { EASINGS } from "./schema.js";
+export { EASINGS, MODES, LEGACY_MODE_ALIASES, normalizeMode } from "./schema.js";

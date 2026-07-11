@@ -8,6 +8,7 @@
 
 import { tokenize, TokenizeError, type Line, type Token } from "./tokenizer.js";
 import type { ParseError } from "./types.js";
+import { normalizeMode, MODES } from "./schema.js";
 
 export interface AstJointTarget {
   joint: string;
@@ -151,17 +152,24 @@ export function parseToAst(source: string): ParseAstResult {
       case "step": {
         const name = t[1];
         const dur = t[2];
-        const easing = word(t[3]);
+        const easingTok = word(t[3]);
+        const resolved = easingTok
+          ? normalizeMode(easingTok)
+          : { mode: null, legacy: false };
         const colon = t[4];
         if (
           name?.type !== "str" ||
           dur?.type !== "dur" ||
-          !easing ||
+          !easingTok ||
+          resolved.mode === null ||
           colon?.type !== "colon"
         ) {
           errors.push({
             line: ln.line,
-            message: 'expected `step "<name>" <duration> <easing>:`',
+            message:
+              resolved.mode === null && easingTok
+                ? `unknown timing mode "${easingTok}"; expected one of ${MODES.join(", ")}`
+                : 'expected `step "<name>" <duration> <mode>:`',
           });
           current = null;
           break;
@@ -169,7 +177,7 @@ export function parseToAst(source: string): ParseAstResult {
         current = {
           name: name.value,
           durationSec: parseDuration(dur.value),
-          easing,
+          easing: resolved.mode,
           targets: [],
           groundLock: [],
           reaches: [],

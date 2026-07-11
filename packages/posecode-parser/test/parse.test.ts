@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parse } from "../src/index.js";
+import { parse, normalizeMode, MODES } from "../src/index.js";
 
 const PUSHUP = [
   'posecode exercise "Push-up"',
@@ -38,7 +38,7 @@ describe("parse", () => {
     const lower = ir!.phases[0]!;
     expect(lower.name).toBe("Lower");
     expect(lower.durationSec).toBe(2);
-    expect(lower.easing).toBe("ease-in");
+    expect(lower.easing).toBe("drive"); // legacy `ease-in` normalizes to canonical mode
     expect(lower.cue).toBe("Elbows ~45 from torso");
     expect(lower.groundLock.sort()).toEqual(["feet", "hands"]);
 
@@ -114,15 +114,15 @@ describe("parse", () => {
     expect(errors[0]!.message).toMatch(/header|must start/i);
   });
 
-  it("rejects an unknown easing", () => {
+  it("rejects an unknown timing mode", () => {
     const src = [
-      'posecode exercise "Bad easing"',
+      'posecode exercise "Bad mode"',
       "  rig humanoid",
       '  step "Move" 1s wobble:',
       "    elbows: flex 90",
     ].join("\n");
     const { errors } = parse(src);
-    expect(errors.some((e) => /easing/i.test(e.message))).toBe(true);
+    expect(errors.some((e) => /mode/i.test(e.message))).toBe(true);
   });
 
   it("parses turn and travel into the phase IR", () => {
@@ -265,5 +265,39 @@ describe("clip directive", () => {
     expect(errors).toHaveLength(1);
     expect(errors[0]!.line).toBe(4);
     expect(errors[0]!.message).toContain("clip");
+  });
+});
+
+describe("timing modes", () => {
+  it("accepts the canonical modes", () => {
+    for (const m of MODES) {
+      const src = `posecode exercise "x"\n  rig humanoid\n  step "s" 1s ${m}:\n    knees: flex 10\n`;
+      const { errors } = parse(src);
+      expect(errors).toEqual([]);
+    }
+  });
+
+  it("normalizes legacy easing names to canonical modes", () => {
+    expect(normalizeMode("ease-in")).toEqual({ mode: "drive", legacy: true });
+    expect(normalizeMode("ease-out")).toEqual({ mode: "settle", legacy: true });
+    expect(normalizeMode("ease-in-out")).toEqual({ mode: "settle", legacy: true });
+    expect(normalizeMode("linear")).toEqual({ mode: "linear", legacy: false });
+    expect(normalizeMode("flow")).toEqual({ mode: "flow", legacy: false });
+    expect(normalizeMode("bogus")).toEqual({ mode: null, legacy: false });
+  });
+
+  it("legacy documents still parse and carry a canonical mode", () => {
+    const src =
+      `posecode exercise "sq"\n  rig humanoid\n  step "Descend" 1s ease-in-out:\n    knees: flex 90\n`;
+    const { ir, errors } = parse(src);
+    expect(errors).toEqual([]);
+    expect(ir?.phases[0]?.easing).toBe("settle");
+  });
+
+  it("rejects an unknown mode with a clear error", () => {
+    const src = `posecode exercise "x"\n  rig humanoid\n  step "s" 1s wobble:\n    knees: flex 10\n`;
+    const { errors } = parse(src);
+    expect(errors.length).toBeGreaterThan(0);
+    expect(errors[0]!.message.toLowerCase()).toContain("mode");
   });
 });
