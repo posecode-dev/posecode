@@ -703,3 +703,51 @@ describe("cobra", () => {
     expect(Math.abs(pelvisUp - pelvisFlat)).toBeLessThan(0.05);
   });
 });
+
+describe("spline interpolation (L2)", () => {
+  it("interpolates joints with continuous velocity through an interior keyframe", () => {
+    const src = [
+      'posecode exercise "flowy"',
+      "  rig humanoid",
+      '  step "A" 1s flow:',
+      "    shoulders: flex 40",
+      '  step "B" 1s flow:',
+      "    shoulders: flex 120",
+      '  step "C" 1s flow:',
+      "    shoulders: flex 40",
+    ].join("\n");
+    const { ir } = parse(src);
+    const tl = buildTimeline(ir!);
+    const m = buildMannequin();
+    const read = (t: number) => {
+      tl.sample(t, m.bones);
+      return m.bones.get("shoulder_left")!.quaternion.clone();
+    };
+    const eps = 1e-3;
+    const kf = 2; // end of "B" is an interior keyframe (t=2)
+    const vBefore = read(kf).angleTo(read(kf - eps)) / eps;
+    const vAfter = read(kf + eps).angleTo(read(kf)) / eps;
+    expect(Math.abs(vBefore - vAfter)).toBeLessThan(0.3); // flow carries velocity
+  });
+
+  it("settle brings a joint to rest at its keyframe", () => {
+    const src = [
+      'posecode exercise "rest"',
+      "  rig humanoid",
+      '  step "Down" 1s settle:',
+      "    knees: flex 90",
+      '  step "Up" 1s drive:',
+      "    knees: flex 0",
+    ].join("\n");
+    const { ir } = parse(src);
+    const tl = buildTimeline(ir!);
+    const m = buildMannequin();
+    const read = (t: number) => {
+      tl.sample(t, m.bones);
+      return m.bones.get("knee_left")!.quaternion.clone();
+    };
+    const eps = 1e-3;
+    const v = read(1).angleTo(read(1 - eps)) / eps; // velocity arriving at the settle kf
+    expect(v).toBeLessThan(0.2);
+  });
+});
