@@ -4,5 +4,12 @@
   "installCommand": "npm install",
   "buildCommand": "npm run build -w playground",
   "outputDirectory": "playground/dist",
-  "rewrites": [{ "source": "/play", "destination": "/play.html" }]
+  "redirects": [
+    { "source": "/index.html", "destination": "/", "permanent": true },
+    { "source": "/play.html", "destination": "/play", "permanent": true }
+  ],
+  "rewrites": [
+    { "source": "/play", "destination": "/play.html" },
+    { "source": "/play/:movement", "destination": "/play.html" }
+  ]
 }

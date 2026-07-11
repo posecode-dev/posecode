@@ -7,7 +7,6 @@
 
 import { parse } from "posecode-parser";
 import { inject } from "@vercel/analytics";
-import { buildNiceShareHash } from "./nice-share.js";
 import { PRESETS } from "./presets.js";
 import llmPrompt from "../../spec/llm-authoring.md?raw";
 
@@ -15,7 +14,7 @@ inject();
 
 // Preserve permalinks shared before the tool moved from `/` to `/play`.
 if (location.hash.startsWith("#doc=")) {
-  location.replace(`play.html${location.hash}`);
+  location.replace(`/play${location.hash}`);
 }
 
 const prefersReducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -73,7 +72,7 @@ if (grid) {
     if (!preset) continue;
     const card = document.createElement("a");
     card.className = "example-card";
-    card.href = `play.html${buildNiceShareHash(preset.source)}`;
+    card.href = `/play/${preset.id}`;
     card.innerHTML = `
       <span class="example-kind">${preset.domain}</span>
       <span class="example-name">${preset.label}</span>
@@ -84,7 +83,7 @@ if (grid) {
   const remaining = PRESETS.length - HIGHLIGHT_IDS.length;
   const more = document.createElement("a");
   more.className = "example-card example-more";
-  more.href = "play.html";
+  more.href = "/play";
   more.innerHTML = `
     <span class="example-kind">Full library</span>
     <span class="example-name">+${remaining} more movements</span>
