@@ -66,7 +66,7 @@ page.on("pageerror", (e) => console.error("[page]", e.message));
 
 for (const t of targets) {
   const [w, h] = t.size;
-  await page.goto(`${origin}/play.html#doc=${t.id}`, { waitUntil: "load" });
+  await page.goto(`${origin}/play/${t.id}`, { waitUntil: "load" });
   await page.reload({ waitUntil: "load" });
   await page.waitForFunction(() => window.__posecodeViewer?.duration > 0, null, {
     timeout: 60000,

@@ -34,7 +34,7 @@ async function capture() {
   const page = await browser.newPage({ viewport: { width: 1024, height: 768 } });
 
   console.log("Navigating to Deadlift...");
-  await page.goto(`${origin}/play.html#doc=deadlift`, { waitUntil: "load" });
+  await page.goto(`${origin}/play/deadlift`, { waitUntil: "load" });
   await page.reload({ waitUntil: "load" });
   await page.waitForFunction(() => window.__posecodeViewer?.duration > 0, null, { timeout: 30000 });
   await page.waitForTimeout(2000); // let auto-camera settle
