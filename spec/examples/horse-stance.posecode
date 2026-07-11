@@ -6,7 +6,7 @@ posecode posture "Horse stance"
     hips: flex 30
     hips: abduct 25
     knees: flex 90
-    ankles: plantarflex 50
+    ankles: dorsiflex 15
     spine: extend 5
     shoulders: flex 80
     elbows: flex 90

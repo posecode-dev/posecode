@@ -151,19 +151,21 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   pose start = prone
 
   step &quot;Lift&quot; 1.5s ease-out:
-    shoulders: flex 150
+    shoulders: abduct 130
     spine: extend 20
     chest: extend 15
     neck: extend 25
     hips: extend 18
+    pin: pelvis floor
     cue &quot;Lift the arms, chest, and legs off the floor&quot;
 
   step &quot;Lower&quot; 1.5s ease-in:
-    shoulders: flex 0
+    shoulders: abduct 0
     spine: flex 0
     chest: flex 0
     neck: flex 0
     hips: extend 0
+    pin: pelvis floor
     cue &quot;Lower everything back down with control&quot;
 
   repeat 8

@@ -17,17 +17,18 @@ import { buildMannequin, type Mannequin } from "./mannequin.js";
 import { applyGroundLock as applyGroundLockTo, groundFigure as groundFigureOf } from "./groundlock.js";
 import { buildTimeline, type BuiltTimeline, type PhaseSegment } from "./timeline.js";
 import { solveCCD, type JointLimits } from "./ik.js";
-import { buildProps, type PropScene } from "./props.js";
+import { buildProps, syncPropAttachments, type PropScene } from "./props.js";
 import { loadCharacter, type Character } from "./character.js";
 import {
   loadClipSource,
+  selectMotionClip,
   retargetMocapClip,
   createClipLayer,
   type ClipLayer,
   type ClipSource,
 } from "./clips.js";
 import { depenetrate } from "./depenetrate.js";
-import { alignFloorPalms } from "./contacts.js";
+import { alignBarGrips, alignFloorPalms, alignFloorSoles } from "./contacts.js";
 
 const DEG = Math.PI / 180;
 
@@ -363,6 +364,17 @@ export function createViewer(
     foot_right: "ankle_right",
   };
 
+  function contactBoneIds(groundLock: readonly string[], pins: readonly PinTarget[]): string[] {
+    const ids = new Set<string>();
+    for (const group of groundLock) {
+      if (group === "hands") { ids.add("wrist_left"); ids.add("wrist_right"); }
+      if (group === "forearms") { ids.add("elbow_left"); ids.add("elbow_right"); }
+      if (group === "feet") { ids.add("ankle_left"); ids.add("ankle_right"); }
+    }
+    for (const pin of pins) ids.add(EFFECTOR_BONE[pin.effector] ?? pin.effector);
+    return [...ids];
+  }
+
   /**
    * The rotatable joint chain (proximal → distal) that moves an effector, with
    * each joint's ROM expressed as local Euler limits for the constrained solve.
@@ -427,7 +439,13 @@ export function createViewer(
       p.y = Number.isFinite(box.min.y) ? Math.max(0, p.y - box.min.y) : 0;
       return p;
     }
-    const anchor = propAnchors.get(target);
+    const side = effector.name.endsWith("_left")
+      ? "left"
+      : effector.name.endsWith("_right")
+        ? "right"
+        : null;
+    const anchor = (side ? propAnchors.get(`${target}.${side}`) : undefined)
+      ?? propAnchors.get(target);
     if (anchor) return anchor.clone();
     const bone = mannequin.bones.get(target);
     if (bone) return bone.getWorldPosition(new THREE.Vector3());
@@ -510,8 +528,10 @@ export function createViewer(
   }
 
   function frame(): void {
+    let activeContactBones: string[] = [];
     if (timeline) {
       const info = timeline.sample(time, mannequin.bones);
+      activeContactBones = contactBoneIds(info.groundLock, info.pins);
       // Life layer rides on wall-clock time (not timeline time) so the figure
       // keeps breathing and blinking while paused or scrubbing.
       applyLife(performance.now() / 1000);
@@ -533,6 +553,7 @@ export function createViewer(
       // Self-collision: nudge limbs out of the body BEFORE contact solving so
       // ground-lock and pins see the corrected pose (same order as load()).
       depenetrate(mannequin);
+      alignFloorSoles(mannequin, info.groundLock, info.reaches, info.pins);
       applyGroundLockTo(mannequin, info.groundLock, frameAnchors(info.rootYaw, info.rootOffset));
       applyPins(info.pins);
       // Reach-IK BEFORE the floor safety clamp. When authored FK pushes a
@@ -544,6 +565,7 @@ export function createViewer(
       // floor/landmark targets resolve against.
       applyReaches(info.reaches);
       alignFloorPalms(mannequin, info.reaches, info.pins);
+      alignBarGrips(mannequin, info.reaches, info.pins);
       // Safety net: nothing above ever intentionally pushes part of the body
       // below the floor, so clamp the root up whenever the lowest point dips
       // below y=0, a no-op whenever the pose is legitimately grounded or
@@ -574,8 +596,15 @@ export function createViewer(
       const gap = clipTargetWeight - clipWeight;
       clipWeight += Math.sign(gap) * Math.min(Math.abs(gap), step);
       clipLayer.apply(time, clipWeight);
-      if (clipWeight > 0) character.group.updateMatrixWorld(true);
+      if (clipWeight > 0) {
+        character.group.updateMatrixWorld(true);
+        // Mocap is deliberately layered after procedural posing. Re-apply the
+        // final contact positions/orientations so the visible mesh cannot skate
+        // away from feet/hands the driver already solved.
+        character.correctContacts(mannequin, activeContactBones);
+      }
     }
+    if (propScene?.attachments.length) syncPropAttachments(propScene, mannequin.bones);
     frameDt = 0;
     if (easeCamera) {
       controls.target.lerp(desiredTarget, 0.07);
@@ -774,15 +803,16 @@ export { applyGroundLock, groundFigure } from "./groundlock.js";
 export type { Mannequin, Proportions, CollisionRadii } from "./mannequin.js";
 export { buildTimeline } from "./timeline.js";
 export { solveCCD, type IkChain, type JointLimits } from "./ik.js";
-export { buildProps, type PropScene } from "./props.js";
+export { buildProps, syncPropAttachments, type PropScene, type PropAttachment } from "./props.js";
 export { loadCharacter, rigCharacter, type Character } from "./character.js";
 export {
   loadClipSource,
+  selectMotionClip,
   retargetMocapClip,
   createClipLayer,
   type ClipLayer,
   type ClipSource,
 } from "./clips.js";
 export { depenetrate } from "./depenetrate.js";
-export { alignFloorPalms } from "./contacts.js";
+export { alignBarGrips, alignFloorPalms, alignFloorSoles } from "./contacts.js";
 export type { PhaseSegment } from "./timeline.js";

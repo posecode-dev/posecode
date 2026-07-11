@@ -8,11 +8,11 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <meta name="description" content="How to do the crunch (fitness): 2 phases targeting the abdominals, body weight, beginner level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
+    <meta name="description" content="How to do the crunch (fitness): 3 phases targeting the abdominals, body weight, beginner level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
     <link rel="canonical" href="https://posecode.org/moves/crunch.html" />
     <meta name="theme-color" content="#0a0d12" />
     <meta property="og:title" content="Crunch: How to Do It (Animated 3D Guide) | Posecode" />
-    <meta property="og:description" content="How to do the crunch (fitness): 2 phases targeting the abdominals, body weight, beginner level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
+    <meta property="og:description" content="How to do the crunch (fitness): 3 phases targeting the abdominals, body weight, beginner level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://posecode.org/moves/crunch.html" />
     <meta property="og:site_name" content="Posecode" />
@@ -98,7 +98,7 @@ footer.site-footer{border-top:1px solid var(--border);padding:26px 0 40px;margin
 footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-width:70ch}
 @media(max-width:600px){.wrap{padding:0 18px}}
 </style>
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to do a Crunch","description":"How to do the crunch (fitness): 2 phases targeting the abdominals, body weight, beginner level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs.","step":[{"@type":"HowToStep","name":"Curl up","text":"Curl the shoulders off the floor, ribs toward the hips"},{"@type":"HowToStep","name":"Lower","text":"Lower the upper back down with control"}]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to do a Crunch","description":"How to do the crunch (fitness): 3 phases targeting the abdominals, body weight, beginner level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs.","step":[{"@type":"HowToStep","name":"Set up","text":"Set up"},{"@type":"HowToStep","name":"Curl up","text":"Curl the shoulders off the floor, ribs toward the hips"},{"@type":"HowToStep","name":"Lower","text":"Lower the upper back down with control"}]}</script>
     <script>
       window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
     </script>
@@ -134,6 +134,10 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h2>How to do it</h2>
       <ol class="steps">
 <li>
+          <span class="step-name">Set up<span class="step-dur">0.5s · ease-in-out</span></span>
+          <span class="step-cue">&nbsp;</span>
+        </li>
+<li>
           <span class="step-name">Curl up<span class="step-dur">1s · ease-out</span></span>
           <span class="step-cue">Curl the shoulders off the floor, ribs toward the hips</span>
         </li>
@@ -150,22 +154,33 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   rig humanoid
   pose start = supine
 
-  step &quot;Curl up&quot; 1s ease-out:
+  step &quot;Set up&quot; 0.5s ease-in-out:
+    hips: flex 45
     knees: flex 90
+    ankles: plantarflex 50
+    shoulders: flex 45
+    pin: feet floor
+
+  step &quot;Curl up&quot; 1s ease-out:
+    hips: flex 45
+    knees: flex 90
+    ankles: plantarflex 50
+    shoulders: flex 45
     spine: flex 30
     chest: flex 20
-    neck: flex 20
-    shoulders: flex 45
-    ground-lock: feet
+    neck: flex 15
+    pin: feet floor
     cue &quot;Curl the shoulders off the floor, ribs toward the hips&quot;
 
   step &quot;Lower&quot; 1.2s ease-in:
-    knees: flex 0
+    hips: flex 45
+    knees: flex 90
+    ankles: plantarflex 50
+    shoulders: flex 45
     spine: flex 0
     chest: flex 0
     neck: flex 0
-    shoulders: flex 0
-    ground-lock: feet
+    pin: feet floor
     cue &quot;Lower the upper back down with control&quot;
 
   repeat 12

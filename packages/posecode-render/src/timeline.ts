@@ -73,9 +73,12 @@ function eulerToQuat([x, y, z]: EulerDegTuple): THREE.Quaternion {
 
 const EASE: Record<Easing, (t: number) => number> = {
   linear: (t) => t,
-  "ease-in": (t) => t * t,
-  "ease-out": (t) => 1 - (1 - t) * (1 - t),
-  "ease-in-out": (t) => t * t * (3 - 2 * t),
+  // Cubic one-sided eases reduce the acceleration discontinuity of the old
+  // quadratic curves. Smootherstep is C2-continuous at both endpoints, which
+  // removes the visible "step" as a phase changes direction or contact mode.
+  "ease-in": (t) => t * t * t,
+  "ease-out": (t) => 1 - (1 - t) * (1 - t) * (1 - t),
+  "ease-in-out": (t) => t * t * t * (t * (t * 6 - 15) + 10),
 };
 
 export function buildTimeline(ir: PosecodeIR): BuiltTimeline {

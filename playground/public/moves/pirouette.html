@@ -157,24 +157,30 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   step &quot;Prep - plié&quot; 1.2s ease-in-out:
     hips: rotate-out 25
     knees: flex 45
-    ankles: dorsiflex 10
+    ankles: plantarflex 45
     shoulders: flex 40
     elbows: flex 35
     ground-lock: feet
     cue &quot;Plié to load the turn, arms rounded low in first&quot;
 
   step &quot;Spot &amp; spin&quot; 1.4s ease-in-out:
-    knees: flex 0
-    ankles: plantarflex 30
+    knee_left: flex 0
+    ankle_left: plantarflex 35
+    hip_right: flex 55
+    hip_right: rotate-out 45
+    knee_right: flex 110
+    ankle_right: plantarflex 35
     shoulders: flex 95
     elbows: flex 40
     turn: 360
-    ground-lock: feet
+    pin: foot_left floor
     cue &quot;Push up to relevé, pull the arms in, and spin a full turn&quot;
 
   step &quot;Land&quot; 1s ease-out:
-    ankles: plantarflex 0
+    hips: flex 0
     hips: rotate-out 0
+    knees: flex 0
+    ankles: plantarflex 0
     shoulders: flex 0
     elbows: flex 0
     ground-lock: feet

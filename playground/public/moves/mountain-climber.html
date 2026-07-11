@@ -157,7 +157,9 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   step &quot;Right knee in&quot; 0.5s ease-out:
     hip_right: flex 60
     knee_right: flex 75
-    ground-lock: hands, feet
+    elbows: pronate 80
+    pin: foot_left floor
+    pin: hands floor
     cue &quot;Drive the right knee toward the chest&quot;
 
   step &quot;Switch&quot; 0.5s ease-in-out:
@@ -165,12 +167,15 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     knee_right: flex 0
     hip_left: flex 60
     knee_left: flex 75
-    ground-lock: hands, feet
+    elbows: pronate 80
+    pin: foot_right floor
+    pin: hands floor
     cue &quot;Switch fast: left knee drives in&quot;
 
   step &quot;Out&quot; 0.5s ease-in:
     hip_left: flex 0
     knee_left: flex 0
+    elbows: pronate 80
     ground-lock: hands, feet
     cue &quot;Return to a strong plank&quot;
 

@@ -151,8 +151,9 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   pose start = standing
 
   step &quot;Fold&quot; 2.5s ease-in-out:
-    pelvis: hinge 120
-    knees: flex 60
+    pelvis: hinge 95
+    knees: flex 20
+    ankles: plantarflex 20
     neck: flex 15
     reach: hand_left ankle_left
     reach: hand_right ankle_right
@@ -162,6 +163,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   step &quot;Rise&quot; 2s ease-out:
     pelvis: hinge 0
     knees: flex 0
+    ankles: plantarflex 0
     neck: flex 0
     ground-lock: feet
     cue &quot;Stack the spine back up to standing tall&quot;
