@@ -17,11 +17,10 @@ import { buildMannequin, type Mannequin } from "./mannequin.js";
 import { applyGroundLock as applyGroundLockTo, groundFigure as groundFigureOf } from "./groundlock.js";
 import { buildTimeline, type BuiltTimeline, type PhaseSegment } from "./timeline.js";
 import { solveCCD, type JointLimits } from "./ik.js";
-import { buildProps, syncPropAttachments, type PropScene } from "./props.js";
+import { buildProps, type PropScene } from "./props.js";
 import { loadCharacter, type Character } from "./character.js";
 import {
   loadClipSource,
-  selectMotionClip,
   retargetMocapClip,
   createClipLayer,
   type ClipLayer,
@@ -84,14 +83,6 @@ export interface ViewerOptions {
    */
   characterUrl?: string;
   /**
-   * Show the procedural figure while `characterUrl` loads. Defaults to true
-   * for embeds and offline-friendly consumers. Set false when a brief empty
-   * stage is preferable to flashing the procedural figure before the skinned
-   * character appears. The procedural figure is still revealed if loading
-   * fails, so the viewer never remains permanently blank.
-   */
-  showProceduralWhileLoading?: boolean;
-  /**
    * Mocap clip library: clip name (as written in a document's `clip "<name>"`
    * directive) → FBX/GLB asset URL. When a loaded document names a clip found
    * here and the skinned character is active, the viewer retargets the clip
@@ -100,6 +91,13 @@ export interface ViewerOptions {
    * the procedural keyframes as always, so clips can never blank a movement.
    */
   clips?: Record<string, string>;
+  /**
+   * Keep the procedural figure visible while a skinned `characterUrl` loads.
+   * This viewer always shows the procedural figure during load (and on load
+   * failure), so the flag is accepted for API compatibility; the default
+   * behavior already matches `true`.
+   */
+  showProceduralWhileLoading?: boolean;
 }
 
 export function createViewer(
@@ -182,9 +180,6 @@ export function createViewer(
 
   let mannequin: Mannequin = buildMannequin();
   enableShadows(mannequin.root);
-  if (opts.characterUrl && opts.showProceduralWhileLoading === false) {
-    setMannequinMeshesVisible(mannequin.root, false);
-  }
   scene.add(mannequin.root);
 
   // Skinned character layer (optional). While loading (and on failure) the
@@ -380,17 +375,6 @@ export function createViewer(
     foot_right: "ankle_right",
   };
 
-  function contactBoneIds(groundLock: readonly string[], pins: readonly PinTarget[]): string[] {
-    const ids = new Set<string>();
-    for (const group of groundLock) {
-      if (group === "hands") { ids.add("wrist_left"); ids.add("wrist_right"); }
-      if (group === "forearms") { ids.add("elbow_left"); ids.add("elbow_right"); }
-      if (group === "feet") { ids.add("ankle_left"); ids.add("ankle_right"); }
-    }
-    for (const pin of pins) ids.add(EFFECTOR_BONE[pin.effector] ?? pin.effector);
-    return [...ids];
-  }
-
   /**
    * The rotatable joint chain (proximal → distal) that moves an effector, with
    * each joint's ROM expressed as local Euler limits for the constrained solve.
@@ -455,13 +439,7 @@ export function createViewer(
       p.y = Number.isFinite(box.min.y) ? Math.max(0, p.y - box.min.y) : 0;
       return p;
     }
-    const side = effector.name.endsWith("_left")
-      ? "left"
-      : effector.name.endsWith("_right")
-        ? "right"
-        : null;
-    const anchor = (side ? propAnchors.get(`${target}.${side}`) : undefined)
-      ?? propAnchors.get(target);
+    const anchor = propAnchors.get(target);
     if (anchor) return anchor.clone();
     const bone = mannequin.bones.get(target);
     if (bone) return bone.getWorldPosition(new THREE.Vector3());
@@ -588,10 +566,8 @@ export function createViewer(
   }
 
   function frame(): void {
-    let activeContactBones: string[] = [];
     if (timeline) {
       const info = timeline.sample(time, mannequin.bones);
-      activeContactBones = contactBoneIds(info.groundLock, info.pins);
       // Life layer rides on wall-clock time (not timeline time) so the figure
       // keeps breathing and blinking while paused or scrubbing.
       applyLife(performance.now() / 1000);
@@ -613,7 +589,6 @@ export function createViewer(
       // Self-collision: nudge limbs out of the body BEFORE contact solving so
       // ground-lock and pins see the corrected pose (same order as load()).
       depenetrate(mannequin);
-      alignFloorSoles(mannequin, info.groundLock, info.reaches, info.pins);
       applyGroundLockTo(mannequin, info.groundLock, frameAnchors(info.rootYaw, info.rootOffset));
       applyPins(info.pins);
       applyGrips(info.grips);
@@ -664,15 +639,8 @@ export function createViewer(
       const gap = clipTargetWeight - clipWeight;
       clipWeight += Math.sign(gap) * Math.min(Math.abs(gap), step);
       clipLayer.apply(time, clipWeight);
-      if (clipWeight > 0) {
-        character.group.updateMatrixWorld(true);
-        // Mocap is deliberately layered after procedural posing. Re-apply the
-        // final contact positions/orientations so the visible mesh cannot skate
-        // away from feet/hands the driver already solved.
-        character.correctContacts(mannequin, activeContactBones);
-      }
+      if (clipWeight > 0) character.group.updateMatrixWorld(true);
     }
-    if (propScene?.attachments.length) syncPropAttachments(propScene, mannequin.bones);
     frameDt = 0;
     if (easeCamera) {
       controls.target.lerp(desiredTarget, 0.07);
@@ -841,9 +809,8 @@ export function createViewer(
         else char.sync(mannequin);
       })
       .catch(() => {
-        // Reveal the fallback if it was hidden during loading. Deliberately
-        // silent: an offline embed or blocked CDN should degrade, not error.
-        setMannequinMeshesVisible(mannequin.root, true);
+        // Keep the procedural figure. Deliberately silent: an offline embed
+        // or a blocked CDN should degrade, not error.
       });
   }
 
@@ -874,12 +841,6 @@ function enableShadows(root: THREE.Object3D): void {
   });
 }
 
-function setMannequinMeshesVisible(root: THREE.Object3D, visible: boolean): void {
-  root.traverse((obj) => {
-    if ((obj as THREE.Mesh).isMesh) obj.visible = visible;
-  });
-}
-
 /** Free GPU resources for a discarded subtree (prop set swapped on reload). */
 function disposeTree(root: THREE.Object3D): void {
   root.traverse((obj) => {
@@ -898,16 +859,15 @@ export { applyGroundLock, groundFigure } from "./groundlock.js";
 export type { Mannequin, Proportions, CollisionRadii } from "./mannequin.js";
 export { buildTimeline } from "./timeline.js";
 export { solveCCD, type IkChain, type JointLimits } from "./ik.js";
-export { buildProps, syncPropAttachments, type PropScene, type PropAttachment } from "./props.js";
+export { buildProps, type PropScene } from "./props.js";
 export { loadCharacter, rigCharacter, type Character } from "./character.js";
 export {
   loadClipSource,
-  selectMotionClip,
   retargetMocapClip,
   createClipLayer,
   type ClipLayer,
   type ClipSource,
 } from "./clips.js";
 export { depenetrate } from "./depenetrate.js";
-export { alignBarGrips, alignFloorPalms, alignFloorSoles } from "./contacts.js";
+export { alignFloorPalms } from "./contacts.js";
 export type { PhaseSegment } from "./timeline.js";
