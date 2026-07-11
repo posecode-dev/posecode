@@ -138,15 +138,15 @@ const posecodeStream = StreamLanguage.define<{ inStep: boolean }>({
 });
 
 const posecodeHighlight = HighlightStyle.define([
-  { tag: t.keyword, color: "var(--accent)", fontWeight: "600" },
-  { tag: t.typeName, color: "#79c0ff" },
-  { tag: t.operatorKeyword, color: "#ffcc66" },
-  { tag: t.variableName, color: "#c0a7ff" },
-  { tag: t.atom, color: "#5cd0c0" },
-  { tag: t.number, color: "#ff9d6b" },
-  { tag: t.string, color: "#d8b48a" },
-  { tag: t.lineComment, color: "#5b6675", fontStyle: "italic" },
-  { tag: t.punctuation, color: "#6b7785" },
+  { tag: t.keyword, color: "var(--t-kw)", fontWeight: "600" },
+  { tag: t.typeName, color: "var(--t-kind)" },
+  { tag: t.operatorKeyword, color: "var(--t-act)" },
+  { tag: t.variableName, color: "var(--t-joint)" },
+  { tag: t.atom, color: "var(--t-atom)" },
+  { tag: t.number, color: "var(--t-num)" },
+  { tag: t.string, color: "var(--t-str)" },
+  { tag: t.lineComment, color: "var(--muted)", fontStyle: "italic" },
+  { tag: t.punctuation, color: "var(--t-punct)" },
 ]);
 
 // --- Language service bridges ----------------------------------------------
