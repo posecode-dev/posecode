@@ -5,7 +5,7 @@ posecode exercise "Body-weight squat"
   step "Descend" 1.6s ease-in-out:
     hips: flex 80
     knees: flex 95
-    ankles: plantarflex 50
+    ankles: dorsiflex 15
     pelvis: hinge 25
     spine: flex 0
     shoulders: flex 70

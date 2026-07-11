@@ -6,7 +6,7 @@ posecode exercise "Demi-plié"
     hips: flex 20
     hips: rotate-out 30
     knees: flex 55
-    ankles: plantarflex 50
+    ankles: dorsiflex 15
     shoulders: abduct 70
     elbows: flex 15
     spine: extend 4

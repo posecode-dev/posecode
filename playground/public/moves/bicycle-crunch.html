@@ -163,28 +163,34 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     knees: flex 90
     shoulders: flex 100
     elbows: flex 90
-    spine: flex 12
+    spine: flex 25
+    chest: flex 15
     neck: flex 20
     cue &quot;Hands by the ears, knees over the hips, shoulders lifted&quot;
 
   step &quot;Right to left&quot; 0.8s ease-in-out:
-    spine: rotate-out 20
+    spine: rotate-in 30
+    chest: rotate-in 20
     hip_left: flex 110
     knee_left: flex 90
-    hip_right: flex 25
-    knee_right: flex 20
+    hip_right: flex 15
+    knee_right: flex 5
+    reach: elbow_right knee_left
     cue &quot;Right elbow toward the left knee; the right leg extends long&quot;
 
   step &quot;Left to right&quot; 0.8s ease-in-out:
-    spine: rotate-in 20
+    spine: rotate-out 30
+    chest: rotate-out 20
     hip_right: flex 110
     knee_right: flex 90
-    hip_left: flex 25
-    knee_left: flex 20
+    hip_left: flex 15
+    knee_left: flex 5
+    reach: elbow_left knee_right
     cue &quot;Switch: left elbow toward the right knee&quot;
 
   step &quot;Center&quot; 0.6s ease-out:
     spine: rotate-in 0
+    chest: rotate-in 0
     hip_right: flex 90
     knee_right: flex 90
     hip_left: flex 90

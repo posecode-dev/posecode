@@ -71,6 +71,8 @@ export interface Character {
   proportions: Proportions;
   /** Copy the driver's current pose onto the character skeleton. */
   sync(driver: Mannequin): void;
+  /** Restore solved terminal contacts after a mocap layer has overwritten them. */
+  correctContacts(driver: Mannequin, boneIds: readonly string[]): void;
   /**
    * The character's first skinned mesh, the retarget target for mocap clips
    * (see clips.ts). Null on bare skeletons, which then can't play clips.
@@ -283,6 +285,7 @@ export function rigCharacter(charScene: THREE.Object3D): Character {
   // ---- Capture rest state for the per-frame retarget. ----
   const mapped: MappedBone[] = [];
   const mappedByNode = new Map<THREE.Object3D, MappedBone>();
+  const mappedById = new Map<string, MappedBone>();
   for (const [driverId] of Object.entries(BONE_MAP)) {
     const node = bone(driverId);
     const mb: MappedBone = {
@@ -293,6 +296,7 @@ export function rigCharacter(charScene: THREE.Object3D): Character {
     };
     mapped.push(mb);
     mappedByNode.set(node, mb);
+    mappedById.set(driverId, mb);
   }
   // Distal phalanges: capture rest locals + the curl axis expressed in each
   // phalanx's rest-local frame (the driver curls fingers as a single bone; the
@@ -379,6 +383,34 @@ export function rigCharacter(charScene: THREE.Object3D): Character {
     group.updateMatrixWorld(true);
   }
 
+  function correctContacts(driver: Mannequin, boneIds: readonly string[]): void {
+    const ids = [...new Set(boneIds)].filter((id) => mappedById.has(id) && driver.bones.has(id));
+    if (ids.length === 0) return;
+
+    group.updateMatrixWorld(true);
+    const delta = new THREE.Vector3();
+    const driverPos = new THREE.Vector3();
+    const charPos = new THREE.Vector3();
+    for (const id of ids) {
+      driver.bones.get(id)!.getWorldPosition(driverPos);
+      mappedById.get(id)!.node.getWorldPosition(charPos);
+      delta.add(driverPos).sub(charPos);
+    }
+    group.position.add(delta.multiplyScalar(1 / ids.length));
+    group.updateMatrixWorld(true);
+
+    for (const id of ids) {
+      const mb = mappedById.get(id)!;
+      if (!mb.node.parent) continue;
+      driver.bones.get(id)!.getWorldQuaternion(TMP_Q);
+      const desiredWorld = TMP_Q2.copy(TMP_Q).multiply(mb.restWorld);
+      mb.node.parent.getWorldQuaternion(TMP_Q);
+      mb.node.quaternion.copy(TMP_Q.invert().multiply(desiredWorld));
+      mb.node.updateMatrixWorld(true);
+    }
+    group.updateMatrixWorld(true);
+  }
+
   // Surface for the optional mocap-clip layer (clips.ts): the retarget target
   // mesh and the set of bones sync() rewrites each frame.
   let skinnedMesh: THREE.SkinnedMesh | null = null;
@@ -394,6 +426,7 @@ export function rigCharacter(charScene: THREE.Object3D): Character {
     group,
     proportions,
     sync,
+    correctContacts,
     skinnedMesh,
     drivenNodes,
     dispose() {

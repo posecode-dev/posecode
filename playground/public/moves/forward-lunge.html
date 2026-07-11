@@ -154,10 +154,12 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     hip_right: flex 45
     knee_right: flex 95
     hip_left: extend 15
-    knee_left: flex 45
-    ankle_right: dorsiflex 14
+    knee_left: flex 80
+    ankle_right: plantarflex 50
     spine: extend 4
-    ground-lock: feet
+    travel: 0 0.3
+    pin: foot_left floor
+    reach: foot_right floor
     cue &quot;Step forward and lower the back knee toward the floor&quot;
 
   step &quot;Drive up&quot; 1.4s ease-out:
@@ -165,8 +167,9 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     knee_right: flex 0
     hip_left: extend 0
     knee_left: flex 0
-    ankle_right: dorsiflex 0
+    ankle_right: plantarflex 0
     spine: flex 0
+    travel: 0 0
     ground-lock: feet
     cue &quot;Push through the front heel to stand tall&quot;
 

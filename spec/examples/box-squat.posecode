@@ -6,7 +6,7 @@ posecode exercise "Box squat"
   step "Sit back" 1.6s ease-in-out:
     hips: flex 85
     knees: flex 90
-    ankles: plantarflex 50
+    ankles: dorsiflex 15
     pelvis: hinge 20
     spine: flex 0
     shoulders: flex 70
