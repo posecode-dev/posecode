@@ -2,7 +2,7 @@ posecode stretch "Seated forward fold"
   rig humanoid
   pose start = seated
 
-  step "Fold" 3s ease-in-out:
+  step "Fold" 3s flow:
     hips: flex 115
     spine: flex 25
     chest: flex 15
@@ -10,7 +10,7 @@ posecode stretch "Seated forward fold"
     shoulders: flex 60
     cue "Hinge forward from the hips over the legs, reaching toward the feet"
 
-  step "Rise" 2.5s ease-in-out:
+  step "Rise" 2.5s settle:
     hips: flex 90
     spine: flex 0
     chest: flex 0

@@ -135,19 +135,19 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h2>How to do it</h2>
       <ol class="steps">
 <li>
-          <span class="step-name">Raise<span class="step-dur">0.8s · ease-out</span></span>
+          <span class="step-name">Raise<span class="step-dur">0.8s · settle</span></span>
           <span class="step-cue">Raise the hand up high, palm open</span>
         </li>
 <li>
-          <span class="step-name">Wave out<span class="step-dur">0.6s · ease-in-out</span></span>
+          <span class="step-name">Wave out<span class="step-dur">0.6s · flow</span></span>
           <span class="step-cue">Tip the fingers out...</span>
         </li>
 <li>
-          <span class="step-name">Wave in<span class="step-dur">0.6s · ease-in-out</span></span>
+          <span class="step-name">Wave in<span class="step-dur">0.6s · flow</span></span>
           <span class="step-cue">...and back again: a friendly wave</span>
         </li>
 <li>
-          <span class="step-name">Lower<span class="step-dur">0.8s · ease-in</span></span>
+          <span class="step-name">Lower<span class="step-dur">0.8s · drive</span></span>
           <span class="step-cue">Lower the arm back to your side</span>
         </li>
       </ol>
@@ -159,21 +159,21 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   rig humanoid
   pose start = standing
 
-  step &quot;Raise&quot; 0.8s ease-out:
+  step &quot;Raise&quot; 0.8s settle:
     shoulder_right: flex 150
     elbow_right: flex 20
     fingers_right: flex 0
     cue &quot;Raise the hand up high, palm open&quot;
 
-  step &quot;Wave out&quot; 0.6s ease-in-out:
+  step &quot;Wave out&quot; 0.6s flow:
     fingers_right: flex 30
     cue &quot;Tip the fingers out...&quot;
 
-  step &quot;Wave in&quot; 0.6s ease-in-out:
+  step &quot;Wave in&quot; 0.6s flow:
     fingers_right: flex 0
     cue &quot;...and back again: a friendly wave&quot;
 
-  step &quot;Lower&quot; 0.8s ease-in:
+  step &quot;Lower&quot; 0.8s drive:
     shoulder_right: flex 0
     elbow_right: flex 0
     cue &quot;Lower the arm back to your side&quot;

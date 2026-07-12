@@ -2,17 +2,17 @@ posecode stretch "Neck side stretch"
   rig humanoid
   pose start = standing
 
-  step "Ear to right" 3s ease-in-out:
+  step "Ear to right" 3s flow:
     neck: adduct 40
     ground-lock: feet
     cue "Gently take the right ear toward the right shoulder"
 
-  step "Ear to left" 3.4s ease-in-out:
+  step "Ear to left" 3.4s flow:
     neck: abduct 40
     ground-lock: feet
     cue "Pass through center and lengthen to the left"
 
-  step "Center" 2s ease-out:
+  step "Center" 2s settle:
     neck: abduct 0
     ground-lock: feet
     cue "Float the head back to neutral"

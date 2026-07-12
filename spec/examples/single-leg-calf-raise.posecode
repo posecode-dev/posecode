@@ -2,13 +2,13 @@ posecode exercise "Single-leg calf raise"
   rig humanoid
   pose start = standing
 
-  step "Rise" 1.1s ease-out:
+  step "Rise" 1.1s settle:
     ankle_right: plantarflex 40
     knee_left: flex 60
     pin: foot_right floor
     cue "Balance on the right foot and rise onto the ball of the foot"
 
-  step "Lower" 1.3s ease-in:
+  step "Lower" 1.3s drive:
     ankle_right: plantarflex 0
     knee_left: flex 60
     pin: foot_right floor

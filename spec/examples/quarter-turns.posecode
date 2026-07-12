@@ -2,7 +2,7 @@ posecode posture "Quarter turns"
   rig humanoid
   pose start = standing
 
-  step "Face right" 1s ease-in-out:
+  step "Face right" 1s flow:
     hips: flex 12
     knees: flex 20
     ankles: plantarflex 20
@@ -11,7 +11,7 @@ posecode posture "Quarter turns"
     ground-lock: feet
     cue "Small dip and pivot a quarter-turn to the right"
 
-  step "Face back" 1s ease-in-out:
+  step "Face back" 1s flow:
     knees: flex 0
     hips: flex 0
     ankles: plantarflex 0
@@ -20,7 +20,7 @@ posecode posture "Quarter turns"
     ground-lock: feet
     cue "Rise, then pivot another quarter-turn to face the back"
 
-  step "Face left" 1s ease-in-out:
+  step "Face left" 1s flow:
     hips: flex 12
     knees: flex 20
     ankles: plantarflex 20
@@ -29,7 +29,7 @@ posecode posture "Quarter turns"
     ground-lock: feet
     cue "Dip and pivot again to face the far side"
 
-  step "Face front" 1s ease-in-out:
+  step "Face front" 1s settle:
     knees: flex 0
     hips: flex 0
     ankles: plantarflex 0

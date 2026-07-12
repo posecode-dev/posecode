@@ -2,7 +2,7 @@ posecode exercise "Box step"
   rig humanoid
   pose start = standing
 
-  step "Step forward-right" 0.9s ease-in-out:
+  step "Step forward-right" 0.9s flow:
     hip_right: flex 35
     knee_right: flex 40
     ankle_right: plantarflex 40
@@ -12,7 +12,7 @@ posecode exercise "Box step"
     pin: foot_left floor
     cue "Step the right foot forward and out to the corner"
 
-  step "Close the feet" 0.7s ease-in-out:
+  step "Close the feet" 0.7s flow:
     hip_right: flex 0
     knee_right: flex 0
     ankle_right: plantarflex 0
@@ -21,7 +21,7 @@ posecode exercise "Box step"
     ground-lock: feet
     cue "Bring the left foot to meet it, standing tall on the corner"
 
-  step "Step back-left" 0.9s ease-in-out:
+  step "Step back-left" 0.9s flow:
     hip_left: flex 35
     knee_left: flex 40
     ankle_left: plantarflex 40
@@ -31,7 +31,7 @@ posecode exercise "Box step"
     pin: foot_right floor
     cue "Step the left foot back to the start on the diagonal"
 
-  step "Close home" 0.7s ease-in-out:
+  step "Close home" 0.7s settle:
     hip_left: flex 0
     knee_left: flex 0
     ankle_left: plantarflex 0

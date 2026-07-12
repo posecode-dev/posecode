@@ -135,11 +135,11 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h2>How to do it</h2>
       <ol class="steps">
 <li>
-          <span class="step-name">Point front<span class="step-dur">1.6s · ease-in-out</span></span>
+          <span class="step-name">Point front<span class="step-dur">1.6s · flow</span></span>
           <span class="step-cue">Brush the right foot forward to a fully pointed tendu, leg turned out</span>
         </li>
 <li>
-          <span class="step-name">Close<span class="step-dur">1.6s · ease-in-out</span></span>
+          <span class="step-name">Close<span class="step-dur">1.6s · settle</span></span>
           <span class="step-cue">Draw the foot back to first position, heel down</span>
         </li>
       </ol>
@@ -151,7 +151,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   rig humanoid
   pose start = standing
 
-  step &quot;Point front&quot; 1.6s ease-in-out:
+  step &quot;Point front&quot; 1.6s flow:
     hip_right: flex 22
     hip_right: rotate-out 30
     knee_right: extend 0
@@ -161,7 +161,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     pin: foot_left floor
     cue &quot;Brush the right foot forward to a fully pointed tendu, leg turned out&quot;
 
-  step &quot;Close&quot; 1.6s ease-in-out:
+  step &quot;Close&quot; 1.6s settle:
     hip_right: flex 0
     hip_right: rotate-out 0
     ankle_right: plantarflex 0

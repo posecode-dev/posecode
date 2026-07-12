@@ -2,7 +2,7 @@ posecode stretch "Touch your toes"
   rig humanoid
   pose start = standing
 
-  step "Fold" 2.5s ease-in-out:
+  step "Fold" 2.5s flow:
     pelvis: hinge 95
     knees: flex 20
     ankles: plantarflex 20
@@ -12,7 +12,7 @@ posecode stretch "Touch your toes"
     ground-lock: feet
     cue "Hinge from the hips, bend the knees, and reach your hands down toward your ankles"
 
-  step "Rise" 2s ease-out:
+  step "Rise" 2s settle:
     pelvis: hinge 0
     knees: flex 0
     ankles: plantarflex 0

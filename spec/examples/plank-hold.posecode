@@ -2,7 +2,7 @@ posecode posture "Plank hold"
   rig humanoid
   pose start = plank
 
-  step "Brace" 0.5s ease-in-out:
+  step "Brace" 0.5s flow:
     shoulders: flex 90
     elbows: flex 90
     elbows: pronate 80

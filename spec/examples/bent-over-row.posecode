@@ -2,7 +2,7 @@ posecode exercise "Bent-over row"
   rig humanoid
   pose start = standing
 
-  step "Set the hinge" 1.6s ease-in-out:
+  step "Set the hinge" 1.6s flow:
     pelvis: hinge 70
     knees: flex 20
     ankles: plantarflex 20
@@ -13,21 +13,21 @@ posecode exercise "Bent-over row"
     ground-lock: feet
     cue "Hinge to a flat back, let the arms hang straight down"
 
-  step "Row" 0.9s ease-out:
+  step "Row" 0.9s settle:
     shoulders: extend 10
     elbows: flex 95
     elbows: pronate 80
     ground-lock: feet
     cue "Drive the elbows up past the ribs, squeeze the shoulder blades"
 
-  step "Lower" 1s ease-in:
+  step "Lower" 1s drive:
     shoulders: flex 65
     elbows: flex 10
     elbows: pronate 80
     ground-lock: feet
     cue "Lower the bar under control, keep the back flat"
 
-  step "Stand" 1s ease-out:
+  step "Stand" 1s settle:
     pelvis: hinge 0
     knees: flex 0
     ankles: plantarflex 0

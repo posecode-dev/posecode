@@ -3,21 +3,21 @@ posecode exercise "Dead hang"
   prop bar
   pose start = standing
 
-  step "Reach" 0.8s ease-out:
+  step "Reach" 0.8s settle:
     shoulders: flex 175
     elbows: flex 5
     elbows: pronate 80
     ground-lock: feet
     cue "Reach up and grip the bar"
 
-  step "Hang" 3s ease-in-out:
+  step "Hang" 3s flow:
     shoulders: flex 175
     elbows: flex 5
     elbows: pronate 80
     grip: hands bar
     cue "Relax into a long, straight-arm hang"
 
-  step "Down" 1.5s ease-out:
+  step "Down" 1.5s settle:
     shoulders: flex 0
     elbows: flex 0
     elbows: pronate 0

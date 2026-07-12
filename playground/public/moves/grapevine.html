@@ -135,19 +135,19 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h2>How to do it</h2>
       <ol class="steps">
 <li>
-          <span class="step-name">Step out<span class="step-dur">0.7s · ease-in-out</span></span>
+          <span class="step-name">Step out<span class="step-dur">0.7s · flow</span></span>
           <span class="step-cue">Step the leading foot out to the side</span>
         </li>
 <li>
-          <span class="step-name">Cross behind<span class="step-dur">0.7s · ease-in-out</span></span>
+          <span class="step-name">Cross behind<span class="step-dur">0.7s · flow</span></span>
           <span class="step-cue">Cross the trailing foot behind and keep travelling</span>
         </li>
 <li>
-          <span class="step-name">Step out again<span class="step-dur">0.7s · ease-in-out</span></span>
+          <span class="step-name">Step out again<span class="step-dur">0.7s · flow</span></span>
           <span class="step-cue">Step out to the side once more</span>
         </li>
 <li>
-          <span class="step-name">Return home<span class="step-dur">1s · ease-in-out</span></span>
+          <span class="step-name">Return home<span class="step-dur">1s · settle</span></span>
           <span class="step-cue">Travel back the other way to the starting spot</span>
         </li>
       </ol>
@@ -159,7 +159,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   rig humanoid
   pose start = standing
 
-  step &quot;Step out&quot; 0.7s ease-in-out:
+  step &quot;Step out&quot; 0.7s flow:
     hip_left: abduct 30
     shoulders: abduct 40
     travel: 0.4 0
@@ -167,7 +167,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     reach: foot_left floor
     cue &quot;Step the leading foot out to the side&quot;
 
-  step &quot;Cross behind&quot; 0.7s ease-in-out:
+  step &quot;Cross behind&quot; 0.7s flow:
     hip_left: abduct 0
     hip_right: rotate-in 20
     knee_right: flex 25
@@ -177,7 +177,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     reach: foot_right floor
     cue &quot;Cross the trailing foot behind and keep travelling&quot;
 
-  step &quot;Step out again&quot; 0.7s ease-in-out:
+  step &quot;Step out again&quot; 0.7s flow:
     hip_right: rotate-in 0
     knee_right: flex 0
     ankle_right: plantarflex 0
@@ -187,7 +187,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     reach: foot_left floor
     cue &quot;Step out to the side once more&quot;
 
-  step &quot;Return home&quot; 1s ease-in-out:
+  step &quot;Return home&quot; 1s settle:
     hip_left: abduct 0
     shoulders: abduct 0
     travel: 0 0

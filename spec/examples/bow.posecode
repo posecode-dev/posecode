@@ -2,14 +2,14 @@ posecode posture "Standing bow"
   rig humanoid
   pose start = standing
 
-  step "Bow" 2s ease-in-out:
+  step "Bow" 2s flow:
     pelvis: hinge 35
     neck: flex 15
     shoulders: extend 5
     ground-lock: feet
     cue "Hinge forward from the hips into a respectful bow, back flat"
 
-  step "Rise" 2s ease-out:
+  step "Rise" 2s settle:
     pelvis: hinge 0
     neck: flex 0
     shoulders: extend 0

@@ -2,7 +2,7 @@ posecode exercise "Mountain climber"
   rig humanoid
   pose start = plank
 
-  step "Right knee in" 0.5s ease-out:
+  step "Right knee in" 0.5s settle:
     hip_right: flex 60
     knee_right: flex 75
     elbows: pronate 80
@@ -10,7 +10,7 @@ posecode exercise "Mountain climber"
     pin: hands floor
     cue "Drive the right knee toward the chest"
 
-  step "Switch" 0.5s ease-in-out:
+  step "Switch" 0.5s flow:
     hip_right: flex 0
     knee_right: flex 0
     hip_left: flex 60
@@ -20,7 +20,7 @@ posecode exercise "Mountain climber"
     pin: hands floor
     cue "Switch fast: left knee drives in"
 
-  step "Out" 0.5s ease-in:
+  step "Out" 0.5s drive:
     hip_left: flex 0
     knee_left: flex 0
     elbows: pronate 80

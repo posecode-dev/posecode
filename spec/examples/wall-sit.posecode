@@ -3,7 +3,7 @@ posecode posture "Wall sit"
   prop wall
   pose start = standing
 
-  step "Slide down" 2.5s ease-in-out:
+  step "Slide down" 2.5s flow:
     hips: flex 90
     knees: flex 90
     ankles: dorsiflex 15
@@ -11,7 +11,7 @@ posecode posture "Wall sit"
     ground-lock: feet
     cue "Slide the back down the wall until the thighs are parallel"
 
-  step "Hold & rise" 2.5s ease-out:
+  step "Hold & rise" 2.5s settle:
     hips: flex 0
     knees: flex 0
     ankles: plantarflex 0

@@ -135,11 +135,11 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h2>How to do it</h2>
       <ol class="steps">
 <li>
-          <span class="step-name">Roll down<span class="step-dur">3s · ease-in-out</span></span>
+          <span class="step-name">Roll down<span class="step-dur">3s · flow</span></span>
           <span class="step-cue">Drop the chin and round down one vertebra at a time</span>
         </li>
 <li>
-          <span class="step-name">Roll up<span class="step-dur">2.5s · ease-in-out</span></span>
+          <span class="step-name">Roll up<span class="step-dur">2.5s · settle</span></span>
           <span class="step-cue">Stack the spine back up to standing</span>
         </li>
       </ol>
@@ -151,7 +151,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   rig humanoid
   pose start = standing
 
-  step &quot;Roll down&quot; 3s ease-in-out:
+  step &quot;Roll down&quot; 3s flow:
     spine: flex 45
     chest: flex 30
     neck: flex 20
@@ -161,7 +161,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     ground-lock: feet
     cue &quot;Drop the chin and round down one vertebra at a time&quot;
 
-  step &quot;Roll up&quot; 2.5s ease-in-out:
+  step &quot;Roll up&quot; 2.5s settle:
     spine: flex 0
     chest: flex 0
     neck: flex 0

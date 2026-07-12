@@ -2,7 +2,7 @@ posecode posture "Neutral standing posture"
   rig humanoid
   pose start = standing
 
-  step "Align" 3s ease-in-out:
+  step "Align" 3s settle:
     spine: hold neutral
     chest: extend 10
     neck: flex 0

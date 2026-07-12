@@ -135,11 +135,11 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h2>How to do it</h2>
       <ol class="steps">
 <li>
-          <span class="step-name">Lift<span class="step-dur">1.5s · ease-out</span></span>
+          <span class="step-name">Lift<span class="step-dur">1.5s · settle</span></span>
           <span class="step-cue">Lift the arms, chest, and legs off the floor</span>
         </li>
 <li>
-          <span class="step-name">Lower<span class="step-dur">1.5s · ease-in</span></span>
+          <span class="step-name">Lower<span class="step-dur">1.5s · drive</span></span>
           <span class="step-cue">Lower everything back down with control</span>
         </li>
       </ol>
@@ -151,7 +151,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   rig humanoid
   pose start = prone
 
-  step &quot;Lift&quot; 1.5s ease-out:
+  step &quot;Lift&quot; 1.5s settle:
     shoulders: abduct 130
     spine: extend 20
     chest: extend 15
@@ -160,7 +160,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     pin: pelvis floor
     cue &quot;Lift the arms, chest, and legs off the floor&quot;
 
-  step &quot;Lower&quot; 1.5s ease-in:
+  step &quot;Lower&quot; 1.5s drive:
     shoulders: abduct 0
     spine: flex 0
     chest: flex 0

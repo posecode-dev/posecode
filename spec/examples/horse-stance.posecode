@@ -2,7 +2,7 @@ posecode posture "Horse stance"
   rig humanoid
   pose start = standing
 
-  step "Sink" 2s ease-in-out:
+  step "Sink" 2s flow:
     hips: flex 30
     hips: abduct 25
     knees: flex 90
@@ -13,7 +13,7 @@ posecode posture "Horse stance"
     ground-lock: feet
     cue "Sink into a wide, low stance: thighs working, back tall, guard up"
 
-  step "Rise" 2s ease-out:
+  step "Rise" 2s settle:
     hips: flex 0
     hips: abduct 0
     knees: flex 0

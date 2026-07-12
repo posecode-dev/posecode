@@ -2,14 +2,14 @@ posecode exercise "Crunch"
   rig humanoid
   pose start = supine
 
-  step "Set up" 0.5s ease-in-out:
+  step "Set up" 0.5s flow:
     hips: flex 45
     knees: flex 90
     ankles: plantarflex 50
     shoulders: flex 45
     pin: feet floor
 
-  step "Curl up" 1s ease-out:
+  step "Curl up" 1s settle:
     hips: flex 45
     knees: flex 90
     ankles: plantarflex 50
@@ -20,7 +20,7 @@ posecode exercise "Crunch"
     pin: feet floor
     cue "Curl the shoulders off the floor, ribs toward the hips"
 
-  step "Lower" 1.2s ease-in:
+  step "Lower" 1.2s drive:
     hips: flex 45
     knees: flex 90
     ankles: plantarflex 50

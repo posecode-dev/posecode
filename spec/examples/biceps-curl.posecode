@@ -2,12 +2,12 @@ posecode exercise "Biceps curl"
   rig humanoid
   pose start = standing
 
-  step "Curl" 1.1s ease-out:
+  step "Curl" 1.1s settle:
     elbows: flex 135
     elbows: supinate 80
     cue "Curl up, keep the elbows tucked at your sides"
 
-  step "Lower" 1.4s ease-in:
+  step "Lower" 1.4s drive:
     elbows: flex 15
     elbows: supinate 80
     cue "Lower under control: don't swing"

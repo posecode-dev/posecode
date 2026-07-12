@@ -2,7 +2,7 @@ posecode exercise "Pirouette"
   rig humanoid
   pose start = standing
 
-  step "Prep - plié" 1.2s ease-in-out:
+  step "Prep - plié" 1.2s flow:
     hips: rotate-out 25
     knees: flex 45
     ankles: plantarflex 45
@@ -11,7 +11,7 @@ posecode exercise "Pirouette"
     ground-lock: feet
     cue "Plié to load the turn, arms rounded low in first"
 
-  step "Spot & spin" 1.4s ease-in-out:
+  step "Spot & spin" 1.4s flow:
     knee_left: flex 0
     ankle_left: plantarflex 35
     hip_right: flex 55
@@ -24,7 +24,7 @@ posecode exercise "Pirouette"
     pin: foot_left floor
     cue "Push up to relevé, pull the arms in, and spin a full turn"
 
-  step "Land" 1s ease-out:
+  step "Land" 1s settle:
     hips: flex 0
     hips: rotate-out 0
     knees: flex 0

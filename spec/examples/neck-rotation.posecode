@@ -2,17 +2,17 @@ posecode stretch "Neck rotation"
   rig humanoid
   pose start = standing
 
-  step "Look right" 2s ease-in-out:
+  step "Look right" 2s flow:
     neck: rotate-out 60
     ground-lock: feet
     cue "Turn slowly to look over the right shoulder"
 
-  step "Look left" 2.4s ease-in-out:
+  step "Look left" 2.4s flow:
     neck: rotate-in 60
     ground-lock: feet
     cue "Pass through center and turn to the left"
 
-  step "Center" 1.6s ease-out:
+  step "Center" 1.6s settle:
     neck: rotate-in 0
     ground-lock: feet
     cue "Return the head to neutral"

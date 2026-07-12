@@ -3,21 +3,21 @@ posecode exercise "Pull-up"
   prop bar
   pose start = standing
 
-  step "Reach" 0.8s ease-out:
+  step "Reach" 0.8s settle:
     shoulders: flex 175
     elbows: flex 5
     elbows: pronate 80
     ground-lock: feet
     cue "Reach up and grip the bar"
 
-  step "Hang" 0.7s ease-in-out:
+  step "Hang" 0.7s flow:
     shoulders: flex 175
     elbows: flex 5
     elbows: pronate 80
     grip: hands bar
     cue "Hang from the bar, arms long, shoulders active"
 
-  step "Pull up" 1.2s ease-out:
+  step "Pull up" 1.2s settle:
     shoulders: flex 105
     elbows: flex 130
     elbows: pronate 80
@@ -27,7 +27,7 @@ posecode exercise "Pull-up"
     grip: hands bar
     cue "Pull the chest toward the bar, driving the elbows down"
 
-  step "Lower" 1.4s ease-in:
+  step "Lower" 1.4s drive:
     shoulders: flex 175
     elbows: flex 5
     elbows: pronate 80
@@ -37,7 +37,7 @@ posecode exercise "Pull-up"
     grip: hands bar
     cue "Lower under control back to a full hang"
 
-  step "Release" 0.8s ease-in:
+  step "Release" 0.8s drive:
     shoulders: flex 0
     elbows: flex 0
     elbows: pronate 0

@@ -1,9 +1,8 @@
 posecode exercise "Jab-cross"
   rig humanoid
-  clip "jab-cross"
   pose start = standing
 
-  step "Jab" 0.4s ease-out:
+  step "Jab" 0.4s settle:
     shoulder_left: flex 85
     elbow_left: flex 15
     elbow_left: pronate 80
@@ -12,7 +11,7 @@ posecode exercise "Jab-cross"
     ground-lock: feet
     cue "Snap the lead (left) hand straight out, rotating slightly into it"
 
-  step "Recoil jab" 0.4s ease-in:
+  step "Recoil jab" 0.4s drive:
     shoulder_left: flex 0
     elbow_left: flex 90
     elbow_left: pronate 0
@@ -21,7 +20,7 @@ posecode exercise "Jab-cross"
     ground-lock: feet
     cue "Bring the hand back to guard"
 
-  step "Cross" 0.45s ease-out:
+  step "Cross" 0.45s settle:
     shoulder_right: flex 90
     elbow_right: flex 10
     elbow_right: pronate 80
@@ -30,7 +29,7 @@ posecode exercise "Jab-cross"
     ground-lock: feet
     cue "Drive the rear (right) hand across, rotating the trunk"
 
-  step "Recoil cross" 0.45s ease-in:
+  step "Recoil cross" 0.45s drive:
     shoulder_right: flex 0
     elbow_right: flex 90
     elbow_right: pronate 0

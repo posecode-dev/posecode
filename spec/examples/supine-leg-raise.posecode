@@ -2,7 +2,7 @@ posecode exercise "Lying leg raise"
   rig humanoid
   pose start = supine
 
-  step "Raise" 1.2s ease-out:
+  step "Raise" 1.2s settle:
     hips: flex 90
     knees: flex 0
     shoulders: rotate-in 70
@@ -10,7 +10,7 @@ posecode exercise "Lying leg raise"
     reach: hands floor
     cue "Lift the straight legs toward vertical, low back pressed down"
 
-  step "Lower" 1.4s ease-in:
+  step "Lower" 1.4s drive:
     hips: flex 20
     shoulders: rotate-in 70
     elbows: pronate 80

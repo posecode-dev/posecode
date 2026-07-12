@@ -2,7 +2,7 @@ posecode posture "Desk posture reset"
   rig humanoid
   pose start = standing
 
-  step "Slouch" 2.5s ease-in-out:
+  step "Slouch" 2.5s flow:
     spine: flex 22
     chest: flex 16
     neck: flex 28
@@ -10,7 +10,7 @@ posecode posture "Desk posture reset"
     ground-lock: feet
     cue "The collapsed desk posture: rounded back, head drifting forward"
 
-  step "Stack tall" 2.5s ease-in-out:
+  step "Stack tall" 2.5s settle:
     spine: flex 0
     chest: extend 8
     neck: flex 0

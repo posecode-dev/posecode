@@ -135,11 +135,11 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h2>How to do it</h2>
       <ol class="steps">
 <li>
-          <span class="step-name">Close<span class="step-dur">1.2s · ease-out</span></span>
+          <span class="step-name">Close<span class="step-dur">1.2s · settle</span></span>
           <span class="step-cue">Curl the fingers and thumb in to make a closed fist</span>
         </li>
 <li>
-          <span class="step-name">Open<span class="step-dur">1.2s · ease-in</span></span>
+          <span class="step-name">Open<span class="step-dur">1.2s · drive</span></span>
           <span class="step-cue">Spread the fingers wide open</span>
         </li>
       </ol>
@@ -151,11 +151,11 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   rig humanoid
   pose start = standing
 
-  step &quot;Close&quot; 1.2s ease-out:
+  step &quot;Close&quot; 1.2s settle:
     fingers: flex 80
     cue &quot;Curl the fingers and thumb in to make a closed fist&quot;
 
-  step &quot;Open&quot; 1.2s ease-in:
+  step &quot;Open&quot; 1.2s drive:
     fingers: flex 0
     cue &quot;Spread the fingers wide open&quot;
 

@@ -3,7 +3,7 @@ posecode exercise "Triceps dips"
   prop dip-bars
   pose start = standing
 
-  step "Support" 1s ease-out:
+  step "Support" 1s settle:
     shoulders: abduct 5
     elbows: flex 5
     elbows: pronate 80
@@ -13,7 +13,7 @@ posecode exercise "Triceps dips"
     pin: hands bars
     cue "Press up to a straight-arm support between the bars"
 
-  step "Lower" 1.2s ease-in-out:
+  step "Lower" 1.2s flow:
     shoulders: extend 30
     shoulders: abduct 5
     elbows: flex 90
@@ -24,7 +24,7 @@ posecode exercise "Triceps dips"
     pin: hands bars
     cue "Bend the elbows to lower the chest, elbows tracking back"
 
-  step "Press" 1s ease-out:
+  step "Press" 1s settle:
     shoulders: extend 0
     shoulders: abduct 5
     elbows: flex 5
@@ -35,7 +35,7 @@ posecode exercise "Triceps dips"
     pin: hands bars
     cue "Press through the palms to straighten the arms"
 
-  step "Dismount" 0.8s ease-in:
+  step "Dismount" 0.8s drive:
     shoulders: abduct 0
     elbows: flex 0
     elbows: pronate 0

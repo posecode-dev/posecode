@@ -135,19 +135,19 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h2>How to do it</h2>
       <ol class="steps">
 <li>
-          <span class="step-name">Chamber<span class="step-dur">0.5s · ease-in</span></span>
+          <span class="step-name">Chamber<span class="step-dur">0.5s · drive</span></span>
           <span class="step-cue">Drive the right knee up to chamber the kick</span>
         </li>
 <li>
-          <span class="step-name">Extend<span class="step-dur">0.35s · ease-out</span></span>
+          <span class="step-name">Extend<span class="step-dur">0.35s · settle</span></span>
           <span class="step-cue">Snap the lower leg out: strike with the ball of the foot</span>
         </li>
 <li>
-          <span class="step-name">Re-chamber<span class="step-dur">0.45s · ease-in</span></span>
+          <span class="step-name">Re-chamber<span class="step-dur">0.45s · drive</span></span>
           <span class="step-cue">Snap the foot back to chamber</span>
         </li>
 <li>
-          <span class="step-name">Return<span class="step-dur">0.6s · ease-out</span></span>
+          <span class="step-name">Return<span class="step-dur">0.6s · settle</span></span>
           <span class="step-cue">Set the foot back down to a fighting stance</span>
         </li>
       </ol>
@@ -159,25 +159,25 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   rig humanoid
   pose start = standing
 
-  step &quot;Chamber&quot; 0.5s ease-in:
+  step &quot;Chamber&quot; 0.5s drive:
     hip_right: flex 95
     knee_right: flex 90
     pin: foot_left floor
     cue &quot;Drive the right knee up to chamber the kick&quot;
 
-  step &quot;Extend&quot; 0.35s ease-out:
+  step &quot;Extend&quot; 0.35s settle:
     hip_right: flex 100
     knee_right: flex 5
     pin: foot_left floor
     cue &quot;Snap the lower leg out: strike with the ball of the foot&quot;
 
-  step &quot;Re-chamber&quot; 0.45s ease-in:
+  step &quot;Re-chamber&quot; 0.45s drive:
     hip_right: flex 95
     knee_right: flex 90
     pin: foot_left floor
     cue &quot;Snap the foot back to chamber&quot;
 
-  step &quot;Return&quot; 0.6s ease-out:
+  step &quot;Return&quot; 0.6s settle:
     hip_right: flex 0
     knee_right: flex 0
     ground-lock: feet

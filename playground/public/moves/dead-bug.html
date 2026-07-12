@@ -135,19 +135,19 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h2>How to do it</h2>
       <ol class="steps">
 <li>
-          <span class="step-name">Set<span class="step-dur">1s · ease-in-out</span></span>
+          <span class="step-name">Set<span class="step-dur">1s · flow</span></span>
           <span class="step-cue">Arms reach to the ceiling, knees stacked over the hips</span>
         </li>
 <li>
-          <span class="step-name">Extend right arm &amp; left leg<span class="step-dur">1.2s · ease-in-out</span></span>
+          <span class="step-name">Extend right arm &amp; left leg<span class="step-dur">1.2s · flow</span></span>
           <span class="step-cue">Lower the right arm overhead and the left leg toward the floor</span>
         </li>
 <li>
-          <span class="step-name">Switch<span class="step-dur">1.2s · ease-in-out</span></span>
+          <span class="step-name">Switch<span class="step-dur">1.2s · flow</span></span>
           <span class="step-cue">Return and switch: left arm and right leg reach out</span>
         </li>
 <li>
-          <span class="step-name">Return<span class="step-dur">1s · ease-out</span></span>
+          <span class="step-name">Return<span class="step-dur">1s · settle</span></span>
           <span class="step-cue">Bring everything back to the start position</span>
         </li>
       </ol>
@@ -159,19 +159,19 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   rig humanoid
   pose start = supine
 
-  step &quot;Set&quot; 1s ease-in-out:
+  step &quot;Set&quot; 1s flow:
     shoulders: flex 90
     hips: flex 90
     knees: flex 90
     cue &quot;Arms reach to the ceiling, knees stacked over the hips&quot;
 
-  step &quot;Extend right arm &amp; left leg&quot; 1.2s ease-in-out:
+  step &quot;Extend right arm &amp; left leg&quot; 1.2s flow:
     shoulder_right: flex 150
     hip_left: flex 20
     knee_left: flex 5
     cue &quot;Lower the right arm overhead and the left leg toward the floor&quot;
 
-  step &quot;Switch&quot; 1.2s ease-in-out:
+  step &quot;Switch&quot; 1.2s flow:
     shoulder_right: flex 90
     hip_left: flex 90
     knee_left: flex 90
@@ -180,7 +180,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     knee_right: flex 5
     cue &quot;Return and switch: left arm and right leg reach out&quot;
 
-  step &quot;Return&quot; 1s ease-out:
+  step &quot;Return&quot; 1s settle:
     shoulder_left: flex 90
     hip_right: flex 90
     knee_right: flex 90

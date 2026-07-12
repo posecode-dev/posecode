@@ -135,15 +135,15 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h2>How to do it</h2>
       <ol class="steps">
 <li>
-          <span class="step-name">Set up<span class="step-dur">0.5s · ease-in-out</span></span>
+          <span class="step-name">Set up<span class="step-dur">0.5s · flow</span></span>
           <span class="step-cue">&nbsp;</span>
         </li>
 <li>
-          <span class="step-name">Curl up<span class="step-dur">1s · ease-out</span></span>
+          <span class="step-name">Curl up<span class="step-dur">1s · settle</span></span>
           <span class="step-cue">Curl the shoulders off the floor, ribs toward the hips</span>
         </li>
 <li>
-          <span class="step-name">Lower<span class="step-dur">1.2s · ease-in</span></span>
+          <span class="step-name">Lower<span class="step-dur">1.2s · drive</span></span>
           <span class="step-cue">Lower the upper back down with control</span>
         </li>
       </ol>
@@ -155,14 +155,14 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   rig humanoid
   pose start = supine
 
-  step &quot;Set up&quot; 0.5s ease-in-out:
+  step &quot;Set up&quot; 0.5s flow:
     hips: flex 45
     knees: flex 90
     ankles: plantarflex 50
     shoulders: flex 45
     pin: feet floor
 
-  step &quot;Curl up&quot; 1s ease-out:
+  step &quot;Curl up&quot; 1s settle:
     hips: flex 45
     knees: flex 90
     ankles: plantarflex 50
@@ -173,7 +173,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     pin: feet floor
     cue &quot;Curl the shoulders off the floor, ribs toward the hips&quot;
 
-  step &quot;Lower&quot; 1.2s ease-in:
+  step &quot;Lower&quot; 1.2s drive:
     hips: flex 45
     knees: flex 90
     ankles: plantarflex 50
