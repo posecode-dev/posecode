@@ -102,6 +102,67 @@ export function probeMovement(source: string): ProbeResult {
     }
   }
 
+  // Precompute world positions of all effectors at start of each segment
+  const segmentStartEffectors: Map<string, THREE.Vector3>[] = [];
+  const tempYawQ = new THREE.Quaternion();
+  
+  const getEffectorId = (eff: string) => {
+    if (eff === "hand_left") return "wrist_left";
+    if (eff === "hand_right") return "wrist_right";
+    if (eff === "foot_left") return "ankle_left";
+    if (eff === "foot_right") return "ankle_right";
+    return eff;
+  };
+
+  let prevEffectorsMap: Map<string, THREE.Vector3> | null = null;
+  let prevPins: typeof ir.phases[number]["pins"] = [];
+
+  for (let i = 0; i < tl.segments.length; i++) {
+    const seg = tl.segments[i]!;
+    for (const bone of m.bones.values()) bone.quaternion.identity();
+    const info = tl.sample(seg.start, m.bones);
+    
+    const wasPinned = (id: string) => prevPins.some(p => getEffectorId(p.effector) === id && p.anchor === "floor");
+    const isPinned = (id: string) => info.pins.some(p => getEffectorId(p.effector) === id && p.anchor === "floor");
+
+    m.root.position.copy(baseRootPos);
+    m.root.quaternion.copy(baseRootQuat);
+    if (info.rootYaw !== 0) {
+      tempYawQ.setFromAxisAngle(WORLD_Y, info.rootYaw);
+      m.root.quaternion.premultiply(tempYawQ);
+    }
+    m.root.position.x += info.rootOffset.x;
+    m.root.position.z += info.rootOffset.z;
+    m.root.updateMatrixWorld(true);
+    depenetrate(m);
+
+    const effectorsMap = new Map<string, THREE.Vector3>();
+    for (const ids of Object.values(m.effectors)) {
+      for (const id of ids) {
+        const node = m.bones.get(id);
+        if (node) {
+          if (i > 0 && wasPinned(id) && isPinned(id) && prevEffectorsMap && prevEffectorsMap.has(id)) {
+            effectorsMap.set(id, prevEffectorsMap.get(id)!);
+          } else {
+            effectorsMap.set(id, node.getWorldPosition(new THREE.Vector3()));
+          }
+        }
+      }
+    }
+    segmentStartEffectors.push(effectorsMap);
+    prevEffectorsMap = effectorsMap;
+    prevPins = info.pins;
+  }
+
+  // Restore initial state
+  for (const bone of m.bones.values()) bone.quaternion.identity();
+  tl.sample(0, m.bones);
+  m.root.position.copy(baseRootPos);
+  m.root.quaternion.copy(baseRootQuat);
+  m.root.updateMatrixWorld(true);
+  depenetrate(m);
+  groundFigure(m);
+
   // Sample the end of each phase, applying the viewer's per-frame root
   // pipeline: base root → yaw/travel → ground-lock → floor safety clamp.
   const yawQ = new THREE.Quaternion();
@@ -151,8 +212,14 @@ export function probeMovement(source: string): ProbeResult {
         if (!effector) continue;
         let target: THREE.Vector3 | null = null;
         if (pin.anchor === "floor") {
-          target = effector.getWorldPosition(new THREE.Vector3());
-          target.y = 0;
+          const startPos = segmentStartEffectors[phaseIndex]?.get(effectorId);
+          if (startPos) {
+            target = startPos.clone();
+            target.y = 0;
+          } else {
+            target = effector.getWorldPosition(new THREE.Vector3());
+            target.y = 0;
+          }
         } else if (propScene.anchors.has(pin.anchor)) {
           target = propScene.anchors.get(pin.anchor)!.clone();
         } else {
