@@ -90,6 +90,18 @@ export function genericChecks(result: ProbeResult): CheckOutcome[] {
       detail: `lowest bone ${lowestPoint(p).toFixed(3)}m (want > -0.05)`,
     });
 
+    // A ground-locked phase declares its effectors planted, so the visible mesh
+    // must actually rest on the floor — not hover above it. Guards the
+    // levitating-squat/deadlift regression where levelPlantedFeet lifted the
+    // sole after ground-lock and an up-only clamp left the whole figure floating.
+    if (p.groundLock.length > 0) {
+      out.push({
+        id: `grounded-not-floating:${p.name}`,
+        pass: p.meshMinY < 0.02,
+        detail: `mesh floats ${p.meshMinY.toFixed(3)}m above floor (want < 0.020)`,
+      });
+    }
+
     const floorHands = new Set<string>();
     for (const r of p.reaches) {
       if (r.target !== "floor") continue;

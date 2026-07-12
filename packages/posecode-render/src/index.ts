@@ -648,21 +648,33 @@ export function createViewer(
       // L4.2 aliveness: contralateral arm swing during locomotion (free arms only).
       swingArms(mannequin, authoredShoulders, gripSidesOf(info.grips));
       // L4.1 aliveness: relax idle hands into a natural curl (grips still wrap).
-      relaxHands(mannequin, gripSidesOf(info.grips), authoredFingers);
+      relaxHands(
+        mannequin,
+        gripSidesOf(info.grips),
+        authoredFingers,
+        floorHandSidesOf(info.reaches, info.pins),
+      );
       // L4.3 aliveness: turn the head toward the active contact (bar / floor reach).
       applyLookAt(info);
-      // Safety net: nothing above ever intentionally pushes part of the body
-      // below the floor, so clamp the root up whenever the lowest point dips
-      // below y=0, a no-op whenever the pose is legitimately grounded or
-      // elevated (bbox min already ≥ 0). This also catches phases with
-      // neither ground-lock nor a pin (the root stays frozen at the base
-      // pose's grounded height while FK animates freely on top of it, e.g. a
-      // prone "superman" lift), and pinned phases where a fixed-height anchor
-      // (a low chair seat) combined with static leg FK can otherwise let the
-      // feet sink through the floor as the arms fold (e.g. a chair dip).
+      // Safety net: reconcile the fully-solved pose with the floor.
+      //
+      // A ground-locked phase asserts its effectors (feet, and for a plank the
+      // forearms) are PLANTED, so its lowest mesh point must sit exactly on the
+      // floor — clamp the root BOTH ways. This is essential because
+      // levelPlantedFeet() rotates the ankle flat AFTER ground-lock dropped the
+      // body, which lifts the sole a couple centimetres; an up-only clamp could
+      // never recover it and the whole figure floated (squat, deadlift,
+      // good-morning, forward-fold, plank, …).
+      //
+      // A phase with NO ground-lock may be intentionally airborne (a prone
+      // "superman" lift, a jump), so it stays up-only: never yank a lifted body
+      // down, only rescue parts that dip below y=0. Pinned phases with a
+      // fixed-height anchor (a low chair seat) also rely on this up-only rescue
+      // as the legs fold.
       mannequin.root.updateMatrixWorld(true);
       const box = new THREE.Box3().setFromObject(mannequin.root);
-      if (box.min.y < 0) {
+      const planted = info.groundLock.length > 0;
+      if (box.min.y < 0 || (planted && box.min.y > 0)) {
         mannequin.root.position.y -= box.min.y;
         mannequin.root.updateMatrixWorld(true);
       }
@@ -753,7 +765,12 @@ export function createViewer(
       authoredShoulders = new Set(timeline.bonesUsed.filter((id) => id.startsWith("shoulder_")));
       authoredHead = timeline.bonesUsed.some((id) => id === "head" || id === "neck");
       swingArms(mannequin, authoredShoulders, gripSidesOf(ir.phases[0]?.grips ?? []));
-      relaxHands(mannequin, gripSidesOf(ir.phases[0]?.grips ?? []), authoredFingers);
+      relaxHands(
+        mannequin,
+        gripSidesOf(ir.phases[0]?.grips ?? []),
+        authoredFingers,
+        floorHandSidesOf(ir.phases[0]?.reaches ?? [], ir.phases[0]?.pins ?? []),
+      );
       applyLookAt({ grips: ir.phases[0]?.grips ?? [], reaches: ir.phases[0]?.reaches ?? [] });
       captureGroundTargets();
       baseRootPos.copy(mannequin.root.position);
@@ -887,6 +904,25 @@ function gripSidesOf(grips: readonly { effector: string }[]): Set<"left" | "righ
   return sides;
 }
 
+/**
+ * Hand sides pressed onto the floor this phase (a `reach`/`pin: hands floor`).
+ * Their fingers rest flat instead of taking the idle inward hook, so a plank or
+ * push-up hand lies on the ground rather than clawing into it.
+ */
+function floorHandSidesOf(
+  reaches: readonly { effector: string; target: string }[],
+  pins: readonly { effector: string; anchor: string }[],
+): Set<"left" | "right"> {
+  const sides = new Set<"left" | "right">();
+  const add = (effector: string): void => {
+    if (effector.endsWith("_left") || effector === "hands") sides.add("left");
+    if (effector.endsWith("_right") || effector === "hands") sides.add("right");
+  };
+  for (const r of reaches) if (r.target === "floor") add(r.effector);
+  for (const p of pins) if (p.anchor === "floor") add(p.effector);
+  return sides;
+}
+
 function enableShadows(root: THREE.Object3D): void {
   root.traverse((obj) => {
     if ((obj as THREE.Mesh).isMesh) {
@@ -924,5 +960,5 @@ export {
   type ClipSource,
 } from "./clips.js";
 export { depenetrate } from "./depenetrate.js";
-export { alignFloorPalms } from "./contacts.js";
+export { alignFloorPalms, levelPlantedFeet } from "./contacts.js";
 export type { PhaseSegment } from "./timeline.js";
