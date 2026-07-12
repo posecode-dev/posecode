@@ -553,7 +553,7 @@ void import("posecode-render").then(({ createViewer }) => {
     ...(classicFigure
       ? {}
       : {
-          characterUrl: "/models/character.glb",
+          characterUrl: "/models/xbot.glb",
           // Avoid flashing the procedural/classic figure while the default
           // mannequin asset loads. It still appears if the GLB genuinely fails.
           showProceduralWhileLoading: false,

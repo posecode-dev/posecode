@@ -15,6 +15,7 @@
     "coverage": "vitest run --coverage",
     "dev": "npm run dev -w playground",
     "build": "npm run build -w playground",
+    "prepare:xbot": "node scripts/prepare-xbot.mjs",
     "eval": "tsx packages/posecode-eval/src/cli.ts",
     "typecheck": "for p in packages/*/tsconfig.json playground/tsconfig.json editors/*/tsconfig.json; do tsc --noEmit -p \"$p\" || exit 1; done",
     "gifs": "node scripts/capture-gifs.mjs"
