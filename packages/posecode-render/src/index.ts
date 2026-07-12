@@ -93,9 +93,12 @@ export interface ViewerOptions {
   clips?: Record<string, string>;
   /**
    * Keep the procedural figure visible while a skinned `characterUrl` loads.
-   * This viewer always shows the procedural figure during load (and on load
-   * failure), so the flag is accepted for API compatibility; the default
-   * behavior already matches `true`.
+   * Defaults to `true` (the procedural figure poses the scene during the load,
+   * matching callers that never set this). Set `false` alongside a
+   * `characterUrl` to hide the procedural meshes until the character resolves —
+   * so a page load shows the skinned figure or nothing, never a blink of the
+   * crude procedural figure. On load failure the procedural figure is revealed
+   * regardless, so the scene never stays blank.
    */
   showProceduralWhileLoading?: boolean;
 }
@@ -182,10 +185,20 @@ export function createViewer(
   enableShadows(mannequin.root);
   scene.add(mannequin.root);
 
+  // When a skinned character is requested and the caller opted out of the
+  // procedural fallback during load, hide the procedural meshes up front so the
+  // crude figure never flashes for the character's fetch time on a page load.
+  // The skeleton still drives animation and grounding; only the meshes hide
+  // (same as the post-load swap). Revealed again if the character fails to load.
+  const deferProceduralMeshes =
+    Boolean(opts.characterUrl) && opts.showProceduralWhileLoading === false;
+  if (deferProceduralMeshes) setMeshVisibility(mannequin.root, false);
+
   // Skinned character layer (optional). While loading (and on failure) the
-  // procedural figure stays; once ready, the driver skeleton is rebuilt with
-  // the character's proportions, its meshes are hidden (they keep feeding the
-  // bounding-box grounding), and the character mirrors it every frame.
+  // procedural figure stays — unless deferred above; once ready, the driver
+  // skeleton is rebuilt with the character's proportions, its meshes are hidden
+  // (they keep feeding the bounding-box grounding), and the character mirrors it
+  // every frame.
   let character: Character | null = null;
 
   // Mocap-clip layer (optional, character-only). When the loaded document
@@ -826,9 +839,7 @@ export function createViewer(
         scene.remove(mannequin.root);
         disposeTree(mannequin.root);
         mannequin = buildMannequin(undefined, char.proportions);
-        mannequin.root.traverse((obj) => {
-          if ((obj as THREE.Mesh).isMesh) obj.visible = false;
-        });
+        setMeshVisibility(mannequin.root, false);
         scene.add(mannequin.root);
         scene.add(char.group);
         character = char;
@@ -840,12 +851,25 @@ export function createViewer(
         else char.sync(mannequin);
       })
       .catch(() => {
-        // Keep the procedural figure. Deliberately silent: an offline embed
-        // or a blocked CDN should degrade, not error.
+        // Character failed (offline embed, blocked/404 CDN): reveal the
+        // procedural figure we may have hidden, so the scene degrades to the
+        // working fallback instead of staying blank. Deliberately silent.
+        if (deferProceduralMeshes) setMeshVisibility(mannequin.root, true);
       });
   }
 
   return api;
+}
+
+/**
+ * Show or hide a figure's meshes. The skeleton keeps driving animation and
+ * bounding-box grounding regardless, so hiding only the meshes lets a hidden
+ * procedural figure still pose the scene while its character stand-in loads.
+ */
+function setMeshVisibility(root: THREE.Object3D, visible: boolean): void {
+  root.traverse((obj) => {
+    if ((obj as THREE.Mesh).isMesh) obj.visible = visible;
+  });
 }
 
 /** True for a finger bone id (thumb/index/middle/ring/pinky_left|right). */
