@@ -8,6 +8,7 @@
 import { parse } from "posecode-parser";
 import { inject } from "@vercel/analytics";
 import { PRESETS } from "./presets.js";
+import { SHOWCASE_CLIPS } from "./clips.js";
 import llmPrompt from "../../spec/llm-authoring.md?raw";
 
 inject();
@@ -32,6 +33,9 @@ function initHero(): void {
       // Realistic skinned figure without flashing the procedural fallback.
       characterUrl: "/models/character.glb",
       showProceduralWhileLoading: false,
+      // Marketing surface: the hero movement declares `clip "jumping-jacks"`, so
+      // it plays the retargeted Mixamo mocap for maximum polish on first paint.
+      clips: SHOWCASE_CLIPS,
     });
     const phaseEl = document.getElementById("hero-phase");
     viewer.onPhase(({ phaseName }) => {

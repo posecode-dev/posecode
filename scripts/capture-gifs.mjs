@@ -53,11 +53,13 @@ if (targets.length === 0) {
 
 const server = await createServer({
   configFile: resolve(repoRoot, "playground/vite.config.ts"),
-  server: { port: 0 },
+  server: { port: 0, host: "127.0.0.1" },
   logLevel: "error",
 });
 await server.listen();
-const port = server.config.server.port ?? server.httpServer.address().port;
+// Use the ACTUAL bound port: with `port: 0`, config.server.port stays 0 (and
+// `0 ?? …` keeps 0), so read the listening socket instead.
+const port = server.httpServer.address().port;
 const origin = `http://127.0.0.1:${port}`;
 
 const browser = await chromium.launch({ executablePath: chromiumPath() });
@@ -66,7 +68,9 @@ page.on("pageerror", (e) => console.error("[page]", e.message));
 
 for (const t of targets) {
   const [w, h] = t.size;
-  await page.goto(`${origin}/play/${t.id}`, { waitUntil: "load" });
+  // `/play/<id>` is a production rewrite (vercel); in the vite dev server used
+  // here it doesn't resolve, so use the SPA entry + hash which loads the doc.
+  await page.goto(`${origin}/play.html#doc=${t.id}`, { waitUntil: "load" });
   await page.reload({ waitUntil: "load" });
   await page.waitForFunction(() => window.__posecodeViewer?.duration > 0, null, {
     timeout: 60000,
