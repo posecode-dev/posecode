@@ -11,3 +11,8 @@ coverage/
 playground/public/clips/*.fbx
 playground/public/clips/*.glb
 playground/public/clips/.DS_Store
+# Exception: the jumping-jacks showcase clip is committed so Vercel serves it
+# directly (like public/models/character.glb). Prod has no /clips CDN, so an
+# ignored clip 404s and silently falls back to procedural. Keep the other large
+# Mixamo clips ignored — they're unused on the marketing surfaces.
+!playground/public/clips/jumping-jacks.fbx
