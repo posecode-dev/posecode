@@ -27,7 +27,7 @@ import {
   type ClipSource,
 } from "./clips.js";
 import { depenetrate } from "./depenetrate.js";
-import { alignFloorPalms, levelPlantedFeet, wrapGrip, relaxHands, swingArms, aimHead, orientBarGrips } from "./contacts.js";
+import { alignFloorPalms, levelPlantedFeet, wrapGrip, relaxHands, swingArms, aimHead } from "./contacts.js";
 
 const DEG = Math.PI / 180;
 
@@ -549,9 +549,8 @@ export function createViewer(
       if (joints.length === 0) continue;
       solveCCD({ joints, limits, effector, target }, 12);
     }
-    // 3. Resolve the wrist roll left underdetermined by positional arm IK.
-    orientBarGrips(mannequin, grips);
-    // 4. Finger wrap.
+    // 3. Finger wrap. Wrist orientation remains inherited until the semantic
+    // contact-frame solver can account for this character's calibrated axes.
     wrapGrip(mannequin, grips);
   }
 
@@ -869,10 +868,13 @@ export function createViewer(
         if (lastIR) api.load(lastIR);
         else char.sync(mannequin);
       })
-      .catch(() => {
+      .catch((error: unknown) => {
         // Character failed (offline embed, blocked/404 CDN): reveal the
         // procedural figure we may have hidden, so the scene degrades to the
-        // working fallback instead of staying blank. Deliberately silent.
+        // working fallback instead of staying blank. Keep a developer-facing
+        // diagnostic because malformed or incompatible rigs otherwise look
+        // exactly like a network fallback and are impossible to calibrate.
+        console.warn("Posecode character load failed; using procedural fallback", error);
         if (deferProceduralMeshes) setMeshVisibility(mannequin.root, true);
       });
   }

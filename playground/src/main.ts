@@ -337,10 +337,18 @@ function renderLibraryList(): void {
     if (p.id === currentPresetId) item.setAttribute("aria-current", "true");
     const name = document.createElement("span");
     name.className = "li-name";
-    name.textContent = p.label;
+    const label = document.createElement("span");
+    label.textContent = p.label;
+    name.append(label);
+    if (p.status === "development") {
+      const status = document.createElement("span");
+      status.className = "li-status";
+      status.textContent = "In development";
+      name.append(status);
+    }
     const meta = document.createElement("span");
     meta.className = "li-meta";
-    meta.textContent = `${p.target} · ${p.equipment} · ${p.difficulty}`;
+    meta.textContent = p.developmentNote ?? `${p.target} · ${p.equipment} · ${p.difficulty}`;
     item.append(name, meta);
     item.addEventListener("click", () => {
       loadPreset(p.id);
