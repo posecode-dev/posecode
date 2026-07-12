@@ -27,7 +27,7 @@ import {
   type ClipSource,
 } from "./clips.js";
 import { depenetrate } from "./depenetrate.js";
-import { alignFloorPalms, levelPlantedFeet, wrapGrip, relaxHands, swingArms, aimHead } from "./contacts.js";
+import { alignFloorPalms, levelPlantedFeet, wrapGrip, relaxHands, swingArms, aimHead, orientBarGrips } from "./contacts.js";
 
 const DEG = Math.PI / 180;
 
@@ -549,7 +549,9 @@ export function createViewer(
       if (joints.length === 0) continue;
       solveCCD({ joints, limits, effector, target }, 12);
     }
-    // 3. Finger wrap.
+    // 3. Resolve the wrist roll left underdetermined by positional arm IK.
+    orientBarGrips(mannequin, grips);
+    // 4. Finger wrap.
     wrapGrip(mannequin, grips);
   }
 
