@@ -135,11 +135,11 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h2>How to do it</h2>
       <ol class="steps">
 <li>
-          <span class="step-name">Rise<span class="step-dur">1.3s · ease-out</span></span>
+          <span class="step-name">Rise<span class="step-dur">1.3s · settle</span></span>
           <span class="step-cue">Press through the balls of the feet and lift the heels</span>
         </li>
 <li>
-          <span class="step-name">Lower<span class="step-dur">1.5s · ease-in</span></span>
+          <span class="step-name">Lower<span class="step-dur">1.5s · drive</span></span>
           <span class="step-cue">Lower the heels under control</span>
         </li>
       </ol>
@@ -151,12 +151,12 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   rig humanoid
   pose start = standing
 
-  step &quot;Rise&quot; 1.3s ease-out:
+  step &quot;Rise&quot; 1.3s settle:
     ankles: plantarflex 35
     ground-lock: feet
     cue &quot;Press through the balls of the feet and lift the heels&quot;
 
-  step &quot;Lower&quot; 1.5s ease-in:
+  step &quot;Lower&quot; 1.5s drive:
     ankles: plantarflex 0
     ground-lock: feet
     cue &quot;Lower the heels under control&quot;

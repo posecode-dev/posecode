@@ -2,7 +2,7 @@ posecode exercise "Glute bridge"
   rig humanoid
   pose start = supine
 
-  step "Bridge up" 1.6s ease-out:
+  step "Bridge up" 1.6s settle:
     knees: flex 90
     ankles: plantarflex 50
     hips: extend 20
@@ -13,7 +13,7 @@ posecode exercise "Glute bridge"
     ground-lock: feet
     cue "Press through the feet and lift the hips toward the ceiling"
 
-  step "Lower" 1.6s ease-in:
+  step "Lower" 1.6s drive:
     hips: extend 0
     spine: flex 0
     shoulders: rotate-in 70

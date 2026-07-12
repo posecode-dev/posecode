@@ -2,11 +2,11 @@ posecode stretch "Shoulder abduction (ROM demo)"
   rig humanoid
   pose start = standing
 
-  step "Abduct" 2.5s ease-in-out:
+  step "Abduct" 2.5s flow:
     shoulders: abduct 160
     cue "Arms sweep out and up to the sides: frontal-plane abduction"
 
-  step "Adduct" 2.5s ease-in-out:
+  step "Adduct" 2.5s settle:
     shoulders: abduct 0
     cue "Lower back to the sides through the same arc"
 

@@ -2,14 +2,14 @@ posecode stretch "Overhead reach reset"
   rig humanoid
   pose start = standing
 
-  step "Reach up" 2.5s ease-in-out:
+  step "Reach up" 2.5s flow:
     shoulders: flex 175
     spine: extend 10
     neck: extend 15
     ground-lock: feet
     cue "Reach both arms tall overhead and lengthen the spine"
 
-  step "Lower" 2.5s ease-in-out:
+  step "Lower" 2.5s settle:
     shoulders: flex 0
     spine: flex 0
     neck: flex 0

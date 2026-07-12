@@ -2,24 +2,24 @@ posecode stretch "Cross-body reach"
   rig humanoid
   pose start = standing
 
-  step "Reach across right" 2s ease-in-out:
+  step "Reach across right" 2s flow:
     shoulder_right: flex 80
     reach: hand_right shoulder_left
     ground-lock: feet
     cue "Pull the right arm across the chest toward the left shoulder"
 
-  step "Return" 1.4s ease-out:
+  step "Return" 1.4s settle:
     shoulder_right: flex 0
     ground-lock: feet
     cue "Release back to center"
 
-  step "Reach across left" 2s ease-in-out:
+  step "Reach across left" 2s flow:
     shoulder_left: flex 80
     reach: hand_left shoulder_right
     ground-lock: feet
     cue "Pull the left arm across the chest toward the right shoulder"
 
-  step "Center" 1.4s ease-out:
+  step "Center" 1.4s settle:
     shoulder_left: flex 0
     ground-lock: feet
     cue "Return to center"

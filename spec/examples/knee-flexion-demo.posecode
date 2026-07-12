@@ -2,12 +2,12 @@ posecode stretch "Knee flexion (ROM demo)"
   rig humanoid
   pose start = standing
 
-  step "Flex" 2.5s ease-in-out:
+  step "Flex" 2.5s flow:
     knee_right: flex 130
     pin: foot_left floor
     cue "Bend the right knee, heel toward the glutes: the knee's single plane"
 
-  step "Extend" 2.5s ease-in-out:
+  step "Extend" 2.5s settle:
     knee_right: flex 0
     pin: foot_left floor
     cue "Lower the shin back to standing"

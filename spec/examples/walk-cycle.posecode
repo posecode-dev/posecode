@@ -3,7 +3,7 @@ posecode exercise "Walk & turn"
   pose start = standing
   clip "walk"
 
-  step "Step right" 0.7s ease-in-out:
+  step "Step right" 0.7s flow:
     hip_right: flex 30
     knee_right: flex 15
     hip_left: extend 12
@@ -13,7 +13,7 @@ posecode exercise "Walk & turn"
     pin: foot_left floor
     cue "Walk forward: right foot leads, opposite arm swings through"
 
-  step "Step left" 0.7s ease-in-out:
+  step "Step left" 0.7s flow:
     hip_left: flex 30
     knee_left: flex 15
     hip_right: extend 12
@@ -23,7 +23,7 @@ posecode exercise "Walk & turn"
     pin: foot_right floor
     cue "Left foot leads, arms swap: keep travelling forward"
 
-  step "About-face" 1s ease-in-out:
+  step "About-face" 1s flow:
     hips: flex 0
     knees: flex 0
     shoulders: flex 0
@@ -32,7 +32,7 @@ posecode exercise "Walk & turn"
     ground-lock: feet
     cue "Plant and turn a half-turn to face back the way you came"
 
-  step "Walk back" 0.7s ease-in-out:
+  step "Walk back" 0.7s flow:
     hip_right: flex 30
     knee_right: flex 15
     hip_left: extend 12
@@ -43,7 +43,7 @@ posecode exercise "Walk & turn"
     pin: foot_left floor
     cue "Walk back toward the start"
 
-  step "Arrive & square up" 1s ease-in-out:
+  step "Arrive & square up" 1s settle:
     hips: flex 0
     knees: flex 0
     shoulders: flex 0

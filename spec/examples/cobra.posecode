@@ -2,7 +2,7 @@ posecode stretch "Cobra"
   rig humanoid
   pose start = prone
 
-  step "Lift" 2.5s ease-in-out:
+  step "Lift" 2.5s flow:
     spine: extend 25
     chest: extend 15
     neck: extend 20
@@ -14,7 +14,7 @@ posecode stretch "Cobra"
     reach: hands floor
     cue "Press the palms into the floor and lift the chest, shoulders rolling back"
 
-  step "Lower" 2.5s ease-in-out:
+  step "Lower" 2.5s settle:
     spine: extend 0
     chest: extend 0
     neck: extend 0

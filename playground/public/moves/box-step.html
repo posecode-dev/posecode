@@ -135,19 +135,19 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h2>How to do it</h2>
       <ol class="steps">
 <li>
-          <span class="step-name">Step forward-right<span class="step-dur">0.9s · ease-in-out</span></span>
+          <span class="step-name">Step forward-right<span class="step-dur">0.9s · flow</span></span>
           <span class="step-cue">Step the right foot forward and out to the corner</span>
         </li>
 <li>
-          <span class="step-name">Close the feet<span class="step-dur">0.7s · ease-in-out</span></span>
+          <span class="step-name">Close the feet<span class="step-dur">0.7s · flow</span></span>
           <span class="step-cue">Bring the left foot to meet it, standing tall on the corner</span>
         </li>
 <li>
-          <span class="step-name">Step back-left<span class="step-dur">0.9s · ease-in-out</span></span>
+          <span class="step-name">Step back-left<span class="step-dur">0.9s · flow</span></span>
           <span class="step-cue">Step the left foot back to the start on the diagonal</span>
         </li>
 <li>
-          <span class="step-name">Close home<span class="step-dur">0.7s · ease-in-out</span></span>
+          <span class="step-name">Close home<span class="step-dur">0.7s · settle</span></span>
           <span class="step-cue">Close the feet together, back home and ready to repeat</span>
         </li>
       </ol>
@@ -159,7 +159,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   rig humanoid
   pose start = standing
 
-  step &quot;Step forward-right&quot; 0.9s ease-in-out:
+  step &quot;Step forward-right&quot; 0.9s flow:
     hip_right: flex 35
     knee_right: flex 40
     ankle_right: plantarflex 40
@@ -169,7 +169,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     pin: foot_left floor
     cue &quot;Step the right foot forward and out to the corner&quot;
 
-  step &quot;Close the feet&quot; 0.7s ease-in-out:
+  step &quot;Close the feet&quot; 0.7s flow:
     hip_right: flex 0
     knee_right: flex 0
     ankle_right: plantarflex 0
@@ -178,7 +178,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     ground-lock: feet
     cue &quot;Bring the left foot to meet it, standing tall on the corner&quot;
 
-  step &quot;Step back-left&quot; 0.9s ease-in-out:
+  step &quot;Step back-left&quot; 0.9s flow:
     hip_left: flex 35
     knee_left: flex 40
     ankle_left: plantarflex 40
@@ -188,7 +188,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     pin: foot_right floor
     cue &quot;Step the left foot back to the start on the diagonal&quot;
 
-  step &quot;Close home&quot; 0.7s ease-in-out:
+  step &quot;Close home&quot; 0.7s settle:
     hip_left: flex 0
     knee_left: flex 0
     ankle_left: plantarflex 0

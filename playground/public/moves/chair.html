@@ -135,11 +135,11 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h2>How to do it</h2>
       <ol class="steps">
 <li>
-          <span class="step-name">Sink<span class="step-dur">3s · ease-in-out</span></span>
+          <span class="step-name">Sink<span class="step-dur">3s · flow</span></span>
           <span class="step-cue">Sit the hips back and down, reach the arms overhead</span>
         </li>
 <li>
-          <span class="step-name">Rise<span class="step-dur">2s · ease-out</span></span>
+          <span class="step-name">Rise<span class="step-dur">2s · settle</span></span>
           <span class="step-cue">Press through the feet to stand, arms float down</span>
         </li>
       </ol>
@@ -151,7 +151,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   rig humanoid
   pose start = standing
 
-  step &quot;Sink&quot; 3s ease-in-out:
+  step &quot;Sink&quot; 3s flow:
     hips: flex 55
     knees: flex 70
     ankles: dorsiflex 15
@@ -161,7 +161,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     ground-lock: feet
     cue &quot;Sit the hips back and down, reach the arms overhead&quot;
 
-  step &quot;Rise&quot; 2s ease-out:
+  step &quot;Rise&quot; 2s settle:
     hips: flex 0
     knees: flex 0
     ankles: plantarflex 0

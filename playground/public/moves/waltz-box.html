@@ -135,19 +135,19 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h2>How to do it</h2>
       <ol class="steps">
 <li>
-          <span class="step-name">1 - forward, rise<span class="step-dur">1s · ease-in-out</span></span>
+          <span class="step-name">1 - forward, rise<span class="step-dur">1s · flow</span></span>
           <span class="step-cue">Step forward onto the right foot and rise, arms in a soft frame</span>
         </li>
 <li>
-          <span class="step-name">2 - side, lower<span class="step-dur">1s · ease-in-out</span></span>
+          <span class="step-name">2 - side, lower<span class="step-dur">1s · flow</span></span>
           <span class="step-cue">Side step to the corner and lower through the heels</span>
         </li>
 <li>
-          <span class="step-name">3 - back, rise<span class="step-dur">1s · ease-in-out</span></span>
+          <span class="step-name">3 - back, rise<span class="step-dur">1s · flow</span></span>
           <span class="step-cue">Step back onto the left foot and rise again</span>
         </li>
 <li>
-          <span class="step-name">4 - close home<span class="step-dur">1s · ease-in-out</span></span>
+          <span class="step-name">4 - close home<span class="step-dur">1s · settle</span></span>
           <span class="step-cue">Close to the start, completing the box</span>
         </li>
       </ol>
@@ -159,7 +159,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   rig humanoid
   pose start = standing
 
-  step &quot;1 - forward, rise&quot; 1s ease-in-out:
+  step &quot;1 - forward, rise&quot; 1s flow:
     hip_right: flex 25
     knee_right: flex 20
     ankles: plantarflex 12
@@ -169,7 +169,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     pin: foot_left floor
     cue &quot;Step forward onto the right foot and rise, arms in a soft frame&quot;
 
-  step &quot;2 - side, lower&quot; 1s ease-in-out:
+  step &quot;2 - side, lower&quot; 1s flow:
     hip_right: flex 0
     knee_right: flex 0
     ankles: plantarflex 0
@@ -177,7 +177,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     ground-lock: feet
     cue &quot;Side step to the corner and lower through the heels&quot;
 
-  step &quot;3 - back, rise&quot; 1s ease-in-out:
+  step &quot;3 - back, rise&quot; 1s flow:
     hip_left: flex 25
     knee_left: flex 20
     ankles: plantarflex 12
@@ -185,7 +185,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     pin: foot_right floor
     cue &quot;Step back onto the left foot and rise again&quot;
 
-  step &quot;4 - close home&quot; 1s ease-in-out:
+  step &quot;4 - close home&quot; 1s settle:
     hip_left: flex 0
     knee_left: flex 0
     ankles: plantarflex 0

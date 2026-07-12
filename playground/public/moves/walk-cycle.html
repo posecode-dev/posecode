@@ -135,23 +135,23 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h2>How to do it</h2>
       <ol class="steps">
 <li>
-          <span class="step-name">Step right<span class="step-dur">0.7s · ease-in-out</span></span>
+          <span class="step-name">Step right<span class="step-dur">0.7s · flow</span></span>
           <span class="step-cue">Walk forward: right foot leads, opposite arm swings through</span>
         </li>
 <li>
-          <span class="step-name">Step left<span class="step-dur">0.7s · ease-in-out</span></span>
+          <span class="step-name">Step left<span class="step-dur">0.7s · flow</span></span>
           <span class="step-cue">Left foot leads, arms swap: keep travelling forward</span>
         </li>
 <li>
-          <span class="step-name">About-face<span class="step-dur">1s · ease-in-out</span></span>
+          <span class="step-name">About-face<span class="step-dur">1s · flow</span></span>
           <span class="step-cue">Plant and turn a half-turn to face back the way you came</span>
         </li>
 <li>
-          <span class="step-name">Walk back<span class="step-dur">0.7s · ease-in-out</span></span>
+          <span class="step-name">Walk back<span class="step-dur">0.7s · flow</span></span>
           <span class="step-cue">Walk back toward the start</span>
         </li>
 <li>
-          <span class="step-name">Arrive &amp; square up<span class="step-dur">1s · ease-in-out</span></span>
+          <span class="step-name">Arrive &amp; square up<span class="step-dur">1s · settle</span></span>
           <span class="step-cue">Arrive home and turn to face front again</span>
         </li>
       </ol>
@@ -164,7 +164,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   pose start = standing
   clip &quot;walk&quot;
 
-  step &quot;Step right&quot; 0.7s ease-in-out:
+  step &quot;Step right&quot; 0.7s flow:
     hip_right: flex 30
     knee_right: flex 15
     hip_left: extend 12
@@ -174,7 +174,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     pin: foot_left floor
     cue &quot;Walk forward: right foot leads, opposite arm swings through&quot;
 
-  step &quot;Step left&quot; 0.7s ease-in-out:
+  step &quot;Step left&quot; 0.7s flow:
     hip_left: flex 30
     knee_left: flex 15
     hip_right: extend 12
@@ -184,7 +184,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     pin: foot_right floor
     cue &quot;Left foot leads, arms swap: keep travelling forward&quot;
 
-  step &quot;About-face&quot; 1s ease-in-out:
+  step &quot;About-face&quot; 1s flow:
     hips: flex 0
     knees: flex 0
     shoulders: flex 0
@@ -193,7 +193,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     ground-lock: feet
     cue &quot;Plant and turn a half-turn to face back the way you came&quot;
 
-  step &quot;Walk back&quot; 0.7s ease-in-out:
+  step &quot;Walk back&quot; 0.7s flow:
     hip_right: flex 30
     knee_right: flex 15
     hip_left: extend 12
@@ -204,7 +204,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     pin: foot_left floor
     cue &quot;Walk back toward the start&quot;
 
-  step &quot;Arrive &amp; square up&quot; 1s ease-in-out:
+  step &quot;Arrive &amp; square up&quot; 1s settle:
     hips: flex 0
     knees: flex 0
     shoulders: flex 0

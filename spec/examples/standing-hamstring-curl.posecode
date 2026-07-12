@@ -2,12 +2,12 @@ posecode exercise "Standing hamstring curl"
   rig humanoid
   pose start = standing
 
-  step "Curl" 1.4s ease-out:
+  step "Curl" 1.4s settle:
     knee_right: flex 95
     pin: foot_left floor
     cue "Bend the right knee, drawing the heel toward the glute"
 
-  step "Lower" 1.6s ease-in:
+  step "Lower" 1.6s drive:
     knee_right: flex 0
     pin: foot_left floor
     cue "Lower the foot back to the floor"

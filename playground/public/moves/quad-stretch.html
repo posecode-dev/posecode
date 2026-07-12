@@ -135,11 +135,11 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h2>How to do it</h2>
       <ol class="steps">
 <li>
-          <span class="step-name">Catch the foot<span class="step-dur">3s · ease-in-out</span></span>
+          <span class="step-name">Catch the foot<span class="step-dur">3s · flow</span></span>
           <span class="step-cue">Bend the right knee back and reach the hand for the ankle</span>
         </li>
 <li>
-          <span class="step-name">Release<span class="step-dur">2s · ease-out</span></span>
+          <span class="step-name">Release<span class="step-dur">2s · settle</span></span>
           <span class="step-cue">Release the foot and return to standing</span>
         </li>
       </ol>
@@ -151,14 +151,14 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   rig humanoid
   pose start = standing
 
-  step &quot;Catch the foot&quot; 3s ease-in-out:
+  step &quot;Catch the foot&quot; 3s flow:
     knee_right: flex 144
     hip_right: extend 20
     reach: hand_right ankle_right
     pin: foot_left floor
     cue &quot;Bend the right knee back and reach the hand for the ankle&quot;
 
-  step &quot;Release&quot; 2s ease-out:
+  step &quot;Release&quot; 2s settle:
     knee_right: flex 0
     hip_right: extend 0
     pin: foot_left floor

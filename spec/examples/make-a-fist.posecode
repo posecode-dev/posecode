@@ -2,11 +2,11 @@ posecode posture "Make a fist"
   rig humanoid
   pose start = standing
 
-  step "Close" 1.2s ease-out:
+  step "Close" 1.2s settle:
     fingers: flex 80
     cue "Curl the fingers and thumb in to make a closed fist"
 
-  step "Open" 1.2s ease-in:
+  step "Open" 1.2s drive:
     fingers: flex 0
     cue "Spread the fingers wide open"
 

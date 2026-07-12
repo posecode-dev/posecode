@@ -135,23 +135,23 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h2>How to do it</h2>
       <ol class="steps">
 <li>
-          <span class="step-name">Present the hand<span class="step-dur">1s · ease-out</span></span>
+          <span class="step-name">Present the hand<span class="step-dur">1s · settle</span></span>
           <span class="step-cue">Bring the hand up in front of the chest, palm forward</span>
         </li>
 <li>
-          <span class="step-name">Letter A<span class="step-dur">1.5s · ease-in-out</span></span>
+          <span class="step-name">Letter A<span class="step-dur">1.5s · flow</span></span>
           <span class="step-cue">A: fingers curled into a fist, thumb resting alongside</span>
         </li>
 <li>
-          <span class="step-name">Letter B<span class="step-dur">1.5s · ease-in-out</span></span>
+          <span class="step-name">Letter B<span class="step-dur">1.5s · flow</span></span>
           <span class="step-cue">B: fingers straight and together, thumb across the palm</span>
         </li>
 <li>
-          <span class="step-name">Letter I<span class="step-dur">1.5s · ease-in-out</span></span>
+          <span class="step-name">Letter I<span class="step-dur">1.5s · flow</span></span>
           <span class="step-cue">I: only the little finger stands up</span>
         </li>
 <li>
-          <span class="step-name">Relax<span class="step-dur">1.2s · ease-out</span></span>
+          <span class="step-name">Relax<span class="step-dur">1.2s · settle</span></span>
           <span class="step-cue">Open the hand and lower the arm</span>
         </li>
       </ol>
@@ -163,12 +163,12 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   rig humanoid
   pose start = standing
 
-  step &quot;Present the hand&quot; 1s ease-out:
+  step &quot;Present the hand&quot; 1s settle:
     shoulder_right: flex 15
     elbow_right: flex 140
     cue &quot;Bring the hand up in front of the chest, palm forward&quot;
 
-  step &quot;Letter A&quot; 1.5s ease-in-out:
+  step &quot;Letter A&quot; 1.5s flow:
     index_right: flex 95
     middle_right: flex 95
     ring_right: flex 95
@@ -176,7 +176,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     thumb_right: flex 0
     cue &quot;A: fingers curled into a fist, thumb resting alongside&quot;
 
-  step &quot;Letter B&quot; 1.5s ease-in-out:
+  step &quot;Letter B&quot; 1.5s flow:
     index_right: flex 0
     middle_right: flex 0
     ring_right: flex 0
@@ -184,7 +184,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     thumb_right: flex 60
     cue &quot;B: fingers straight and together, thumb across the palm&quot;
 
-  step &quot;Letter I&quot; 1.5s ease-in-out:
+  step &quot;Letter I&quot; 1.5s flow:
     index_right: flex 95
     middle_right: flex 95
     ring_right: flex 95
@@ -192,7 +192,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     thumb_right: flex 60
     cue &quot;I: only the little finger stands up&quot;
 
-  step &quot;Relax&quot; 1.2s ease-out:
+  step &quot;Relax&quot; 1.2s settle:
     fingers_right: flex 0
     shoulder_right: flex 0
     elbow_right: flex 0

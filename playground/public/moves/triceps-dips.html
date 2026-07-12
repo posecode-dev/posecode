@@ -135,19 +135,19 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h2>How to do it</h2>
       <ol class="steps">
 <li>
-          <span class="step-name">Support<span class="step-dur">1s · ease-out</span></span>
+          <span class="step-name">Support<span class="step-dur">1s · settle</span></span>
           <span class="step-cue">Press up to a straight-arm support between the bars</span>
         </li>
 <li>
-          <span class="step-name">Lower<span class="step-dur">1.2s · ease-in-out</span></span>
+          <span class="step-name">Lower<span class="step-dur">1.2s · flow</span></span>
           <span class="step-cue">Bend the elbows to lower the chest, elbows tracking back</span>
         </li>
 <li>
-          <span class="step-name">Press<span class="step-dur">1s · ease-out</span></span>
+          <span class="step-name">Press<span class="step-dur">1s · settle</span></span>
           <span class="step-cue">Press through the palms to straighten the arms</span>
         </li>
 <li>
-          <span class="step-name">Dismount<span class="step-dur">0.8s · ease-in</span></span>
+          <span class="step-name">Dismount<span class="step-dur">0.8s · drive</span></span>
           <span class="step-cue">Step down and stand tall</span>
         </li>
       </ol>
@@ -160,7 +160,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   prop dip-bars
   pose start = standing
 
-  step &quot;Support&quot; 1s ease-out:
+  step &quot;Support&quot; 1s settle:
     shoulders: abduct 5
     elbows: flex 5
     elbows: pronate 80
@@ -170,7 +170,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     pin: hands bars
     cue &quot;Press up to a straight-arm support between the bars&quot;
 
-  step &quot;Lower&quot; 1.2s ease-in-out:
+  step &quot;Lower&quot; 1.2s flow:
     shoulders: extend 30
     shoulders: abduct 5
     elbows: flex 90
@@ -181,7 +181,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     pin: hands bars
     cue &quot;Bend the elbows to lower the chest, elbows tracking back&quot;
 
-  step &quot;Press&quot; 1s ease-out:
+  step &quot;Press&quot; 1s settle:
     shoulders: extend 0
     shoulders: abduct 5
     elbows: flex 5
@@ -192,7 +192,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     pin: hands bars
     cue &quot;Press through the palms to straighten the arms&quot;
 
-  step &quot;Dismount&quot; 0.8s ease-in:
+  step &quot;Dismount&quot; 0.8s drive:
     shoulders: abduct 0
     elbows: flex 0
     elbows: pronate 0

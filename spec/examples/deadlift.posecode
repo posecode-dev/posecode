@@ -2,7 +2,7 @@ posecode exercise "Deadlift"
   rig humanoid
   pose start = standing
 
-  step "Lower" 1.8s ease-in-out:
+  step "Lower" 1.8s flow:
     pelvis: hinge 75
     knees: flex 25
     ankles: plantarflex 0
@@ -12,7 +12,7 @@ posecode exercise "Deadlift"
     ground-lock: feet
     cue "Push the hips back and hinge with a flat back: let the arms hang to the bar"
 
-  step "Lift" 1.4s ease-out:
+  step "Lift" 1.4s settle:
     pelvis: hinge 0
     knees: flex 0
     ankles: plantarflex 0

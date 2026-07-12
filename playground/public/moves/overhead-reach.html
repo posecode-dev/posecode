@@ -135,11 +135,11 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h2>How to do it</h2>
       <ol class="steps">
 <li>
-          <span class="step-name">Reach up<span class="step-dur">2.5s · ease-in-out</span></span>
+          <span class="step-name">Reach up<span class="step-dur">2.5s · flow</span></span>
           <span class="step-cue">Reach both arms tall overhead and lengthen the spine</span>
         </li>
 <li>
-          <span class="step-name">Lower<span class="step-dur">2.5s · ease-in-out</span></span>
+          <span class="step-name">Lower<span class="step-dur">2.5s · settle</span></span>
           <span class="step-cue">Float the arms down and stack tall</span>
         </li>
       </ol>
@@ -151,14 +151,14 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   rig humanoid
   pose start = standing
 
-  step &quot;Reach up&quot; 2.5s ease-in-out:
+  step &quot;Reach up&quot; 2.5s flow:
     shoulders: flex 175
     spine: extend 10
     neck: extend 15
     ground-lock: feet
     cue &quot;Reach both arms tall overhead and lengthen the spine&quot;
 
-  step &quot;Lower&quot; 2.5s ease-in-out:
+  step &quot;Lower&quot; 2.5s settle:
     shoulders: flex 0
     spine: flex 0
     neck: flex 0

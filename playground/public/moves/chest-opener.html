@@ -135,11 +135,11 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h2>How to do it</h2>
       <ol class="steps">
 <li>
-          <span class="step-name">Open<span class="step-dur">3s · ease-in-out</span></span>
+          <span class="step-name">Open<span class="step-dur">3s · flow</span></span>
           <span class="step-cue">Reach the arms back and lift the chest: open the front line</span>
         </li>
 <li>
-          <span class="step-name">Release<span class="step-dur">2.5s · ease-in-out</span></span>
+          <span class="step-name">Release<span class="step-dur">2.5s · settle</span></span>
           <span class="step-cue">Return to neutral, ribs stacked over the hips</span>
         </li>
       </ol>
@@ -151,14 +151,14 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   rig humanoid
   pose start = standing
 
-  step &quot;Open&quot; 3s ease-in-out:
+  step &quot;Open&quot; 3s flow:
     shoulders: extend 40
     chest: extend 18
     spine: extend 12
     ground-lock: feet
     cue &quot;Reach the arms back and lift the chest: open the front line&quot;
 
-  step &quot;Release&quot; 2.5s ease-in-out:
+  step &quot;Release&quot; 2.5s settle:
     shoulders: extend 0
     chest: flex 0
     spine: flex 0

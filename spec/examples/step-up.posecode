@@ -3,14 +3,14 @@ posecode exercise "Step-up"
   prop box
   pose start = standing
 
-  step "Plant the foot" 1s ease-in-out:
+  step "Plant the foot" 1s flow:
     hip_right: flex 70
     knee_right: flex 90
     ankle_right: plantarflex 50
     pin: foot_left floor
     cue "Plant the right foot up on top of the box"
 
-  step "Drive up" 1.2s ease-out:
+  step "Drive up" 1.2s settle:
     hip_right: flex 8
     knee_right: flex 8
     ankle_right: plantarflex 8
@@ -19,7 +19,7 @@ posecode exercise "Step-up"
     pin: foot_right box
     cue "Drive through the top foot to stand tall on the box"
 
-  step "Step down" 1.4s ease-in:
+  step "Step down" 1.4s drive:
     hip_right: flex 70
     knee_right: flex 90
     ankle_right: plantarflex 50
@@ -28,7 +28,7 @@ posecode exercise "Step-up"
     pin: foot_right box
     cue "Lower the trailing foot back to the floor"
 
-  step "Off the box" 0.8s ease-out:
+  step "Off the box" 0.8s settle:
     hip_right: flex 0
     knee_right: flex 0
     ground-lock: feet

@@ -135,15 +135,15 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h2>How to do it</h2>
       <ol class="steps">
 <li>
-          <span class="step-name">Up &amp; forward<span class="step-dur">1.2s · ease-in-out</span></span>
+          <span class="step-name">Up &amp; forward<span class="step-dur">1.2s · flow</span></span>
           <span class="step-cue">Sweep the arms up and forward</span>
         </li>
 <li>
-          <span class="step-name">Out to sides<span class="step-dur">1.2s · ease-in-out</span></span>
+          <span class="step-name">Out to sides<span class="step-dur">1.2s · flow</span></span>
           <span class="step-cue">Open the arms out wide to the sides</span>
         </li>
 <li>
-          <span class="step-name">Down &amp; round<span class="step-dur">1.2s · ease-in-out</span></span>
+          <span class="step-name">Down &amp; round<span class="step-dur">1.2s · settle</span></span>
           <span class="step-cue">Lower and continue the circle back to the start</span>
         </li>
       </ol>
@@ -155,16 +155,16 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   rig humanoid
   pose start = standing
 
-  step &quot;Up &amp; forward&quot; 1.2s ease-in-out:
+  step &quot;Up &amp; forward&quot; 1.2s flow:
     shoulders: flex 120
     cue &quot;Sweep the arms up and forward&quot;
 
-  step &quot;Out to sides&quot; 1.2s ease-in-out:
+  step &quot;Out to sides&quot; 1.2s flow:
     shoulders: flex 0
     shoulders: abduct 120
     cue &quot;Open the arms out wide to the sides&quot;
 
-  step &quot;Down &amp; round&quot; 1.2s ease-in-out:
+  step &quot;Down &amp; round&quot; 1.2s settle:
     shoulders: abduct 0
     cue &quot;Lower and continue the circle back to the start&quot;
 

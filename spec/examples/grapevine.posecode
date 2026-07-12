@@ -1,8 +1,9 @@
 posecode exercise "Grapevine"
   rig humanoid
+  clip "shuffling"
   pose start = standing
 
-  step "Step out" 0.7s ease-in-out:
+  step "Step out" 0.7s flow:
     hip_left: abduct 30
     shoulders: abduct 40
     travel: 0.4 0
@@ -10,7 +11,7 @@ posecode exercise "Grapevine"
     reach: foot_left floor
     cue "Step the leading foot out to the side"
 
-  step "Cross behind" 0.7s ease-in-out:
+  step "Cross behind" 0.7s flow:
     hip_left: abduct 0
     hip_right: rotate-in 20
     knee_right: flex 25
@@ -20,7 +21,7 @@ posecode exercise "Grapevine"
     reach: foot_right floor
     cue "Cross the trailing foot behind and keep travelling"
 
-  step "Step out again" 0.7s ease-in-out:
+  step "Step out again" 0.7s flow:
     hip_right: rotate-in 0
     knee_right: flex 0
     ankle_right: plantarflex 0
@@ -30,7 +31,7 @@ posecode exercise "Grapevine"
     reach: foot_left floor
     cue "Step out to the side once more"
 
-  step "Return home" 1s ease-in-out:
+  step "Return home" 1s settle:
     hip_left: abduct 0
     shoulders: abduct 0
     travel: 0 0

@@ -2,17 +2,17 @@ posecode stretch "Spine rotation (ROM demo)"
   rig humanoid
   pose start = standing
 
-  step "Rotate right" 2.5s ease-in-out:
+  step "Rotate right" 2.5s flow:
     spine: rotate-out 45
     ground-lock: feet
     cue "Rotate the trunk to the right: transverse-plane spinal rotation"
 
-  step "Rotate left" 2.5s ease-in-out:
+  step "Rotate left" 2.5s flow:
     spine: rotate-in 45
     ground-lock: feet
     cue "Pass through center and rotate to the left"
 
-  step "Center" 2s ease-out:
+  step "Center" 2s settle:
     spine: rotate-in 0
     ground-lock: feet
     cue "Return to a neutral facing"

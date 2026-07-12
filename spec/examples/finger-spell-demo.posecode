@@ -2,12 +2,12 @@ posecode posture "Finger-spelling (approx.)"
   rig humanoid
   pose start = standing
 
-  step "Present the hand" 1s ease-out:
+  step "Present the hand" 1s settle:
     shoulder_right: flex 15
     elbow_right: flex 140
     cue "Bring the hand up in front of the chest, palm forward"
 
-  step "Letter A" 1.5s ease-in-out:
+  step "Letter A" 1.5s flow:
     index_right: flex 95
     middle_right: flex 95
     ring_right: flex 95
@@ -15,7 +15,7 @@ posecode posture "Finger-spelling (approx.)"
     thumb_right: flex 0
     cue "A: fingers curled into a fist, thumb resting alongside"
 
-  step "Letter B" 1.5s ease-in-out:
+  step "Letter B" 1.5s flow:
     index_right: flex 0
     middle_right: flex 0
     ring_right: flex 0
@@ -23,7 +23,7 @@ posecode posture "Finger-spelling (approx.)"
     thumb_right: flex 60
     cue "B: fingers straight and together, thumb across the palm"
 
-  step "Letter I" 1.5s ease-in-out:
+  step "Letter I" 1.5s flow:
     index_right: flex 95
     middle_right: flex 95
     ring_right: flex 95
@@ -31,7 +31,7 @@ posecode posture "Finger-spelling (approx.)"
     thumb_right: flex 60
     cue "I: only the little finger stands up"
 
-  step "Relax" 1.2s ease-out:
+  step "Relax" 1.2s settle:
     fingers_right: flex 0
     shoulder_right: flex 0
     elbow_right: flex 0

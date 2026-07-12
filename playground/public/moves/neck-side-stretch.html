@@ -135,15 +135,15 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h2>How to do it</h2>
       <ol class="steps">
 <li>
-          <span class="step-name">Ear to right<span class="step-dur">3s · ease-in-out</span></span>
+          <span class="step-name">Ear to right<span class="step-dur">3s · flow</span></span>
           <span class="step-cue">Gently take the right ear toward the right shoulder</span>
         </li>
 <li>
-          <span class="step-name">Ear to left<span class="step-dur">3.4s · ease-in-out</span></span>
+          <span class="step-name">Ear to left<span class="step-dur">3.4s · flow</span></span>
           <span class="step-cue">Pass through center and lengthen to the left</span>
         </li>
 <li>
-          <span class="step-name">Center<span class="step-dur">2s · ease-out</span></span>
+          <span class="step-name">Center<span class="step-dur">2s · settle</span></span>
           <span class="step-cue">Float the head back to neutral</span>
         </li>
       </ol>
@@ -155,17 +155,17 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   rig humanoid
   pose start = standing
 
-  step &quot;Ear to right&quot; 3s ease-in-out:
+  step &quot;Ear to right&quot; 3s flow:
     neck: adduct 40
     ground-lock: feet
     cue &quot;Gently take the right ear toward the right shoulder&quot;
 
-  step &quot;Ear to left&quot; 3.4s ease-in-out:
+  step &quot;Ear to left&quot; 3.4s flow:
     neck: abduct 40
     ground-lock: feet
     cue &quot;Pass through center and lengthen to the left&quot;
 
-  step &quot;Center&quot; 2s ease-out:
+  step &quot;Center&quot; 2s settle:
     neck: abduct 0
     ground-lock: feet
     cue &quot;Float the head back to neutral&quot;

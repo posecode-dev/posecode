@@ -2,7 +2,7 @@ posecode exercise "Chassé"
   rig humanoid
   pose start = standing
 
-  step "Reach & push" 0.8s ease-out:
+  step "Reach & push" 0.8s settle:
     hip_right: flex 30
     knee_right: flex 25
     ankle_right: plantarflex 25
@@ -14,7 +14,7 @@ posecode exercise "Chassé"
     reach: foot_right floor
     cue "Reach the lead foot out and push off to travel sideways"
 
-  step "Gallop close" 0.6s ease-in:
+  step "Gallop close" 0.6s drive:
     hip_right: flex 0
     knee_right: flex 0
     ankle_right: plantarflex 0
@@ -23,7 +23,7 @@ posecode exercise "Chassé"
     ground-lock: feet
     cue "Chase the trailing foot to the lead: feet meet in the air"
 
-  step "Reach & push back" 0.8s ease-out:
+  step "Reach & push back" 0.8s settle:
     hip_left: flex 30
     knee_left: flex 25
     ankle_left: plantarflex 25
@@ -33,7 +33,7 @@ posecode exercise "Chassé"
     reach: foot_left floor
     cue "Change direction and travel back the other way"
 
-  step "Gallop home" 0.6s ease-in:
+  step "Gallop home" 0.6s drive:
     hip_left: flex 0
     knee_left: flex 0
     ankle_left: plantarflex 0

@@ -2,7 +2,7 @@ posecode exercise "Good morning"
   rig humanoid
   pose start = standing
 
-  step "Hinge" 2s ease-in-out:
+  step "Hinge" 2s flow:
     pelvis: hinge 80
     knees: flex 15
     ankles: plantarflex 15
@@ -12,7 +12,7 @@ posecode exercise "Good morning"
     ground-lock: feet
     cue "Hands behind the head, hinge from the hips with a flat back"
 
-  step "Stand" 1.8s ease-out:
+  step "Stand" 1.8s settle:
     pelvis: hinge 0
     knees: flex 0
     ankles: plantarflex 0

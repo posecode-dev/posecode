@@ -135,11 +135,11 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h2>How to do it</h2>
       <ol class="steps">
 <li>
-          <span class="step-name">Curl<span class="step-dur">1.1s · ease-out</span></span>
+          <span class="step-name">Curl<span class="step-dur">1.1s · settle</span></span>
           <span class="step-cue">Curl up, keep the elbows tucked at your sides</span>
         </li>
 <li>
-          <span class="step-name">Lower<span class="step-dur">1.4s · ease-in</span></span>
+          <span class="step-name">Lower<span class="step-dur">1.4s · drive</span></span>
           <span class="step-cue">Lower under control: don't swing</span>
         </li>
       </ol>
@@ -151,12 +151,12 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   rig humanoid
   pose start = standing
 
-  step &quot;Curl&quot; 1.1s ease-out:
+  step &quot;Curl&quot; 1.1s settle:
     elbows: flex 135
     elbows: supinate 80
     cue &quot;Curl up, keep the elbows tucked at your sides&quot;
 
-  step &quot;Lower&quot; 1.4s ease-in:
+  step &quot;Lower&quot; 1.4s drive:
     elbows: flex 15
     elbows: supinate 80
     cue &quot;Lower under control: don't swing&quot;
