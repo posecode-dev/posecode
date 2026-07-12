@@ -22,6 +22,7 @@ import {
   buildTimeline,
   depenetrate,
   groundFigure,
+  levelPlantedFeet,
 } from "posecode-render";
 
 export type Vec3 = readonly [x: number, y: number, z: number];
@@ -40,6 +41,12 @@ export interface PhasePose {
   rootYaw: number;
   /** True when the phase relies on pins/reach-IK the probe cannot solve. */
   usesSceneIk: boolean;
+  /**
+   * Height of the lowest visible-mesh point above the floor after the full
+   * contact solve. ~0 for a grounded pose; a positive value means the figure
+   * floats (the bug that levelPlantedFeet used to cause on squat/deadlift).
+   */
+  meshMinY: number;
   /** World-space position of every bone at the END of this phase. */
   bones: ReadonlyMap<string, Vec3>;
   /** World-space orientation of every bone at the end of the phase. */
@@ -160,13 +167,20 @@ export function probeMovement(source: string): ProbeResult {
       }
     }
     alignFloorPalms(m, info.reaches, info.pins);
-    // Viewer safety net: never leave the lowest mesh point below the floor.
+    // Plantigrade correction (viewer parity): flatten planted soles. This lifts
+    // the foot mesh a little, so it must run BEFORE the floor clamp reconciles.
+    levelPlantedFeet(m, info.groundLock);
+    // Viewer safety net: a ground-locked phase is planted, so clamp both ways
+    // (its lowest point sits exactly on the floor); an unlocked phase may be
+    // airborne, so only rescue parts that dip below y=0. Mirror index.ts.
     m.root.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(m.root);
-    if (box.min.y < 0) {
+    const planted = info.groundLock.length > 0;
+    if (box.min.y < 0 || (planted && box.min.y > 0)) {
       m.root.position.y -= box.min.y;
       m.root.updateMatrixWorld(true);
     }
+    const finalBox = new THREE.Box3().setFromObject(m.root);
     return {
       name: seg.name,
       durationSec: authored.durationSec,
@@ -177,6 +191,7 @@ export function probeMovement(source: string): ProbeResult {
       rootOffset: [info.rootOffset.x, 0, info.rootOffset.z],
       rootYaw: info.rootYaw,
       usesSceneIk: info.pins.length > 0 || info.reaches.length > 0 || info.grips.length > 0,
+      meshMinY: Number.isFinite(finalBox.min.y) ? finalBox.min.y : 0,
       bones: snapshotBones(m.bones),
       boneQuaternions: snapshotBoneQuaternions(m.bones),
     };
