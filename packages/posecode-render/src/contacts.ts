@@ -205,8 +205,39 @@ export function swingArms(
     HIP_EULER.setFromQuaternion(contraHip.quaternion, "XYZ");
     if (Math.abs(HIP_EULER.x) < 1e-3) continue; // legs still → no swing
     SWING_EULER.setFromQuaternion(shoulder.quaternion, "XYZ");
-    SWING_EULER.x += HIP_EULER.x * SWING_GAIN;
+    // This pass runs every render frame. Assign the procedural channel instead
+    // of adding to last frame's result, otherwise an unauthored shoulder keeps
+    // accumulating rotation (most visibly the left arm in a forward lunge).
+    SWING_EULER.x = HIP_EULER.x * SWING_GAIN;
     shoulder.quaternion.setFromEuler(SWING_EULER);
+    changed = true;
+  }
+  if (changed) m.root.updateMatrixWorld(true);
+}
+
+const GRIP_FRAME = new THREE.Quaternion().setFromAxisAngle(
+  new THREE.Vector3(0, 1, 0),
+  Math.PI,
+);
+
+/**
+ * Give gripping wrists a complete overhand contact frame. Arm IK only
+ * constrains wrist position, leaving hand orientation underdetermined; without
+ * this pass the fingers inherit the forearm direction and can point above the
+ * bar. In root space the palm faces back (-Z), the fingers extend down (-Y),
+ * and the wrist remains exactly on its solved anchor.
+ */
+export function orientBarGrips(m: Mannequin, grips: readonly GripTarget[]): void {
+  let changed = false;
+  for (const g of grips) {
+    const side = /_(left|right)$/.exec(g.effector)?.[1];
+    if (!side) continue;
+    const wrist = m.bones.get(`wrist_${side}`);
+    if (!wrist?.parent) continue;
+    const rootWorld = m.root.getWorldQuaternion(new THREE.Quaternion());
+    const desiredWorld = rootWorld.multiply(GRIP_FRAME);
+    const parentWorld = wrist.parent.getWorldQuaternion(new THREE.Quaternion());
+    wrist.quaternion.copy(parentWorld.invert().multiply(desiredWorld));
     changed = true;
   }
   if (changed) m.root.updateMatrixWorld(true);
