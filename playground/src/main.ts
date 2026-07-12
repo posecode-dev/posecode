@@ -548,7 +548,18 @@ void import("posecode-render").then(({ createViewer }) => {
     // clips.ts). Only fetched when a loaded movement names the clip, so this
     // never slows the default page. Disabled with the classic figure, which has
     // no skinned mesh to retarget onto.
-    ...(classicFigure ? {} : { clips: { walk: "/clips/walk.fbx" } }),
+    ...(classicFigure
+      ? {}
+      : {
+          clips: {
+            walk: "/clips/walk.fbx",
+            squat: "/clips/back-squat.fbx",
+            "bicycle-crunch": "/clips/bicycle-crunch.fbx",
+            "jab-cross": "/clips/jab-cross.fbx",
+            "jumping-jacks": "/clips/jumping-jacks.fbx",
+            shuffling: "/clips/shuffling.fbx",
+          },
+        }),
   });
   // Exposed for capture/e2e tooling (frame capture drives README GIFs).
   (window as unknown as Record<string, unknown>).__posecodeViewer = viewer;

@@ -1,5 +1,6 @@
 posecode exercise "Body-weight squat"
   rig humanoid
+  clip "squat"
   pose start = standing
 
   step "Descend" 1.6s settle:
