@@ -7,7 +7,6 @@ posecode exercise "Pull-up"
     shoulders: flex 175
     elbows: flex 5
     elbows: pronate 80
-    fingers: flex 20
     ground-lock: feet
     cue "Reach up and grip the bar"
 
@@ -15,42 +14,27 @@ posecode exercise "Pull-up"
     shoulders: flex 175
     elbows: flex 5
     elbows: pronate 80
-    fingers: flex 55
-    thumb_left: flex 35
-    thumb_right: flex 35
-    thumb_left: abduct 20
-    thumb_right: abduct 20
-    pin: hands bar
+    grip: hands bar
     cue "Hang from the bar, arms long, shoulders active"
 
   step "Pull up" 1.2s ease-out:
     shoulders: flex 105
     elbows: flex 130
     elbows: pronate 80
-    fingers: flex 55
-    thumb_left: flex 35
-    thumb_right: flex 35
-    thumb_left: abduct 20
-    thumb_right: abduct 20
     spine: extend 15
     chest: extend 10
     neck: extend 20
-    pin: hands bar
+    grip: hands bar
     cue "Pull the chest toward the bar, driving the elbows down"
 
   step "Lower" 1.4s ease-in:
     shoulders: flex 175
     elbows: flex 5
     elbows: pronate 80
-    fingers: flex 55
-    thumb_left: flex 35
-    thumb_right: flex 35
-    thumb_left: abduct 20
-    thumb_right: abduct 20
     spine: extend 0
     chest: extend 0
     neck: extend 0
-    pin: hands bar
+    grip: hands bar
     cue "Lower under control back to a full hang"
 
   step "Release" 0.8s ease-in:

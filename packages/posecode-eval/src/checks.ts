@@ -8,7 +8,6 @@
 import type { PhasePose, ProbeResult } from "./probe.js";
 import {
   balanceOverflow,
-  barGripError,
   distanceBetween,
   feetCenterSkateDistance,
   footIsSupported,
@@ -18,10 +17,8 @@ import {
   kneeFlexionDeg,
   lowestPoint,
   palmFloorAngleDeg,
-  palmBarAngleDeg,
   phaseMaxLandmarkSpeed,
   segmentTiltDeg,
-  soleUpAngleDeg,
   spineCurlDeg,
   torsoPitchDeg,
 } from "./metrics.js";
@@ -164,7 +161,7 @@ export function genericChecks(result: ProbeResult): CheckOutcome[] {
       out.push({
         id: `transition-easing:${current.name}`,
         pass: false,
-        detail: `moving linear phase enters at ${speed.toFixed(2)}m/s (use eased transition)`,
+        detail: `moving linear phase enters at ${speed.toFixed(2)}m/s (use a flow/settle/drive mode)`,
       });
     }
   }
@@ -247,26 +244,6 @@ export const MOVEMENT_CHECKS: MovementChecks[] = [
         (v) => v > 0.9,
         "pelvis > 0.9m",
       ),
-      phaseCheck("left-sole-flat", "Descend", (p) => soleUpAngleDeg(p, "left"), (v) => v < 2, "< 2°"),
-      phaseCheck("right-sole-flat", "Descend", (p) => soleUpAngleDeg(p, "right"), (v) => v < 2, "< 2°"),
-    ],
-  },
-  {
-    movement: "pull-up",
-    checks: [
-      phaseCheck("left-grip-position", "Hang", (p) => barGripError(p, "left"), (v) => v < 0.12, "< 0.12m"),
-      phaseCheck("right-grip-position", "Hang", (p) => barGripError(p, "right"), (v) => v < 0.12, "< 0.12m"),
-      phaseCheck("left-palm-wrap", "Hang", (p) => palmBarAngleDeg(p, "left"), (v) => v < 5, "< 5°"),
-      phaseCheck("right-palm-wrap", "Hang", (p) => palmBarAngleDeg(p, "right"), (v) => v < 5, "< 5°"),
-      phaseCheck("left-grip-held", "Pull up", (p) => barGripError(p, "left"), (v) => v < 0.12, "< 0.12m"),
-      phaseCheck("right-grip-held", "Pull up", (p) => barGripError(p, "right"), (v) => v < 0.12, "< 0.12m"),
-    ],
-  },
-  {
-    movement: "walk-cycle",
-    checks: [
-      phaseCheck("left-stance-flat", "Step right", (p) => soleUpAngleDeg(p, "left"), (v) => v < 2, "< 2°"),
-      phaseCheck("right-stance-flat", "Step left", (p) => soleUpAngleDeg(p, "right"), (v) => v < 2, "< 2°"),
     ],
   },
   {

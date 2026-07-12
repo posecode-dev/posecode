@@ -12,23 +12,22 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { eulerRomFor } from "posecode-parser";
-import type { PosecodeIR, ReachTarget, PinTarget } from "posecode-parser";
+import type { PosecodeIR, ReachTarget, PinTarget, GripTarget } from "posecode-parser";
 import { buildMannequin, type Mannequin } from "./mannequin.js";
 import { applyGroundLock as applyGroundLockTo, groundFigure as groundFigureOf } from "./groundlock.js";
 import { buildTimeline, type BuiltTimeline, type PhaseSegment } from "./timeline.js";
 import { solveCCD, type JointLimits } from "./ik.js";
-import { buildProps, syncPropAttachments, type PropScene } from "./props.js";
+import { buildProps, type PropScene } from "./props.js";
 import { loadCharacter, type Character } from "./character.js";
 import {
   loadClipSource,
-  selectMotionClip,
   retargetMocapClip,
   createClipLayer,
   type ClipLayer,
   type ClipSource,
 } from "./clips.js";
 import { depenetrate } from "./depenetrate.js";
-import { alignBarGrips, alignFloorPalms, alignFloorSoles } from "./contacts.js";
+import { alignFloorPalms, levelPlantedFeet, wrapGrip, relaxHands, swingArms, aimHead } from "./contacts.js";
 
 const DEG = Math.PI / 180;
 
@@ -84,14 +83,6 @@ export interface ViewerOptions {
    */
   characterUrl?: string;
   /**
-   * Show the procedural figure while `characterUrl` loads. Defaults to true
-   * for embeds and offline-friendly consumers. Set false when a brief empty
-   * stage is preferable to flashing the procedural figure before the skinned
-   * character appears. The procedural figure is still revealed if loading
-   * fails, so the viewer never remains permanently blank.
-   */
-  showProceduralWhileLoading?: boolean;
-  /**
    * Mocap clip library: clip name (as written in a document's `clip "<name>"`
    * directive) → FBX/GLB asset URL. When a loaded document names a clip found
    * here and the skinned character is active, the viewer retargets the clip
@@ -100,6 +91,13 @@ export interface ViewerOptions {
    * the procedural keyframes as always, so clips can never blank a movement.
    */
   clips?: Record<string, string>;
+  /**
+   * Keep the procedural figure visible while a skinned `characterUrl` loads.
+   * This viewer always shows the procedural figure during load (and on load
+   * failure), so the flag is accepted for API compatibility; the default
+   * behavior already matches `true`.
+   */
+  showProceduralWhileLoading?: boolean;
 }
 
 export function createViewer(
@@ -182,9 +180,6 @@ export function createViewer(
 
   let mannequin: Mannequin = buildMannequin();
   enableShadows(mannequin.root);
-  if (opts.characterUrl && opts.showProceduralWhileLoading === false) {
-    setMannequinMeshesVisible(mannequin.root, false);
-  }
   scene.add(mannequin.root);
 
   // Skinned character layer (optional). While loading (and on failure) the
@@ -279,6 +274,13 @@ export function createViewer(
   }
 
   let timeline: BuiltTimeline | null = null;
+  // Finger bones the loaded document explicitly poses (make-a-fist, finger-spell,
+  // hand-wave): the L4.1 resting-hand curl leaves these alone.
+  let authoredFingers = new Set<string>();
+  // Shoulders the document poses: L4.2 arm-swing leaves these to the author.
+  let authoredShoulders = new Set<string>();
+  // True when the document poses the head/neck: L4.3 look-at then stays off.
+  let authoredHead = false;
   // The last loaded document, kept so the viewer can re-solve base pose and
   // ground anchors when the character (with its own proportions) arrives.
   let lastIR: PosecodeIR | null = null;
@@ -375,17 +377,6 @@ export function createViewer(
     foot_right: "ankle_right",
   };
 
-  function contactBoneIds(groundLock: readonly string[], pins: readonly PinTarget[]): string[] {
-    const ids = new Set<string>();
-    for (const group of groundLock) {
-      if (group === "hands") { ids.add("wrist_left"); ids.add("wrist_right"); }
-      if (group === "forearms") { ids.add("elbow_left"); ids.add("elbow_right"); }
-      if (group === "feet") { ids.add("ankle_left"); ids.add("ankle_right"); }
-    }
-    for (const pin of pins) ids.add(EFFECTOR_BONE[pin.effector] ?? pin.effector);
-    return [...ids];
-  }
-
   /**
    * The rotatable joint chain (proximal → distal) that moves an effector, with
    * each joint's ROM expressed as local Euler limits for the constrained solve.
@@ -450,13 +441,7 @@ export function createViewer(
       p.y = Number.isFinite(box.min.y) ? Math.max(0, p.y - box.min.y) : 0;
       return p;
     }
-    const side = effector.name.endsWith("_left")
-      ? "left"
-      : effector.name.endsWith("_right")
-        ? "right"
-        : null;
-    const anchor = (side ? propAnchors.get(`${target}.${side}`) : undefined)
-      ?? propAnchors.get(target);
+    const anchor = propAnchors.get(target);
     if (anchor) return anchor.clone();
     const bone = mannequin.bones.get(target);
     if (bone) return bone.getWorldPosition(new THREE.Vector3());
@@ -511,6 +496,75 @@ export function createViewer(
     }
   }
 
+  /**
+   * Bar grips: unlike a pin (body translate only), a grip makes each hand hold
+   * the bar. (1) Translate the body by the average wrist→anchor delta — the
+   * authored elbow flex raises the wrists, so the body rises: the pull-up. (2)
+   * Per-hand arm IK drives each wrist exactly onto its own two-point anchor
+   * (`bar_left`/`bar_right`), so the hands grip shoulder-width and the arms angle
+   * naturally instead of pointing straight up. (3) Wrap the fingers round the bar.
+   */
+  function applyGrips(grips: GripTarget[]): void {
+    if (grips.length === 0) return;
+    const resolveGrip = (anchor: string, effector: THREE.Object3D): THREE.Vector3 | null =>
+      resolveReachTarget(anchor, effector) ??
+      resolveReachTarget(anchor.replace(/_(left|right)$/, ""), effector);
+    // 1. Body translate (the vertical pull).
+    const delta = new THREE.Vector3();
+    let n = 0;
+    for (const g of grips) {
+      const effectorBone = EFFECTOR_BONE[g.effector] ?? g.effector;
+      const effector = mannequin.bones.get(effectorBone);
+      if (!effector) continue;
+      const target = resolveGrip(g.anchor, effector);
+      if (!target) continue;
+      delta.add(target.clone().sub(effector.getWorldPosition(new THREE.Vector3())));
+      n++;
+    }
+    if (n > 0) {
+      mannequin.root.position.add(delta.multiplyScalar(1 / n));
+      mannequin.root.updateMatrixWorld(true);
+    }
+    // 2. Per-hand arm IK onto each grip point (ROM-clamped via reachChain).
+    for (const g of grips) {
+      const effectorBone = EFFECTOR_BONE[g.effector] ?? g.effector;
+      const effector = mannequin.bones.get(effectorBone);
+      if (!effector) continue;
+      const target = resolveGrip(g.anchor, effector);
+      if (!target) continue;
+      const { joints, limits } = reachChain(effectorBone);
+      if (joints.length === 0) continue;
+      solveCCD({ joints, limits, effector, target }, 12);
+    }
+    // 3. Finger wrap.
+    wrapGrip(mannequin, grips);
+  }
+
+  /**
+   * L4.3 look-at: turn the head toward the action. Collects the world points of
+   * this phase's active grips/reaches (up at the bar, down at a floor reach) and
+   * aims the head at their average. Skipped when the document poses the head/neck.
+   */
+  function applyLookAt(info: { grips: GripTarget[]; reaches: ReachTarget[] }): void {
+    if (authoredHead) return;
+    const pts: THREE.Vector3[] = [];
+    const collect = (effectorName: string, anchorName: string): void => {
+      const bone = EFFECTOR_BONE[effectorName] ?? effectorName;
+      const eff = mannequin.bones.get(bone);
+      if (!eff) return;
+      const t =
+        resolveReachTarget(anchorName, eff) ??
+        resolveReachTarget(anchorName.replace(/_(left|right)$/, ""), eff);
+      if (t) pts.push(t);
+    };
+    for (const g of info.grips) collect(g.effector, g.anchor);
+    for (const r of info.reaches) collect(r.effector, r.target);
+    if (pts.length === 0) return;
+    const focus = new THREE.Vector3();
+    for (const p of pts) focus.add(p);
+    aimHead(mannequin, focus.multiplyScalar(1 / pts.length));
+  }
+
   function frameCamera(): void {
     // Auto-frame the figure: fit its bounding box, keep a pleasant angle.
     // Include any scene prop too: a pull-up bar sits well above the figure's
@@ -539,10 +593,8 @@ export function createViewer(
   }
 
   function frame(): void {
-    let activeContactBones: string[] = [];
     if (timeline) {
       const info = timeline.sample(time, mannequin.bones);
-      activeContactBones = contactBoneIds(info.groundLock, info.pins);
       // Life layer rides on wall-clock time (not timeline time) so the figure
       // keeps breathing and blinking while paused or scrubbing.
       applyLife(performance.now() / 1000);
@@ -564,9 +616,9 @@ export function createViewer(
       // Self-collision: nudge limbs out of the body BEFORE contact solving so
       // ground-lock and pins see the corrected pose (same order as load()).
       depenetrate(mannequin);
-      alignFloorSoles(mannequin, info.groundLock, info.reaches, info.pins);
       applyGroundLockTo(mannequin, info.groundLock, frameAnchors(info.rootYaw, info.rootOffset));
       applyPins(info.pins);
+      applyGrips(info.grips);
       // Reach-IK BEFORE the floor safety clamp. When authored FK pushes a
       // reaching limb through the floor (cobra: prone + shoulders flex 50),
       // the limb must bend to meet the floor. Running reaches after the clamp
@@ -576,7 +628,16 @@ export function createViewer(
       // floor/landmark targets resolve against.
       applyReaches(info.reaches);
       alignFloorPalms(mannequin, info.reaches, info.pins);
-      alignBarGrips(mannequin, info.reaches, info.pins);
+      // Plantigrade correction: keep planted soles flat to the floor so grounded
+      // lower-body poses (squat, lunge, deadlift) don't balance on the toes.
+      // Runs before the floor clamp so the leveled sole is what rests on y=0.
+      levelPlantedFeet(mannequin, info.groundLock);
+      // L4.2 aliveness: contralateral arm swing during locomotion (free arms only).
+      swingArms(mannequin, authoredShoulders, gripSidesOf(info.grips));
+      // L4.1 aliveness: relax idle hands into a natural curl (grips still wrap).
+      relaxHands(mannequin, gripSidesOf(info.grips), authoredFingers);
+      // L4.3 aliveness: turn the head toward the active contact (bar / floor reach).
+      applyLookAt(info);
       // Safety net: nothing above ever intentionally pushes part of the body
       // below the floor, so clamp the root up whenever the lowest point dips
       // below y=0, a no-op whenever the pose is legitimately grounded or
@@ -607,15 +668,8 @@ export function createViewer(
       const gap = clipTargetWeight - clipWeight;
       clipWeight += Math.sign(gap) * Math.min(Math.abs(gap), step);
       clipLayer.apply(time, clipWeight);
-      if (clipWeight > 0) {
-        character.group.updateMatrixWorld(true);
-        // Mocap is deliberately layered after procedural posing. Re-apply the
-        // final contact positions/orientations so the visible mesh cannot skate
-        // away from feet/hands the driver already solved.
-        character.correctContacts(mannequin, activeContactBones);
-      }
+      if (clipWeight > 0) character.group.updateMatrixWorld(true);
     }
-    if (propScene?.attachments.length) syncPropAttachments(propScene, mannequin.bones);
     frameDt = 0;
     if (easeCamera) {
       controls.target.lerp(desiredTarget, 0.07);
@@ -681,6 +735,13 @@ export function createViewer(
       mannequin.root.updateMatrixWorld(true);
       depenetrate(mannequin);
       groundFigureOf(mannequin);
+      levelPlantedFeet(mannequin, ir.phases[0]?.groundLock ?? []);
+      authoredFingers = new Set(timeline.bonesUsed.filter(isFingerId));
+      authoredShoulders = new Set(timeline.bonesUsed.filter((id) => id.startsWith("shoulder_")));
+      authoredHead = timeline.bonesUsed.some((id) => id === "head" || id === "neck");
+      swingArms(mannequin, authoredShoulders, gripSidesOf(ir.phases[0]?.grips ?? []));
+      relaxHands(mannequin, gripSidesOf(ir.phases[0]?.grips ?? []), authoredFingers);
+      applyLookAt({ grips: ir.phases[0]?.grips ?? [], reaches: ir.phases[0]?.reaches ?? [] });
       captureGroundTargets();
       baseRootPos.copy(mannequin.root.position);
       baseRootQuat.copy(mannequin.root.quaternion);
@@ -779,13 +840,27 @@ export function createViewer(
         else char.sync(mannequin);
       })
       .catch(() => {
-        // Reveal the fallback if it was hidden during loading. Deliberately
-        // silent: an offline embed or blocked CDN should degrade, not error.
-        setMannequinMeshesVisible(mannequin.root, true);
+        // Keep the procedural figure. Deliberately silent: an offline embed
+        // or a blocked CDN should degrade, not error.
       });
   }
 
   return api;
+}
+
+/** True for a finger bone id (thumb/index/middle/ring/pinky_left|right). */
+function isFingerId(id: string): boolean {
+  return /^(thumb|index|middle|ring|pinky)_/.test(id);
+}
+
+/** The hand sides ("left"/"right") gripping this phase, from its grip targets. */
+function gripSidesOf(grips: readonly { effector: string }[]): Set<"left" | "right"> {
+  const sides = new Set<"left" | "right">();
+  for (const g of grips) {
+    if (g.effector.endsWith("_left") || g.effector === "hands") sides.add("left");
+    if (g.effector.endsWith("_right") || g.effector === "hands") sides.add("right");
+  }
+  return sides;
 }
 
 function enableShadows(root: THREE.Object3D): void {
@@ -794,12 +869,6 @@ function enableShadows(root: THREE.Object3D): void {
       obj.castShadow = true;
       obj.receiveShadow = true;
     }
-  });
-}
-
-function setMannequinMeshesVisible(root: THREE.Object3D, visible: boolean): void {
-  root.traverse((obj) => {
-    if ((obj as THREE.Mesh).isMesh) obj.visible = visible;
   });
 }
 
@@ -821,16 +890,15 @@ export { applyGroundLock, groundFigure } from "./groundlock.js";
 export type { Mannequin, Proportions, CollisionRadii } from "./mannequin.js";
 export { buildTimeline } from "./timeline.js";
 export { solveCCD, type IkChain, type JointLimits } from "./ik.js";
-export { buildProps, syncPropAttachments, type PropScene, type PropAttachment } from "./props.js";
+export { buildProps, type PropScene } from "./props.js";
 export { loadCharacter, rigCharacter, type Character } from "./character.js";
 export {
   loadClipSource,
-  selectMotionClip,
   retargetMocapClip,
   createClipLayer,
   type ClipLayer,
   type ClipSource,
 } from "./clips.js";
 export { depenetrate } from "./depenetrate.js";
-export { alignBarGrips, alignFloorPalms, alignFloorSoles } from "./contacts.js";
+export { alignFloorPalms } from "./contacts.js";
 export type { PhaseSegment } from "./timeline.js";

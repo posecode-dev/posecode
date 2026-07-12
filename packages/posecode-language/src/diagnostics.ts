@@ -5,8 +5,9 @@
  */
 
 import { parse, boneType } from "posecode-parser";
+import { LEGACY_MODE_ALIASES } from "./vocab.js";
 
-export type Severity = "error" | "warning";
+export type Severity = "error" | "warning" | "hint";
 
 export interface Diagnostic {
   /** 1-based source line. */
@@ -35,6 +36,22 @@ export function getDiagnostics(text: string): Diagnostic[] {
       message: `${joint} ${w.action} ${w.requested}° exceeds range of motion, clamped to ${w.clamped}° (safe ${w.limit.min}–${w.limit.max}°)`,
     });
   }
+
+  // Deprecation hints: legacy easing names still parse (via aliases) but nudge
+  // authors toward the canonical timing modes. Scanned lexically so the hint
+  // survives even when the rest of the document has errors.
+  const lines = text.split(/\r?\n/);
+  lines.forEach((lineText, idx) => {
+    const m = /^\s*step\s+"[^"]*"\s+[0-9.]+s\s+([\w-]+)\s*:/.exec(lineText);
+    const tok = m?.[1];
+    if (tok && tok !== "linear" && tok in LEGACY_MODE_ALIASES) {
+      diagnostics.push({
+        line: idx + 1,
+        severity: "hint",
+        message: `"${tok}" is deprecated; use "${LEGACY_MODE_ALIASES[tok]}"`,
+      });
+    }
+  });
 
   return diagnostics;
 }

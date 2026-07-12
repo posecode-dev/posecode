@@ -7,7 +7,6 @@ posecode exercise "Dead hang"
     shoulders: flex 175
     elbows: flex 5
     elbows: pronate 80
-    fingers: flex 80
     ground-lock: feet
     cue "Reach up and grip the bar"
 
@@ -15,8 +14,7 @@ posecode exercise "Dead hang"
     shoulders: flex 175
     elbows: flex 5
     elbows: pronate 80
-    fingers: flex 80
-    pin: hands bar
+    grip: hands bar
     cue "Relax into a long, straight-arm hang"
 
   step "Down" 1.5s ease-out:

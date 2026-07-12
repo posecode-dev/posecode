@@ -18,15 +18,6 @@ export interface PropScene {
   group: THREE.Group;
   /** Anchor name → world-space contact point, merged into reach/ground-lock. */
   anchors: Map<string, THREE.Vector3>;
-  /** Props rigidly attached to a driver bone (weapon/tool sockets). */
-  attachments: PropAttachment[];
-}
-
-export interface PropAttachment {
-  object: THREE.Object3D;
-  bone: string;
-  offset: THREE.Vector3;
-  rotation: THREE.Quaternion;
 }
 
 /** Build the declared props (`chair | wall | bar | box | dip-bars`). Unknown types are ignored. */
@@ -34,7 +25,6 @@ export function buildProps(types: string[], material?: THREE.Material): PropScen
   const group = new THREE.Group();
   group.name = "posecode-props";
   const anchors = new Map<string, THREE.Vector3>();
-  const attachments: PropAttachment[] = [];
   const mat =
     material ??
     new THREE.MeshStandardMaterial({ color: 0x6b7280, roughness: 0.8, metalness: 0.05 });
@@ -64,15 +54,13 @@ export function buildProps(types: string[], material?: THREE.Material): PropScen
         post.position.set(x, barH / 2, 0);
         group.add(post);
       }
-      // The wrist joint belongs slightly below and in front of the cylinder;
-      // placing the joint at the bar centre made the fingers close as a fist
-      // above the rail instead of wrapping around it.
-      const gripY = barH - 0.045;
-      const gripZ = 0.025;
-      const gripHalfSpan = 0.24;
-      anchors.set("bar", new THREE.Vector3(0, gripY, gripZ));
-      anchors.set("bar.left", new THREE.Vector3(gripHalfSpan, gripY, gripZ));
-      anchors.set("bar.right", new THREE.Vector3(-gripHalfSpan, gripY, gripZ));
+      // Centre anchor (back-compat) plus two shoulder-width grip points so a
+      // `grip: hands bar` lands each hand on its own spot instead of both at
+      // centre. GRIP_HALF ≈ half a shoulder width.
+      const GRIP_HALF = 0.18;
+      anchors.set("bar", new THREE.Vector3(0, barH, 0));
+      anchors.set("bar_left", new THREE.Vector3(GRIP_HALF, barH, 0));
+      anchors.set("bar_right", new THREE.Vector3(-GRIP_HALF, barH, 0));
     } else if (type === "wall") {
       const wall = box(2.2, 2.6, 0.1, mat);
       wall.position.set(0, 1.3, -0.34);
@@ -105,8 +93,6 @@ export function buildProps(types: string[], material?: THREE.Material): PropScen
         }
       }
       anchors.set("bars", new THREE.Vector3(0, railH, 0));
-      anchors.set("bars.left", new THREE.Vector3(halfSpan, railH, 0));
-      anchors.set("bars.right", new THREE.Vector3(-halfSpan, railH, 0));
     } else if (type === "box") {
       // A low step/plateau placed IN FRONT of the figure (+Z): the lead foot
       // steps forward and up onto it. Top surface at ~0.30 m; `box` anchor sits
@@ -116,54 +102,10 @@ export function buildProps(types: string[], material?: THREE.Material): PropScen
       plat.position.set(0, topH / 2, 0.32);
       group.add(plat);
       anchors.set("box", new THREE.Vector3(0, topH, 0.3));
-    } else if (type === "sword") {
-      const weapon = new THREE.Group();
-      const grip = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.16, 10), mat);
-      const guard = box(0.16, 0.025, 0.035, mat);
-      guard.position.y = -0.09;
-      const blade = box(0.045, 0.72, 0.012, mat);
-      blade.position.y = -0.46;
-      weapon.add(grip, guard, blade);
-      group.add(weapon);
-      attachments.push({
-        object: weapon,
-        bone: "wrist_right",
-        offset: new THREE.Vector3(0, -0.075, 0),
-        rotation: new THREE.Quaternion(),
-      });
-    } else if (type === "gun") {
-      const weapon = new THREE.Group();
-      const body = box(0.055, 0.09, 0.28, mat);
-      body.position.z = 0.12;
-      const handle = box(0.05, 0.16, 0.07, mat);
-      handle.position.set(0, -0.1, 0.02);
-      weapon.add(body, handle);
-      group.add(weapon);
-      attachments.push({
-        object: weapon,
-        bone: "wrist_right",
-        offset: new THREE.Vector3(0, -0.035, 0.04),
-        rotation: new THREE.Quaternion(),
-      });
     }
   }
 
-  return { group, anchors, attachments };
-}
-
-/** Follow final solved driver-bone transforms with held props. */
-export function syncPropAttachments(scene: PropScene, bones: Map<string, THREE.Object3D>): void {
-  const p = new THREE.Vector3();
-  const q = new THREE.Quaternion();
-  for (const attachment of scene.attachments) {
-    const bone = bones.get(attachment.bone);
-    if (!bone) continue;
-    bone.getWorldPosition(p);
-    bone.getWorldQuaternion(q);
-    attachment.object.position.copy(attachment.offset).applyQuaternion(q).add(p);
-    attachment.object.quaternion.copy(q).multiply(attachment.rotation);
-  }
-  scene.group.updateMatrixWorld(true);
+  return { group, anchors };
 }
 
 function box(w: number, h: number, d: number, mat: THREE.Material): THREE.Mesh {

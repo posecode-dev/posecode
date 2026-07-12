@@ -13,12 +13,10 @@
  */
 
 import * as THREE from "three";
-import { parse, type Easing, type ParseError, type PinTarget, type ReachTarget, type Warning } from "posecode-parser";
+import { parse, type TimingMode, type ParseError, type PinTarget, type ReachTarget, type Warning } from "posecode-parser";
 import {
   applyGroundLock,
-  alignBarGrips,
   alignFloorPalms,
-  alignFloorSoles,
   buildMannequin,
   buildProps,
   buildTimeline,
@@ -33,7 +31,7 @@ export interface PhasePose {
   /** Phase name from the document. */
   name: string;
   durationSec: number;
-  easing: Easing;
+  easing: TimingMode;
   /** Effector groups ground-locked during this phase. */
   groundLock: readonly string[];
   pins: readonly PinTarget[];
@@ -124,7 +122,6 @@ export function probeMovement(source: string): ProbeResult {
       v.z += info.rootOffset.z;
       anchors.set(id, v);
     }
-    alignFloorSoles(m, info.groundLock, info.reaches, info.pins);
     applyGroundLock(m, info.groundLock, anchors);
     // Resolve scene-independent pins. Unknown names here are prop anchors and
     // intentionally remain for browser-level coverage.
@@ -147,17 +144,9 @@ export function probeMovement(source: string): ProbeResult {
         if (pin.anchor === "floor") {
           target = effector.getWorldPosition(new THREE.Vector3());
           target.y = 0;
+        } else if (propScene.anchors.has(pin.anchor)) {
+          target = propScene.anchors.get(pin.anchor)!.clone();
         } else {
-          const side = effectorId.endsWith("_left")
-            ? "left"
-            : effectorId.endsWith("_right")
-              ? "right"
-              : null;
-          const propTarget = (side ? propScene.anchors.get(`${pin.anchor}.${side}`) : undefined)
-            ?? propScene.anchors.get(pin.anchor);
-          if (propTarget) target = propTarget.clone();
-        }
-        if (!target && pin.anchor !== "floor") {
           const landmark = m.bones.get(pin.anchor);
           if (landmark) target = landmark.getWorldPosition(new THREE.Vector3());
         }
@@ -171,7 +160,6 @@ export function probeMovement(source: string): ProbeResult {
       }
     }
     alignFloorPalms(m, info.reaches, info.pins);
-    alignBarGrips(m, info.reaches, info.pins);
     // Viewer safety net: never leave the lowest mesh point below the floor.
     m.root.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(m.root);
@@ -188,7 +176,7 @@ export function probeMovement(source: string): ProbeResult {
       reaches: [...info.reaches],
       rootOffset: [info.rootOffset.x, 0, info.rootOffset.z],
       rootYaw: info.rootYaw,
-      usesSceneIk: info.pins.length > 0 || info.reaches.length > 0,
+      usesSceneIk: info.pins.length > 0 || info.reaches.length > 0 || info.grips.length > 0,
       bones: snapshotBones(m.bones),
       boneQuaternions: snapshotBoneQuaternions(m.bones),
     };

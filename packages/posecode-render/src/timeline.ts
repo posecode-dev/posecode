@@ -8,23 +8,24 @@
  */
 
 import * as THREE from "three";
-import type { PosecodeIR, ReachTarget, PinTarget } from "posecode-parser";
+import type { PosecodeIR, ReachTarget, PinTarget, GripTarget, TimingMode } from "posecode-parser";
 import { poseFor, type PoseSpec } from "./poses.js";
+import { squad, squadControl } from "./squad.js";
 
 const DEG = Math.PI / 180;
 
 type EulerDegTuple = [number, number, number];
-type Easing = "linear" | "ease-in" | "ease-out" | "ease-in-out";
 
 interface Keyframe {
   time: number;
   name: string;
   cue?: string;
-  easing: Easing;
+  easing: TimingMode;
   quats: Map<string, THREE.Quaternion>;
   groundLock: string[];
   reaches: ReachTarget[];
   pins: PinTarget[];
+  grips: GripTarget[];
   /** Root facing (yaw about world Y, radians) at this keyframe. */
   yaw: number;
   /** Root ground offset (world X/Z metres) from the load spot at this keyframe. */
@@ -56,6 +57,7 @@ export interface BuiltTimeline {
     groundLock: string[];
     reaches: ReachTarget[];
     pins: PinTarget[];
+    grips: GripTarget[];
     /** Interpolated root facing (yaw about world Y, radians). */
     rootYaw: number;
     /** Interpolated root ground offset (world X/Z metres) from the load spot. */
@@ -71,14 +73,27 @@ function eulerToQuat([x, y, z]: EulerDegTuple): THREE.Quaternion {
   );
 }
 
-const EASE: Record<Easing, (t: number) => number> = {
+/**
+ * Per-mode remap of the normalized segment parameter (arrival shaping). `flow`
+ * and `linear` are even; `settle`/`snap` decelerate into rest; `drive`
+ * accelerates from rest. The spline (squad) carries velocity across keyframes;
+ * this only shapes the timing within a segment.
+ */
+const MODE_EASE: Record<TimingMode, (t: number) => number> = {
+  flow: (t) => t,
+  settle: (t) => 1 - (1 - t) * (1 - t),
+  drive: (t) => t * t,
+  snap: (t) => 1 - (1 - t) * (1 - t) * (1 - t),
   linear: (t) => t,
-  // Cubic one-sided eases reduce the acceleration discontinuity of the old
-  // quadratic curves. Smootherstep is C2-continuous at both endpoints, which
-  // removes the visible "step" as a phase changes direction or contact mode.
-  "ease-in": (t) => t * t * t,
-  "ease-out": (t) => 1 - (1 - t) * (1 - t) * (1 - t),
-  "ease-in-out": (t) => t * t * t * (t * (t * 6 - 15) + 10),
+};
+
+/** A keyframe is a rest-point (zero boundary velocity) for these modes. */
+const REST_MODE: Record<TimingMode, boolean> = {
+  flow: false,
+  settle: true,
+  drive: false,
+  snap: true,
+  linear: false,
 };
 
 export function buildTimeline(ir: PosecodeIR): BuiltTimeline {
@@ -99,11 +114,12 @@ export function buildTimeline(ir: PosecodeIR): BuiltTimeline {
   keyframes.push({
     time: 0,
     name: ir.startPose ?? "start",
-    easing: "linear",
+    easing: "flow",
     quats: snapshot(curr),
     groundLock: [],
     reaches: [],
     pins: [],
+    grips: [],
     yaw: 0,
     pos: { x: 0, z: 0 },
   });
@@ -126,6 +142,7 @@ export function buildTimeline(ir: PosecodeIR): BuiltTimeline {
       groundLock: phase.groundLock,
       reaches: phase.reaches,
       pins: phase.pins,
+      grips: phase.grips,
       yaw: currYaw * DEG,
       pos: { ...currPos },
     });
@@ -142,11 +159,12 @@ export function buildTimeline(ir: PosecodeIR): BuiltTimeline {
   keyframes.push({
     time: t,
     name: "reset",
-    easing: "ease-in-out",
+    easing: "flow",
     quats: snapshot(new Map(baseJoints)),
     groundLock: [],
     reaches: [],
     pins: [],
+    grips: [],
     yaw: wrapYaw,
     pos: { x: 0, z: 0 },
   });
@@ -182,23 +200,40 @@ export function buildTimeline(ir: PosecodeIR): BuiltTimeline {
     travelExtent,
     sample(time, bones) {
       const tt = duration > 0 ? ((time % duration) + duration) % duration : 0;
+      let i = 0;
       let a = keyframes[0]!;
       let b = keyframes[keyframes.length - 1]!;
-      for (let i = 0; i < keyframes.length - 1; i++) {
-        if (tt >= keyframes[i]!.time && tt < keyframes[i + 1]!.time) {
-          a = keyframes[i]!;
-          b = keyframes[i + 1]!;
+      for (let k = 0; k < keyframes.length - 1; k++) {
+        if (tt >= keyframes[k]!.time && tt < keyframes[k + 1]!.time) {
+          i = k;
+          a = keyframes[k]!;
+          b = keyframes[k + 1]!;
           break;
         }
       }
       const span = Math.max(1e-6, b.time - a.time);
       const local = THREE.MathUtils.clamp((tt - a.time) / span, 0, 1);
-      const eased = EASE[b.easing](local);
+      const eased = MODE_EASE[b.easing](local);
 
+      // Neighbors for the squad control quaternions (clamp at the ends → the
+      // segment endpoint itself, giving a one-sided tangent).
+      const kPrev = keyframes[Math.max(0, i - 1)]!;
+      const kNext = keyframes[Math.min(keyframes.length - 1, i + 2)]!;
       for (const bone of bonesUsed) {
         const node = bones.get(bone);
         if (!node) continue;
-        node.quaternion.slerpQuaternions(a.quats.get(bone)!, b.quats.get(bone)!, eased);
+        const q0 = a.quats.get(bone)!;
+        const q1 = b.quats.get(bone)!;
+        // A rest-point keyframe uses its own value as the control (zero tangent
+        // → the spline comes to / leaves from rest there); otherwise the
+        // Shoemake control from the neighboring keyframe carries velocity.
+        const s0 = REST_MODE[a.easing]
+          ? q0.clone()
+          : squadControl(kPrev.quats.get(bone)!, q0, q1);
+        const s1 = REST_MODE[b.easing]
+          ? q1.clone()
+          : squadControl(q0, q1, kNext.quats.get(bone)!);
+        squad(q0, s0, s1, q1, eased, node.quaternion);
       }
       // Root facing/position: linear interpolation of the raw values so a large
       // turn (e.g. 360°) sweeps the whole way round rather than taking a short
@@ -214,6 +249,7 @@ export function buildTimeline(ir: PosecodeIR): BuiltTimeline {
         groundLock: b.groundLock,
         reaches: b.reaches,
         pins: b.pins,
+        grips: b.grips,
         rootYaw,
         rootOffset,
       };

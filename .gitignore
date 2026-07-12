@@ -6,3 +6,8 @@ coverage/
 .vite/
 .vercel
 .claude/worktrees/
+
+# Mocap clip binaries: sourced from Mixamo, loaded from storage/CDN, not committed.
+playground/public/clips/*.fbx
+playground/public/clips/*.glb
+playground/public/clips/.DS_Store

@@ -9,6 +9,7 @@
 
 import type {
   EulerDeg,
+  GripTarget,
   JointTarget,
   PosecodeIR,
   ParseError,
@@ -146,6 +147,21 @@ function resolveStep(
     for (const effector of sides) pins.push({ effector, anchor: p.anchor });
   }
 
+  // Grip contacts: like pins, but each hand gets its OWN two-point anchor. A
+  // bare anchor (`bar`) is rewritten per side to `bar_left`/`bar_right` so the
+  // two hands grip shoulder-width apart; an already-sided anchor is kept as-is.
+  const grips: GripTarget[] = [];
+  for (const g of step.grips) {
+    const sides = expandEffector(g.effector);
+    if (sides.length === 0) {
+      errors.push({ line: g.line, message: `unknown grip effector: "${g.effector}"` });
+      continue;
+    }
+    for (const effector of sides) {
+      grips.push({ effector, anchor: sideAnchor(g.anchor, effector) });
+    }
+  }
+
   // Travel is clamped to a sane studio footprint (±TRAVEL_MAX m) so a stray
   // large value can't fling the figure off the ground plane / out of frame.
   const travel = step.travel
@@ -163,6 +179,7 @@ function resolveStep(
     groundLock: step.groundLock,
     reaches,
     pins,
+    grips,
     ...(step.turn !== undefined ? { turnDeg: step.turn } : {}),
     ...(travel ? { travel } : {}),
     ...(step.cue ? { cue: step.cue } : {}),
@@ -174,6 +191,19 @@ const TRAVEL_MAX = 3;
 
 function clampNum(v: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, v));
+}
+
+/**
+ * Rewrite a grip anchor to the effector's side: a bare anchor (`bar`) becomes
+ * `bar_left`/`bar_right` so two hands grip shoulder-width apart. An anchor that
+ * is already sided, or an effector without a side, is returned unchanged. The
+ * renderer falls back to the bare anchor if a sided one isn't declared.
+ */
+function sideAnchor(anchor: string, effector: string): string {
+  if (/_(left|right)$/.test(anchor)) return anchor;
+  if (effector.endsWith("_left")) return `${anchor}_left`;
+  if (effector.endsWith("_right")) return `${anchor}_right`;
+  return anchor;
 }
 
 function ensure(map: Map<string, EulerDeg>, bone: string): EulerDeg {

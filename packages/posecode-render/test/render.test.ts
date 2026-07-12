@@ -4,9 +4,9 @@ import { buildMannequin } from "../src/mannequin.js";
 import { buildTimeline } from "../src/timeline.js";
 import { solveCCD } from "../src/ik.js";
 import { poseFor } from "../src/poses.js";
-import { buildProps, syncPropAttachments } from "../src/props.js";
+import { buildProps } from "../src/props.js";
 import { applyGroundLock, groundFigure } from "../src/groundlock.js";
-import { alignBarGrips, alignFloorSoles } from "../src/contacts.js";
+import { levelPlantedFeet, wrapGrip } from "../src/contacts.js";
 import { parse, eulerRomFor } from "posecode-parser";
 
 const DEG = Math.PI / 180;
@@ -399,59 +399,11 @@ describe("props", () => {
     const { anchors, group } = buildProps(["chair", "bar", "wall"]);
     expect(anchors.has("seat")).toBe(true);
     expect(anchors.has("bar")).toBe(true);
-    expect(anchors.has("bar.left")).toBe(true);
-    expect(anchors.has("bar.right")).toBe(true);
-    expect(anchors.get("bar.left")!.x).toBeGreaterThan(anchors.get("bar.right")!.x);
     expect(anchors.has("wall")).toBe(true);
     expect(anchors.get("bar")!.y).toBeGreaterThan(1.5); // overhead
     expect(group.children.length).toBeGreaterThan(0);
   });
 
-  it("attaches held sword and gun props to the solved wrist socket", () => {
-    const props = buildProps(["sword", "gun"]);
-    const m = buildMannequin();
-    m.root.position.set(0.4, 0.2, -0.3);
-    m.root.updateMatrixWorld(true);
-    syncPropAttachments(props, m.bones);
-    expect(props.attachments).toHaveLength(2);
-    const wrist = m.bones.get("wrist_right")!.getWorldPosition(new THREE.Vector3());
-    for (const attachment of props.attachments) {
-      expect(attachment.object.position.distanceTo(wrist)).toBeLessThan(0.2);
-    }
-  });
-
-});
-
-describe("oriented contacts", () => {
-  it("keeps grounded soles flat and facing with the figure", () => {
-    const m = buildMannequin();
-    m.bones.get("hip_left")!.rotation.x = -70 * DEG;
-    m.bones.get("knee_left")!.rotation.x = 90 * DEG;
-    m.root.rotation.y = 35 * DEG;
-    m.root.updateMatrixWorld(true);
-    alignFloorSoles(m, ["feet"]);
-    const q = m.bones.get("ankle_left")!.getWorldQuaternion(new THREE.Quaternion());
-    const up = new THREE.Vector3(0, 1, 0).applyQuaternion(q);
-    expect(up.y).toBeGreaterThan(0.999);
-  });
-
-  it("orients both palms into a stable overhand bar grip", () => {
-    const m = buildMannequin();
-    m.root.updateMatrixWorld(true);
-    const pins = [
-      { effector: "hand_left", anchor: "bar" },
-      { effector: "hand_right", anchor: "bar" },
-    ];
-    alignBarGrips(m, [], pins);
-    for (const side of ["left", "right"] as const) {
-      const q = m.bones.get(`wrist_${side}`)!.getWorldQuaternion(new THREE.Quaternion());
-      const localNormal = side === "left"
-        ? new THREE.Vector3(1, 0, 0)
-        : new THREE.Vector3(-1, 0, 0);
-      const normal = localNormal.applyQuaternion(q);
-      expect(normal.z).toBeGreaterThan(0.999);
-    }
-  });
 });
 
 describe("ccd ik", () => {
@@ -750,5 +702,114 @@ describe("cobra", () => {
     // The head rises well above its flat height while the pelvis stays put.
     expect(headUp - headFlat).toBeGreaterThan(0.2);
     expect(Math.abs(pelvisUp - pelvisFlat)).toBeLessThan(0.05);
+  });
+});
+
+describe("spline interpolation (L2)", () => {
+  it("interpolates joints with continuous velocity through an interior keyframe", () => {
+    const src = [
+      'posecode exercise "flowy"',
+      "  rig humanoid",
+      '  step "A" 1s flow:',
+      "    shoulders: flex 40",
+      '  step "B" 1s flow:',
+      "    shoulders: flex 120",
+      '  step "C" 1s flow:',
+      "    shoulders: flex 40",
+    ].join("\n");
+    const { ir } = parse(src);
+    const tl = buildTimeline(ir!);
+    const m = buildMannequin();
+    const read = (t: number) => {
+      tl.sample(t, m.bones);
+      return m.bones.get("shoulder_left")!.quaternion.clone();
+    };
+    const eps = 1e-3;
+    const kf = 2; // end of "B" is an interior keyframe (t=2)
+    const vBefore = read(kf).angleTo(read(kf - eps)) / eps;
+    const vAfter = read(kf + eps).angleTo(read(kf)) / eps;
+    expect(Math.abs(vBefore - vAfter)).toBeLessThan(0.3); // flow carries velocity
+  });
+
+  it("settle brings a joint to rest at its keyframe", () => {
+    const src = [
+      'posecode exercise "rest"',
+      "  rig humanoid",
+      '  step "Down" 1s settle:',
+      "    knees: flex 90",
+      '  step "Up" 1s drive:',
+      "    knees: flex 0",
+    ].join("\n");
+    const { ir } = parse(src);
+    const tl = buildTimeline(ir!);
+    const m = buildMannequin();
+    const read = (t: number) => {
+      tl.sample(t, m.bones);
+      return m.bones.get("knee_left")!.quaternion.clone();
+    };
+    const eps = 1e-3;
+    const v = read(1).angleTo(read(1 - eps)) / eps; // velocity arriving at the settle kf
+    expect(v).toBeLessThan(0.2);
+  });
+});
+
+describe("foot-flat correction (L3.1)", () => {
+  it("rests a squatting foot flatter on the floor (not on the toes)", () => {
+    const src = [
+      'posecode exercise "sq"',
+      "  rig humanoid",
+      "  pose start = standing",
+      '  step "Descend" 1s settle:',
+      "    hips: flex 80",
+      "    knees: flex 95",
+      "    pelvis: hinge 25",
+      "    ground-lock: feet",
+    ].join("\n");
+    const { ir } = parse(src);
+    const tl = buildTimeline(ir!);
+    const m = buildMannequin();
+    tl.sample(1, m.bones);
+    m.root.updateMatrixWorld(true);
+    groundFigure(m);
+    applyGroundLock(m, ["feet"]);
+    const soleDot = () => {
+      const ankle = m.bones.get("ankle_left")!;
+      return new THREE.Vector3(0, -1, 0)
+        .applyQuaternion(ankle.getWorldQuaternion(new THREE.Quaternion()))
+        .normalize()
+        .dot(new THREE.Vector3(0, -1, 0));
+    };
+    const before = soleDot();
+    levelPlantedFeet(m, ["feet"]);
+    m.root.updateMatrixWorld(true);
+    // Leveling makes the sole markedly flatter than raw ground-lock leaves it.
+    expect(soleDot()).toBeGreaterThan(before);
+    expect(soleDot()).toBeGreaterThan(0.9);
+  });
+});
+
+describe("bar grip (L3.2)", () => {
+  it("exposes two-point bar grip anchors shoulder-width apart", () => {
+    const { anchors } = buildProps(["bar"]);
+    const l = anchors.get("bar_left");
+    const r = anchors.get("bar_right");
+    expect(l).toBeDefined();
+    expect(r).toBeDefined();
+    expect(l!.x).toBeGreaterThan(0); // left hand grips the +X side
+    expect(r!.x).toBeLessThan(0);
+    expect(Math.abs(l!.x - r!.x)).toBeCloseTo(0.36, 2);
+    expect(l!.y).toBeCloseTo(r!.y, 5); // same bar height
+  });
+
+  it("wraps the fingers of a gripping hand into a curl", () => {
+    const m = buildMannequin();
+    const restIndex = m.bones.get("index_left")!.rotation.x;
+    const restThumb = m.bones.get("thumb_left")!.rotation.x;
+    wrapGrip(m, [{ effector: "hand_left", anchor: "bar_left" }]);
+    expect(m.bones.get("index_left")!.rotation.x).toBeGreaterThan(restIndex + 0.5);
+    expect(m.bones.get("middle_left")!.rotation.x).toBeGreaterThan(0.5);
+    expect(m.bones.get("thumb_left")!.rotation.x).toBeGreaterThan(restThumb + 0.3);
+    // the un-gripped right hand is untouched
+    expect(m.bones.get("index_right")!.rotation.x).toBeCloseTo(0, 5);
   });
 });

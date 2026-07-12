@@ -8,6 +8,7 @@
 
 import { tokenize, TokenizeError, type Line, type Token } from "./tokenizer.js";
 import type { ParseError } from "./types.js";
+import { normalizeMode, MODES } from "./schema.js";
 
 export interface AstJointTarget {
   joint: string;
@@ -36,6 +37,7 @@ export interface AstStep {
   groundLock: string[];
   reaches: AstReach[];
   pins: AstPin[];
+  grips: AstPin[];
   /** Root facing (yaw about world Y, degrees) at the end of this phase. */
   turn?: number;
   /** Root ground position (world X/Z metres) at the end of this phase. */
@@ -151,17 +153,24 @@ export function parseToAst(source: string): ParseAstResult {
       case "step": {
         const name = t[1];
         const dur = t[2];
-        const easing = word(t[3]);
+        const easingTok = word(t[3]);
+        const resolved = easingTok
+          ? normalizeMode(easingTok)
+          : { mode: null, legacy: false };
         const colon = t[4];
         if (
           name?.type !== "str" ||
           dur?.type !== "dur" ||
-          !easing ||
+          !easingTok ||
+          resolved.mode === null ||
           colon?.type !== "colon"
         ) {
           errors.push({
             line: ln.line,
-            message: 'expected `step "<name>" <duration> <easing>:`',
+            message:
+              resolved.mode === null && easingTok
+                ? `unknown timing mode "${easingTok}"; expected one of ${MODES.join(", ")}`
+                : 'expected `step "<name>" <duration> <mode>:`',
           });
           current = null;
           break;
@@ -169,11 +178,12 @@ export function parseToAst(source: string): ParseAstResult {
         current = {
           name: name.value,
           durationSec: parseDuration(dur.value),
-          easing,
+          easing: resolved.mode,
           targets: [],
           groundLock: [],
           reaches: [],
           pins: [],
+          grips: [],
           line: ln.line,
         };
         doc.steps.push(current);
@@ -236,6 +246,20 @@ function parseStepChild(ln: Line, current: AstStep | null): ParseError | null {
       return { line: ln.line, message: "expected `pin: <effector> <anchor>`" };
     }
     current.pins.push({ effector, anchor, line: ln.line });
+    return null;
+  }
+
+  if (head === "grip") {
+    // `grip: <effector> <anchor>`: hold a bar/rail — arm IK to a two-point
+    // anchor + finger wrap. Parsed exactly like `pin`; the side-anchor rewrite
+    // happens in resolution.
+    if (!current) return { line: ln.line, message: "`grip` outside of a step" };
+    const effector = t[2]?.type === "word" ? t[2].value : null;
+    const anchor = t[3]?.type === "word" ? t[3].value : null;
+    if (t[1]?.type !== "colon" || !effector || !anchor) {
+      return { line: ln.line, message: "expected `grip: <effector> <anchor>`" };
+    }
+    current.grips.push({ effector, anchor, line: ln.line });
     return null;
   }
 
