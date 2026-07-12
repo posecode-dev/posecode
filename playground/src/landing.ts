@@ -31,7 +31,7 @@ function initHero(): void {
     const viewer = createViewer(heroCanvas, {
       autoRotate: !prefersReducedMotion,
       // Realistic skinned figure without flashing the procedural fallback.
-      characterUrl: "/models/character.glb",
+      characterUrl: "/models/xbot.glb",
       showProceduralWhileLoading: false,
       // Marketing surface: the hero movement declares `clip "jumping-jacks"`, so
       // it plays the retargeted Mixamo mocap for maximum polish on first paint.
