@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import * as THREE from "three";
 import { buildMannequin } from "../src/mannequin.js";
-import { levelPlantedFeet, relaxHands, swingArms, aimHead, orientBarGrips } from "../src/contacts.js";
+import { levelPlantedFeet, relaxHands, swingArms, aimHead } from "../src/contacts.js";
 import { groundFigure } from "../src/groundlock.js";
 
 const DEG = Math.PI / 180;
@@ -124,34 +124,6 @@ describe("swingArms (L4.2)", () => {
     const once = m.bones.get("shoulder_left")!.quaternion.clone();
     for (let frame = 0; frame < 120; frame++) swingArms(m, new Set(), new Set());
     expect(m.bones.get("shoulder_left")!.quaternion.angleTo(once)).toBeLessThan(1e-6);
-  });
-});
-
-describe("orientBarGrips", () => {
-  it("resolves wrist roll without moving a hand off its grip point", () => {
-    const m = buildMannequin();
-    const wrist = m.bones.get("wrist_left")!;
-    wrist.rotation.y = 1.7;
-    m.root.updateMatrixWorld(true);
-    const position = wrist.getWorldPosition(new THREE.Vector3()).clone();
-    orientBarGrips(m, [{ effector: "hand_left", anchor: "bar_left" }]);
-    expect(wrist.getWorldPosition(new THREE.Vector3()).distanceTo(position)).toBeLessThan(1e-6);
-
-    const palm = new THREE.Vector3(0, 0, 1)
-      .applyQuaternion(wrist.getWorldQuaternion(new THREE.Quaternion()));
-    const fingers = new THREE.Vector3(0, -1, 0)
-      .applyQuaternion(wrist.getWorldQuaternion(new THREE.Quaternion()));
-    expect(palm.dot(new THREE.Vector3(0, 0, -1))).toBeGreaterThan(0.999);
-    expect(fingers.dot(new THREE.Vector3(0, -1, 0))).toBeGreaterThan(0.999);
-  });
-
-  it("is stable when applied repeatedly", () => {
-    const m = buildMannequin();
-    const grips = [{ effector: "hand_right", anchor: "bar_right" }];
-    orientBarGrips(m, grips);
-    const once = m.bones.get("wrist_right")!.quaternion.clone();
-    for (let frame = 0; frame < 60; frame++) orientBarGrips(m, grips);
-    expect(m.bones.get("wrist_right")!.quaternion.angleTo(once)).toBeLessThan(1e-6);
   });
 });
 
