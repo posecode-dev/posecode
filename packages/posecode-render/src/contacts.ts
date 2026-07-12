@@ -138,30 +138,57 @@ export function wrapGrip(m: Mannequin, grips: readonly GripTarget[]): void {
   if (changed) m.root.updateMatrixWorld(true);
 }
 
-/** Relaxed resting finger curl (radians) for an idle hand. */
-export const REST_CURL = 0.32;
+/**
+ * Relaxed resting finger curl (radians) for an idle hand in the air. A truly
+ * relaxed hand is not flat: the fingers settle into a soft inward hook (~30°),
+ * which reads as a natural cupped hand instead of a stiff splayed palm.
+ */
+export const REST_CURL = 0.55;
+/** Slight finger adduction (radians) drawing splayed digits toward the middle
+ * finger, so a relaxed hand closes softly rather than fanning like jazz-hands. */
+export const REST_ADDUCT = 0.12;
+/**
+ * Near-flat curl (radians) for a hand pressed onto the floor (plank, push-up,
+ * cobra). The palm lies flat with the fingers extended forward; the resting
+ * inward hook would instead claw the fingertips into the ground.
+ */
+export const FLOOR_CURL = 0.06;
 
 /**
- * Give idle hands a natural relaxed curl instead of a flat splayed palm. Applied
- * every frame to any hand that is NOT gripping this phase (those are wrapped by
- * `wrapGrip`) and whose fingers are NOT explicitly authored (make-a-fist,
- * finger-spell, hand-wave keep their pose). A mesh-only-style aliveness layer:
- * it writes only finger-bone locals, so it can never disturb the solved pose.
+ * Give idle hands a natural relaxed shape instead of a flat splayed palm.
+ * Applied every frame to any hand that is NOT gripping this phase (those are
+ * wrapped by `wrapGrip`) and whose fingers are NOT explicitly authored
+ * (make-a-fist, finger-spell, hand-wave keep their pose).
+ *
+ * Two resting shapes by context:
+ * - **Free hand** (arms swinging, a crunch, hands by the hips): a soft inward
+ *   hook with the fingers drawn slightly together — a relaxed cupped hand.
+ * - **Floor-planted hand** (`reach`/`pin: hands floor`): fingers stay extended
+ *   and flat so the palm rests on the ground instead of clawing into it.
+ *
+ * A mesh-only-style aliveness layer: it writes only finger-bone locals, so it
+ * can never disturb the solved pose.
  */
 export function relaxHands(
   m: Mannequin,
   gripSides: ReadonlySet<"left" | "right">,
   authoredFingers: ReadonlySet<string>,
+  floorSides: ReadonlySet<"left" | "right"> = new Set(),
 ): void {
   let changed = false;
   for (const side of ["left", "right"] as const) {
     if (gripSides.has(side)) continue;
+    const planted = floorSides.has(side);
+    const curl = planted ? FLOOR_CURL : REST_CURL;
+    // Adduction sign: fingers on each hand draw toward the middle, i.e. toward
+    // the thumb side, which is +Z on the left hand and -Z on the right.
+    const adduct = planted ? 0 : side === "left" ? REST_ADDUCT : -REST_ADDUCT;
     for (const f of FINGERS) {
       const id = `${f}_${side}`;
       if (authoredFingers.has(id)) continue;
       const bone = m.bones.get(id);
       if (bone) {
-        bone.rotation.set(REST_CURL, 0, 0);
+        bone.rotation.set(curl, 0, adduct);
         changed = true;
       }
     }
@@ -169,7 +196,10 @@ export function relaxHands(
     if (!authoredFingers.has(thumbId)) {
       const thumb = m.bones.get(thumbId);
       if (thumb) {
-        thumb.rotation.set(REST_CURL * 0.6, 0, side === "left" ? -REST_CURL : REST_CURL);
+        // Planted: thumb lies alongside the flat palm. Free: opposes softly.
+        const thumbCurl = planted ? FLOOR_CURL : REST_CURL * 0.6;
+        const thumbOppose = planted ? 0 : REST_CURL;
+        thumb.rotation.set(thumbCurl, 0, side === "left" ? -thumbOppose : thumbOppose);
         changed = true;
       }
     }

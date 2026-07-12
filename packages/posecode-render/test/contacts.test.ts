@@ -74,6 +74,18 @@ describe("relaxHands (L4.1)", () => {
     relaxHands(m, new Set(), new Set(["index_left"]));
     expect(m.bones.get("index_left")!.rotation.x).toBeCloseTo(1.4, 5);
   });
+
+  it("keeps a floor-planted hand's fingers flat instead of clawing", () => {
+    const m = buildMannequin();
+    // A free hand takes the soft inward hook...
+    relaxHands(m, new Set(), new Set(), new Set());
+    const freeCurl = m.bones.get("index_left")!.rotation.x;
+    expect(freeCurl).toBeGreaterThan(0.3);
+    // ...but a hand pressed to the floor (plank/push-up) lies extended.
+    relaxHands(m, new Set(), new Set(), new Set(["left"]));
+    expect(m.bones.get("index_left")!.rotation.x).toBeLessThan(0.1); // flat
+    expect(m.bones.get("index_right")!.rotation.x).toBeGreaterThan(0.3); // right still hooked
+  });
 });
 
 describe("swingArms (L4.2)", () => {
