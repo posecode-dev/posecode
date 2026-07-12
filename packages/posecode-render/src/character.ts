@@ -73,6 +73,10 @@ export interface Character {
   sync(driver: Mannequin): void;
   /** Restore solved terminal contacts after a mocap layer has overwritten them. */
   correctContacts(driver: Mannequin, boneIds: readonly string[]): void;
+  /** Precise CPU-skinned world bounds for diagnostics/export validation. */
+  getBounds(): THREE.Box3;
+  /** Fast sampled visible-surface correction; returns the applied Y delta. */
+  reconcileFloor(floorY?: number): number;
   /**
    * The character's first skinned mesh, the retarget target for mocap clips
    * (see clips.ts). Null on bare skeletons, which then can't play clips.
@@ -414,19 +418,86 @@ export function rigCharacter(charScene: THREE.Object3D): Character {
   // Surface for the optional mocap-clip layer (clips.ts): the retarget target
   // mesh and the set of bones sync() rewrites each frame.
   let skinnedMesh: THREE.SkinnedMesh | null = null;
+  const skinnedMeshes: THREE.SkinnedMesh[] = [];
   charScene.traverse((o) => {
-    if (!skinnedMesh && (o as THREE.SkinnedMesh).isSkinnedMesh) {
-      skinnedMesh = o as THREE.SkinnedMesh;
+    if ((o as THREE.SkinnedMesh).isSkinnedMesh) {
+      const skin = o as THREE.SkinnedMesh;
+      skinnedMeshes.push(skin);
+      if (!skinnedMesh) skinnedMesh = skin;
     }
   });
   const drivenNodes = new Set<THREE.Object3D>(mapped.map((m) => m.node));
   for (const ph of phalanges) drivenNodes.add(ph.node);
+
+  function getBounds(): THREE.Box3 {
+    group.updateMatrixWorld(true);
+    const box = new THREE.Box3().makeEmpty();
+    const vertex = new THREE.Vector3();
+    let foundSkin = false;
+    for (const mesh of skinnedMeshes) {
+      foundSkin = true;
+      mesh.skeleton.update();
+      const positions = mesh.geometry.getAttribute("position");
+      for (let i = 0; i < positions.count; i++) {
+        vertex.fromBufferAttribute(positions, i);
+        mesh.applyBoneTransform(i, vertex).applyMatrix4(mesh.matrixWorld);
+        box.expandByPoint(vertex);
+      }
+    }
+    return foundSkin ? box : new THREE.Box3().setFromObject(group);
+  }
+
+  // A dense uniform sample plus every rest-pose axis extremum. Xbot's 28k
+  // vertices reduce to ~3.6k skin transforms per frame while retaining sole,
+  // back, head, hand, and limb surface coverage under arbitrary articulation.
+  const floorSamples = skinnedMeshes.map((mesh) => {
+    const positions = mesh.geometry.getAttribute("position");
+    const indices = new Set<number>();
+    for (let i = 0; i < positions.count; i += 8) indices.add(i);
+    indices.add(positions.count - 1);
+    for (const axis of ["x", "y", "z"] as const) {
+      let min = Infinity;
+      let max = -Infinity;
+      let minIndex = 0;
+      let maxIndex = 0;
+      for (let i = 0; i < positions.count; i++) {
+        const value = axis === "x" ? positions.getX(i) : axis === "y" ? positions.getY(i) : positions.getZ(i);
+        if (value < min) { min = value; minIndex = i; }
+        if (value > max) { max = value; maxIndex = i; }
+      }
+      indices.add(minIndex);
+      indices.add(maxIndex);
+    }
+    return { mesh, indices: [...indices] };
+  });
+
+  function reconcileFloor(floorY = 0): number {
+    group.updateMatrixWorld(true);
+    const vertex = new THREE.Vector3();
+    let minY = Infinity;
+    for (const { mesh, indices } of floorSamples) {
+      mesh.skeleton.update();
+      const positions = mesh.geometry.getAttribute("position");
+      for (const index of indices) {
+        vertex.fromBufferAttribute(positions, index);
+        mesh.applyBoneTransform(index, vertex).applyMatrix4(mesh.matrixWorld);
+        minY = Math.min(minY, vertex.y);
+      }
+    }
+    if (!Number.isFinite(minY)) return 0;
+    const delta = floorY - minY;
+    group.position.y += delta;
+    group.updateMatrixWorld(true);
+    return delta;
+  }
 
   return {
     group,
     proportions,
     sync,
     correctContacts,
+    getBounds,
+    reconcileFloor,
     skinnedMesh,
     drivenNodes,
     dispose() {

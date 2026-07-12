@@ -41,6 +41,8 @@ export interface PhasePose {
   rootYaw: number;
   /** True when the phase relies on pins/reach-IK the probe cannot solve. */
   usesSceneIk: boolean;
+  /** Whether the phase should rest on the floor (no elevated prop/grip support). */
+  floorBound: boolean;
   /**
    * Height of the lowest visible-mesh point above the floor after the full
    * contact solve. ~0 for a grounded pose; a positive value means the figure
@@ -175,8 +177,8 @@ export function probeMovement(source: string): ProbeResult {
     // airborne, so only rescue parts that dip below y=0. Mirror index.ts.
     m.root.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(m.root);
-    const planted = info.groundLock.length > 0;
-    if (box.min.y < 0 || (planted && box.min.y > 0)) {
+    const floorBound = info.grips.length === 0 && !info.pins.some((pin) => pin.anchor !== "floor");
+    if (box.min.y < 0 || (floorBound && box.min.y > 0)) {
       m.root.position.y -= box.min.y;
       m.root.updateMatrixWorld(true);
     }
@@ -191,6 +193,7 @@ export function probeMovement(source: string): ProbeResult {
       rootOffset: [info.rootOffset.x, 0, info.rootOffset.z],
       rootYaw: info.rootYaw,
       usesSceneIk: info.pins.length > 0 || info.reaches.length > 0 || info.grips.length > 0,
+      floorBound,
       meshMinY: Number.isFinite(finalBox.min.y) ? finalBox.min.y : 0,
       bones: snapshotBones(m.bones),
       boneQuaternions: snapshotBoneQuaternions(m.bones),

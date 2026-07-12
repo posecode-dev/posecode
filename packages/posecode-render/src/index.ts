@@ -58,6 +58,8 @@ export interface Viewer {
   /** True while a retargeted mocap clip is driving (or fading over) the pose. */
   get clipActive(): boolean;
   getTimeline(): TimelineInfo | null;
+  /** Precise visible world bounds; intended for audits and deterministic export. */
+  getVisibleBounds(): THREE.Box3;
   /**
    * Render the current time synchronously and return the frame as a PNG data
    * URL. Works without preserveDrawingBuffer because the read happens in the
@@ -223,6 +225,10 @@ export function createViewer(
     const url = name ? opts.clips?.[name] : undefined;
     if (!name || !url || !character?.skinnedMesh) {
       clipTargetWeight = 0;
+      clipWeight = 0;
+      clipLayer?.dispose();
+      clipLayer = null;
+      clipLayerName = null;
       return;
     }
     if (clipLayerName === name && clipLayer) {
@@ -607,8 +613,10 @@ export function createViewer(
   }
 
   function frame(): void {
+    let solvedInfo: ReturnType<NonNullable<typeof timeline>["sample"]> | null = null;
     if (timeline) {
       const info = timeline.sample(time, mannequin.bones);
+      solvedInfo = info;
       // Life layer rides on wall-clock time (not timeline time) so the figure
       // keeps breathing and blinking while paused or scrubbing.
       applyLife(performance.now() / 1000);
@@ -667,15 +675,18 @@ export function createViewer(
       // never recover it and the whole figure floated (squat, deadlift,
       // good-morning, forward-fold, plank, …).
       //
-      // A phase with NO ground-lock may be intentionally airborne (a prone
-      // "superman" lift, a jump), so it stays up-only: never yank a lifted body
-      // down, only rescue parts that dip below y=0. Pinned phases with a
-      // fixed-height anchor (a low chair seat) also rely on this up-only rescue
-      // as the legs fold.
+      // Explicit elevated support is the opt-out: bar grips and non-floor pins
+      // (box/chair) preserve their solved height. Everything else remains
+      // floor-bound; airborne choreography should use a future explicit flight
+      // contact rather than arise accidentally from missing `ground-lock`.
       mannequin.root.updateMatrixWorld(true);
       const box = new THREE.Box3().setFromObject(mannequin.root);
-      const planted = info.groundLock.length > 0;
-      if (box.min.y < 0 || (planted && box.min.y > 0)) {
+      // Unless an elevated prop/grip is carrying the body, the movement is
+      // floor-bound even when the author omitted `ground-lock`. This prevents
+      // ordinary curls, lunges, stretches, and transitions from inheriting a
+      // floating root when their FK pose raises the previous lowest point.
+      const floorBound = isFloorBound(info);
+      if (box.min.y < 0 || (floorBound && box.min.y > 0)) {
         mannequin.root.position.y -= box.min.y;
         mannequin.root.updateMatrixWorld(true);
       }
@@ -694,8 +705,18 @@ export function createViewer(
       const gap = clipTargetWeight - clipWeight;
       clipWeight += Math.sign(gap) * Math.min(Math.abs(gap), step);
       clipLayer.apply(time, clipWeight);
-      if (clipWeight > 0) character.group.updateMatrixWorld(true);
+      if (clipWeight > 0) {
+        character.group.updateMatrixWorld(true);
+        // Mocap is layered after procedural grounding and can add hip/root bob
+        // that lifts a planted foot. Restore declared terminal contacts on the
+        // visible character without removing motion from unconstrained limbs.
+        if (solvedInfo) character.correctContacts(mannequin, contactBoneIds(solvedInfo));
+      }
     }
+    // Final visible-surface grounding. The hidden driver uses calibrated proxy
+    // geometry; a segmented skin can have a different lowest point as limbs
+    // rotate. Reconcile the actual skinned surface after every animation layer.
+    if (character && solvedInfo && isFloorBound(solvedInfo)) character.reconcileFloor();
     frameDt = 0;
     if (easeCamera) {
       controls.target.lerp(desiredTarget, 0.07);
@@ -824,6 +845,9 @@ export function createViewer(
         segments: timeline.segments,
       };
     },
+    getVisibleBounds() {
+      return character?.getBounds() ?? new THREE.Box3().setFromObject(mannequin.root);
+    },
     captureFrame() {
       frame();
       return renderer.domElement.toDataURL("image/png");
@@ -880,6 +904,40 @@ export function createViewer(
   }
 
   return api;
+}
+
+/** True unless a grip or non-floor pin intentionally suspends/supports the body. */
+function isFloorBound(info: {
+  grips: readonly unknown[];
+  pins: readonly { anchor: string }[];
+}): boolean {
+  return info.grips.length === 0 && !info.pins.some((pin) => pin.anchor !== "floor");
+}
+
+/** Driver terminal bones that must survive a mocap layer unchanged. */
+function contactBoneIds(info: {
+  groundLock: readonly string[];
+  grips: readonly { effector: string }[];
+  pins: readonly { effector: string }[];
+  reaches: readonly { effector: string; target: string }[];
+}): string[] {
+  const ids = new Set<string>();
+  const addEffector = (effector: string): void => {
+    if (effector === "feet" || effector === "foot_left") ids.add("ankle_left");
+    if (effector === "feet" || effector === "foot_right") ids.add("ankle_right");
+    if (effector === "hands" || effector === "hand_left") ids.add("wrist_left");
+    if (effector === "hands" || effector === "hand_right") ids.add("wrist_right");
+    if (effector === "forearms") {
+      ids.add("elbow_left");
+      ids.add("elbow_right");
+    }
+  };
+  for (const group of info.groundLock) addEffector(group);
+  for (const contact of [...info.grips, ...info.pins]) addEffector(contact.effector);
+  for (const reach of info.reaches) {
+    if (reach.target === "floor") addEffector(reach.effector);
+  }
+  return [...ids];
 }
 
 /**
