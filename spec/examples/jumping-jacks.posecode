@@ -1,6 +1,5 @@
 posecode exercise "Jumping jacks"
   rig humanoid
-  clip "jumping-jacks"
   pose start = standing
 
   step "Out" 0.5s settle:
