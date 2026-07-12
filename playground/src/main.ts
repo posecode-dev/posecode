@@ -19,6 +19,12 @@ import {
 import type { PosecodeEditor } from "./editor.js";
 import { PRESETS } from "./presets.js";
 import { SHOWCASE_CLIPS } from "./clips.js";
+
+// The movement shown on first open (no shared link). Jumping jacks plays the
+// Mixamo showcase clip, so the playground greets visitors with polished mocap
+// while every other preset — and the editor once you engage — stays procedural.
+// Falls back to the first library entry if the id is ever removed.
+const DEFAULT_PRESET = PRESETS.find((p) => p.id === "jumping-jacks") ?? PRESETS[0]!;
 import { renderWarnings } from "./warnings.js";
 import llmPrompt from "../../spec/llm-authoring.md?raw";
 
@@ -506,9 +512,9 @@ if (sharedSource) {
   initialDoc = sharedSource;
   intro.hidden = true;
 } else {
-  initialDoc = PRESETS[0]!.source;
-  currentPresetId = PRESETS[0]!.id;
-  libCurrent.textContent = PRESETS[0]!.label;
+  initialDoc = DEFAULT_PRESET.source;
+  currentPresetId = DEFAULT_PRESET.id;
+  libCurrent.textContent = DEFAULT_PRESET.label;
 }
 
 // Boot the two heavyweights (CodeMirror editor + Three.js renderer) after the
