@@ -514,7 +514,7 @@ export function createViewer(
         if (startPos) {
           anchor = startPos.clone();
           const isFoot = effectorBone.startsWith("ankle") || effectorBone.startsWith("foot");
-          const drop = isFoot ? (character ? character.proportions.soleDrop : 0.042) : 0;
+          const drop = isFoot ? (character?.proportions.soleDrop ?? 0.042) : 0;
           anchor.y = drop;
         } else {
           anchor = resolveReachTarget(p.anchor, effector);
