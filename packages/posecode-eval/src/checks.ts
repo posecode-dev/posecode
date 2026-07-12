@@ -94,7 +94,7 @@ export function genericChecks(result: ProbeResult): CheckOutcome[] {
     // must actually rest on the floor — not hover above it. Guards the
     // levitating-squat/deadlift regression where levelPlantedFeet lifted the
     // sole after ground-lock and an up-only clamp left the whole figure floating.
-    if (p.groundLock.length > 0) {
+    if (p.floorBound) {
       out.push({
         id: `grounded-not-floating:${p.name}`,
         pass: p.meshMinY < 0.02,
