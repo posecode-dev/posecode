@@ -1,7 +1,6 @@
 posecode exercise "Walk & turn"
   rig humanoid
   pose start = standing
-  clip "walk"
 
   step "Step right" 0.7s flow:
     hip_right: flex 30

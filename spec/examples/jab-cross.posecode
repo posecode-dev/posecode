@@ -1,6 +1,5 @@
 posecode exercise "Jab-cross"
   rig humanoid
-  clip "jab-cross"
   pose start = standing
 
   step "Jab" 0.4s settle:

@@ -1,6 +1,5 @@
 posecode exercise "Grapevine"
   rig humanoid
-  clip "shuffling"
   pose start = standing
 
   step "Step out" 0.7s flow:

@@ -1,6 +1,5 @@
 posecode exercise "Bicycle crunch"
   rig humanoid
-  clip "bicycle-crunch"
   pose start = supine
 
   step "Set" 0.8s flow:
