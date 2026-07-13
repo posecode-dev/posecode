@@ -11,11 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Realistic human figure**: the playground, landing hero, and `<posecode-player>` embeds now render a fully rigged, textured human character (hands with articulated fingers, sneakers, face) instead of the procedural capsule mannequin. All solving (FK, ground-lock, pins, reach-IK) still runs on the driver skeleton, rebuilt to the character's exact proportions and retargeted bone-for-bone every frame; the procedural figure remains as an automatic fallback (and via `?figure=classic` / `character="off"`).
 - **Self-collision resolution**: a capsule-based de-penetration pass keeps forearms/hands out of the torso, head, and legs (and shins out of each other), clamped to healthy ROM, so limbs no longer pass through the body mid-movement.
+- **Solid props**: props now declare blocking faces (the wall's surface, the chair's backrest and seat edge, the box's near face) and a contact pass keeps the body out of them — translating the whole figure along the face normal, or bending the offending leg's hip clear (ROM-clamped). Limbs pinned/gripped/reached to a prop anchor stay exempt as declared support. A new `solid-props` eval invariant (independent geometry re-derivation) guards every prop movement against this bug class.
 - `viewer.characterActive`, `createViewer({ characterUrl })`, and the embed `character` attribute.
 - `scripts/capture-gifs.mjs` (`npm run gifs`): reproducible headless regeneration of the README movement GIFs from the live renderer.
 
 ### Fixed
 
+- Wall sit no longer clips through the wall: the body now translates forward until the back rests on the wall's surface (feet walking out, thighs parallel), the physically correct wall-sit geometry. Sit-to-stand and box-squat land against the chair's backrest instead of sinking into it, a standing figure's calves clear the seat edge, and a step-up's trailing shin bends over the box edge instead of sweeping through it.
 - Deadlift arms now hang toward the bar during the hinge (were authored as shoulder extension, flying up behind the back).
 - Crunch keeps the feet planted with bent knees (shins previously folded through the floor and jacked the body up).
 - Touch-toes folds like a human (hinge depth and knee bend were over-authored, collapsing the figure).

@@ -41,6 +41,11 @@ These are the unlocks, roughly in order of leverage:
    Powers `sit-to-stand`, `box-squat`, `wall-sit`, `dead-hang`, `hanging-knee-raise`.
    Bar and dip-bar contacts now resolve to independent left/right anchors with
    terminal wrist orientation; mocap is contact-corrected after blending.
+   Props are now **solid**: declared blocking faces (wall surface, chair
+   backrest + seat edge, box edge) physically stop the body — a wall-sit
+   slides down the wall instead of through it, a sit lands against the
+   backrest, a swing leg steps over the box edge — guarded by a `solid-props`
+   eval invariant on every prop movement.
    Next: more props (bench, rings, bands), load cues, arbitrary surface shapes.
 4. ~~**Lying & seated base poses**~~:  **shipped.** `supine | prone | seated`
    start poses (grounded by a bounding-box drop). Powers `glute-bridge`,
@@ -84,7 +89,9 @@ Each prop is a small scene object + an anchor type; movements then reference it
 - A **starter** prop set (chair / wall / bar / box / dip bars): no bench,
   rings, bands, or loaded implements yet, and props sit at fixed default
   placements.
-- Props are visual + reach anchors (no physical sit/lean solve).
+- Prop solidity is face-based: each built-in prop declares its blocking
+  surfaces (wall face, backrest, seat edge, box edge). Arbitrary-shape
+  collision and load/pressure simulation are future.
 - Fingers are **single-DOF** curls, good for grip and rough gesture, not exact
   sign language. The head has no facial articulation.
 
