@@ -125,232 +125,6 @@ The new workflow allows a user to describe a movement in ordinary language, gene
 - [ ] Build Week commit links added below
 - [ ] Codex session ID added below
 
-
----
-
-## The Build Week Feature: Physics Critic
-
-A movement can be syntactically valid while still being awkward, unstable, unsafe, or physically implausible.
-
-For example:
-
-```posecode
-step "Twist" 1s:
-  hips: rotate 0
-  spine: rotate 90
-  feet: lock
-```
-
-A parser may understand this program, but the movement may create an unrealistic torso rotation while the hips and feet remain locked.
-
-The new **Physics Critic** sends the structured movement, parser warnings, joint states, and geometric measurements to GPT-5.6.
-
-GPT-5.6 then returns a structured critique such as:
-
-```json
-{
-  "score": 42,
-  "summary": "The movement is syntactically valid but biomechanically implausible.",
-  "issues": [
-    {
-      "severity": "high",
-      "category": "spinal_rotation",
-      "message": "Torso rotation is excessive while the pelvis and feet remain fixed.",
-      "suggestion": "Reduce spinal rotation or allow the pelvis and feet to rotate."
-    }
-  ]
-}
-```
-
-The critic does not replace deterministic safety checks. It adds a semantic reasoning layer on top of the real Posecode parser and kinematic engine.
-
----
-
-## Fidelity Scorecard
-
-The Build Week scorecard combines deterministic measurements with GPT-5.6 analysis.
-
-It can evaluate:
-
-- joint range-of-motion compliance,
-- balance and support,
-- movement continuity,
-- left-right consistency,
-- torso and pelvis coordination,
-- foot-ground contact,
-- reachability,
-- abrupt transitions,
-- and overall biomechanical plausibility.
-
-Conceptually, the total score is:
-
-$$
-F = \sum_{i=1}^{n} w_i s_i
-$$
-
-where:
-
-- \(s_i\) is the score for one fidelity dimension,
-- \(w_i\) is that dimension's weight,
-- and \(\sum_{i=1}^{n} w_i = 1\).
-
-The purpose of the score is not to provide medical advice. It gives developers and AI agents a transparent signal for comparing, debugging, and improving generated movement.
-
----
-
-## How GPT-5.6 Is Used
-
-GPT-5.6 is used as a spatial and biomechanical reasoning layer.
-
-It supports two Build Week workflows.
-
-### 1. Natural language to Posecode
-
-A user can enter:
-
-> Perform a controlled forward lunge, keep the torso upright, pause at the bottom, and return to standing.
-
-GPT-5.6 translates that request into a structured `.posecode` program with:
-
-- participating joints,
-- semantic joint actions,
-- approximate angles,
-- movement phases,
-- timings,
-- cues,
-- and grounding constraints.
-
-The output is not sent directly to the renderer.
-
-It must pass through the deterministic Posecode pipeline:
-
-```text
-Natural-language request
-        ↓
-GPT-5.6 generation
-        ↓
-Posecode parser
-        ↓
-ROM validation
-        ↓
-Forward and inverse kinematics
-        ↓
-Geometric fidelity checks
-        ↓
-WebGL renderer
-```
-
-### 2. Physics Critic
-
-After parsing and evaluating the movement, GPT-5.6 receives structured information about:
-
-- the original user request,
-- generated Posecode,
-- parser warnings,
-- clamped joint values,
-- movement phases,
-- support points,
-- kinematic measurements,
-- and failed fidelity invariants.
-
-GPT-5.6 uses this information to explain:
-
-- what is wrong,
-- why it matters,
-- how severe it is,
-- and how the movement could be corrected.
-
-This creates an iterative agent loop:
-
-```text
-Generate → Parse → Validate → Critique → Revise → Render
-```
-
----
-
-## How Codex Is Used
-
-Codex is the primary engineering tool used for the new Build Week extension.
-
-During the hackathon period, Codex is used to help:
-
-- inspect and understand the existing monorepo,
-- design the Physics Critic architecture,
-- implement GPT-5.6 API integration,
-- define structured generation and critique schemas,
-- build new MCP tools,
-- create the fidelity-score pipeline,
-- add playground UI components,
-- implement movement revision workflows,
-- debug coordinate and skeletal transformation issues,
-- write unit and integration tests,
-- create evaluation fixtures,
-- improve error handling,
-- and document the new system.
-
-Codex accelerates implementation, but the project remains human-directed.
-
-The following decisions are reviewed and selected manually:
-
-- DSL semantics,
-- system architecture,
-- prompt design,
-- scoring dimensions,
-- biomechanical constraints,
-- validation policy,
-- user experience,
-- and acceptance or rejection of generated code.
-
-### Codex development workflow
-
-The Build Week workflow follows this process:
-
-1. Define a specific product or engineering problem.
-2. Ask Codex to inspect the relevant implementation.
-3. Request one or more possible approaches.
-4. Review the trade-offs and choose the architecture.
-5. Use Codex to implement the selected approach.
-6. Run type checking, tests, and fidelity evaluations.
-7. Inspect failures manually.
-8. Refine the implementation with additional Codex sessions.
-9. Review the final changes before committing.
-
-### Codex session
-
-
-```text
-Codex /feedback session ID: TODO
-```
-
----
-
-## Build Week Evidence
-
-The repository history will distinguish pre-existing functionality from work completed during the hackathon.
-
-### Build Week commits
-
-Add the relevant dated commits here:
-
-- [`TODO`](https://github.com/posecode-dev/posecode/commit/TODO) — GPT-5.6 integration
-- [`TODO`](https://github.com/posecode-dev/posecode/commit/TODO) — Physics Critic implementation
-- [`TODO`](https://github.com/posecode-dev/posecode/commit/TODO) — Fidelity scorecard
-- [`TODO`](https://github.com/posecode-dev/posecode/commit/TODO) — Playground generation interface
-- [`TODO`](https://github.com/posecode-dev/posecode/commit/TODO) — MCP agent workflow
-- [`TODO`](https://github.com/posecode-dev/posecode/commit/TODO) — Tests and documentation
-
-### Build Week comparison
-
-| Before Build Week | Added during Build Week |
-| --- | --- |
-| Core Posecode DSL | GPT-5.6 natural-language generation |
-| Parser and ROM clamping | GPT-5.6 Physics Critic |
-| Basic WebGL renderer | Generation and critique interface |
-| Existing movement examples | New adversarial fidelity examples |
-| MCP server foundation | Generate, critique, and revise MCP tools |
-| Deterministic checks | Combined deterministic and semantic scorecard |
-| Existing tests | New GPT-5.6 workflow and evaluation tests |
-
 ---
 
 ## Why Posecode?
@@ -941,6 +715,235 @@ Feedback and contributions are welcome.
 
 ---
 
+
+---
+
+## The Build Week Feature: Physics Critic
+
+A movement can be syntactically valid while still being awkward, unstable, unsafe, or physically implausible.
+
+For example:
+
+```posecode
+step "Twist" 1s:
+  hips: rotate 0
+  spine: rotate 90
+  feet: lock
+```
+
+A parser may understand this program, but the movement may create an unrealistic torso rotation while the hips and feet remain locked.
+
+The new **Physics Critic** sends the structured movement, parser warnings, joint states, and geometric measurements to GPT-5.6.
+
+GPT-5.6 then returns a structured critique such as:
+
+```json
+{
+  "score": 42,
+  "summary": "The movement is syntactically valid but biomechanically implausible.",
+  "issues": [
+    {
+      "severity": "high",
+      "category": "spinal_rotation",
+      "message": "Torso rotation is excessive while the pelvis and feet remain fixed.",
+      "suggestion": "Reduce spinal rotation or allow the pelvis and feet to rotate."
+    }
+  ]
+}
+```
+
+The critic does not replace deterministic safety checks. It adds a semantic reasoning layer on top of the real Posecode parser and kinematic engine.
+
+---
+
+## Fidelity Scorecard
+
+The Build Week scorecard combines deterministic measurements with GPT-5.6 analysis.
+
+It can evaluate:
+
+- joint range-of-motion compliance,
+- balance and support,
+- movement continuity,
+- left-right consistency,
+- torso and pelvis coordination,
+- foot-ground contact,
+- reachability,
+- abrupt transitions,
+- and overall biomechanical plausibility.
+
+Conceptually, the total score is:
+
+$$
+F = \sum_{i=1}^{n} w_i s_i
+$$
+
+where:
+
+- \(s_i\) is the score for one fidelity dimension,
+- \(w_i\) is that dimension's weight,
+- and \(\sum_{i=1}^{n} w_i = 1\).
+
+The purpose of the score is not to provide medical advice. It gives developers and AI agents a transparent signal for comparing, debugging, and improving generated movement.
+
+---
+
+## How GPT-5.6 Is Used
+
+GPT-5.6 is used as a spatial and biomechanical reasoning layer.
+
+It supports two Build Week workflows.
+
+### 1. Natural language to Posecode
+
+A user can enter:
+
+> Perform a controlled forward lunge, keep the torso upright, pause at the bottom, and return to standing.
+
+GPT-5.6 translates that request into a structured `.posecode` program with:
+
+- participating joints,
+- semantic joint actions,
+- approximate angles,
+- movement phases,
+- timings,
+- cues,
+- and grounding constraints.
+
+The output is not sent directly to the renderer.
+
+It must pass through the deterministic Posecode pipeline:
+
+```text
+Natural-language request
+        ↓
+GPT-5.6 generation
+        ↓
+Posecode parser
+        ↓
+ROM validation
+        ↓
+Forward and inverse kinematics
+        ↓
+Geometric fidelity checks
+        ↓
+WebGL renderer
+```
+
+### 2. Physics Critic
+
+After parsing and evaluating the movement, GPT-5.6 receives structured information about:
+
+- the original user request,
+- generated Posecode,
+- parser warnings,
+- clamped joint values,
+- movement phases,
+- support points,
+- kinematic measurements,
+- and failed fidelity invariants.
+
+GPT-5.6 uses this information to explain:
+
+- what is wrong,
+- why it matters,
+- how severe it is,
+- and how the movement could be corrected.
+
+This creates an iterative agent loop:
+
+```text
+Generate → Parse → Validate → Critique → Revise → Render
+```
+
+---
+
+## How Codex Is Used
+
+Codex is the primary engineering tool used for the new Build Week extension.
+
+During the hackathon period, Codex is used to help:
+
+- inspect and understand the existing monorepo,
+- design the Physics Critic architecture,
+- implement GPT-5.6 API integration,
+- define structured generation and critique schemas,
+- build new MCP tools,
+- create the fidelity-score pipeline,
+- add playground UI components,
+- implement movement revision workflows,
+- debug coordinate and skeletal transformation issues,
+- write unit and integration tests,
+- create evaluation fixtures,
+- improve error handling,
+- and document the new system.
+
+Codex accelerates implementation, but the project remains human-directed.
+
+The following decisions are reviewed and selected manually:
+
+- DSL semantics,
+- system architecture,
+- prompt design,
+- scoring dimensions,
+- biomechanical constraints,
+- validation policy,
+- user experience,
+- and acceptance or rejection of generated code.
+
+### Codex development workflow
+
+The Build Week workflow follows this process:
+
+1. Define a specific product or engineering problem.
+2. Ask Codex to inspect the relevant implementation.
+3. Request one or more possible approaches.
+4. Review the trade-offs and choose the architecture.
+5. Use Codex to implement the selected approach.
+6. Run type checking, tests, and fidelity evaluations.
+7. Inspect failures manually.
+8. Refine the implementation with additional Codex sessions.
+9. Review the final changes before committing.
+
+### Codex session
+
+
+```text
+Codex /feedback session ID: TODO
+```
+
+---
+
+## Build Week Evidence
+
+The repository history will distinguish pre-existing functionality from work completed during the hackathon.
+
+### Build Week commits
+
+Add the relevant dated commits here:
+
+- [`TODO`](https://github.com/posecode-dev/posecode/commit/TODO) — GPT-5.6 integration
+- [`TODO`](https://github.com/posecode-dev/posecode/commit/TODO) — Physics Critic implementation
+- [`TODO`](https://github.com/posecode-dev/posecode/commit/TODO) — Fidelity scorecard
+- [`TODO`](https://github.com/posecode-dev/posecode/commit/TODO) — Playground generation interface
+- [`TODO`](https://github.com/posecode-dev/posecode/commit/TODO) — MCP agent workflow
+- [`TODO`](https://github.com/posecode-dev/posecode/commit/TODO) — Tests and documentation
+
+### Build Week comparison
+
+| Before Build Week | Added during Build Week |
+| --- | --- |
+| Core Posecode DSL | GPT-5.6 natural-language generation |
+| Parser and ROM clamping | GPT-5.6 Physics Critic |
+| Basic WebGL renderer | Generation and critique interface |
+| Existing movement examples | New adversarial fidelity examples |
+| MCP server foundation | Generate, critique, and revise MCP tools |
+| Deterministic checks | Combined deterministic and semantic scorecard |
+| Existing tests | New GPT-5.6 workflow and evaluation tests |
+
+---
+
+---
 <p align="center">
   <b>LLMs already have languages for software, data, and interfaces.</b>
   <br />
