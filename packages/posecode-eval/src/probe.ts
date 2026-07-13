@@ -23,6 +23,8 @@ import {
   depenetrate,
   groundFigure,
   levelPlantedFeet,
+  propContactExemptions,
+  resolvePropContacts,
 } from "posecode-render";
 
 export type Vec3 = readonly [x: number, y: number, z: number];
@@ -39,6 +41,14 @@ export interface PhasePose {
   reaches: readonly ReachTarget[];
   rootOffset: Vec3;
   rootYaw: number;
+  /**
+   * Horizontal body translation applied by the solid-prop contact solve
+   * (resolvePropContacts): the feet legitimately glide by this much while the
+   * body is pressed out of a prop (a wall-sit walks the feet forward as the
+   * back slides down the wall), so skate metrics compensate for it like they
+   * do for authored travel.
+   */
+  propPush: Vec3;
   /** True when the phase relies on pins/reach-IK the probe cannot solve. */
   usesSceneIk: boolean;
   /** Whether the phase should rest on the floor (no elevated prop/grip support). */
@@ -89,6 +99,11 @@ export function probeMovement(source: string): ProbeResult {
   m.root.updateMatrixWorld(true);
   depenetrate(m);
   groundFigure(m);
+  resolvePropContacts(m, propScene.colliders, propContactExemptions([
+    ...(ir.phases[0]?.pins ?? []),
+    ...(ir.phases[0]?.grips ?? []),
+    ...(ir.phases[0]?.reaches ?? []).map((r) => ({ effector: r.effector, anchor: r.target })),
+  ]));
   const baseRootPos = m.root.position.clone();
   const baseRootQuat = m.root.quaternion.clone();
 
@@ -235,6 +250,16 @@ export function probeMovement(source: string): ProbeResult {
         m.root.updateMatrixWorld(true);
       }
     }
+    // Props are solid (viewer parity): after the root solvers place the body,
+    // push it back out of any prop face it crossed and bend swing legs clear.
+    // Limbs pinned/gripped to a prop anchor are declared support, exempt.
+    const prePush = m.root.position.clone();
+    resolvePropContacts(m, propScene.colliders, propContactExemptions([
+      ...info.pins,
+      ...info.grips,
+      ...info.reaches.map((r) => ({ effector: r.effector, anchor: r.target })),
+    ]));
+    const propPush: Vec3 = [m.root.position.x - prePush.x, 0, m.root.position.z - prePush.z];
     alignFloorPalms(m, info.reaches, info.pins);
     // Plantigrade correction (viewer parity): flatten planted soles. This lifts
     // the foot mesh a little, so it must run BEFORE the floor clamp reconciles.
@@ -259,6 +284,7 @@ export function probeMovement(source: string): ProbeResult {
       reaches: [...info.reaches],
       rootOffset: [info.rootOffset.x, 0, info.rootOffset.z],
       rootYaw: info.rootYaw,
+      propPush,
       usesSceneIk: info.pins.length > 0 || info.reaches.length > 0 || info.grips.length > 0,
       floorBound,
       meshMinY: Number.isFinite(finalBox.min.y) ? finalBox.min.y : 0,

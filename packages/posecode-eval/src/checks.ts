@@ -18,6 +18,7 @@ import {
   lowestPoint,
   palmFloorAngleDeg,
   phaseMaxLandmarkSpeed,
+  propPenetrationDepth,
   segmentTiltDeg,
   spineCurlDeg,
   torsoPitchDeg,
@@ -135,6 +136,19 @@ export function genericChecks(result: ProbeResult): CheckOutcome[] {
         id: `head-prop-clearance:${p.name}`,
         pass: clearance > -0.01,
         detail: `${clearance.toFixed(3)}m clearance (want > -0.01m)`,
+      });
+    }
+
+    // Props are solid: no body capsule may sit inside a prop's blocking face
+    // (the wall-sit-through-the-wall class of bug). Independent re-derivation
+    // of the face geometry, so it fails loudly if resolvePropContacts or a
+    // prop's collider declaration regresses.
+    const penetration = propPenetrationDepth(result, p);
+    if (Number.isFinite(penetration)) {
+      out.push({
+        id: `solid-props:${p.name}`,
+        pass: penetration < 0.03,
+        detail: `${penetration.toFixed(3)}m into a solid prop face (want < 0.030)`,
       });
     }
   }
