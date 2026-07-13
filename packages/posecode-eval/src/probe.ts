@@ -260,7 +260,7 @@ export function probeMovement(source: string): ProbeResult {
       ...info.reaches.map((r) => ({ effector: r.effector, anchor: r.target })),
     ]));
     const propPush: Vec3 = [m.root.position.x - prePush.x, 0, m.root.position.z - prePush.z];
-    alignFloorPalms(m, info.reaches, info.pins);
+    alignFloorPalms(m, info.reaches, info.pins, info.groundLock);
     // Plantigrade correction (viewer parity): flatten planted soles. This lifts
     // the foot mesh a little, so it must run BEFORE the floor clamp reconciles.
     levelPlantedFeet(m, info.groundLock);

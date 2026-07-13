@@ -698,7 +698,7 @@ export function createViewer(
       // bug. Ground-lock and pins have already fixed the root placement that
       // floor/landmark targets resolve against.
       applyReaches(info.reaches);
-      alignFloorPalms(mannequin, info.reaches, info.pins);
+      alignFloorPalms(mannequin, info.reaches, info.pins, info.groundLock);
       // Plantigrade correction: keep planted soles flat to the floor so grounded
       // lower-body poses (squat, lunge, deadlift) don't balance on the toes.
       // Runs before the floor clamp so the leveled sole is what rests on y=0.
@@ -710,7 +710,7 @@ export function createViewer(
         mannequin,
         gripSidesOf(info.grips),
         authoredFingers,
-        floorHandSidesOf(info.reaches, info.pins),
+        floorHandSidesOf(info.reaches, info.pins, info.groundLock),
       );
       // L4.3 aliveness: turn the head toward the active contact (bar / floor reach).
       applyLookAt(info);
@@ -843,7 +843,7 @@ export function createViewer(
         mannequin,
         gripSidesOf(ir.phases[0]?.grips ?? []),
         authoredFingers,
-        floorHandSidesOf(ir.phases[0]?.reaches ?? [], ir.phases[0]?.pins ?? []),
+        floorHandSidesOf(ir.phases[0]?.reaches ?? [], ir.phases[0]?.pins ?? [], ir.phases[0]?.groundLock ?? []),
       );
       applyLookAt({ grips: ir.phases[0]?.grips ?? [], reaches: ir.phases[0]?.reaches ?? [] });
       captureGroundTargets();
@@ -1080,13 +1080,17 @@ function gripSidesOf(grips: readonly { effector: string }[]): Set<"left" | "righ
 }
 
 /**
- * Hand sides pressed onto the floor this phase (a `reach`/`pin: hands floor`).
- * Their fingers rest flat instead of taking the idle inward hook, so a plank or
- * push-up hand lies on the ground rather than clawing into it.
+ * Hand sides pressed onto the floor this phase — via `reach`/`pin: hands floor`
+ * OR `ground-lock: hands` (a high plank / push-up / mountain-climber, where the
+ * hands bear weight flat on the ground). Their fingers rest flat instead of
+ * taking the idle inward hook, so the palm lies on the floor rather than
+ * clawing into it. Ground-locked hands never carry a `floor` reach/pin, so
+ * without the ground-lock check they were mis-read as free and hooked up.
  */
 function floorHandSidesOf(
   reaches: readonly { effector: string; target: string }[],
   pins: readonly { effector: string; anchor: string }[],
+  groundLock: readonly string[] = [],
 ): Set<"left" | "right"> {
   const sides = new Set<"left" | "right">();
   const add = (effector: string): void => {
@@ -1095,6 +1099,7 @@ function floorHandSidesOf(
   };
   for (const r of reaches) if (r.target === "floor") add(r.effector);
   for (const p of pins) if (p.anchor === "floor") add(p.effector);
+  if (groundLock.includes("hands")) add("hands");
   return sides;
 }
 

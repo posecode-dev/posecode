@@ -74,6 +74,47 @@ describe("timeline", () => {
 
     expect(start.angleTo(lowered)).toBeGreaterThan(1.0); // ~90deg in radians
   });
+
+  // Regression: a large rest-to-rest move (biceps curl: elbow flex 135 +
+  // supinate 80, near-antipodal endpoints) must sweep MONOTONICALLY. The squad
+  // spline used to derive a backward-biased control at the clamped start
+  // keyframe, flinging the forearm past +50deg then snapping ~135deg in a single
+  // step — the "curl happens suddenly" bug. The start/reset anchors are now rest
+  // points, so their segments slerp cleanly.
+  it("curls the forearm monotonically from rest (no squad overshoot snap)", () => {
+    const CURL = [
+      'posecode exercise "Curl"',
+      "  rig humanoid",
+      "  pose start = standing",
+      '  step "Curl" 1.1s settle:',
+      "    elbows: flex 135",
+      "    elbows: supinate 80",
+      '  step "Lower" 1.4s drive:',
+      "    elbows: flex 15",
+      "    elbows: supinate 80",
+      "  repeat 10",
+    ].join("\n");
+    const { ir } = parse(CURL);
+    const tl = buildTimeline(ir!);
+    const m = buildMannequin();
+    const forearm = new THREE.Vector3(0, -1, 0); // wrist sits at elbow-local -Y
+    const wq = new THREE.Quaternion();
+    const dir = new THREE.Vector3();
+    let prev: THREE.Vector3 | null = null;
+    // Walk the 1.1s Curl segment in even steps. The forearm swings ~135deg
+    // total, so at this resolution each step is small; the overshoot bug instead
+    // parked the forearm near rest then jumped ~135deg in a single step. Assert
+    // no adjacent step exceeds 0.9rad (~50deg): the fix keeps every step under
+    // ~0.5rad, while the snap produced a ~2.3rad jump.
+    for (let t = 0; t <= 1.1 + 1e-9; t += 1.1 / 22) {
+      tl.sample(t, m.bones);
+      m.root.updateMatrixWorld(true);
+      m.bones.get("elbow_left")!.getWorldQuaternion(wq);
+      dir.copy(forearm).applyQuaternion(wq).normalize();
+      if (prev) expect(dir.angleTo(prev)).toBeLessThan(0.9);
+      prev = dir.clone();
+    }
+  });
 });
 
 describe("hip-hinge coupling", () => {
