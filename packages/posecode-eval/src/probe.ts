@@ -166,7 +166,7 @@ export function probeMovement(source: string): ProbeResult {
         m.root.updateMatrixWorld(true);
       }
     }
-    alignFloorPalms(m, info.reaches, info.pins);
+    alignFloorPalms(m, info.reaches, info.pins, info.groundLock);
     // Plantigrade correction (viewer parity): flatten planted soles. This lifts
     // the foot mesh a little, so it must run BEFORE the floor clamp reconciles.
     levelPlantedFeet(m, info.groundLock);

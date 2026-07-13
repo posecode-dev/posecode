@@ -100,6 +100,15 @@ export function applyGroundLock(
   const upperSupports = forearms.length > 0 ? forearms : hands;
 
   if (upperSupports.length > 0 && feet.length > 0) {
+    // Plant the feet FIRST: drop the body so the foot mesh rests on the floor,
+    // so the pivot the body then rotates about is itself at floor level. The
+    // rotation keeps the pivot fixed, so grounding the feet up front is what
+    // lets BOTH ends land — without it the pivot sits at whatever height the
+    // toes happened to reach and only the forearms plant while the feet float
+    // (the "plank feet off the ground" bug). A straight, correctly-authored
+    // plank has its forearms/toes near-coplanar, so the follow-up rotation is
+    // small; a piked pose still ends with the toes planted.
+    dropFeetToFloor(m, feet);
     const pivot = avgWorld(m, feet);
     // Newton iterations: rotate about the toes until the authored upper-body
     // support reaches the floor (palms for high plank, elbows for forearm
@@ -132,18 +141,28 @@ export function applyGroundLock(
     // Ground the FOOT MESH's lowest point, not the ankle bone's origin: the
     // bone sits ~0.04m above the sole (foot box + capsule radius), so
     // anchoring the bone itself left the visible foot sunk into the floor.
-    let minY = Infinity;
-    for (const id of feet) {
-      const node = m.bones.get(id);
-      if (!node) continue;
-      const box = new THREE.Box3().setFromObject(node);
-      if (Number.isFinite(box.min.y)) minY = Math.min(minY, box.min.y);
-    }
-    if (Number.isFinite(minY)) {
-      m.root.position.y -= minY;
-      m.root.updateMatrixWorld(true);
-    }
+    dropFeetToFloor(m, feet);
     if (anchors) plantFeetHorizontally(m, feet, anchors);
+  }
+}
+
+/**
+ * Drop the whole body vertically so the lowest FOOT-mesh point rests on the
+ * floor. Grounds the visible sole (bounding box), not the ankle bone, which
+ * sits ~0.04m above it. Shared by the feet-only path and the plank/push-up path
+ * (which grounds the feet before pivoting the body onto its hands).
+ */
+function dropFeetToFloor(m: Mannequin, feet: string[]): void {
+  let minY = Infinity;
+  for (const id of feet) {
+    const node = m.bones.get(id);
+    if (!node) continue;
+    const box = new THREE.Box3().setFromObject(node);
+    if (Number.isFinite(box.min.y)) minY = Math.min(minY, box.min.y);
+  }
+  if (Number.isFinite(minY)) {
+    m.root.position.y -= minY;
+    m.root.updateMatrixWorld(true);
   }
 }
 

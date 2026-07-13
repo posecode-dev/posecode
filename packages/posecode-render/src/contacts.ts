@@ -6,11 +6,18 @@ import type { Mannequin } from "./mannequin.js";
 const DOWN = new THREE.Vector3(0, -1, 0);
 const DEG = Math.PI / 180;
 
-/** Rotate contacting wrists so the palm face normal points into the floor. */
+/**
+ * Rotate contacting wrists so the palm face normal points into the floor.
+ * Applies to hands pressed to the floor via `reach`/`pin: hands floor` AND via
+ * `ground-lock: hands` (a high plank / push-up / mountain-climber): those bear
+ * weight flat on the ground and must be palm-down, not left in their raw FK
+ * (pronated) orientation.
+ */
 export function alignFloorPalms(
   m: Mannequin,
   reaches: readonly ReachTarget[],
   pins: readonly PinTarget[],
+  groundLock: readonly string[] = [],
 ): void {
   const sides = new Set<"left" | "right">();
   const collect = (effector: string, target: string) => {
@@ -20,6 +27,10 @@ export function alignFloorPalms(
   };
   reaches.forEach((r) => collect(r.effector, r.target));
   pins.forEach((p) => collect(p.effector, p.anchor));
+  if (groundLock.includes("hands")) {
+    sides.add("left");
+    sides.add("right");
+  }
 
   for (const side of sides) {
     const wrist = m.bones.get(`wrist_${side}`);

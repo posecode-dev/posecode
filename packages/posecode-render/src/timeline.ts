@@ -21,6 +21,16 @@ interface Keyframe {
   name: string;
   cue?: string;
   easing: TimingMode;
+  /**
+   * The figure is at rest here (zero boundary velocity), so the spline uses this
+   * keyframe's own value as its control (no velocity carried across it). True for
+   * settle/snap phases AND for the two structural anchors — the start pose and
+   * the loop-reset — which represent the figure standing still at the base pose.
+   * Those anchors have no real predecessor/successor, so deriving a squad tangent
+   * from a clamped neighbor yields a backward-biased control that overshoots
+   * (the "snap to fully-curled" biceps bug); a rest tangent slerps cleanly.
+   */
+  rest: boolean;
   quats: Map<string, THREE.Quaternion>;
   groundLock: string[];
   reaches: ReachTarget[];
@@ -115,6 +125,7 @@ export function buildTimeline(ir: PosecodeIR): BuiltTimeline {
     time: 0,
     name: ir.startPose ?? "start",
     easing: "flow",
+    rest: true,
     quats: snapshot(curr),
     groundLock: [],
     reaches: [],
@@ -138,6 +149,7 @@ export function buildTimeline(ir: PosecodeIR): BuiltTimeline {
       name: phase.name,
       ...(phase.cue ? { cue: phase.cue } : {}),
       easing: phase.easing,
+      rest: REST_MODE[phase.easing],
       quats: snapshot(curr),
       groundLock: phase.groundLock,
       reaches: phase.reaches,
@@ -160,6 +172,7 @@ export function buildTimeline(ir: PosecodeIR): BuiltTimeline {
     time: t,
     name: "reset",
     easing: "flow",
+    rest: true,
     quats: snapshot(new Map(baseJoints)),
     groundLock: [],
     reaches: [],
@@ -227,10 +240,10 @@ export function buildTimeline(ir: PosecodeIR): BuiltTimeline {
         // A rest-point keyframe uses its own value as the control (zero tangent
         // → the spline comes to / leaves from rest there); otherwise the
         // Shoemake control from the neighboring keyframe carries velocity.
-        const s0 = REST_MODE[a.easing]
+        const s0 = a.rest
           ? q0.clone()
           : squadControl(kPrev.quats.get(bone)!, q0, q1);
-        const s1 = REST_MODE[b.easing]
+        const s1 = b.rest
           ? q1.clone()
           : squadControl(q0, q1, kNext.quats.get(bone)!);
         squad(q0, s0, s1, q1, eased, node.quaternion);
