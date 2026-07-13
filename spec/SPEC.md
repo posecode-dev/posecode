@@ -138,7 +138,15 @@ research §5.1 normative tables. Selected ceilings (degrees):
 5. **Props**: `prop chair|wall|bar|box|dip-bars` adds a scene object at a
    fixed default placement (chair/wall behind, bar overhead, box in front,
    dip bars either side); its named anchors (`seat`, `wall`, `bar`, `box`,
-   `bars`) become reach/pin targets.
+   `bars`) become reach/pin targets. Props are **solid**: each prop declares
+   blocking faces (the wall's surface, the chair's backrest and seat edge,
+   the box's near face) and a contact pass removes any body overlap — either
+   by translating the whole figure out along the face normal (a wall-sit
+   slides down the wall's *surface*, feet walking forward, instead of the
+   torso hinging through the slab) or by bending the offending limb's hip
+   clear, ROM-clamped like every other solve. Limbs pinned, gripped, or
+   reached to a prop anchor are that phase's declared support and are exempt
+   (a foot standing on the box top is not "inside" the box).
 6. **Pins**: `pin: <effector> <anchor>` translates the whole figure so the
    effector sits on the anchor (effectors accept the same `hands`/`feet` groups
    as reach: `pin: hands bar` pins both). Where ground-lock keeps a foot on
@@ -171,7 +179,8 @@ character. Mocap therefore cannot overwrite a planted sole or pinned grip.
 **IK note:** Three.js's bundled `CCDIKSolver` targets `SkinnedMesh`; the Posecode
 mannequin is rigid capsule segments, so Posecode implements CCD directly over the
 Object3D bone hierarchy (`posecode-render/ik.ts`) for both ground-lock and reach.
-Two-person/dual-IK and collision detection remain deferred (research §5.2, §6.2).
+Self-collision (limb-vs-body) and body-vs-prop contact are solved; two-person/
+dual-IK and figure-vs-figure collision remain deferred (research §5.2, §6.2).
 
 ---
 

@@ -88,8 +88,9 @@ function wp(m: Mannequin, id: string, out = new THREE.Vector3()): THREE.Vector3 
 /**
  * Rotate `joint` (world-space axis/angle) and clamp it back into `limits`.
  * Mirrors the CCD solver's joint update so corrections obey the same ROM.
+ * Shared with the prop-contact pass (propcontact.ts).
  */
-function rotateJoint(
+export function rotateJoint(
   joint: THREE.Object3D,
   axis: THREE.Vector3,
   angle: number,
@@ -113,7 +114,7 @@ function rotateJoint(
 }
 
 /** The joint's ROM (radians), widened to admit its current authored pose. */
-function widenedLimits(
+export function widenedLimits(
   boneId: string,
   joint: THREE.Object3D,
 ): { x: [number, number]; y: [number, number]; z: [number, number] } | null {

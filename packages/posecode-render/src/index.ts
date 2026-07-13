@@ -27,6 +27,7 @@ import {
   type ClipSource,
 } from "./clips.js";
 import { depenetrate } from "./depenetrate.js";
+import { resolvePropContacts, propContactExemptions } from "./propcontact.js";
 import { alignFloorPalms, levelPlantedFeet, wrapGrip, relaxHands, swingArms, aimHead } from "./contacts.js";
 
 const DEG = Math.PI / 180;
@@ -585,6 +586,19 @@ export function createViewer(
     aimHead(mannequin, focus.multiplyScalar(1 / pts.length));
   }
 
+  /** Prop-contact exemptions for a phase: limbs pinned/gripped/reached to props. */
+  function contactExemptionsOf(info: {
+    pins?: readonly PinTarget[];
+    grips?: readonly GripTarget[];
+    reaches?: readonly ReachTarget[];
+  }): ReturnType<typeof propContactExemptions> {
+    return propContactExemptions([
+      ...(info.pins ?? []),
+      ...(info.grips ?? []),
+      ...(info.reaches ?? []).map((r) => ({ effector: r.effector, anchor: r.target })),
+    ]);
+  }
+
   function frameCamera(): void {
     // Auto-frame the figure: fit its bounding box, keep a pleasant angle.
     // Include any scene prop too: a pull-up bar sits well above the figure's
@@ -641,6 +655,15 @@ export function createViewer(
       applyGroundLockTo(mannequin, info.groundLock, frameAnchors(info.rootYaw, info.rootOffset));
       applyPins(info.pins);
       applyGrips(info.grips);
+      // Props are solid: after the root solvers place the body, push it back
+      // out of any prop face it crossed (wall-sit slides down the wall's
+      // surface, not through it) and bend swing legs clear of box edges.
+      // Before reach-IK so a later root push can't drag reached hands off
+      // their world targets. Limbs pinned/gripped to a prop anchor are that
+      // phase's declared support, exempt from clearing.
+      if (propScene) {
+        resolvePropContacts(mannequin, propScene.colliders, contactExemptionsOf(info));
+      }
       // Reach-IK BEFORE the floor safety clamp. When authored FK pushes a
       // reaching limb through the floor (cobra: prone + shoulders flex 50),
       // the limb must bend to meet the floor. Running reaches after the clamp
@@ -782,6 +805,9 @@ export function createViewer(
       mannequin.root.updateMatrixWorld(true);
       depenetrate(mannequin);
       groundFigureOf(mannequin);
+      if (propScene) {
+        resolvePropContacts(mannequin, propScene.colliders, contactExemptionsOf(ir.phases[0] ?? {}));
+      }
       levelPlantedFeet(mannequin, ir.phases[0]?.groundLock ?? []);
       authoredFingers = new Set(timeline.bonesUsed.filter(isFingerId));
       authoredShoulders = new Set(timeline.bonesUsed.filter((id) => id.startsWith("shoulder_")));
@@ -1012,7 +1038,8 @@ export { applyGroundLock, groundFigure } from "./groundlock.js";
 export type { Mannequin, Proportions, CollisionRadii } from "./mannequin.js";
 export { buildTimeline } from "./timeline.js";
 export { solveCCD, type IkChain, type JointLimits } from "./ik.js";
-export { buildProps, type PropScene } from "./props.js";
+export { buildProps, type PropScene, type FaceCollider, type BlockedPart } from "./props.js";
+export { resolvePropContacts, propContactExemptions, type PropContactExemptions } from "./propcontact.js";
 export { loadCharacter, rigCharacter, type Character } from "./character.js";
 export {
   loadClipSource,

@@ -13,11 +13,49 @@
 
 import * as THREE from "three";
 
+/** Body parts a prop face can block (sampled as capsules by the contact pass). */
+export type BlockedPart = "torso" | "head" | "thigh" | "shin" | "arm";
+
+/**
+ * A solid, one-sided face of a prop: a bounded plane the body may not cross.
+ * Solidity is per-face rather than per-volume because contact intent differs
+ * by surface: a chair's backrest blocks the torso, but its seat TOP is a
+ * support the thighs rest on (owned by pins/reaches), so only the surfaces
+ * that should push back are declared.
+ */
+export interface FaceCollider {
+  /** A point on the face (its centre), world space. */
+  point: THREE.Vector3;
+  /** Outward unit normal: the side of the face the body must stay on. */
+  normal: THREE.Vector3;
+  /** Unit tangents spanning the face, with the patch half-extent along each. */
+  tangentU: THREE.Vector3;
+  halfU: number;
+  tangentV: THREE.Vector3;
+  halfV: number;
+  /**
+   * How far BEHIND the face a sample is still owned by it (metres). Must
+   * exceed the prop's thickness so a body that fully passed through (the
+   * wall-sit pelvis) is recaptured and pushed back out the declared side.
+   */
+  captureDepth: number;
+  /** Which body parts this face blocks. */
+  blocks: readonly BlockedPart[];
+  /**
+   * How penetration is resolved: `"body"` translates the whole figure along
+   * the normal (you step away from a wall); `"limb"` bends the offending
+   * limb's proximal joint (you lift your leg over a box edge).
+   */
+  resolve: "body" | "limb";
+}
+
 export interface PropScene {
   /** All prop meshes; add this to the scene. */
   group: THREE.Group;
   /** Anchor name → world-space contact point, merged into reach/ground-lock. */
   anchors: Map<string, THREE.Vector3>;
+  /** Solid faces the body cannot pass through (see resolvePropContacts). */
+  colliders: FaceCollider[];
 }
 
 /** Build the declared props (`chair | wall | bar | box | dip-bars`). Unknown types are ignored. */
@@ -25,6 +63,27 @@ export function buildProps(types: string[], material?: THREE.Material): PropScen
   const group = new THREE.Group();
   group.name = "posecode-props";
   const anchors = new Map<string, THREE.Vector3>();
+  const colliders: FaceCollider[] = [];
+  // All built-in props are axis-aligned, so faces are declared by their axis.
+  const face = (
+    cx: number, cy: number, cz: number,
+    normal: [number, number, number],
+    tangentU: [number, number, number], halfU: number,
+    tangentV: [number, number, number], halfV: number,
+    captureDepth: number,
+    blocks: readonly BlockedPart[],
+    resolve: "body" | "limb",
+  ): FaceCollider => ({
+    point: new THREE.Vector3(cx, cy, cz),
+    normal: new THREE.Vector3(...normal),
+    tangentU: new THREE.Vector3(...tangentU),
+    halfU,
+    tangentV: new THREE.Vector3(...tangentV),
+    halfV,
+    captureDepth,
+    blocks,
+    resolve,
+  });
   const mat =
     material ??
     new THREE.MeshStandardMaterial({ color: 0x6b7280, roughness: 0.8, metalness: 0.05 });
@@ -38,6 +97,15 @@ export function buildProps(types: string[], material?: THREE.Material): PropScen
       back.position.set(0, seatH + 0.28, -0.34);
       group.add(seat, back, leg(mat, 0.18, -0.0), leg(mat, -0.18, -0.0), leg(mat, 0.18, -0.32), leg(mat, -0.18, -0.32));
       anchors.set("seat", new THREE.Vector3(0, seatH + 0.03, -0.12));
+      // Backrest front face: sitting back is stopped by the backrest instead
+      // of the torso sinking through it (sit-to-stand, box-squat).
+      colliders.push(
+        face(0, seatH + 0.28, -0.31, [0, 0, 1], [1, 0, 0], 0.21, [0, 1, 0], 0.25, 0.4, ["torso", "head"], "body"),
+        // Seat front edge: a standing figure's calves can't occupy the seat
+        // slab. Blocks shins only — seated THIGHS legitimately rest across
+        // this plane on the seat top, which stays a contact surface.
+        face(0, seatH - 0.03, 0.05, [0, 0, 1], [1, 0, 0], 0.21, [0, 1, 0], 0.03, 0.42, ["shin"], "body"),
+      );
     } else if (type === "bar") {
       // Above standing reach, so a pinned grip genuinely hangs the body below it.
       const barH = 2.3;
@@ -66,6 +134,13 @@ export function buildProps(types: string[], material?: THREE.Material): PropScen
       wall.position.set(0, 1.3, -0.34);
       group.add(wall);
       anchors.set("wall", new THREE.Vector3(0, 0.9, -0.29));
+      // The whole front surface is solid: a wall-sit slides DOWN the wall
+      // (the body translates forward until the back rests on the plane)
+      // instead of the torso hinging through it. Deep capture recovers a
+      // body that FK placed entirely beyond the 0.1m slab.
+      colliders.push(
+        face(0, 1.3, -0.29, [0, 0, 1], [1, 0, 0], 1.1, [0, 1, 0], 1.3, 0.8, ["torso", "head", "thigh", "shin", "arm"], "body"),
+      );
     } else if (type === "dip-bars") {
       // Parallel dip bars either side of the figure, rails running along Z.
       // Rail height is set so a straight-arm support holds the feet clear of
@@ -102,10 +177,16 @@ export function buildProps(types: string[], material?: THREE.Material): PropScen
       plat.position.set(0, topH / 2, 0.32);
       group.add(plat);
       anchors.set("box", new THREE.Vector3(0, topH, 0.3));
+      // Near face (toward the figure): a swinging shin clears the box edge by
+      // bending at the hip (step OVER it) rather than sweeping through it.
+      // Limb-resolved so the pinned lead foot on the box top is undisturbed.
+      colliders.push(
+        face(0, topH / 2, 0.11, [0, 0, -1], [1, 0, 0], 0.25, [0, 1, 0], topH / 2, 0.42, ["shin"], "limb"),
+      );
     }
   }
 
-  return { group, anchors };
+  return { group, anchors, colliders };
 }
 
 function box(w: number, h: number, d: number, mat: THREE.Material): THREE.Mesh {
