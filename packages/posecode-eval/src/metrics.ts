@@ -196,6 +196,90 @@ export function headPropClearance(result: ProbeResult, pose: PhasePose): number 
   return clearance;
 }
 
+interface SolidFace {
+  point: Vec3;
+  normal: Vec3;
+  tangentU: Vec3;
+  halfU: number;
+  tangentV: Vec3;
+  halfV: number;
+  captureDepth: number;
+  blocks: readonly string[];
+}
+
+/** The solid prop faces, re-derived from the prop geometry independently of
+ * the renderer's collider declarations so a regression in either is caught. */
+function solidFaces(propTypes: readonly string[]): SolidFace[] {
+  const out: SolidFace[] = [];
+  const all = ["torso", "head", "thigh", "shin", "arm"];
+  if (propTypes.includes("wall")) {
+    out.push({ point: [0, 1.3, -0.29], normal: [0, 0, 1], tangentU: [1, 0, 0], halfU: 1.1, tangentV: [0, 1, 0], halfV: 1.3, captureDepth: 0.8, blocks: all });
+  }
+  if (propTypes.includes("chair")) {
+    out.push(
+      { point: [0, 0.78, -0.31], normal: [0, 0, 1], tangentU: [1, 0, 0], halfU: 0.21, tangentV: [0, 1, 0], halfV: 0.25, captureDepth: 0.4, blocks: ["torso", "head"] },
+      { point: [0, 0.47, 0.05], normal: [0, 0, 1], tangentU: [1, 0, 0], halfU: 0.21, tangentV: [0, 1, 0], halfV: 0.03, captureDepth: 0.42, blocks: ["shin"] },
+    );
+  }
+  if (propTypes.includes("box")) {
+    out.push({ point: [0, 0.15, 0.11], normal: [0, 0, -1], tangentU: [1, 0, 0], halfU: 0.25, tangentV: [0, 1, 0], halfV: 0.15, captureDepth: 0.42, blocks: ["shin"] });
+  }
+  return out;
+}
+
+/** Body capsule radii matching the render mannequin (see mannequin.ts). */
+const PART_RADII = { torso: 0.13, head: 0.105, thigh: 0.075, shin: 0.055, arm: 0.038 } as const;
+
+/**
+ * Worst body penetration into a solid prop face (metres, ≤0 when clear), or
+ * -Infinity when the document declares no solid-faced prop. Limbs pinned or
+ * reached to a non-floor anchor are that phase's declared prop support and
+ * don't count (a foot standing ON the box is not "in" the box).
+ */
+export function propPenetrationDepth(result: ProbeResult, pose: PhasePose): number {
+  const faces = solidFaces(result.propTypes);
+  if (faces.length === 0) return -Infinity;
+  const exemptLegs = new Set<string>();
+  const contacts = [
+    ...pose.pins,
+    ...pose.reaches.map((r) => ({ effector: r.effector, anchor: r.target })),
+  ];
+  for (const c of contacts) {
+    if (c.anchor === "floor") continue;
+    if (c.effector === "feet" || c.effector === "foot_left") exemptLegs.add("left");
+    if (c.effector === "feet" || c.effector === "foot_right") exemptLegs.add("right");
+  }
+  const segments: [string, string, keyof typeof PART_RADII][] = [
+    ["pelvis", "neck", "torso"],
+    ["neck", "head", "head"],
+  ];
+  for (const side of ["left", "right"]) {
+    segments.push([`shoulder_${side}`, `elbow_${side}`, "arm"], [`elbow_${side}`, `wrist_${side}`, "arm"]);
+    if (exemptLegs.has(side)) continue;
+    segments.push([`hip_${side}`, `knee_${side}`, "thigh"], [`knee_${side}`, `ankle_${side}`, "shin"]);
+  }
+  let worst = -Infinity;
+  for (const [aId, bId, part] of segments) {
+    const a = pose.bones.get(aId);
+    const b = pose.bones.get(bId);
+    if (!a || !b) continue;
+    const r = PART_RADII[part];
+    for (const t of [0, 0.25, 0.5, 0.75, 1]) {
+      const p: Vec3 = [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+      for (const f of faces) {
+        if (!f.blocks.includes(part)) continue;
+        const rel = sub(p, f.point);
+        const d = dot(rel, f.normal);
+        if (d < -f.captureDepth) continue;
+        if (Math.abs(dot(rel, f.tangentU)) > f.halfU + r) continue;
+        if (Math.abs(dot(rel, f.tangentV)) > f.halfV + r) continue;
+        worst = Math.max(worst, r - d);
+      }
+    }
+  }
+  return worst;
+}
+
 /** Fastest landmark's average speed from the previous endpoint into this phase. */
 export function phaseMaxLandmarkSpeed(previous: PhasePose | null, pose: PhasePose): number {
   if (!previous || pose.durationSec <= 0) return 0;
@@ -209,8 +293,11 @@ export function phaseMaxLandmarkSpeed(previous: PhasePose | null, pose: PhasePos
 
 export function footSkateDistance(previous: PhasePose, pose: PhasePose, side: "left" | "right"): number {
   const id = `ankle_${side}`;
+  // Authored travel AND the solid-prop contact push both translate the whole
+  // body deliberately, feet included; skate is what's left after removing them.
   const local = (p: Vec3, phase: PhasePose): readonly [number, number] => {
-    const x = p[0] - phase.rootOffset[0], z = p[2] - phase.rootOffset[2];
+    const x = p[0] - phase.rootOffset[0] - phase.propPush[0];
+    const z = p[2] - phase.rootOffset[2] - phase.propPush[2];
     const c = Math.cos(-phase.rootYaw), s = Math.sin(-phase.rootYaw);
     return [x * c - z * s, x * s + z * c];
   };
@@ -224,7 +311,8 @@ export function feetCenterSkateDistance(previous: PhasePose, pose: PhasePose): n
     const id = `ankle_${side}`;
     const a = bone(previous, id), b = bone(pose, id);
     const unyaw = (p: Vec3, phase: PhasePose) => {
-      const x = p[0] - phase.rootOffset[0], z = p[2] - phase.rootOffset[2];
+      const x = p[0] - phase.rootOffset[0] - phase.propPush[0];
+      const z = p[2] - phase.rootOffset[2] - phase.propPush[2];
       const c = Math.cos(-phase.rootYaw), s = Math.sin(-phase.rootYaw);
       return [x * c - z * s, x * s + z * c] as const;
     };

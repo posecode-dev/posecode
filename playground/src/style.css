@@ -1119,10 +1119,28 @@ select:hover {
   box-shadow: inset 2px 0 0 0 var(--accent);
 }
 .lib-item .li-name {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
   font-family: var(--sans);
   font-size: 13.5px;
   font-weight: 600;
   color: var(--text);
+}
+.lib-item .li-status {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.45px;
+  text-transform: uppercase;
+  color: #f0bd68;
+  background: rgba(240, 189, 104, 0.1);
+  border: 1px solid rgba(240, 189, 104, 0.3);
+  border-radius: 999px;
+  padding: 4px 6px 3px;
 }
 .lib-item .li-meta {
   font-size: 11.5px;

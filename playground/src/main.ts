@@ -337,10 +337,18 @@ function renderLibraryList(): void {
     if (p.id === currentPresetId) item.setAttribute("aria-current", "true");
     const name = document.createElement("span");
     name.className = "li-name";
-    name.textContent = p.label;
+    const label = document.createElement("span");
+    label.textContent = p.label;
+    name.append(label);
+    if (p.status === "development") {
+      const status = document.createElement("span");
+      status.className = "li-status";
+      status.textContent = "In development";
+      name.append(status);
+    }
     const meta = document.createElement("span");
     meta.className = "li-meta";
-    meta.textContent = `${p.target} · ${p.equipment} · ${p.difficulty}`;
+    meta.textContent = p.developmentNote ?? `${p.target} · ${p.equipment} · ${p.difficulty}`;
     item.append(name, meta);
     item.addEventListener("click", () => {
       loadPreset(p.id);
@@ -540,12 +548,14 @@ void import("posecode-render").then(({ createViewer }) => {
   // procedural mannequin (debugging aid, and a fallback link for slow pages).
   const classicFigure =
     new URLSearchParams(location.search).get("figure") === "classic";
+  const groundingAuditMode =
+    import.meta.env.DEV && new URLSearchParams(location.search).get("audit") === "grounding";
   viewer = createViewer(canvas, {
     autoRotate: false,
     ...(classicFigure
       ? {}
       : {
-          characterUrl: "/models/character.glb",
+          characterUrl: "/models/xbot.glb",
           // Avoid flashing the procedural/classic figure while the default
           // mannequin asset loads. It still appears if the GLB genuinely fails.
           showProceduralWhileLoading: false,
@@ -555,10 +565,60 @@ void import("posecode-render").then(({ createViewer }) => {
     // clips.ts). Only fetched when a loaded movement names the clip, so this
     // never slows the default page. Disabled with the classic figure, which has
     // no skinned mesh to retarget onto.
-    ...(classicFigure ? {} : { clips: SHOWCASE_CLIPS }),
+    ...(classicFigure || groundingAuditMode ? {} : { clips: SHOWCASE_CLIPS }),
   });
   // Exposed for capture/e2e tooling (frame capture drives README GIFs).
   (window as unknown as Record<string, unknown>).__posecodeViewer = viewer;
+  if (import.meta.env.DEV) {
+    // Full-library visual-grounding audit for local regression work. It uses
+    // the real viewer, Xbot skin, contact solver, and timeline rather than a
+    // parallel approximation. Elevated grip/prop phases are reported but do
+    // not fail the floor threshold.
+    const auditGrounding = () => {
+      const results: Array<{
+        movement: string;
+        phase: string;
+        floorBound: boolean;
+        minY: number;
+      }> = [];
+      viewer!.pause();
+      for (const preset of PRESETS) {
+        const parsed = parse(preset.source);
+        if (!parsed.ir) continue;
+        viewer!.load(parsed.ir);
+        const segments = viewer!.getTimeline()?.segments ?? [];
+        for (let i = 0; i < segments.length; i++) {
+          const segment = segments[i]!;
+          const phase = parsed.ir.phases[i]!;
+          viewer!.seek(Math.max(segment.start, segment.end - 1e-4));
+          viewer!.captureFrame();
+          const elevated = phase.grips.length > 0 || phase.pins.some((pin) => pin.anchor !== "floor");
+          results.push({
+            movement: preset.id,
+            phase: segment.name,
+            floorBound: !elevated,
+            minY: viewer!.getVisibleBounds().min.y,
+          });
+        }
+      }
+      return results;
+    };
+    (window as unknown as Record<string, unknown>).__posecodeAuditGrounding = auditGrounding;
+    if (new URLSearchParams(location.search).get("audit") === "grounding") {
+      const publishAudit = (): void => {
+        if (!viewer!.characterActive) {
+          window.setTimeout(publishAudit, 100);
+          return;
+        }
+        const output = document.createElement("script");
+        output.id = "grounding-audit";
+        output.type = "application/json";
+        output.textContent = JSON.stringify(auditGrounding());
+        document.body.append(output);
+      };
+      window.setTimeout(publishAudit, 0);
+    }
+  }
   wireViewer(viewer);
   recompile();
 });

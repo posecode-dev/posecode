@@ -112,6 +112,10 @@ export interface Preset {
   /** What it renders with: Body weight, Chair, Wall, or Bar. */
   equipment: string;
   difficulty: Difficulty;
+  /** Optional product-readiness marker shown in the movement library. */
+  status?: "development";
+  /** Short user-facing explanation of the unfinished animation area. */
+  developmentNote?: string;
   source: string;
 }
 
@@ -138,9 +142,9 @@ export const PRESETS: Preset[] = [
   { id: "calf-raise", label: "Single-leg calf raise", domain: "Fitness", bodyPart: "Lower legs", target: "Calves", equipment: "Body weight", difficulty: "Intermediate", source: calfRaise },
   { id: "jumping-jacks", label: "Jumping jacks", domain: "Warm-up", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", source: jumpingJacks },
   { id: "box-step-taps", label: "Box step taps", domain: "Warm-up", bodyPart: "Upper legs", target: "Hip flexors", equipment: "Box", difficulty: "Beginner", source: boxStepTaps },
-  { id: "pull-up", label: "Pull-up", domain: "Fitness", bodyPart: "Back", target: "Lats", equipment: "Bar", difficulty: "Advanced", source: pullUp },
+  { id: "pull-up", label: "Pull-up", domain: "Fitness", bodyPart: "Back", target: "Lats", equipment: "Bar", difficulty: "Advanced", status: "development", developmentNote: "Hand grip and wrist contact are still being refined", source: pullUp },
   { id: "step-up", label: "Step-up (box)", domain: "Functional", bodyPart: "Upper legs", target: "Quadriceps", equipment: "Box", difficulty: "Intermediate", source: stepUp },
-  { id: "triceps-dips", label: "Triceps dips (chair)", domain: "Fitness", bodyPart: "Upper arms", target: "Triceps", equipment: "Chair", difficulty: "Intermediate", source: tricepsDips },
+  { id: "triceps-dips", label: "Triceps dips (bars)", domain: "Fitness", bodyPart: "Upper arms", target: "Triceps", equipment: "Bars", difficulty: "Intermediate", status: "development", developmentNote: "Hand support and wrist contact are still being refined", source: tricepsDips },
   { id: "quad-stretch", label: "Standing quad stretch", domain: "Mobility", bodyPart: "Upper legs", target: "Quadriceps", equipment: "Body weight", difficulty: "Beginner", source: quadStretch },
 
   // --- Education / anatomy: single-joint ROM demos ---
@@ -198,14 +202,14 @@ export const PRESETS: Preset[] = [
   { id: "sit-to-stand", label: "Sit to stand (chair)", domain: "Functional", bodyPart: "Upper legs", target: "Quadriceps", equipment: "Chair", difficulty: "Beginner", source: sitToStand },
   { id: "box-squat", label: "Box squat (chair)", domain: "Fitness", bodyPart: "Upper legs", target: "Quadriceps", equipment: "Chair", difficulty: "Beginner", source: boxSquat },
   { id: "wall-sit", label: "Wall sit (wall)", domain: "Fitness", bodyPart: "Upper legs", target: "Quadriceps", equipment: "Wall", difficulty: "Beginner", source: wallSit },
-  { id: "dead-hang", label: "Dead hang (bar)", domain: "Fitness", bodyPart: "Back", target: "Lats", equipment: "Bar", difficulty: "Beginner", source: deadHang },
-  { id: "hanging-knee-raise", label: "Hanging knee raise (bar)", domain: "Fitness", bodyPart: "Core", target: "Abdominals", equipment: "Bar", difficulty: "Intermediate", source: hangingKneeRaise },
+  { id: "dead-hang", label: "Dead hang (bar)", domain: "Fitness", bodyPart: "Back", target: "Lats", equipment: "Bar", difficulty: "Beginner", status: "development", developmentNote: "Hand grip and wrist contact are still being refined", source: deadHang },
+  { id: "hanging-knee-raise", label: "Hanging knee raise (bar)", domain: "Fitness", bodyPart: "Core", target: "Abdominals", equipment: "Bar", difficulty: "Intermediate", status: "development", developmentNote: "Hand grip and wrist contact are still being refined", source: hangingKneeRaise },
 
   // --- Hand / finger rig ---
-  { id: "make-a-fist", label: "Make a fist", domain: "Hand therapy", bodyPart: "Hands", target: "Forearms", equipment: "Body weight", difficulty: "Beginner", source: makeAFist },
-  { id: "pinch-grip", label: "Pinch grip", domain: "Hand therapy", bodyPart: "Hands", target: "Forearms", equipment: "Body weight", difficulty: "Beginner", source: pinchGrip },
-  { id: "finger-spell", label: "Finger-spelling (approx.)", domain: "Sign language", bodyPart: "Hands", target: "Forearms", equipment: "Body weight", difficulty: "Beginner", source: fingerSpell },
-  { id: "hand-wave", label: "Hand wave", domain: "Sign language", bodyPart: "Hands", target: "Forearms", equipment: "Body weight", difficulty: "Beginner", source: handWave },
+  { id: "make-a-fist", label: "Make a fist", domain: "Hand therapy", bodyPart: "Hands", target: "Forearms", equipment: "Body weight", difficulty: "Beginner", status: "development", developmentNote: "Finger articulation is still being refined", source: makeAFist },
+  { id: "pinch-grip", label: "Pinch grip", domain: "Hand therapy", bodyPart: "Hands", target: "Forearms", equipment: "Body weight", difficulty: "Beginner", status: "development", developmentNote: "Finger articulation is still being refined", source: pinchGrip },
+  { id: "finger-spell", label: "Finger-spelling (approx.)", domain: "Sign language", bodyPart: "Hands", target: "Forearms", equipment: "Body weight", difficulty: "Beginner", status: "development", developmentNote: "Finger articulation is still being refined", source: fingerSpell },
+  { id: "hand-wave", label: "Hand wave", domain: "Sign language", bodyPart: "Hands", target: "Forearms", equipment: "Body weight", difficulty: "Beginner", status: "development", developmentNote: "Wrist and finger articulation are still being refined", source: handWave },
   { id: "pirouette", label: "Pirouette (full turn)", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Intermediate", source: pirouette },
   { id: "box-step", label: "Box step (travels)", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", source: boxStep },
   { id: "grapevine", label: "Grapevine (travels)", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", source: grapevine },

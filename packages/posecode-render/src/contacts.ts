@@ -256,34 +256,6 @@ export function swingArms(
   if (changed) m.root.updateMatrixWorld(true);
 }
 
-const GRIP_FRAME = new THREE.Quaternion().setFromAxisAngle(
-  new THREE.Vector3(0, 1, 0),
-  Math.PI,
-);
-
-/**
- * Give gripping wrists a complete overhand contact frame. Arm IK only
- * constrains wrist position, leaving hand orientation underdetermined; without
- * this pass the fingers inherit the forearm direction and can point above the
- * bar. In root space the palm faces back (-Z), the fingers extend down (-Y),
- * and the wrist remains exactly on its solved anchor.
- */
-export function orientBarGrips(m: Mannequin, grips: readonly GripTarget[]): void {
-  let changed = false;
-  for (const g of grips) {
-    const side = /_(left|right)$/.exec(g.effector)?.[1];
-    if (!side) continue;
-    const wrist = m.bones.get(`wrist_${side}`);
-    if (!wrist?.parent) continue;
-    const rootWorld = m.root.getWorldQuaternion(new THREE.Quaternion());
-    const desiredWorld = rootWorld.multiply(GRIP_FRAME);
-    const parentWorld = wrist.parent.getWorldQuaternion(new THREE.Quaternion());
-    wrist.quaternion.copy(parentWorld.invert().multiply(desiredWorld));
-    changed = true;
-  }
-  if (changed) m.root.updateMatrixWorld(true);
-}
-
 /** Max head turn toward a look target (radians) so the neck never over-rotates. */
 export const MAX_LOOK = 55 * (Math.PI / 180);
 const LOOK_FWD = new THREE.Vector3(0, 0, 1);

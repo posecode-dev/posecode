@@ -27,7 +27,8 @@ import {
   type ClipSource,
 } from "./clips.js";
 import { depenetrate } from "./depenetrate.js";
-import { alignFloorPalms, levelPlantedFeet, wrapGrip, relaxHands, swingArms, aimHead, orientBarGrips } from "./contacts.js";
+import { resolvePropContacts, propContactExemptions } from "./propcontact.js";
+import { alignFloorPalms, levelPlantedFeet, wrapGrip, relaxHands, swingArms, aimHead } from "./contacts.js";
 
 const DEG = Math.PI / 180;
 
@@ -58,6 +59,10 @@ export interface Viewer {
   /** True while a retargeted mocap clip is driving (or fading over) the pose. */
   get clipActive(): boolean;
   getTimeline(): TimelineInfo | null;
+  /** Precise visible world bounds; intended for audits and deterministic export. */
+  getVisibleBounds(): THREE.Box3;
+  getMannequin(): any;
+  getCharacter(): any;
   /**
    * Render the current time synchronously and return the frame as a PNG data
    * URL. Works without preserveDrawingBuffer because the read happens in the
@@ -223,6 +228,10 @@ export function createViewer(
     const url = name ? opts.clips?.[name] : undefined;
     if (!name || !url || !character?.skinnedMesh) {
       clipTargetWeight = 0;
+      clipWeight = 0;
+      clipLayer?.dispose();
+      clipLayer = null;
+      clipLayerName = null;
       return;
     }
     if (clipLayerName === name && clipLayer) {
@@ -298,6 +307,7 @@ export function createViewer(
   // ground anchors when the character (with its own proportions) arrives.
   let lastIR: PosecodeIR | null = null;
   let groundTargets = new Map<string, THREE.Vector3>();
+  const segmentStartEffectors: Map<string, THREE.Vector3>[] = [];
   // World-space anchor points contributed by scene props (chair seat, bar grip,
   // wall surface). Populated when a doc declares props; empty otherwise.
   let propAnchors = new Map<string, THREE.Vector3>();
@@ -315,6 +325,7 @@ export function createViewer(
   let tickCb: (time: number, duration: number) => void = () => {};
   let loopCb: () => void = () => {};
   let lastPhaseName = "";
+  let activeSegIndex = 0;
 
   // Camera easing targets.
   const desiredTarget = new THREE.Vector3(0, 0.9, 0);
@@ -498,7 +509,20 @@ export function createViewer(
       const effectorBone = EFFECTOR_BONE[p.effector] ?? p.effector;
       const effector = mannequin.bones.get(effectorBone);
       if (!effector) continue;
-      const anchor = resolveReachTarget(p.anchor, effector);
+      let anchor: THREE.Vector3 | null = null;
+      if (p.anchor === "floor") {
+        const startPos = segmentStartEffectors[activeSegIndex]?.get(effectorBone);
+        if (startPos) {
+          anchor = startPos.clone();
+          const isFoot = effectorBone.startsWith("ankle") || effectorBone.startsWith("foot");
+          const drop = isFoot ? (character?.proportions.soleDrop ?? 0.042) : 0;
+          anchor.y = drop;
+        } else {
+          anchor = resolveReachTarget(p.anchor, effector);
+        }
+      } else {
+        anchor = resolveReachTarget(p.anchor, effector);
+      }
       if (!anchor) continue;
       delta.add(anchor.sub(effector.getWorldPosition(new THREE.Vector3())));
       n++;
@@ -549,9 +573,8 @@ export function createViewer(
       if (joints.length === 0) continue;
       solveCCD({ joints, limits, effector, target }, 12);
     }
-    // 3. Resolve the wrist roll left underdetermined by positional arm IK.
-    orientBarGrips(mannequin, grips);
-    // 4. Finger wrap.
+    // 3. Finger wrap. Wrist orientation remains inherited until the semantic
+    // contact-frame solver can account for this character's calibrated axes.
     wrapGrip(mannequin, grips);
   }
 
@@ -578,6 +601,19 @@ export function createViewer(
     const focus = new THREE.Vector3();
     for (const p of pts) focus.add(p);
     aimHead(mannequin, focus.multiplyScalar(1 / pts.length));
+  }
+
+  /** Prop-contact exemptions for a phase: limbs pinned/gripped/reached to props. */
+  function contactExemptionsOf(info: {
+    pins?: readonly PinTarget[];
+    grips?: readonly GripTarget[];
+    reaches?: readonly ReachTarget[];
+  }): ReturnType<typeof propContactExemptions> {
+    return propContactExemptions([
+      ...(info.pins ?? []),
+      ...(info.grips ?? []),
+      ...(info.reaches ?? []).map((r) => ({ effector: r.effector, anchor: r.target })),
+    ]);
   }
 
   function frameCamera(): void {
@@ -608,8 +644,19 @@ export function createViewer(
   }
 
   function frame(): void {
+    let solvedInfo: ReturnType<NonNullable<typeof timeline>["sample"]> | null = null;
     if (timeline) {
       const info = timeline.sample(time, mannequin.bones);
+      solvedInfo = info;
+      activeSegIndex = 0;
+      const tt = timeline.duration > 0 ? ((time % timeline.duration) + timeline.duration) % timeline.duration : 0;
+      for (let k = 0; k < timeline.segments.length; k++) {
+        const seg = timeline.segments[k]!;
+        if (tt >= seg.start && tt <= seg.end) {
+          activeSegIndex = k;
+          break;
+        }
+      }
       // Life layer rides on wall-clock time (not timeline time) so the figure
       // keeps breathing and blinking while paused or scrubbing.
       applyLife(performance.now() / 1000);
@@ -634,6 +681,15 @@ export function createViewer(
       applyGroundLockTo(mannequin, info.groundLock, frameAnchors(info.rootYaw, info.rootOffset));
       applyPins(info.pins);
       applyGrips(info.grips);
+      // Props are solid: after the root solvers place the body, push it back
+      // out of any prop face it crossed (wall-sit slides down the wall's
+      // surface, not through it) and bend swing legs clear of box edges.
+      // Before reach-IK so a later root push can't drag reached hands off
+      // their world targets. Limbs pinned/gripped to a prop anchor are that
+      // phase's declared support, exempt from clearing.
+      if (propScene) {
+        resolvePropContacts(mannequin, propScene.colliders, contactExemptionsOf(info));
+      }
       // Reach-IK BEFORE the floor safety clamp. When authored FK pushes a
       // reaching limb through the floor (cobra: prone + shoulders flex 50),
       // the limb must bend to meet the floor. Running reaches after the clamp
@@ -668,15 +724,18 @@ export function createViewer(
       // never recover it and the whole figure floated (squat, deadlift,
       // good-morning, forward-fold, plank, …).
       //
-      // A phase with NO ground-lock may be intentionally airborne (a prone
-      // "superman" lift, a jump), so it stays up-only: never yank a lifted body
-      // down, only rescue parts that dip below y=0. Pinned phases with a
-      // fixed-height anchor (a low chair seat) also rely on this up-only rescue
-      // as the legs fold.
+      // Explicit elevated support is the opt-out: bar grips and non-floor pins
+      // (box/chair) preserve their solved height. Everything else remains
+      // floor-bound; airborne choreography should use a future explicit flight
+      // contact rather than arise accidentally from missing `ground-lock`.
       mannequin.root.updateMatrixWorld(true);
       const box = new THREE.Box3().setFromObject(mannequin.root);
-      const planted = info.groundLock.length > 0;
-      if (box.min.y < 0 || (planted && box.min.y > 0)) {
+      // Unless an elevated prop/grip is carrying the body, the movement is
+      // floor-bound even when the author omitted `ground-lock`. This prevents
+      // ordinary curls, lunges, stretches, and transitions from inheriting a
+      // floating root when their FK pose raises the previous lowest point.
+      const floorBound = isFloorBound(info);
+      if (box.min.y < 0 || (floorBound && box.min.y > 0)) {
         mannequin.root.position.y -= box.min.y;
         mannequin.root.updateMatrixWorld(true);
       }
@@ -695,8 +754,18 @@ export function createViewer(
       const gap = clipTargetWeight - clipWeight;
       clipWeight += Math.sign(gap) * Math.min(Math.abs(gap), step);
       clipLayer.apply(time, clipWeight);
-      if (clipWeight > 0) character.group.updateMatrixWorld(true);
+      if (clipWeight > 0) {
+        character.group.updateMatrixWorld(true);
+        // Mocap is layered after procedural grounding and can add hip/root bob
+        // that lifts a planted foot. Restore declared terminal contacts on the
+        // visible character without removing motion from unconstrained limbs.
+        if (solvedInfo) character.correctContacts(mannequin, contactBoneIds(solvedInfo));
+      }
     }
+    // Final visible-surface grounding. The hidden driver uses calibrated proxy
+    // geometry; a segmented skin can have a different lowest point as limbs
+    // rotate. Reconcile the actual skinned surface after every animation layer.
+    if (character && solvedInfo && isFloorBound(solvedInfo)) character.reconcileFloor();
     frameDt = 0;
     if (easeCamera) {
       controls.target.lerp(desiredTarget, 0.07);
@@ -762,6 +831,9 @@ export function createViewer(
       mannequin.root.updateMatrixWorld(true);
       depenetrate(mannequin);
       groundFigureOf(mannequin);
+      if (propScene) {
+        resolvePropContacts(mannequin, propScene.colliders, contactExemptionsOf(ir.phases[0] ?? {}));
+      }
       levelPlantedFeet(mannequin, ir.phases[0]?.groundLock ?? []);
       authoredFingers = new Set(timeline.bonesUsed.filter(isFingerId));
       authoredShoulders = new Set(timeline.bonesUsed.filter((id) => id.startsWith("shoulder_")));
@@ -777,6 +849,61 @@ export function createViewer(
       captureGroundTargets();
       baseRootPos.copy(mannequin.root.position);
       baseRootQuat.copy(mannequin.root.quaternion);
+
+      // Precompute world positions of all effectors at start of each segment
+      segmentStartEffectors.length = 0;
+      if (timeline) {
+        let prevEffectorsMap: Map<string, THREE.Vector3> | null = null;
+        let prevPins: PinTarget[] = [];
+        for (let i = 0; i < timeline.segments.length; i++) {
+          const seg = timeline.segments[i]!;
+          for (const bone of mannequin.bones.values()) bone.quaternion.identity();
+          const info = timeline.sample(seg.start, mannequin.bones);
+          
+          const wasPinned = (id: string) => prevPins.some(p => (EFFECTOR_BONE[p.effector] ?? p.effector) === id && p.anchor === "floor");
+          const isPinned = (id: string) => info.pins.some(p => (EFFECTOR_BONE[p.effector] ?? p.effector) === id && p.anchor === "floor");
+
+          mannequin.root.position.copy(baseRootPos);
+          mannequin.root.quaternion.copy(baseRootQuat);
+          if (info.rootYaw !== 0) {
+            const yawQ = new THREE.Quaternion().setFromAxisAngle(WORLD_Y, info.rootYaw);
+            mannequin.root.quaternion.premultiply(yawQ);
+          }
+          mannequin.root.position.x += info.rootOffset.x;
+          mannequin.root.position.z += info.rootOffset.z;
+          mannequin.root.updateMatrixWorld(true);
+          depenetrate(mannequin);
+
+          const effectorsMap = new Map<string, THREE.Vector3>();
+          for (const ids of Object.values(mannequin.effectors)) {
+            for (const id of ids) {
+              const node = mannequin.bones.get(id);
+              if (node) {
+                if (i > 0 && wasPinned(id) && isPinned(id) && prevEffectorsMap && prevEffectorsMap.has(id)) {
+                  effectorsMap.set(id, prevEffectorsMap.get(id)!);
+                } else {
+                  effectorsMap.set(id, node.getWorldPosition(new THREE.Vector3()));
+                }
+              }
+            }
+          }
+          segmentStartEffectors.push(effectorsMap);
+          prevEffectorsMap = effectorsMap;
+          prevPins = info.pins;
+        }
+
+        // Restore initial pose
+        for (const bone of mannequin.bones.values()) bone.quaternion.identity();
+        applyBaseRoot();
+        timeline.sample(0, mannequin.bones);
+        mannequin.root.position.copy(baseRootPos);
+        mannequin.root.quaternion.copy(baseRootQuat);
+        mannequin.root.updateMatrixWorld(true);
+        depenetrate(mannequin);
+        groundFigureOf(mannequin);
+        levelPlantedFeet(mannequin, ir.phases[0]?.groundLock ?? []);
+      }
+
       requestClip(ir);
       frameCamera();
     },
@@ -825,6 +952,15 @@ export function createViewer(
         segments: timeline.segments,
       };
     },
+    getVisibleBounds() {
+      return character?.getBounds() ?? new THREE.Box3().setFromObject(mannequin.root);
+    },
+    getMannequin() {
+      return mannequin;
+    },
+    getCharacter() {
+      return character;
+    },
     captureFrame() {
       frame();
       return renderer.domElement.toDataURL("image/png");
@@ -869,15 +1005,52 @@ export function createViewer(
         if (lastIR) api.load(lastIR);
         else char.sync(mannequin);
       })
-      .catch(() => {
+      .catch((error: unknown) => {
         // Character failed (offline embed, blocked/404 CDN): reveal the
         // procedural figure we may have hidden, so the scene degrades to the
-        // working fallback instead of staying blank. Deliberately silent.
+        // working fallback instead of staying blank. Keep a developer-facing
+        // diagnostic because malformed or incompatible rigs otherwise look
+        // exactly like a network fallback and are impossible to calibrate.
+        console.warn("Posecode character load failed; using procedural fallback", error);
         if (deferProceduralMeshes) setMeshVisibility(mannequin.root, true);
       });
   }
 
   return api;
+}
+
+/** True unless a grip or non-floor pin intentionally suspends/supports the body. */
+function isFloorBound(info: {
+  grips: readonly unknown[];
+  pins: readonly { anchor: string }[];
+}): boolean {
+  return info.grips.length === 0 && !info.pins.some((pin) => pin.anchor !== "floor");
+}
+
+/** Driver terminal bones that must survive a mocap layer unchanged. */
+function contactBoneIds(info: {
+  groundLock: readonly string[];
+  grips: readonly { effector: string }[];
+  pins: readonly { effector: string }[];
+  reaches: readonly { effector: string; target: string }[];
+}): string[] {
+  const ids = new Set<string>();
+  const addEffector = (effector: string): void => {
+    if (effector === "feet" || effector === "foot_left") ids.add("ankle_left");
+    if (effector === "feet" || effector === "foot_right") ids.add("ankle_right");
+    if (effector === "hands" || effector === "hand_left") ids.add("wrist_left");
+    if (effector === "hands" || effector === "hand_right") ids.add("wrist_right");
+    if (effector === "forearms") {
+      ids.add("elbow_left");
+      ids.add("elbow_right");
+    }
+  };
+  for (const group of info.groundLock) addEffector(group);
+  for (const contact of [...info.grips, ...info.pins]) addEffector(contact.effector);
+  for (const reach of info.reaches) {
+    if (reach.target === "floor") addEffector(reach.effector);
+  }
+  return [...ids];
 }
 
 /**
@@ -957,7 +1130,8 @@ export { applyGroundLock, groundFigure } from "./groundlock.js";
 export type { Mannequin, Proportions, CollisionRadii } from "./mannequin.js";
 export { buildTimeline } from "./timeline.js";
 export { solveCCD, type IkChain, type JointLimits } from "./ik.js";
-export { buildProps, type PropScene } from "./props.js";
+export { buildProps, type PropScene, type FaceCollider, type BlockedPart } from "./props.js";
+export { resolvePropContacts, propContactExemptions, type PropContactExemptions } from "./propcontact.js";
 export { loadCharacter, rigCharacter, type Character } from "./character.js";
 export {
   loadClipSource,
