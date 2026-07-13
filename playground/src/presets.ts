@@ -144,7 +144,7 @@ export const PRESETS: Preset[] = [
   { id: "box-step-taps", label: "Box step taps", domain: "Warm-up", bodyPart: "Upper legs", target: "Hip flexors", equipment: "Box", difficulty: "Beginner", source: boxStepTaps },
   { id: "pull-up", label: "Pull-up", domain: "Fitness", bodyPart: "Back", target: "Lats", equipment: "Bar", difficulty: "Advanced", status: "development", developmentNote: "Hand grip and wrist contact are still being refined", source: pullUp },
   { id: "step-up", label: "Step-up (box)", domain: "Functional", bodyPart: "Upper legs", target: "Quadriceps", equipment: "Box", difficulty: "Intermediate", source: stepUp },
-  { id: "triceps-dips", label: "Triceps dips (chair)", domain: "Fitness", bodyPart: "Upper arms", target: "Triceps", equipment: "Chair", difficulty: "Intermediate", status: "development", developmentNote: "Hand support and wrist contact are still being refined", source: tricepsDips },
+  { id: "triceps-dips", label: "Triceps dips (bars)", domain: "Fitness", bodyPart: "Upper arms", target: "Triceps", equipment: "Bars", difficulty: "Intermediate", status: "development", developmentNote: "Hand support and wrist contact are still being refined", source: tricepsDips },
   { id: "quad-stretch", label: "Standing quad stretch", domain: "Mobility", bodyPart: "Upper legs", target: "Quadriceps", equipment: "Body weight", difficulty: "Beginner", source: quadStretch },
 
   // --- Education / anatomy: single-joint ROM demos ---

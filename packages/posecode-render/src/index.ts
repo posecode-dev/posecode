@@ -61,6 +61,8 @@ export interface Viewer {
   getTimeline(): TimelineInfo | null;
   /** Precise visible world bounds; intended for audits and deterministic export. */
   getVisibleBounds(): THREE.Box3;
+  getMannequin(): any;
+  getCharacter(): any;
   /**
    * Render the current time synchronously and return the frame as a PNG data
    * URL. Works without preserveDrawingBuffer because the read happens in the
@@ -305,6 +307,7 @@ export function createViewer(
   // ground anchors when the character (with its own proportions) arrives.
   let lastIR: PosecodeIR | null = null;
   let groundTargets = new Map<string, THREE.Vector3>();
+  const segmentStartEffectors: Map<string, THREE.Vector3>[] = [];
   // World-space anchor points contributed by scene props (chair seat, bar grip,
   // wall surface). Populated when a doc declares props; empty otherwise.
   let propAnchors = new Map<string, THREE.Vector3>();
@@ -322,6 +325,7 @@ export function createViewer(
   let tickCb: (time: number, duration: number) => void = () => {};
   let loopCb: () => void = () => {};
   let lastPhaseName = "";
+  let activeSegIndex = 0;
 
   // Camera easing targets.
   const desiredTarget = new THREE.Vector3(0, 0.9, 0);
@@ -505,7 +509,20 @@ export function createViewer(
       const effectorBone = EFFECTOR_BONE[p.effector] ?? p.effector;
       const effector = mannequin.bones.get(effectorBone);
       if (!effector) continue;
-      const anchor = resolveReachTarget(p.anchor, effector);
+      let anchor: THREE.Vector3 | null = null;
+      if (p.anchor === "floor") {
+        const startPos = segmentStartEffectors[activeSegIndex]?.get(effectorBone);
+        if (startPos) {
+          anchor = startPos.clone();
+          const isFoot = effectorBone.startsWith("ankle") || effectorBone.startsWith("foot");
+          const drop = isFoot ? (character?.proportions.soleDrop ?? 0.042) : 0;
+          anchor.y = drop;
+        } else {
+          anchor = resolveReachTarget(p.anchor, effector);
+        }
+      } else {
+        anchor = resolveReachTarget(p.anchor, effector);
+      }
       if (!anchor) continue;
       delta.add(anchor.sub(effector.getWorldPosition(new THREE.Vector3())));
       n++;
@@ -631,6 +648,15 @@ export function createViewer(
     if (timeline) {
       const info = timeline.sample(time, mannequin.bones);
       solvedInfo = info;
+      activeSegIndex = 0;
+      const tt = timeline.duration > 0 ? ((time % timeline.duration) + timeline.duration) % timeline.duration : 0;
+      for (let k = 0; k < timeline.segments.length; k++) {
+        const seg = timeline.segments[k]!;
+        if (tt >= seg.start && tt <= seg.end) {
+          activeSegIndex = k;
+          break;
+        }
+      }
       // Life layer rides on wall-clock time (not timeline time) so the figure
       // keeps breathing and blinking while paused or scrubbing.
       applyLife(performance.now() / 1000);
@@ -823,6 +849,61 @@ export function createViewer(
       captureGroundTargets();
       baseRootPos.copy(mannequin.root.position);
       baseRootQuat.copy(mannequin.root.quaternion);
+
+      // Precompute world positions of all effectors at start of each segment
+      segmentStartEffectors.length = 0;
+      if (timeline) {
+        let prevEffectorsMap: Map<string, THREE.Vector3> | null = null;
+        let prevPins: PinTarget[] = [];
+        for (let i = 0; i < timeline.segments.length; i++) {
+          const seg = timeline.segments[i]!;
+          for (const bone of mannequin.bones.values()) bone.quaternion.identity();
+          const info = timeline.sample(seg.start, mannequin.bones);
+          
+          const wasPinned = (id: string) => prevPins.some(p => (EFFECTOR_BONE[p.effector] ?? p.effector) === id && p.anchor === "floor");
+          const isPinned = (id: string) => info.pins.some(p => (EFFECTOR_BONE[p.effector] ?? p.effector) === id && p.anchor === "floor");
+
+          mannequin.root.position.copy(baseRootPos);
+          mannequin.root.quaternion.copy(baseRootQuat);
+          if (info.rootYaw !== 0) {
+            const yawQ = new THREE.Quaternion().setFromAxisAngle(WORLD_Y, info.rootYaw);
+            mannequin.root.quaternion.premultiply(yawQ);
+          }
+          mannequin.root.position.x += info.rootOffset.x;
+          mannequin.root.position.z += info.rootOffset.z;
+          mannequin.root.updateMatrixWorld(true);
+          depenetrate(mannequin);
+
+          const effectorsMap = new Map<string, THREE.Vector3>();
+          for (const ids of Object.values(mannequin.effectors)) {
+            for (const id of ids) {
+              const node = mannequin.bones.get(id);
+              if (node) {
+                if (i > 0 && wasPinned(id) && isPinned(id) && prevEffectorsMap && prevEffectorsMap.has(id)) {
+                  effectorsMap.set(id, prevEffectorsMap.get(id)!);
+                } else {
+                  effectorsMap.set(id, node.getWorldPosition(new THREE.Vector3()));
+                }
+              }
+            }
+          }
+          segmentStartEffectors.push(effectorsMap);
+          prevEffectorsMap = effectorsMap;
+          prevPins = info.pins;
+        }
+
+        // Restore initial pose
+        for (const bone of mannequin.bones.values()) bone.quaternion.identity();
+        applyBaseRoot();
+        timeline.sample(0, mannequin.bones);
+        mannequin.root.position.copy(baseRootPos);
+        mannequin.root.quaternion.copy(baseRootQuat);
+        mannequin.root.updateMatrixWorld(true);
+        depenetrate(mannequin);
+        groundFigureOf(mannequin);
+        levelPlantedFeet(mannequin, ir.phases[0]?.groundLock ?? []);
+      }
+
       requestClip(ir);
       frameCamera();
     },
@@ -873,6 +954,12 @@ export function createViewer(
     },
     getVisibleBounds() {
       return character?.getBounds() ?? new THREE.Box3().setFromObject(mannequin.root);
+    },
+    getMannequin() {
+      return mannequin;
+    },
+    getCharacter() {
+      return character;
     },
     captureFrame() {
       frame();
