@@ -37,7 +37,12 @@
   </a>
 </p>
 
-> **OpenAI Build Week 2026:** Posecode existed before the hackathon. During Build Week, the project is being meaningfully extended with a GPT-5.6-powered biomechanical Physics Critic and an end-to-end Codex-built agent workflow. The sections below clearly distinguish previous work from new hackathon work.
+---
+
+## Why Posecode?
+
+Ask an LLM to explain physical movement and it usually returns unstructured prose or a static diagram.
+
 
 <p align="center">
   <img
@@ -76,60 +81,6 @@
     </td>
   </tr>
 </table>
-
----
-
-## OpenAI Build Week Extension
-
-### What existed before July 13, 2026
-
-Before OpenAI Build Week, Posecode already included:
-
-- the core `.posecode` domain-specific language,
-- a parser and intermediate motion representation,
-- basic range-of-motion validation,
-- a Three.js/WebGL renderer,
-- forward kinematics,
-- basic inverse-kinematics and ground-lock behavior,
-- a browser playground,
-- example movement files,
-- shareable Posecode links,
-- and an MCP server foundation.
-
-This original version was developed primarily with **Claude** as an AI-assisted engineering tool.
-
-That prior work provides the foundation for the project, but it is not presented as the new hackathon contribution.
-
-### What is being added during Build Week
-
-During the July 13–21 Build Week submission period, Posecode is being meaningfully extended with:
-
-1. **GPT-5.6 Physics Critic**
-2. **Biomechanical fidelity scorecard**
-3. **Natural-language-to-motion agent workflow**
-4. **Interactive generation and critique experience**
-5. **Codex-built tests, tooling, and renderer improvements**
-
-The new workflow allows a user to describe a movement in ordinary language, generate structured Posecode, validate it deterministically, and receive a detailed GPT-5.6 critique explaining biomechanical or spatial problems.
-
-### Build Week feature status
-
-- [ ] GPT-5.6 movement generation
-- [ ] GPT-5.6 Physics Critic
-- [ ] Structured fidelity-score response
-- [ ] Critique panel in the playground
-- [ ] Generate → validate → critique → revise loop
-- [ ] MCP tools for critique and revision
-- [ ] Automated tests for the new workflow
-- [ ] Demo-ready example movements
-- [ ] Build Week commit links added below
-- [ ] Codex session ID added below
-
----
-
-## Why Posecode?
-
-Ask an LLM to explain physical movement and it usually returns unstructured prose or a static diagram.
 
 For example:
 
@@ -305,37 +256,6 @@ npm run build
 
 ---
 
-## GPT-5.6 Configuration
-
-> Update these instructions to match the final implementation.
-
-Create an environment file:
-
-```bash
-cp .env.example .env
-```
-
-Add your OpenAI API key:
-
-```env
-OPENAI_API_KEY=your_api_key_here
-```
-
-Optionally configure the model:
-
-```env
-OPENAI_MODEL=gpt-5.6
-```
-
-Start the application:
-
-```bash
-npm run dev
-```
-
-Never commit API keys to the repository.
-
----
 
 ## MCP Server
 
@@ -715,6 +635,56 @@ Feedback and contributions are welcome.
 
 ---
 
+
+> **OpenAI Build Week 2026:** Posecode existed before the hackathon. During Build Week, the project is being meaningfully extended with a GPT-5.6-powered biomechanical Physics Critic and an end-to-end Codex-built agent workflow. The sections below clearly distinguish previous work from new hackathon work.
+
+---
+
+## OpenAI Build Week Extension
+
+### What existed before July 13, 2026
+
+Before OpenAI Build Week, Posecode already included:
+
+- the core `.posecode` domain-specific language,
+- a parser and intermediate motion representation,
+- basic range-of-motion validation,
+- a Three.js/WebGL renderer,
+- forward kinematics,
+- basic inverse-kinematics and ground-lock behavior,
+- a browser playground,
+- example movement files,
+- shareable Posecode links,
+- and an MCP server foundation.
+
+This original version was developed primarily with **Claude** as an AI-assisted engineering tool.
+
+That prior work provides the foundation for the project, but it is not presented as the new hackathon contribution.
+
+### What is being added during Build Week
+
+During the July 13–21 Build Week submission period, Posecode is being meaningfully extended with:
+
+1. **GPT-5.6 Physics Critic**
+2. **Biomechanical fidelity scorecard**
+3. **Natural-language-to-motion agent workflow**
+4. **Interactive generation and critique experience**
+5. **Codex-built tests, tooling, and renderer improvements**
+
+The new workflow allows a user to describe a movement in ordinary language, generate structured Posecode, validate it deterministically, and receive a detailed GPT-5.6 critique explaining biomechanical or spatial problems.
+
+### Build Week feature status
+
+- [ ] GPT-5.6 movement generation
+- [ ] GPT-5.6 Physics Critic
+- [ ] Structured fidelity-score response
+- [ ] Critique panel in the playground
+- [ ] Generate → validate → critique → revise loop
+- [ ] MCP tools for critique and revision
+- [ ] Automated tests for the new workflow
+- [ ] Demo-ready example movements
+- [ ] Build Week commit links added below
+- [ ] Codex session ID added below
 
 ---
 
