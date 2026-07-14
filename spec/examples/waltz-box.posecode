@@ -2,40 +2,62 @@ posecode stretch "Waltz box step"
   rig humanoid
   pose start = standing
 
-  step "1 - forward, rise" 1s flow:
-    hip_right: flex 25
-    knee_right: flex 20
-    ankles: plantarflex 12
+  step "1 - right foot forward" 0.95s flow:
+    hip_right: flex 24
+    knee_right: flex 24
+    ankle_right: plantarflex 18
     shoulders: abduct 55
     elbows: flex 20
-    travel: 0 0.4
+    travel: 0 0.32
     pin: foot_left floor
-    cue "Step forward onto the right foot and rise, arms in a soft frame"
+    cue "Step forward onto the right foot and begin the waltz rise"
 
-  step "2 - side, lower" 1s flow:
+  step "2 - left foot side" 0.95s flow:
     hip_right: flex 0
     knee_right: flex 0
-    ankles: plantarflex 0
-    travel: -0.4 0.4
-    ground-lock: feet
-    cue "Side step to the corner and lower through the heels"
-
-  step "3 - back, rise" 1s flow:
-    hip_left: flex 25
-    knee_left: flex 20
-    ankles: plantarflex 12
-    travel: -0.4 0
+    ankle_right: plantarflex 0
+    hip_left: abduct 22
+    knee_left: flex 16
+    ankles: plantarflex 22
+    travel: -0.32 0.32
     pin: foot_right floor
-    cue "Step back onto the left foot and rise again"
+    cue "Step left to the side and continue rising through count two"
 
-  step "4 - close home" 1s settle:
-    hip_left: flex 0
+  step "3 - close and lower" 1.05s flow:
+    hip_left: abduct 0
     knee_left: flex 0
+    ankles: plantarflex 0
+    travel: -0.32 0.32
+    ground-lock: feet
+    cue "Close the right foot to the left and lower softly through count three"
+
+  step "4 - left foot back" 0.95s flow:
+    hip_left: extend 18
+    knee_left: flex 24
+    ankle_left: plantarflex 18
+    travel: -0.32 0
+    pin: foot_right floor
+    cue "Step back onto the left foot and begin the second rise"
+
+  step "5 - right foot side" 0.95s flow:
+    hip_left: extend 0
+    knee_left: flex 0
+    ankle_left: plantarflex 0
+    hip_right: abduct 22
+    knee_right: flex 16
+    ankles: plantarflex 22
+    travel: 0 0
+    pin: foot_left floor
+    cue "Step right to the side, staying buoyant through count five"
+
+  step "6 - close and lower" 1.05s settle:
+    hip_right: abduct 0
+    knee_right: flex 0
     ankles: plantarflex 0
     shoulders: abduct 0
     elbows: flex 0
     travel: 0 0
     ground-lock: feet
-    cue "Close to the start, completing the box"
+    cue "Close the left foot and lower with control to complete the six-count box"
 
   repeat 3

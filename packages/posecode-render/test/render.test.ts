@@ -197,6 +197,38 @@ describe("spatial choreography (turn & travel)", () => {
     expect(tl.travelExtent).toBeCloseTo(Math.hypot(0.5, 0.4), 3);
   });
 
+  it("carries root velocity smoothly through flow travel waypoints", () => {
+    const src = [
+      'posecode exercise "Corner"',
+      "  rig humanoid",
+      "  pose start = standing",
+      '  step "Across" 1s flow:',
+      "    travel: 1 0",
+      '  step "Forward" 1s flow:',
+      "    travel: 1 1",
+      "  repeat 1",
+    ].join("\n");
+    const { ir } = parse(src);
+    const tl = buildTimeline(ir!);
+    const m = buildMannequin();
+    const eps = 1e-3;
+    const before = tl.sample(1 - eps, m.bones).rootOffset;
+    const at = tl.sample(1, m.bones).rootOffset;
+    const after = tl.sample(1 + eps, m.bones).rootOffset;
+    const velocityBefore = {
+      x: (at.x - before.x) / eps,
+      z: (at.z - before.z) / eps,
+    };
+    const velocityAfter = {
+      x: (after.x - at.x) / eps,
+      z: (after.z - at.z) / eps,
+    };
+
+    expect(at).toEqual({ x: 1, z: 0 });
+    expect(velocityBefore.x).toBeCloseTo(velocityAfter.x, 2);
+    expect(velocityBefore.z).toBeCloseTo(velocityAfter.z, 2);
+  });
+
   it("leaves yaw and offset at home for movements that never turn/travel", () => {
     const src = [
       'posecode exercise "Curl"',

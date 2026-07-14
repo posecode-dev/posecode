@@ -2,39 +2,76 @@ posecode exercise "Grapevine"
   rig humanoid
   pose start = standing
 
-  step "Step out" 0.7s flow:
-    hip_left: abduct 30
+  step "Left step side" 0.65s flow:
+    hip_left: abduct 28
     shoulders: abduct 40
-    travel: 0.4 0
+    travel: 0.3 0
     pin: foot_right floor
     reach: foot_left floor
-    cue "Step the leading foot out to the side"
+    cue "Step the left foot to the side and begin travelling"
 
-  step "Cross behind" 0.7s flow:
+  step "Right crosses behind" 0.65s flow:
     hip_left: abduct 0
     hip_right: rotate-in 20
     knee_right: flex 25
     ankle_right: plantarflex 25
-    travel: 0.8 0
+    travel: 0.6 0
     pin: foot_left floor
     reach: foot_right floor
-    cue "Cross the trailing foot behind and keep travelling"
+    cue "Cross the right foot behind without stopping the sideways momentum"
 
-  step "Step out again" 0.7s flow:
+  step "Left step side again" 0.65s flow:
     hip_right: rotate-in 0
     knee_right: flex 0
     ankle_right: plantarflex 0
-    hip_left: abduct 30
-    travel: 1.2 0
+    hip_left: abduct 28
+    travel: 0.9 0
     pin: foot_right floor
     reach: foot_left floor
-    cue "Step out to the side once more"
+    cue "Step left again and keep the shoulders quiet"
 
-  step "Return home" 1s settle:
+  step "Right touch" 0.55s flow:
     hip_left: abduct 0
+    knee_right: flex 16
+    ankle_right: plantarflex 20
+    travel: 1 0
+    ground-lock: feet
+    cue "Touch the right foot in lightly before reversing"
+
+  step "Right step side" 0.65s flow:
+    knee_right: flex 0
+    ankle_right: plantarflex 0
+    hip_right: abduct 28
+    travel: 0.7 0
+    pin: foot_left floor
+    reach: foot_right floor
+    cue "Step the right foot to the side to travel back"
+
+  step "Left crosses behind" 0.65s flow:
+    hip_right: abduct 0
+    hip_left: rotate-in 20
+    knee_left: flex 25
+    ankle_left: plantarflex 25
+    travel: 0.4 0
+    pin: foot_right floor
+    reach: foot_left floor
+    cue "Cross the left foot behind and continue through the beat"
+
+  step "Right step side again" 0.65s flow:
+    hip_left: rotate-in 0
+    knee_left: flex 0
+    ankle_left: plantarflex 0
+    hip_right: abduct 28
+    travel: 0.1 0
+    pin: foot_left floor
+    reach: foot_right floor
+    cue "Step right and arrive back near the starting place"
+
+  step "Close home" 0.65s settle:
+    hip_right: abduct 0
     shoulders: abduct 0
     travel: 0 0
     ground-lock: feet
-    cue "Travel back the other way to the starting spot"
+    cue "Close the left foot under the body and settle the phrase"
 
   repeat 3

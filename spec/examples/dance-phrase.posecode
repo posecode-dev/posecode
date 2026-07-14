@@ -13,7 +13,7 @@ posecode exercise "Dance phrase (8-count)"
   step "3-4 - demi-plié" 2s flow:
     hips: flex 18
     knees: flex 50
-    ankles: plantarflex 50
+    ankles: dorsiflex 12
     shoulders: flex 28
     elbows: flex 30
     ground-lock: feet
@@ -29,7 +29,7 @@ posecode exercise "Dance phrase (8-count)"
     ground-lock: feet
     cue "Press up to relevé and lift the arms into a frame overhead"
 
-  step "7-8 - close" 2s settle:
+  step "7-8 - close" 2.2s settle:
     ankles: plantarflex 0
     hips: rotate-out 0
     shoulders: flex 0

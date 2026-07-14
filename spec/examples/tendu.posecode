@@ -2,7 +2,7 @@ posecode exercise "Tendu"
   rig humanoid
   pose start = standing
 
-  step "Point front" 1.6s flow:
+  step "Brush and point" 1.8s settle:
     hip_right: flex 22
     hip_right: rotate-out 30
     knee_right: extend 0
@@ -12,7 +12,7 @@ posecode exercise "Tendu"
     pin: foot_left floor
     cue "Brush the right foot forward to a fully pointed tendu, leg turned out"
 
-  step "Close" 1.6s settle:
+  step "Close through the floor" 1.8s settle:
     hip_right: flex 0
     hip_right: rotate-out 0
     ankle_right: plantarflex 0

@@ -2,7 +2,7 @@ posecode exercise "Demi-plié"
   rig humanoid
   pose start = standing
 
-  step "Plié" 2s flow:
+  step "Plié" 2.2s settle:
     hips: flex 20
     hips: rotate-out 30
     knees: flex 55
@@ -13,7 +13,7 @@ posecode exercise "Demi-plié"
     ground-lock: feet
     cue "Turn out from the hips and bend the knees over the toes: heels down"
 
-  step "Straighten" 2s settle:
+  step "Straighten" 2.2s settle:
     hips: flex 0
     hips: rotate-out 0
     knees: flex 0
