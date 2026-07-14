@@ -426,20 +426,46 @@ speed.addEventListener("change", () => viewer?.setSpeed(Number(speed.value)));
 // --- Button label feedback ---
 // Swap a button's label (the inner `.lbl` span when present, else the button
 // text) to a transient message, then restore it.
-function flash(btn: HTMLElement, message: string): void {
+const flashTimers = new WeakMap<HTMLElement, number>();
+
+function flash(
+  btn: HTMLElement,
+  message: string,
+  status: "pending" | "success" | "error",
+  duration = 4000,
+): void {
   const el = btn.querySelector<HTMLElement>(".lbl") ?? btn;
-  const prev = el.textContent;
+  const previousTimer = flashTimers.get(btn);
+  if (previousTimer !== undefined) window.clearTimeout(previousTimer);
+
+  const defaultLabel = el.dataset.defaultLabel ?? el.textContent ?? "";
+  const defaultAriaLabel =
+    btn.dataset.defaultAriaLabel ?? btn.getAttribute("aria-label") ?? "";
+  el.dataset.defaultLabel = defaultLabel;
+  btn.dataset.defaultAriaLabel = defaultAriaLabel;
   el.textContent = message;
-  window.setTimeout(() => (el.textContent = prev), 1500);
+  btn.dataset.status = status;
+  btn.setAttribute("aria-label", message);
+  if (duration === 0) return;
+
+  const timer = window.setTimeout(() => {
+    el.textContent = defaultLabel;
+    delete btn.dataset.status;
+    if (defaultAriaLabel === "") btn.removeAttribute("aria-label");
+    else btn.setAttribute("aria-label", defaultAriaLabel);
+    flashTimers.delete(btn);
+  }, duration);
+  flashTimers.set(btn, timer);
 }
 
 // --- Copy LLM prompt (topbar) ---
 async function copyPrompt(btn: HTMLButtonElement): Promise<void> {
+  flash(btn, "Copying…", "pending", 0);
   try {
     await navigator.clipboard.writeText(llmPrompt);
-    flash(btn, "Copied ✓");
+    flash(btn, "Copied ✓", "success");
   } catch {
-    flash(btn, "Copy failed");
+    flash(btn, "Copy failed", "error");
   }
 }
 copyBtn.addEventListener("click", () => copyPrompt(copyBtn));
@@ -449,6 +475,7 @@ copyBtn.addEventListener("click", () => copyPrompt(copyBtn));
 // (so it's bookmarkable), and copy the full link to the clipboard.
 async function shareLink(): Promise<void> {
   if (!editorApi) return; // editor still loading; nothing to snapshot yet
+  flash(shareBtn, "Copying…", "pending", 0);
   try {
     const source = editorApi.getValue();
     const path = buildNicePlayPath(source);
@@ -456,7 +483,7 @@ async function shareLink(): Promise<void> {
     const url = `${location.origin}${path}${hash}`;
     history.replaceState(null, "", `${path}${hash}`);
     await navigator.clipboard.writeText(url);
-    flash(shareBtn, "Link copied ✓");
+    flash(shareBtn, "Link copied ✓", "success");
   } catch (err) {
     const message =
       err instanceof TypeError
@@ -464,7 +491,7 @@ async function shareLink(): Promise<void> {
         : err instanceof RangeError
           ? "Too long to link"
           : "Copy failed";
-    flash(shareBtn, message);
+    flash(shareBtn, message, "error");
   }
 }
 shareBtn.addEventListener("click", shareLink);
