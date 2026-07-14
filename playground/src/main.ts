@@ -17,7 +17,7 @@ import {
   resolveSharedSource,
 } from "./nice-share.js";
 import type { PosecodeEditor } from "./editor.js";
-import { PRESETS } from "./presets.js";
+import { ANIMATION_PROGRESS_MESSAGE, PRESETS } from "./presets.js";
 import { SHOWCASE_CLIPS } from "./clips.js";
 
 // The movement shown on first open (no shared link). Jumping jacks plays the
@@ -340,15 +340,22 @@ function renderLibraryList(): void {
     const label = document.createElement("span");
     label.textContent = p.label;
     name.append(label);
-    if (p.status === "development") {
+    if (p.status === "animation-progress") {
       const status = document.createElement("span");
       status.className = "li-status";
-      status.textContent = "In development";
+      status.textContent = "Animation in Progress";
+      status.title = ANIMATION_PROGRESS_MESSAGE;
+      status.setAttribute(
+        "aria-label",
+        `Animation in Progress: ${ANIMATION_PROGRESS_MESSAGE}`,
+      );
       name.append(status);
     }
     const meta = document.createElement("span");
     meta.className = "li-meta";
-    meta.textContent = p.developmentNote ?? `${p.target} · ${p.equipment} · ${p.difficulty}`;
+    meta.textContent = p.status === "animation-progress"
+      ? ANIMATION_PROGRESS_MESSAGE
+      : `${p.target} · ${p.equipment} · ${p.difficulty}`;
     item.append(name, meta);
     item.addEventListener("click", () => {
       loadPreset(p.id);

@@ -15,24 +15,28 @@ const DEG = Math.PI / 180;
  */
 export function alignFloorPalms(
   m: Mannequin,
-  reaches: readonly ReachTarget[],
+  reaches: readonly (ReachTarget & { weight?: number })[],
   pins: readonly PinTarget[],
   groundLock: readonly string[] = [],
 ): void {
-  const sides = new Set<"left" | "right">();
-  const collect = (effector: string, target: string) => {
+  const sides = new Map<"left" | "right", number>();
+  const collect = (effector: string, target: string, weight = 1) => {
     if (target !== "floor") return;
-    if (effector === "hands" || effector === "hand_left") sides.add("left");
-    if (effector === "hands" || effector === "hand_right") sides.add("right");
+    if (effector === "hands" || effector === "hand_left") {
+      sides.set("left", Math.max(sides.get("left") ?? 0, weight));
+    }
+    if (effector === "hands" || effector === "hand_right") {
+      sides.set("right", Math.max(sides.get("right") ?? 0, weight));
+    }
   };
-  reaches.forEach((r) => collect(r.effector, r.target));
+  reaches.forEach((r) => collect(r.effector, r.target, r.weight));
   pins.forEach((p) => collect(p.effector, p.anchor));
   if (groundLock.includes("hands")) {
-    sides.add("left");
-    sides.add("right");
+    sides.set("left", 1);
+    sides.set("right", 1);
   }
 
-  for (const side of sides) {
+  for (const [side, weight] of sides) {
     const wrist = m.bones.get(`wrist_${side}`);
     if (!wrist?.parent) continue;
     const world = wrist.getWorldQuaternion(new THREE.Quaternion());
@@ -41,6 +45,7 @@ export function alignFloorPalms(
       : new THREE.Vector3(-1, 0, 0);
     const current = localNormal.applyQuaternion(world).normalize();
     const correction = new THREE.Quaternion().setFromUnitVectors(current, DOWN);
+    if (weight < 1) correction.slerp(new THREE.Quaternion(), 1 - weight);
     const desiredWorld = correction.multiply(world);
     const parentWorld = wrist.parent.getWorldQuaternion(new THREE.Quaternion());
     wrist.quaternion.copy(parentWorld.invert().multiply(desiredWorld));

@@ -2,15 +2,14 @@
  * Turn a PosecodeIR into a looping, eased keyframe timeline.
  *
  * Each phase is a keyframe: we accumulate joint overrides forward (a movement
- * holds prior joint state unless a later phase changes it), then slerp bone
- * quaternions between consecutive keyframes with the destination phase's easing.
- * A final wrap segment returns to the base pose so the loop is seamless.
+ * holds prior joint state unless a later phase changes it), then interpolate
+ * the DSL's bounded anatomical Euler channels with monotone cubic Hermite
+ * curves. A final wrap segment returns to the base pose only when necessary.
  */
 
 import * as THREE from "three";
 import type { PosecodeIR, ReachTarget, PinTarget, GripTarget, TimingMode } from "posecode-parser";
 import { poseFor, type PoseSpec } from "./poses.js";
-import { squad, squadControl } from "./squad.js";
 
 const DEG = Math.PI / 180;
 
@@ -23,15 +22,12 @@ interface Keyframe {
   easing: TimingMode;
   /**
    * The figure is at rest here (zero boundary velocity), so the spline uses this
-   * keyframe's own value as its control (no velocity carried across it). True for
-   * settle/snap phases AND for the two structural anchors — the start pose and
-   * the loop-reset — which represent the figure standing still at the base pose.
-   * Those anchors have no real predecessor/successor, so deriving a squad tangent
-   * from a clamped neighbor yields a backward-biased control that overshoots
-   * (the "snap to fully-curled" biceps bug); a rest tangent slerps cleanly.
+   * keyframe receives zero velocity. True for settle/snap phases AND for the
+   * structural start/reset anchors, which represent the figure at rest.
    */
   rest: boolean;
-  quats: Map<string, THREE.Quaternion>;
+  /** Authored semantic Euler channels, retained so interpolation follows the DSL. */
+  eulers: Map<string, EulerDegTuple>;
   groundLock: string[];
   reaches: ReachTarget[];
   pins: PinTarget[];
@@ -50,6 +46,11 @@ export interface PhaseSegment {
   cue?: string;
 }
 
+/** A reach constraint blended across a phase boundary. */
+export interface WeightedReachTarget extends ReachTarget {
+  weight: number;
+}
+
 export interface BuiltTimeline {
   duration: number;
   repeat: number;
@@ -65,7 +66,7 @@ export interface BuiltTimeline {
     phaseName: string;
     cue?: string;
     groundLock: string[];
-    reaches: ReachTarget[];
+    reaches: WeightedReachTarget[];
     pins: PinTarget[];
     grips: GripTarget[];
     /** Interpolated root facing (yaw about world Y, radians). */
@@ -133,6 +134,68 @@ function rootVelocity(
   return span > 1e-6 ? (read(next) - read(prev)) / span : 0;
 }
 
+/**
+ * Shape-preserving velocity for an authored Euler channel at an interior
+ * keyframe. Quaternion splines cannot distinguish a deliberate reversal from
+ * continuing around the sphere: 0° → 160° → 0° was interpreted as a hidden
+ * full rotation, holding near neutral before flipping through 180°. The DSL is
+ * expressed as bounded anatomical Euler channels, so interpolate those scalar
+ * channels directly and stop at reversals.
+ */
+function jointVelocity(
+  prev: Keyframe,
+  current: Keyframe,
+  next: Keyframe,
+  read: (keyframe: Keyframe) => number,
+): number {
+  if (current.rest) return 0;
+  const beforeSpan = current.time - prev.time;
+  const afterSpan = next.time - current.time;
+  if (beforeSpan <= 1e-6 || afterSpan <= 1e-6) return 0;
+  const before = (read(current) - read(prev)) / beforeSpan;
+  const after = (read(next) - read(current)) / afterSpan;
+  // A plateau or direction change is a real anatomical turnaround.
+  if (before * after <= 0) return 0;
+  const centered = (read(next) - read(prev)) / (next.time - prev.time);
+  // Monotone Hermite cap: never let a tangent create an inter-keyframe
+  // overshoot even when neighboring phase durations differ greatly.
+  const limit = 3 * Math.min(Math.abs(before), Math.abs(after));
+  return Math.sign(centered) * Math.min(Math.abs(centered), limit);
+}
+
+function posesEqual(
+  a: Map<string, EulerDegTuple>,
+  b: Map<string, EulerDegTuple>,
+): boolean {
+  const bones = new Set([...a.keys(), ...b.keys()]);
+  for (const bone of bones) {
+    const av = a.get(bone) ?? [0, 0, 0];
+    const bv = b.get(bone) ?? [0, 0, 0];
+    if (av.some((value, axis) => Math.abs(value - bv[axis]!) > 1e-6)) return false;
+  }
+  return true;
+}
+
+function blendReaches(
+  from: readonly ReachTarget[],
+  to: readonly ReachTarget[],
+  t: number,
+): WeightedReachTarget[] {
+  const key = (reach: ReachTarget): string => `${reach.effector}\u0000${reach.target}`;
+  const previous = new Map(from.map((reach) => [key(reach), reach]));
+  const next = new Map(to.map((reach) => [key(reach), reach]));
+  const blended: WeightedReachTarget[] = [];
+  for (const [id, reach] of previous) {
+    const weight = next.has(id) ? 1 : 1 - t;
+    if (weight > 1e-6) blended.push({ ...reach, weight });
+  }
+  for (const [id, reach] of next) {
+    if (previous.has(id)) continue;
+    if (t > 1e-6) blended.push({ ...reach, weight: t });
+  }
+  return blended;
+}
+
 export function buildTimeline(ir: PosecodeIR): BuiltTimeline {
   const basePose = poseFor(ir.startPose);
   const baseJoints = new Map<string, EulerDegTuple>(
@@ -153,7 +216,7 @@ export function buildTimeline(ir: PosecodeIR): BuiltTimeline {
     name: ir.startPose ?? "start",
     easing: "flow",
     rest: true,
-    quats: snapshot(curr),
+    eulers: snapshot(curr),
     groundLock: [],
     reaches: [],
     pins: [],
@@ -177,7 +240,7 @@ export function buildTimeline(ir: PosecodeIR): BuiltTimeline {
       ...(phase.cue ? { cue: phase.cue } : {}),
       easing: phase.easing,
       rest: REST_MODE[phase.easing],
-      quats: snapshot(curr),
+      eulers: snapshot(curr),
       groundLock: phase.groundLock,
       reaches: phase.reaches,
       pins: phase.pins,
@@ -187,12 +250,26 @@ export function buildTimeline(ir: PosecodeIR): BuiltTimeline {
     });
   }
 
-  // Wrap back to the base pose (and home position) for a seamless loop. Facing
+  // Wrap back to the base pose (and home position) for a seamless loop only
+  // when the author did not already return there. Always adding a first-phase-
+  // length reset made common out-and-back movements sit idle for roughly a
+  // third of every repetition. A zero-duration structural reset still gives
+  // the final real keyframe a rest neighbor without extending the loop.
+  // Facing
   // wraps to the NEAREST FULL TURN to the final yaw, not to 0: a completed 360°
   // pirouette then holds its facing through the reset and the loop boundary
   // (360°≡0°) is seamless, instead of visibly un-spinning backward. A partial
   // turn (e.g. 90°) rounds to 0 and rotates back to front during the reset.
-  const wrap = ir.phases[0]?.durationSec ?? 1;
+  const finalPose = snapshot(curr);
+  const baseSnapshot = snapshot(new Map(baseJoints));
+  const yawAtHome = Math.abs(currYaw - Math.round(currYaw / 360) * 360) < 1e-6;
+  const positionAtHome = Math.abs(currPos.x) < 1e-6 && Math.abs(currPos.z) < 1e-6;
+  const needsWrap = !posesEqual(finalPose, baseSnapshot) || !yawAtHome || !positionAtHome;
+  const wrap = needsWrap ? (ir.phases[0]?.durationSec ?? 1) : 0;
+  // With no pose wrap, the structural start is also the cyclic successor of
+  // the final phase. Seed its reach state from that final phase so a constraint
+  // shared across the boundary (e.g. cobra palms on the floor) stays planted.
+  if (!needsWrap) keyframes[0]!.reaches = [...(ir.phases.at(-1)?.reaches ?? [])];
   const wrapYaw = Math.round(currYaw / 360) * 360 * DEG;
   t += wrap;
   keyframes.push({
@@ -200,7 +277,7 @@ export function buildTimeline(ir: PosecodeIR): BuiltTimeline {
     name: "reset",
     easing: "flow",
     rest: true,
-    quats: snapshot(new Map(baseJoints)),
+    eulers: baseSnapshot,
     groundLock: [],
     reaches: [],
     pins: [],
@@ -209,11 +286,11 @@ export function buildTimeline(ir: PosecodeIR): BuiltTimeline {
     pos: { x: 0, z: 0 },
   });
 
-  // Fill every keyframe with the full bone set (missing → identity).
-  const bonesUsed = [...new Set(keyframes.flatMap((k) => [...k.quats.keys()]))];
+  // Fill every keyframe with the full bone set (missing → neutral Euler).
+  const bonesUsed = [...new Set(keyframes.flatMap((k) => [...k.eulers.keys()]))];
   for (const kf of keyframes) {
     for (const bone of bonesUsed) {
-      if (!kf.quats.has(bone)) kf.quats.set(bone, new THREE.Quaternion());
+      if (!kf.eulers.has(bone)) kf.eulers.set(bone, [0, 0, 0]);
     }
   }
 
@@ -255,25 +332,22 @@ export function buildTimeline(ir: PosecodeIR): BuiltTimeline {
       const local = THREE.MathUtils.clamp((tt - a.time) / span, 0, 1);
       const eased = MODE_EASE[b.easing](local);
 
-      // Neighbors for the squad control quaternions (clamp at the ends → the
-      // segment endpoint itself, giving a one-sided tangent).
+      // Neighbors for the time-aware semantic-channel tangents.
       const kPrev = keyframes[Math.max(0, i - 1)]!;
       const kNext = keyframes[Math.min(keyframes.length - 1, i + 2)]!;
       for (const bone of bonesUsed) {
         const node = bones.get(bone);
         if (!node) continue;
-        const q0 = a.quats.get(bone)!;
-        const q1 = b.quats.get(bone)!;
-        // A rest-point keyframe uses its own value as the control (zero tangent
-        // → the spline comes to / leaves from rest there); otherwise the
-        // Shoemake control from the neighboring keyframe carries velocity.
-        const s0 = a.rest
-          ? q0.clone()
-          : squadControl(kPrev.quats.get(bone)!, q0, q1);
-        const s1 = b.rest
-          ? q1.clone()
-          : squadControl(q0, q1, kNext.quats.get(bone)!);
-        squad(q0, s0, s1, q1, eased, node.quaternion);
+        const from = a.eulers.get(bone)!;
+        const to = b.eulers.get(bone)!;
+        const value = ([0, 1, 2] as const).map((axis) => {
+          if (b.easing === "linear") return from[axis] + (to[axis] - from[axis]) * eased;
+          const read = (kf: Keyframe): number => kf.eulers.get(bone)![axis];
+          const va = jointVelocity(kPrev, a, b, read);
+          const vb = jointVelocity(a, b, kNext, read);
+          return hermite(from[axis], to[axis], va, vb, span, eased);
+        }) as EulerDegTuple;
+        node.quaternion.copy(eulerToQuat(value));
       }
       // Root facing/position use the scalar analogue of the joint squad spline:
       // cubic Hermite with time-aware centered tangents. This carries velocity
@@ -306,7 +380,7 @@ export function buildTimeline(ir: PosecodeIR): BuiltTimeline {
         phaseName: b.name,
         ...(b.cue ? { cue: b.cue } : {}),
         groundLock: b.groundLock,
-        reaches: b.reaches,
+        reaches: blendReaches(a.reaches, b.reaches, eased),
         pins: b.pins,
         grips: b.grips,
         rootYaw,
@@ -316,9 +390,9 @@ export function buildTimeline(ir: PosecodeIR): BuiltTimeline {
   };
 }
 
-function snapshot(curr: Map<string, EulerDegTuple>): Map<string, THREE.Quaternion> {
-  const out = new Map<string, THREE.Quaternion>();
-  for (const [bone, euler] of curr) out.set(bone, eulerToQuat(euler));
+function snapshot(curr: Map<string, EulerDegTuple>): Map<string, EulerDegTuple> {
+  const out = new Map<string, EulerDegTuple>();
+  for (const [bone, euler] of curr) out.set(bone, [...euler]);
 
   // Hip-hinge coupling. The `pelvis` is the shared parent of both the torso and
   // the legs, so a pelvis X-rotation tips the WHOLE figure forward: torso and
@@ -330,7 +404,7 @@ function snapshot(curr: Map<string, EulerDegTuple>): Map<string, THREE.Quaternio
   if (pelvisX !== 0) {
     for (const hip of ["hip_left", "hip_right"]) {
       const [hx, hy, hz] = curr.get(hip) ?? [0, 0, 0];
-      out.set(hip, eulerToQuat([hx - pelvisX, hy, hz]));
+      out.set(hip, [hx - pelvisX, hy, hz]);
     }
   }
   return out;
