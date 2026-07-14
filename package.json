@@ -17,13 +17,18 @@
     "build": "npm run build -w playground",
     "prepare:xbot": "node scripts/prepare-xbot.mjs",
     "eval": "tsx packages/posecode-eval/src/cli.ts",
+    "video:cut2": "remotion render video/cut2/index.tsx PosecodeCut2 docs/launch-media/posecode-cut2-builder-16x9.mp4 --public-dir video/cut2/public --codec h264 --crf 16",
+    "video:cut2:vertical": "remotion render video/cut2/index.tsx PosecodeCut2Vertical docs/launch-media/posecode-cut2-builder-9x16.mp4 --public-dir video/cut2/public --codec h264 --crf 16",
+    "video:cut2:still": "remotion still video/cut2/index.tsx PosecodeCut2 docs/launch-media/posecode-cut2-payoff.png --public-dir video/cut2/public --frame 825",
     "typecheck": "for p in packages/*/tsconfig.json playground/tsconfig.json editors/*/tsconfig.json; do tsc --noEmit -p \"$p\" || exit 1; done",
     "gifs": "node scripts/capture-gifs.mjs"
   },
   "devDependencies": {
+    "@remotion/cli": "4.0.489",
     "@vitest/coverage-v8": "^2.1.8",
     "gifenc": "^1.0.3",
     "playwright-core": "^1.61.1",
+    "remotion": "4.0.489",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
