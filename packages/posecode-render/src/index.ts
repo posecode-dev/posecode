@@ -15,7 +15,12 @@ import { eulerRomFor } from "posecode-parser";
 import type { PosecodeIR, ReachTarget, PinTarget, GripTarget } from "posecode-parser";
 import { buildMannequin, type Mannequin } from "./mannequin.js";
 import { applyGroundLock as applyGroundLockTo, groundFigure as groundFigureOf } from "./groundlock.js";
-import { buildTimeline, type BuiltTimeline, type PhaseSegment } from "./timeline.js";
+import {
+  buildTimeline,
+  type BuiltTimeline,
+  type PhaseSegment,
+  type WeightedReachTarget,
+} from "./timeline.js";
 import { solveCCD, type JointLimits } from "./ik.js";
 import { buildProps, type PropScene } from "./props.js";
 import { loadCharacter, type Character } from "./character.js";
@@ -480,7 +485,7 @@ export function createViewer(
    * final root placement. The chain is the arm (hand) or the leg (foot); other
    * joints keep their authored FK pose.
    */
-  function applyReaches(reaches: ReachTarget[]): void {
+  function applyReaches(reaches: WeightedReachTarget[]): void {
     for (const r of reaches) {
       const effectorBone = EFFECTOR_BONE[r.effector] ?? r.effector;
       const effector = mannequin.bones.get(effectorBone);
@@ -489,7 +494,13 @@ export function createViewer(
       if (!target) continue;
       const { joints, limits } = reachChain(effectorBone);
       if (joints.length === 0) continue;
+      const before = joints.map((joint) => joint.quaternion.clone());
       solveCCD({ joints, limits, effector, target }, 12);
+      for (let i = 0; i < joints.length; i++) {
+        const solved = joints[i]!.quaternion.clone();
+        joints[i]!.quaternion.slerpQuaternions(before[i]!, solved, r.weight);
+      }
+      mannequin.root.updateMatrixWorld(true);
     }
   }
 

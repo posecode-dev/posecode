@@ -54,12 +54,24 @@ describe("timeline", () => {
     "  repeat 5",
   ].join("\n");
 
-  it("builds a looping timeline whose duration covers all phases + wrap", () => {
+  it("omits a redundant wrap when the final phase returns to the base pose", () => {
     const { ir } = parse(PUSHUP);
     const tl = buildTimeline(ir!);
-    // 2s + 1s phases + 2s wrap (first phase duration)
-    expect(tl.duration).toBeCloseTo(5, 5);
+    expect(tl.duration).toBeCloseTo(3, 5);
     expect(tl.bonesUsed).toContain("elbow_left");
+  });
+
+  it("keeps a wrap segment when the final phase differs from the base pose", () => {
+    const src = [
+      'posecode exercise "Hold curl"',
+      "  rig humanoid",
+      "  pose start = standing",
+      '  step "Curl" 1s settle:',
+      "    elbows: flex 90",
+      "  repeat 1",
+    ].join("\n");
+    const { ir } = parse(src);
+    expect(buildTimeline(ir!).duration).toBeCloseTo(2, 5);
   });
 
   it("bends the elbow as the Lower phase progresses", () => {
@@ -76,12 +88,9 @@ describe("timeline", () => {
   });
 
   // Regression: a large rest-to-rest move (biceps curl: elbow flex 135 +
-  // supinate 80, near-antipodal endpoints) must sweep MONOTONICALLY. The squad
-  // spline used to derive a backward-biased control at the clamped start
-  // keyframe, flinging the forearm past +50deg then snapping ~135deg in a single
-  // step — the "curl happens suddenly" bug. The start/reset anchors are now rest
-  // points, so their segments slerp cleanly.
-  it("curls the forearm monotonically from rest (no squad overshoot snap)", () => {
+  // supinate 80, near-antipodal endpoints) must sweep monotonically instead of
+  // lingering near rest and snapping to the target near the phase boundary.
+  it("curls the forearm monotonically from rest (no interpolation snap)", () => {
     const CURL = [
       'posecode exercise "Curl"',
       "  rig humanoid",
@@ -114,6 +123,60 @@ describe("timeline", () => {
       if (prev) expect(dir.angleTo(prev)).toBeLessThan(0.9);
       prev = dir.clone();
     }
+  });
+
+  it("follows a large reversing joint arc without hiding a full rotation", () => {
+    const REVERSAL = [
+      'posecode stretch "Shoulder abduction"',
+      "  rig humanoid",
+      "  pose start = standing",
+      '  step "Raise" 2.5s flow:',
+      "    shoulders: abduct 160",
+      '  step "Lower" 2.5s settle:',
+      "    shoulders: abduct 0",
+      "  repeat 1",
+    ].join("\n");
+    const { ir } = parse(REVERSAL);
+    const tl = buildTimeline(ir!);
+    const m = buildMannequin();
+    const euler = new THREE.Euler();
+    let previous = 0;
+
+    for (let t = 0; t <= 2.5 + 1e-9; t += 0.125) {
+      tl.sample(t, m.bones);
+      euler.setFromQuaternion(m.bones.get("shoulder_right")!.quaternion, "XYZ");
+      const angle = -euler.z / DEG;
+      expect(angle).toBeGreaterThanOrEqual(previous - 1e-4);
+      expect(angle - previous).toBeLessThan(15);
+      previous = angle;
+    }
+    expect(previous).toBeCloseTo(160, 4);
+
+    tl.sample(1.25, m.bones);
+    euler.setFromQuaternion(m.bones.get("shoulder_right")!.quaternion, "XYZ");
+    expect(-euler.z / DEG).toBeCloseTo(80, 1);
+  });
+
+  it("blends reach constraints across phase boundaries", () => {
+    const src = [
+      'posecode stretch "Cross-body reach"',
+      "  rig humanoid",
+      "  pose start = standing",
+      '  step "Reach" 1s flow:',
+      "    reach: hand_right shoulder_left",
+      '  step "Return" 1s settle:',
+      "    shoulder_right: flex 0",
+      "  repeat 1",
+    ].join("\n");
+    const { ir } = parse(src);
+    const tl = buildTimeline(ir!);
+    const m = buildMannequin();
+
+    expect(tl.sample(0, m.bones).reaches).toEqual([]);
+    expect(tl.sample(0.5, m.bones).reaches[0]?.weight).toBeCloseTo(0.5, 5);
+    expect(tl.sample(1, m.bones).reaches[0]?.weight).toBeCloseTo(1, 5);
+    expect(tl.sample(1.5, m.bones).reaches[0]?.weight).toBeCloseTo(0.25, 5);
+    expect(tl.sample(2 - 1e-5, m.bones).reaches).toEqual([]);
   });
 });
 
