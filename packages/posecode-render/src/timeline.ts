@@ -106,6 +106,33 @@ const REST_MODE: Record<TimingMode, boolean> = {
   linear: false,
 };
 
+/** Cubic Hermite interpolation with endpoint velocities expressed per second. */
+function hermite(a: number, b: number, va: number, vb: number, span: number, t: number): number {
+  const t2 = t * t;
+  const t3 = t2 * t;
+  return (
+    (2 * t3 - 3 * t2 + 1) * a +
+    (t3 - 2 * t2 + t) * span * va +
+    (-2 * t3 + 3 * t2) * b +
+    (t3 - t2) * span * vb
+  );
+}
+
+/**
+ * Time-aware centered velocity at an interior root keyframe. Rest keyframes
+ * deliberately have zero velocity; flowing keyframes carry momentum through.
+ */
+function rootVelocity(
+  prev: Keyframe,
+  current: Keyframe,
+  next: Keyframe,
+  read: (keyframe: Keyframe) => number,
+): number {
+  if (current.rest) return 0;
+  const span = next.time - prev.time;
+  return span > 1e-6 ? (read(next) - read(prev)) / span : 0;
+}
+
 export function buildTimeline(ir: PosecodeIR): BuiltTimeline {
   const basePose = poseFor(ir.startPose);
   const baseJoints = new Map<string, EulerDegTuple>(
@@ -248,14 +275,33 @@ export function buildTimeline(ir: PosecodeIR): BuiltTimeline {
           : squadControl(q0, q1, kNext.quats.get(bone)!);
         squad(q0, s0, s1, q1, eased, node.quaternion);
       }
-      // Root facing/position: linear interpolation of the raw values so a large
-      // turn (e.g. 360°) sweeps the whole way round rather than taking a short
-      // arc. Uses the same eased param as the joints so everything moves as one.
-      const rootYaw = a.yaw + (b.yaw - a.yaw) * eased;
-      const rootOffset = {
-        x: a.pos.x + (b.pos.x - a.pos.x) * eased,
-        z: a.pos.z + (b.pos.z - a.pos.z) * eased,
-      };
+      // Root facing/position use the scalar analogue of the joint squad spline:
+      // cubic Hermite with time-aware centered tangents. This carries velocity
+      // through `flow` waypoints instead of hitting every travel point with a
+      // visible direction/speed kink (box steps, grapevines, waltz, chassé).
+      // Yaw remains a raw scalar rather than a quaternion so a 360° turn still
+      // sweeps the full revolution. Rest points receive zero tangent.
+      const yawA = rootVelocity(kPrev, a, b, (kf) => kf.yaw);
+      const yawB = rootVelocity(a, b, kNext, (kf) => kf.yaw);
+      const xA = rootVelocity(kPrev, a, b, (kf) => kf.pos.x);
+      const xB = rootVelocity(a, b, kNext, (kf) => kf.pos.x);
+      const zA = rootVelocity(kPrev, a, b, (kf) => kf.pos.z);
+      const zB = rootVelocity(a, b, kNext, (kf) => kf.pos.z);
+      // `linear` is an explicit authoring promise, so preserve a literal
+      // straight interpolation for that mode. The spline applies to the
+      // expressive timing modes, especially continuous `flow` choreography.
+      const rootYaw = b.easing === "linear"
+        ? a.yaw + (b.yaw - a.yaw) * eased
+        : hermite(a.yaw, b.yaw, yawA, yawB, span, eased);
+      const rootOffset = b.easing === "linear"
+        ? {
+            x: a.pos.x + (b.pos.x - a.pos.x) * eased,
+            z: a.pos.z + (b.pos.z - a.pos.z) * eased,
+          }
+        : {
+            x: hermite(a.pos.x, b.pos.x, xA, xB, span, eased),
+            z: hermite(a.pos.z, b.pos.z, zA, zB, span, eased),
+          };
       return {
         phaseName: b.name,
         ...(b.cue ? { cue: b.cue } : {}),

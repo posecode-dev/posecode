@@ -16,18 +16,26 @@ posecode stretch "Port de bras"
     ground-lock: feet
     cue "Open the arms out to the sides: second position, wrists lifted"
 
-  step "Fifth en haut" 2.2s flow:
+  step "Fifth en haut" 2.4s flow:
     shoulders: abduct 0
     shoulders: flex 160
     elbows: flex 20
     ground-lock: feet
     cue "Float the arms into a rounded frame overhead: fifth position"
 
-  step "Lower" 2s settle:
+  step "Open down through second" 2.2s flow:
+    shoulders: flex 0
+    shoulders: abduct 85
+    elbows: flex 16
+    ground-lock: feet
+    cue "Open from overhead through a wide second position, shoulders released"
+
+  step "Close low" 2s settle:
+    shoulders: abduct 0
     shoulders: flex 0
     elbows: flex 0
     hips: rotate-out 0
     ground-lock: feet
-    cue "Lower through second back to the start, eyes following the hands"
+    cue "Float the arms down to the start, eyes following the hands"
 
   repeat 3

@@ -2,7 +2,7 @@ posecode exercise "Relevé"
   rig humanoid
   pose start = standing
 
-  step "Rise" 1.6s settle:
+  step "Rise" 1.8s settle:
     ankles: plantarflex 30
     hips: rotate-out 25
     knees: extend 0
@@ -12,7 +12,7 @@ posecode exercise "Relevé"
     ground-lock: feet
     cue "Turn out and rise onto the balls of the feet: lengthen up tall"
 
-  step "Lower" 1.8s drive:
+  step "Lower" 2s settle:
     ankles: plantarflex 0
     hips: rotate-out 0
     shoulders: abduct 0
