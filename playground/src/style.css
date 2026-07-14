@@ -1421,12 +1421,52 @@ select:hover {
 
 @media (max-width: 860px) {
   .topbar { padding: 12px; }
-  .topbar-actions { display: grid; grid-template-columns: 1fr auto auto; gap: 6px; }
+  .topbar-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: stretch;
+    gap: 6px;
+  }
   .lib-btn { min-height: 42px; }
+  #new-doc, #how-to, #feedback, #share {
+    min-height: 42px;
+  }
+  #feedback, #share {
+    justify-content: center;
+  }
+  #share {
+    grid-column: 2 / -1;
+  }
+  #share .lbl {
+    display: inline;
+  }
+  #share:not([data-status]) .lbl {
+    font-size: 0;
+  }
+  #share:not([data-status]) .lbl::after {
+    content: "Copy link";
+    font-size: 13px;
+  }
   #copy-prompt { grid-column: 1 / -1; min-height: 42px; }
   .intro { padding-left: 12px; padding-right: 12px; }
   .layout { grid-template-columns: 1fr; }
   .transport { gap: 8px; padding-left: 12px; padding-right: 12px; }
   .speed > span, .loop > span { display: none; }
   .clock { padding-left: 8px; min-width: 40px; }
+}
+
+#share[data-status="success"] {
+  color: var(--bg);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+#share[data-status="pending"] {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+#share[data-status="error"] {
+  color: #ffb4a9;
+  border-color: #a94b41;
 }
