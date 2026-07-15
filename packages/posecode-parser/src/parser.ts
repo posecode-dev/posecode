@@ -35,6 +35,8 @@ export interface AstStep {
   easing: string;
   targets: AstJointTarget[];
   groundLock: string[];
+  /** Source line of the active `ground-lock:` declaration. */
+  groundLockLine?: number;
   reaches: AstReach[];
   pins: AstPin[];
   grips: AstPin[];
@@ -222,6 +224,7 @@ function parseStepChild(ln: Line, current: AstStep | null): ParseError | null {
       .filter((tok) => tok.type === "word")
       .map((tok) => tok.value);
     current.groundLock = effectors;
+    current.groundLockLine = ln.line;
     return null;
   }
 

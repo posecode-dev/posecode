@@ -50,6 +50,19 @@ describe("levelPlantedFeet", () => {
     levelPlantedFeet(m, ["feet"]);
     expect(m.bones.get("ankle_left")!.quaternion.angleTo(before)).toBeLessThan(1e-3);
   });
+
+  it("levels only the selected per-side foot", () => {
+    const m = buildMannequin();
+    m.bones.get("knee_left")!.rotation.x = 12 * DEG;
+    m.bones.get("knee_right")!.rotation.x = 12 * DEG;
+    m.root.updateMatrixWorld(true);
+    groundFigure(m);
+    const leftBefore = m.bones.get("ankle_left")!.quaternion.clone();
+    const rightBefore = m.bones.get("ankle_right")!.quaternion.clone();
+    levelPlantedFeet(m, ["foot_left"]);
+    expect(m.bones.get("ankle_left")!.quaternion.angleTo(leftBefore)).toBeGreaterThan(1e-3);
+    expect(m.bones.get("ankle_right")!.quaternion.angleTo(rightBefore)).toBeLessThan(1e-6);
+  });
 });
 
 describe("relaxHands (L4.1)", () => {

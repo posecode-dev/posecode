@@ -26,6 +26,7 @@ import {
   expandEffector,
   expandJoint,
   flexionSign,
+  isGroundLockEffector,
   isLeft,
 } from "./joints.js";
 import { clampAngle, romFor } from "./rom.js";
@@ -125,6 +126,18 @@ function resolveStep(
     euler,
   }));
 
+  const groundLock: string[] = [];
+  for (const effector of step.groundLock) {
+    if (!isGroundLockEffector(effector)) {
+      errors.push({
+        line: step.groundLockLine ?? step.line,
+        message: `unknown ground-lock effector: "${effector}"`,
+      });
+      continue;
+    }
+    groundLock.push(effector);
+  }
+
   // Reach / pin effectors: expand symmetric groups (`hands` → both hands) and
   // reject unknown names, since a typo'd effector would otherwise be silently
   // ignored by the renderer, invisible to the authoring LLM.
@@ -176,7 +189,7 @@ function resolveStep(
     durationSec: step.durationSec,
     easing: step.easing as Phase["easing"],
     targets,
-    groundLock: step.groundLock,
+    groundLock,
     reaches,
     pins,
     grips,

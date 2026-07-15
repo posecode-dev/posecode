@@ -75,7 +75,7 @@ describe("getCompletions", () => {
 
   it("suggests effectors after `ground-lock: `", () => {
     expect(onLine("    ground-lock: ", 17)).toEqual(
-      expect.arrayContaining(["hands", "feet"]),
+      expect.arrayContaining(["hands", "feet", "hand_left", "foot_right"]),
     );
   });
 

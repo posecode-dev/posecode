@@ -20,7 +20,7 @@ posecode <kind> "<Name>"          # kind = exercise | stretch | posture
   step "<Phase name>" <Ns> <easing>:   # easing = linear | ease-in | ease-out | ease-in-out
     <joint>: <action> <degrees>
     reach: <effector> <target> # optional: drive a hand/foot to a target via IK
-    ground-lock: <effectors>   # hands and/or feet pinned to the floor this phase
+    ground-lock: <effectors>   # groups (hands/forearms/feet) or per-side aliases such as foot_right
     turn: <degrees>            # optional: face this yaw by phase end (standing only)
     travel: <x> <z>            # optional: move to this x z (metres) by phase end
     cue "<short coaching cue>"

@@ -3,7 +3,7 @@
  * render loop and the headless eval harness (posecode-eval) use the identical
  * solver.
  *
- * "Ground-lock" = keep the declared effectors (hands/feet) planted while the
+ * "Ground-lock" = keep the declared grouped or per-side effectors planted while the
  * body moves, tuned per support type:
  *
  * - **Hands + feet (push-up / plank):** pivot the whole rigid body about the
@@ -49,7 +49,7 @@ export function groundFigure(m: Mannequin): void {
   }
 }
 
-/** Resolve active effector group names ("hands"/"feet") into bone ids. */
+/** Resolve active grouped/per-side effector names into bone ids. */
 function activeEffectorIds(m: Mannequin, active: string[]): string[] {
   const ids = new Set<string>();
   for (const group of active) {

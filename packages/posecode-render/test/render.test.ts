@@ -31,8 +31,10 @@ describe("mannequin", () => {
   it("declares hand and foot effector groups", () => {
     const m = buildMannequin();
     expect(m.effectors.hands).toEqual(["wrist_left", "wrist_right"]);
+    expect(m.effectors.hand_left).toEqual(["wrist_left"]);
     expect(m.effectors.forearms).toEqual(["elbow_left", "elbow_right"]);
     expect(m.effectors.feet).toEqual(["ankle_left", "ankle_right"]);
+    expect(m.effectors.foot_right).toEqual(["ankle_right"]);
   });
 });
 
@@ -422,6 +424,26 @@ describe("ground-lock (shared solver)", () => {
     // Foot MESH sole rests on the floor (ankle bone rides ~0.04m above it).
     const soleY = new THREE.Box3().setFromObject(m.bones.get("ankle_left")!).min.y;
     expect(Math.abs(soleY)).toBeLessThan(0.01);
+  });
+
+  it("plants only the requested foot for a single-foot ground lock", () => {
+    const m = posedRaw(
+      [
+        'posecode exercise "One-leg balance"',
+        "  rig humanoid",
+        "  pose start = standing",
+        '  step "Lift left" 1s linear:',
+        "    hip_left: flex 55",
+        "    knee_left: flex 75",
+        "    ground-lock: foot_right",
+      ].join("\n"),
+    );
+    applyGroundLock(m, ["foot_right"]);
+    m.root.updateMatrixWorld(true);
+    const rightSole = new THREE.Box3().setFromObject(m.bones.get("ankle_right")!).min.y;
+    const leftSole = new THREE.Box3().setFromObject(m.bones.get("ankle_left")!).min.y;
+    expect(Math.abs(rightSole)).toBeLessThan(0.01);
+    expect(leftSole).toBeGreaterThan(0.1);
   });
 
   it("is a no-op when no effectors are ground-locked", () => {

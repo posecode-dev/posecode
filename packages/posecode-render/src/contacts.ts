@@ -31,8 +31,10 @@ export function alignFloorPalms(
   };
   reaches.forEach((r) => collect(r.effector, r.target, r.weight));
   pins.forEach((p) => collect(p.effector, p.anchor));
-  if (groundLock.includes("hands")) {
+  if (groundLock.includes("hands") || groundLock.includes("hand_left")) {
     sides.set("left", 1);
+  }
+  if (groundLock.includes("hands") || groundLock.includes("hand_right")) {
     sides.set("right", 1);
   }
 
@@ -71,9 +73,12 @@ const TMP_EULER = new THREE.Euler();
  * where a leg-induced foot tilt makes the ball the lowest mesh point.
  */
 export function levelPlantedFeet(m: Mannequin, activeGroundLock: readonly string[]): void {
-  if (!activeGroundLock.includes("feet")) return;
+  const plantedSides = FOOT_SIDES.filter((side) =>
+    activeGroundLock.includes("feet") || activeGroundLock.includes(`foot_${side}`),
+  );
+  if (plantedSides.length === 0) return;
   let changed = false;
-  for (const side of FOOT_SIDES) {
+  for (const side of plantedSides) {
     const ankle = m.bones.get(`ankle_${side}`);
     if (!ankle?.parent) continue;
     // Tiptoe opt-out: an ankle authored into plantarflexion (local +X) is a

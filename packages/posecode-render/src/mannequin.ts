@@ -232,8 +232,14 @@ export function buildMannequin(material?: THREE.Material, proportions?: Proporti
     bones,
     effectors: {
       hands: ["wrist_left", "wrist_right"],
+      hand_left: ["wrist_left"],
+      hand_right: ["wrist_right"],
       forearms: ["elbow_left", "elbow_right"],
+      elbow_left: ["elbow_left"],
+      elbow_right: ["elbow_right"],
       feet: ["ankle_left", "ankle_right"],
+      foot_left: ["ankle_left"],
+      foot_right: ["ankle_right"],
     },
     collision: proportions?.collision ?? DEFAULT_COLLISION,
   };

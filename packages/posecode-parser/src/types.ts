@@ -66,7 +66,7 @@ export interface Phase {
   durationSec: number;
   easing: Easing;
   targets: JointTarget[];
-  /** Effector groups / prop anchors pinned for this phase, e.g. ["hands", "feet"]. */
+  /** Grouped or per-side floor effectors pinned for this phase, e.g. ["feet"] or ["foot_right"]. */
   groundLock: string[];
   /** Reach-IK goals active during this phase. */
   reaches: ReachTarget[];

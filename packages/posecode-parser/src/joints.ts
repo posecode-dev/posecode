@@ -120,6 +120,30 @@ const EFFECTOR_GROUPS: Record<string, string[]> = {
 /** Every effector name `reach:` / `pin:` accept: groups + per-side aliases. */
 export const EFFECTOR_NAMES = [...Object.keys(EFFECTOR_GROUPS), ...EFFECTOR_SIDES];
 
+/**
+ * Effectors accepted by `ground-lock:`. Ground locking has historically
+ * supported the symmetric hand/forearm/foot groups; per-side aliases let a
+ * movement keep one support planted while the opposite limb moves freely.
+ */
+export const GROUND_LOCK_EFFECTOR_NAMES = [
+  "hands",
+  "hand_left",
+  "hand_right",
+  "forearms",
+  "elbow_left",
+  "elbow_right",
+  "feet",
+  "foot_left",
+  "foot_right",
+] as const;
+
+const GROUND_LOCK_EFFECTOR_SET = new Set<string>(GROUND_LOCK_EFFECTOR_NAMES);
+
+/** True when an effector is implemented by the ground-lock solver. */
+export function isGroundLockEffector(name: string): boolean {
+  return GROUND_LOCK_EFFECTOR_SET.has(name);
+}
+
 const EFFECTOR_SIDE_SET = new Set<string>(EFFECTOR_SIDES);
 
 /**
