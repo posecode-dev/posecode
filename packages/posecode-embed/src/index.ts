@@ -18,8 +18,8 @@ export { parseOptions, DEFAULT_OPTIONS } from "./options.js";
 export type { PlayerOptions } from "./options.js";
 export { resolveSource } from "./source.js";
 export type { SourceInput, Resolved } from "./source.js";
-
-export const version = "0.1.0";
+export { version, languageVersion, validatePosecode } from "./compat.js";
+export type { PosecodeReadyDetail, PosecodeErrorDetail } from "./element.js";
 
 /**
  * Register the `<posecode-player>` custom element. Safe to call more than once

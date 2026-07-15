@@ -99,7 +99,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 @media(max-width:600px){.wrap{padding:0 18px}}
 </style>
     <link rel="stylesheet" href="/content-theme.css" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to do a Box step","description":"How to do the box step (dance): 4 phases targeting the full body, body weight, beginner level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs.","step":[{"@type":"HowToStep","name":"Step forward-right","text":"Step the right foot forward and out to the corner"},{"@type":"HowToStep","name":"Close the feet","text":"Bring the left foot to meet it, standing tall on the corner"},{"@type":"HowToStep","name":"Step back-left","text":"Step the left foot back to the start on the diagonal"},{"@type":"HowToStep","name":"Close home","text":"Close the feet together, back home and ready to repeat"}]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to do a Box step","description":"How to do the box step (dance): 4 phases targeting the full body, body weight, beginner level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs.","step":[{"@type":"HowToStep","name":"Right foot forward","text":"Step forward onto the right foot with an easy contralateral arm swing"},{"@type":"HowToStep","name":"Left foot side","text":"Transfer left to the side, keeping the torso lifted"},{"@type":"HowToStep","name":"Right foot back","text":"Step back onto the right foot to trace the third side of the box"},{"@type":"HowToStep","name":"Left foot closes home","text":"Close the left foot and settle over both feet, completing the square"}]}</script>
     <script>
       window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
     </script>
@@ -135,20 +135,20 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h2>How to do it</h2>
       <ol class="steps">
 <li>
-          <span class="step-name">Step forward-right<span class="step-dur">0.9s · flow</span></span>
-          <span class="step-cue">Step the right foot forward and out to the corner</span>
+          <span class="step-name">Right foot forward<span class="step-dur">0.9s · flow</span></span>
+          <span class="step-cue">Step forward onto the right foot with an easy contralateral arm swing</span>
         </li>
 <li>
-          <span class="step-name">Close the feet<span class="step-dur">0.7s · flow</span></span>
-          <span class="step-cue">Bring the left foot to meet it, standing tall on the corner</span>
+          <span class="step-name">Left foot side<span class="step-dur">0.85s · flow</span></span>
+          <span class="step-cue">Transfer left to the side, keeping the torso lifted</span>
         </li>
 <li>
-          <span class="step-name">Step back-left<span class="step-dur">0.9s · flow</span></span>
-          <span class="step-cue">Step the left foot back to the start on the diagonal</span>
+          <span class="step-name">Right foot back<span class="step-dur">0.9s · flow</span></span>
+          <span class="step-cue">Step back onto the right foot to trace the third side of the box</span>
         </li>
 <li>
-          <span class="step-name">Close home<span class="step-dur">0.7s · settle</span></span>
-          <span class="step-cue">Close the feet together, back home and ready to repeat</span>
+          <span class="step-name">Left foot closes home<span class="step-dur">0.85s · settle</span></span>
+          <span class="step-cue">Close the left foot and settle over both feet, completing the square</span>
         </li>
       </ol>
 
@@ -159,43 +159,50 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   rig humanoid
   pose start = standing
 
-  step &quot;Step forward-right&quot; 0.9s flow:
-    hip_right: flex 35
-    knee_right: flex 40
-    ankle_right: plantarflex 40
-    shoulder_left: flex 25
-    shoulder_right: extend 15
-    travel: -0.35 0.35
+  step &quot;Right foot forward&quot; 0.9s flow:
+    hip_right: flex 30
+    knee_right: flex 32
+    ankle_right: plantarflex 24
+    shoulder_left: flex 22
+    shoulder_right: extend 12
+    travel: 0 0.32
     pin: foot_left floor
-    cue &quot;Step the right foot forward and out to the corner&quot;
+    cue &quot;Step forward onto the right foot with an easy contralateral arm swing&quot;
 
-  step &quot;Close the feet&quot; 0.7s flow:
+  step &quot;Left foot side&quot; 0.85s flow:
     hip_right: flex 0
     knee_right: flex 0
     ankle_right: plantarflex 0
-    shoulders: flex 0
-    travel: -0.35 0.35
-    ground-lock: feet
-    cue &quot;Bring the left foot to meet it, standing tall on the corner&quot;
-
-  step &quot;Step back-left&quot; 0.9s flow:
-    hip_left: flex 35
-    knee_left: flex 40
-    ankle_left: plantarflex 40
-    shoulder_right: flex 25
-    shoulder_left: extend 15
-    travel: 0 0
+    hip_left: abduct 24
+    knee_left: flex 22
+    ankle_left: plantarflex 20
+    shoulder_left: flex 0
+    shoulder_right: flex 20
+    travel: -0.32 0.32
     pin: foot_right floor
-    cue &quot;Step the left foot back to the start on the diagonal&quot;
+    cue &quot;Transfer left to the side, keeping the torso lifted&quot;
 
-  step &quot;Close home&quot; 0.7s settle:
-    hip_left: flex 0
+  step &quot;Right foot back&quot; 0.9s flow:
+    hip_left: abduct 0
     knee_left: flex 0
     ankle_left: plantarflex 0
+    hip_right: extend 18
+    knee_right: flex 30
+    ankle_right: plantarflex 24
+    shoulder_right: flex 0
+    shoulder_left: flex 22
+    travel: -0.32 0
+    pin: foot_left floor
+    cue &quot;Step back onto the right foot to trace the third side of the box&quot;
+
+  step &quot;Left foot closes home&quot; 0.85s settle:
+    hip_right: extend 0
+    knee_right: flex 0
+    ankle_right: plantarflex 0
     shoulders: flex 0
     travel: 0 0
     ground-lock: feet
-    cue &quot;Close the feet together, back home and ready to repeat&quot;
+    cue &quot;Close the left foot and settle over both feet, completing the square&quot;
 
   repeat 4
 </code></pre>

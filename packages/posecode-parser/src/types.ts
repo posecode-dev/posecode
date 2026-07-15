@@ -7,7 +7,8 @@
  * convention documented in `joints.ts` and `spec/SPEC.md`.
  */
 
-export const POSECODE_VERSION = "0.1";
+/** Version of the parsed Posecode language/IR contract. */
+export const POSECODE_VERSION = "0.2";
 
 export type Axis = "x" | "y" | "z";
 

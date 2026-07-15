@@ -22,7 +22,7 @@ export interface PosecodeServerOptions {
 
 export function createPosecodeServer(opts: PosecodeServerOptions = {}): McpServer {
   const baseUrl = opts.baseUrl ?? DEFAULT_BASE_URL;
-  const server = new McpServer({ name: "posecode", version: "0.1.0" });
+  const server = new McpServer({ name: "posecode", version: "0.2.0" });
 
   const sourceSchema = {
     source: z.string().describe("The full .posecode document text"),

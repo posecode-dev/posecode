@@ -8,11 +8,11 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <meta name="description" content="How to do the chassé (dance): 4 phases targeting the full body, body weight, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
+    <meta name="description" content="How to do the chassé (dance): 6 phases targeting the full body, body weight, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
     <link rel="canonical" href="https://posecode.org/moves/chasse.html" />
     <meta name="theme-color" content="#0a0d12" />
     <meta property="og:title" content="Chassé: How to Do It (Animated 3D Guide) | Posecode" />
-    <meta property="og:description" content="How to do the chassé (dance): 4 phases targeting the full body, body weight, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
+    <meta property="og:description" content="How to do the chassé (dance): 6 phases targeting the full body, body weight, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://posecode.org/moves/chasse.html" />
     <meta property="og:site_name" content="Posecode" />
@@ -99,7 +99,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 @media(max-width:600px){.wrap{padding:0 18px}}
 </style>
     <link rel="stylesheet" href="/content-theme.css" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to do a Chassé","description":"How to do the chassé (dance): 4 phases targeting the full body, body weight, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs.","step":[{"@type":"HowToStep","name":"Reach & push","text":"Reach the lead foot out and push off to travel sideways"},{"@type":"HowToStep","name":"Gallop close","text":"Chase the trailing foot to the lead: feet meet in the air"},{"@type":"HowToStep","name":"Reach & push back","text":"Change direction and travel back the other way"},{"@type":"HowToStep","name":"Gallop home","text":"Close home, ready to chassé again"}]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to do a Chassé","description":"How to do the chassé (dance): 6 phases targeting the full body, body weight, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs.","step":[{"@type":"HowToStep","name":"Right foot reaches","text":"Reach the right foot sideways and push away from the left leg"},{"@type":"HowToStep","name":"Left foot chases","text":"Let the left foot chase under the body without breaking the sideways flow"},{"@type":"HowToStep","name":"Right foot reaches again","text":"Reach right once more and finish the outward chassé"},{"@type":"HowToStep","name":"Left foot reaches back","text":"Reverse cleanly and reach the left foot back across the floor"},{"@type":"HowToStep","name":"Right foot chases","text":"Let the right foot chase under the body on the return"},{"@type":"HowToStep","name":"Left foot closes home","text":"Close home over both feet and let the momentum resolve"}]}</script>
     <script>
       window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
     </script>
@@ -135,20 +135,28 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h2>How to do it</h2>
       <ol class="steps">
 <li>
-          <span class="step-name">Reach &amp; push<span class="step-dur">0.8s · settle</span></span>
-          <span class="step-cue">Reach the lead foot out and push off to travel sideways</span>
+          <span class="step-name">Right foot reaches<span class="step-dur">0.65s · flow</span></span>
+          <span class="step-cue">Reach the right foot sideways and push away from the left leg</span>
         </li>
 <li>
-          <span class="step-name">Gallop close<span class="step-dur">0.6s · drive</span></span>
-          <span class="step-cue">Chase the trailing foot to the lead: feet meet in the air</span>
+          <span class="step-name">Left foot chases<span class="step-dur">0.5s · flow</span></span>
+          <span class="step-cue">Let the left foot chase under the body without breaking the sideways flow</span>
         </li>
 <li>
-          <span class="step-name">Reach &amp; push back<span class="step-dur">0.8s · settle</span></span>
-          <span class="step-cue">Change direction and travel back the other way</span>
+          <span class="step-name">Right foot reaches again<span class="step-dur">0.65s · flow</span></span>
+          <span class="step-cue">Reach right once more and finish the outward chassé</span>
         </li>
 <li>
-          <span class="step-name">Gallop home<span class="step-dur">0.6s · drive</span></span>
-          <span class="step-cue">Close home, ready to chassé again</span>
+          <span class="step-name">Left foot reaches back<span class="step-dur">0.65s · flow</span></span>
+          <span class="step-cue">Reverse cleanly and reach the left foot back across the floor</span>
+        </li>
+<li>
+          <span class="step-name">Right foot chases<span class="step-dur">0.5s · flow</span></span>
+          <span class="step-cue">Let the right foot chase under the body on the return</span>
+        </li>
+<li>
+          <span class="step-name">Left foot closes home<span class="step-dur">0.7s · settle</span></span>
+          <span class="step-cue">Close home over both feet and let the momentum resolve</span>
         </li>
       </ol>
 
@@ -159,47 +167,73 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   rig humanoid
   pose start = standing
 
-  step &quot;Reach &amp; push&quot; 0.8s settle:
-    hip_right: flex 30
-    knee_right: flex 25
-    ankle_right: plantarflex 25
+  step &quot;Right foot reaches&quot; 0.65s flow:
+    hip_right: abduct 26
+    knee_right: flex 20
+    ankle_right: plantarflex 24
     ankle_left: plantarflex 20
     shoulders: abduct 60
     elbows: flex 18
-    travel: 0.5 0
+    travel: 0.34 0
     pin: foot_left floor
     reach: foot_right floor
-    cue &quot;Reach the lead foot out and push off to travel sideways&quot;
+    cue &quot;Reach the right foot sideways and push away from the left leg&quot;
 
-  step &quot;Gallop close&quot; 0.6s drive:
-    hip_right: flex 0
+  step &quot;Left foot chases&quot; 0.5s flow:
+    hip_right: abduct 0
     knee_right: flex 0
     ankle_right: plantarflex 0
-    ankle_left: plantarflex 0
-    travel: 0.9 0
-    ground-lock: feet
-    cue &quot;Chase the trailing foot to the lead: feet meet in the air&quot;
+    hip_left: abduct 18
+    knee_left: flex 22
+    ankle_left: plantarflex 24
+    travel: 0.66 0
+    pin: foot_right floor
+    cue &quot;Let the left foot chase under the body without breaking the sideways flow&quot;
 
-  step &quot;Reach &amp; push back&quot; 0.8s settle:
-    hip_left: flex 30
-    knee_left: flex 25
-    ankle_left: plantarflex 25
+  step &quot;Right foot reaches again&quot; 0.65s flow:
+    hip_left: abduct 0
+    knee_left: flex 0
+    ankle_left: plantarflex 18
+    hip_right: abduct 26
+    knee_right: flex 20
+    ankle_right: plantarflex 24
+    travel: 1 0
+    pin: foot_left floor
+    reach: foot_right floor
+    cue &quot;Reach right once more and finish the outward chassé&quot;
+
+  step &quot;Left foot reaches back&quot; 0.65s flow:
+    hip_right: abduct 0
+    knee_right: flex 0
     ankle_right: plantarflex 20
-    travel: 0.4 0
+    hip_left: abduct 26
+    knee_left: flex 20
+    ankle_left: plantarflex 24
+    travel: 0.66 0
     pin: foot_right floor
     reach: foot_left floor
-    cue &quot;Change direction and travel back the other way&quot;
+    cue &quot;Reverse cleanly and reach the left foot back across the floor&quot;
 
-  step &quot;Gallop home&quot; 0.6s drive:
-    hip_left: flex 0
+  step &quot;Right foot chases&quot; 0.5s flow:
+    hip_left: abduct 0
     knee_left: flex 0
     ankle_left: plantarflex 0
-    ankle_right: plantarflex 0
+    hip_right: abduct 18
+    knee_right: flex 22
+    ankle_right: plantarflex 24
+    travel: 0.34 0
+    pin: foot_left floor
+    cue &quot;Let the right foot chase under the body on the return&quot;
+
+  step &quot;Left foot closes home&quot; 0.7s settle:
+    hip_right: abduct 0
+    knee_right: flex 0
+    ankles: plantarflex 0
     shoulders: abduct 0
     elbows: flex 0
     travel: 0 0
     ground-lock: feet
-    cue &quot;Close home, ready to chassé again&quot;
+    cue &quot;Close home over both feet and let the momentum resolve&quot;
 
   repeat 4
 </code></pre>

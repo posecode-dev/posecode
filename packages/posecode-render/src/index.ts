@@ -1105,8 +1105,8 @@ function floorHandSidesOf(
 ): Set<"left" | "right"> {
   const sides = new Set<"left" | "right">();
   const add = (effector: string): void => {
-    if (effector.endsWith("_left") || effector === "hands") sides.add("left");
-    if (effector.endsWith("_right") || effector === "hands") sides.add("right");
+    if (effector === "hands" || effector === "hand_left") sides.add("left");
+    if (effector === "hands" || effector === "hand_right") sides.add("right");
   };
   for (const r of reaches) if (r.target === "floor") add(r.effector);
   for (const p of pins) if (p.anchor === "floor") add(p.effector);

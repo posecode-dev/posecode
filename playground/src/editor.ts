@@ -75,6 +75,10 @@ const ACTIONS = new Set([
   "plantarflex",
 ]);
 const ATOMS = new Set([
+  "flow",
+  "settle",
+  "drive",
+  "snap",
   "linear",
   "ease-in",
   "ease-out",

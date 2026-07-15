@@ -446,6 +446,26 @@ describe("ground-lock (shared solver)", () => {
     expect(leftSole).toBeGreaterThan(0.1);
   });
 
+  it("normalizes and plants a human-readable single-foot lock", () => {
+    const source = [
+      'posecode exercise "Layup"',
+      "  rig humanoid",
+      "  pose start = standing",
+      '  step "Plant" 1s settle:',
+      "    knee_left: flex 86",
+      "    hip_left: flex 62",
+      "    ground-lock: left foot",
+    ].join("\n");
+    const { ir, errors } = parse(source);
+    expect(errors).toEqual([]);
+    expect(ir?.phases[0]?.groundLock).toEqual(["foot_left"]);
+
+    const m = posedRaw(source);
+    applyGroundLock(m, ir!.phases[0]!.groundLock);
+    const soleY = new THREE.Box3().setFromObject(m.bones.get("ankle_left")!).min.y;
+    expect(Math.abs(soleY)).toBeLessThan(0.01);
+  });
+
   it("is a no-op when no effectors are ground-locked", () => {
     const m = posedRaw(
       [

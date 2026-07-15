@@ -99,7 +99,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 @media(max-width:600px){.wrap{padding:0 18px}}
 </style>
     <link rel="stylesheet" href="/content-theme.css" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to do a Tendu","description":"How to do the tendu (dance): 2 phases targeting the hip flexors, body weight, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs.","step":[{"@type":"HowToStep","name":"Point front","text":"Brush the right foot forward to a fully pointed tendu, leg turned out"},{"@type":"HowToStep","name":"Close","text":"Draw the foot back to first position, heel down"}]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to do a Tendu","description":"How to do the tendu (dance): 2 phases targeting the hip flexors, body weight, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs.","step":[{"@type":"HowToStep","name":"Brush and point","text":"Brush the right foot forward to a fully pointed tendu, leg turned out"},{"@type":"HowToStep","name":"Close through the floor","text":"Draw the foot back to first position, heel down"}]}</script>
     <script>
       window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
     </script>
@@ -135,11 +135,11 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h2>How to do it</h2>
       <ol class="steps">
 <li>
-          <span class="step-name">Point front<span class="step-dur">1.6s · flow</span></span>
+          <span class="step-name">Brush and point<span class="step-dur">1.8s · settle</span></span>
           <span class="step-cue">Brush the right foot forward to a fully pointed tendu, leg turned out</span>
         </li>
 <li>
-          <span class="step-name">Close<span class="step-dur">1.6s · settle</span></span>
+          <span class="step-name">Close through the floor<span class="step-dur">1.8s · settle</span></span>
           <span class="step-cue">Draw the foot back to first position, heel down</span>
         </li>
       </ol>
@@ -151,7 +151,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   rig humanoid
   pose start = standing
 
-  step &quot;Point front&quot; 1.6s flow:
+  step &quot;Brush and point&quot; 1.8s settle:
     hip_right: flex 22
     hip_right: rotate-out 30
     knee_right: extend 0
@@ -161,7 +161,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     pin: foot_left floor
     cue &quot;Brush the right foot forward to a fully pointed tendu, leg turned out&quot;
 
-  step &quot;Close&quot; 1.6s settle:
+  step &quot;Close through the floor&quot; 1.8s settle:
     hip_right: flex 0
     hip_right: rotate-out 0
     ankle_right: plantarflex 0

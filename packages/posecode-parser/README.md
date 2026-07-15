@@ -23,7 +23,7 @@ const { ir, warnings, errors } = parse(`
     rig humanoid
     pose start = standing
 
-    step "Descend" 1.6s ease-in-out:
+    step "Descend" 1.6s settle:
       hips: flex 80
       knees: flex 95
       ground-lock: feet
@@ -35,6 +35,25 @@ if (errors.length === 0 && ir) {
   // Pass `ir` to posecode-render to animate it, or inspect it directly.
 }
 ```
+
+## Validate a movement library
+
+Version 0.2 includes a zero-config validator for local files and directories:
+
+```bash
+npx posecode-parser@0.2.0 validate ./movements
+npx posecode-parser@0.2.0 validate --strict ./movements
+```
+
+The command recurses through directories, prints file-and-line diagnostics, and
+exits non-zero for parse errors. `--strict` also fails on ROM-clamp warnings;
+`--json` emits machine-readable results for CI.
+
+## Timing modes
+
+Canonical modes are `flow`, `settle`, `drive`, `snap`, and `linear`. The v0.1
+aliases `ease-in`, `ease-out`, and `ease-in-out` remain accepted so existing
+movement files keep working.
 
 `parse()` never throws: malformed or out-of-range documents come back as
 structured `errors`/`warnings` instead. Every joint angle in `ir` is hard-clamped

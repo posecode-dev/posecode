@@ -62,7 +62,11 @@ function slugTitle(label) {
 }
 
 async function main() {
-  const server = await createServer({ root: playgroundRoot, server: { middlewareMode: true } });
+  const server = await createServer({
+    root: playgroundRoot,
+    appType: "custom",
+    server: { middlewareMode: true, hmr: false, ws: false },
+  });
   let PRESETS;
   try {
     ({ PRESETS } = await server.ssrLoadModule("/src/presets.ts"));
@@ -199,7 +203,7 @@ ${stepsHtml}
   const specHtml = pageShell({
     title: "Posecode Language Specification: The .posecode Kinematic Motion DSL",
     description:
-      "The full Posecode v0.1 grammar, joints, actions, and range-of-motion tables: a small text language LLMs write to describe human movement as an animated 3D figure.",
+      "The full Posecode v0.2 grammar, timing modes, joints, actions, and range-of-motion tables: a small text language LLMs write to describe human movement as an animated 3D figure.",
     canonicalPath: "/spec.html",
     bodyHtml: `<p class="eyebrow">Reference</p>\n${renderMarkdown(specMd)}`,
   });

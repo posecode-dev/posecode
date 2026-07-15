@@ -6,7 +6,8 @@ We actively support and fix security issues in the following versions of Posecod
 
 | Version | Supported |
 | ------- | --------- |
-| v0.1.x  | Yes       |
+| v0.2.x  | Yes       |
+| v0.1.x  | Security fixes only |
 
 ---
 

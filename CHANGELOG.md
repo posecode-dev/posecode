@@ -7,8 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-15
+
 ### Added
 
+- **Canonical timing modes**: `flow`, `settle`, `drive`, `snap`, and `linear`
+  now describe continuous motion, deliberate rests, acceleration, and sharp
+  arrivals. The v0.1 easing spellings remain accepted as deprecated aliases.
+- **Third-party validation CLI**: `npx posecode-parser@0.2.0 validate <path>`
+  recursively checks `.posecode` libraries, with `--strict` and `--json` modes
+  for CI.
+- **Embed compatibility metadata**: the CDN bundle exports `version`,
+  `languageVersion`, and `validatePosecode()`. Player ready/error events now
+  include structured version and diagnostic details, while host elements expose
+  a machine-readable loading/ready/error state.
+- **Release contract checks**: CI builds the publishable package chain so a
+  source-only language change cannot land without a valid CDN bundle.
 - **Realistic human figure**: the playground, landing hero, and `<posecode-player>` embeds now render a fully rigged, textured human character (hands with articulated fingers, sneakers, face) instead of the procedural capsule mannequin. All solving (FK, ground-lock, pins, reach-IK) still runs on the driver skeleton, rebuilt to the character's exact proportions and retargeted bone-for-bone every frame; the procedural figure remains as an automatic fallback (and via `?figure=classic` / `character="off"`).
 - **Self-collision resolution**: a capsule-based de-penetration pass keeps forearms/hands out of the torso, head, and legs (and shins out of each other), clamped to healthy ROM, so limbs no longer pass through the body mid-movement.
 - **Solid props**: props now declare blocking faces (the wall's surface, the chair's backrest and seat edge, the box's near face) and a contact pass keeps the body out of them — translating the whole figure along the face normal, or bending the offending leg's hip clear (ROM-clamped). Limbs pinned/gripped/reached to a prop anchor stay exempt as declared support. A new `solid-props` eval invariant (independent geometry re-derivation) guards every prop movement against this bug class.

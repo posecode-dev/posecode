@@ -1,6 +1,6 @@
 {
   "name": "posecode-monorepo",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Posecode: a kinematic motion protocol for LLMs. Describe 3D human movement as text; render it in the browser.",
   "license": "MIT",
@@ -15,6 +15,7 @@
     "coverage": "vitest run --coverage",
     "dev": "npm run dev -w playground",
     "build": "npm run build -w playground",
+    "build:packages": "npm run build -w posecode-parser && npm run build -w posecode-share && npm run build -w posecode-render && npm run build -w posecode-embed && npm run build -w posecode-mcp",
     "prepare:xbot": "node scripts/prepare-xbot.mjs",
     "eval": "tsx packages/posecode-eval/src/cli.ts",
     "video:cut2": "remotion render video/cut2/index.tsx PosecodeCut2 docs/launch-media/posecode-cut2-builder-16x9.mp4 --public-dir video/cut2/public --codec h264 --crf 16",

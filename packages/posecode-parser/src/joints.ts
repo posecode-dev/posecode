@@ -143,7 +143,6 @@ const GROUND_LOCK_EFFECTOR_SET = new Set<string>(GROUND_LOCK_EFFECTOR_NAMES);
 export function isGroundLockEffector(name: string): boolean {
   return GROUND_LOCK_EFFECTOR_SET.has(name);
 }
-
 const EFFECTOR_SIDE_SET = new Set<string>(EFFECTOR_SIDES);
 
 /**
