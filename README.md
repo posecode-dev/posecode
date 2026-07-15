@@ -62,6 +62,46 @@ Ask an LLM to explain physical movement and it usually returns unstructured pros
   </sub>
 </p>
 
+For example:
+
+> Bend your knees, move your hips backward, and keep your chest upright.
+
+A human may understand that instruction, but a renderer cannot reliably determine:
+
+- which joints should move,
+- by how many degrees,
+- in which coordinate frame,
+- over what duration,
+- in what sequence,
+- or within which physical limits.
+
+Large language models can often reason about the components of human movement, but they lack a standardized syntax for expressing that reasoning in a renderable and testable form.
+
+Posecode provides that missing representation.
+
+### See Posecode in 28 seconds
+
+From an LLM prompt to editable Posecode, validated 3D rendering, MCP tools,
+and a one-script web embed.
+
+<p align="center">
+  <a href="docs/launch-media/posecode-cut2-builder-16x9.mp4">
+    <img
+      src="docs/launch-media/posecode-cut2-payoff.png"
+      width="800"
+      alt="Watch the 28-second Posecode builder demo"
+    />
+  </a>
+</p>
+
+<p align="center">
+  <a href="docs/launch-media/posecode-cut2-builder-16x9.mp4"><b>▶ Watch the 28-second builder demo</b></a>
+  <br />
+  <sub>Plain text in. Smooth, programmable 3D motion out.</sub>
+</p>
+
+### Movement examples
+
 <table align="center">
   <tr>
     <td align="center">
@@ -81,23 +121,6 @@ Ask an LLM to explain physical movement and it usually returns unstructured pros
     </td>
   </tr>
 </table>
-
-For example:
-
-> Bend your knees, move your hips backward, and keep your chest upright.
-
-A human may understand that instruction, but a renderer cannot reliably determine:
-
-- which joints should move,
-- by how many degrees,
-- in which coordinate frame,
-- over what duration,
-- in what sequence,
-- or within which physical limits.
-
-Large language models can often reason about the components of human movement, but they lack a standardized syntax for expressing that reasoning in a renderable and testable form.
-
-Posecode provides that missing representation.
 
 ---
 
