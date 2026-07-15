@@ -97,6 +97,34 @@ describe("parse", () => {
     expect(errors[0]!.message).toMatch(/unknown joint/i);
   });
 
+  it("accepts per-side ground-lock effectors", () => {
+    const src = [
+      'posecode exercise "Single-leg pivot"',
+      "  rig humanoid",
+      '  step "Turn" 1s linear:',
+      "    turn: 180",
+      "    ground-lock: foot_right",
+    ].join("\n");
+    const { ir, errors } = parse(src);
+    expect(errors).toEqual([]);
+    expect(ir!.phases[0]!.groundLock).toEqual(["foot_right"]);
+  });
+
+  it("reports a line-anchored error for an unsupported ground-lock effector", () => {
+    const src = [
+      'posecode exercise "Typo"',
+      "  rig humanoid",
+      '  step "Turn" 1s linear:',
+      "    turn: 180",
+      "    ground-lock: shoe_right",
+    ].join("\n");
+    const { ir, errors } = parse(src);
+    expect(ir).toBeNull();
+    expect(errors).toEqual([
+      { line: 5, message: 'unknown ground-lock effector: "shoe_right"' },
+    ]);
+  });
+
   it("reports an error when a step child has no enclosing step", () => {
     const src = [
       'posecode exercise "Orphan"',

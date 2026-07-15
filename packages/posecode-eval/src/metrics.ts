@@ -324,8 +324,10 @@ export function feetCenterSkateDistance(previous: PhasePose, pose: PhasePose): n
 }
 
 export function footIsSupported(pose: PhasePose, side: "left" | "right"): boolean {
-  return pose.groundLock.includes("feet") || pose.pins.some((p) =>
-    (p.effector === "feet" || p.effector === `foot_${side}`) && p.anchor === "floor");
+  return pose.groundLock.includes("feet")
+    || pose.groundLock.includes(`foot_${side}`)
+    || pose.pins.some((p) =>
+      (p.effector === "feet" || p.effector === `foot_${side}`) && p.anchor === "floor");
 }
 
 /** Lowest bone height in the pose (should never be much below 0). */

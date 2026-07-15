@@ -53,8 +53,10 @@ export {
   JOINT_NAMES,
   ACTION_NAMES,
   EFFECTOR_NAMES,
+  GROUND_LOCK_EFFECTOR_NAMES,
   expandJoint,
   expandEffector,
+  isGroundLockEffector,
   actionAxis,
   boneType,
 } from "./joints.js";

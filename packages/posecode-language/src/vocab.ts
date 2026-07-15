@@ -11,6 +11,7 @@ import {
   MODES,
   LEGACY_MODE_ALIASES,
   EFFECTOR_NAMES,
+  GROUND_LOCK_EFFECTOR_NAMES,
 } from "posecode-parser";
 
 export { JOINT_NAMES, ACTION_NAMES, EASINGS, MODES, LEGACY_MODE_ALIASES };
@@ -22,7 +23,7 @@ export const KINDS = ["exercise", "stretch", "posture"];
 export const POSES = ["neutral", "standing", "plank", "supine", "prone", "seated"];
 
 /** Effectors that can be ground-locked. */
-export const EFFECTORS = ["hands", "feet"];
+export const EFFECTORS = [...GROUND_LOCK_EFFECTOR_NAMES];
 
 /** Reach/pin effectors (groups + per-side aliases), sourced from the parser. */
 export const REACH_EFFECTORS = EFFECTOR_NAMES;
@@ -49,7 +50,7 @@ export const KEYWORD_DOCS: Record<string, string> = {
   snap: "Timing mode: fast, near-immediate arrival — an accent.",
   linear: "Timing mode: constant velocity — intentionally mechanical.",
   repeat: "How many times the movement loops.",
-  "ground-lock": "Pins effectors (hands / feet) to the floor for this phase. Planted feet auto-level flat to the floor unless the ankle is plantarflexed (tiptoe).",
+  "ground-lock": "Pins grouped or per-side effectors to the floor for this phase: `ground-lock: feet`, `ground-lock: foot_right`. Planted feet auto-level flat unless the ankle is plantarflexed (tiptoe).",
   reach:
     "Drives an effector to a target via ROM-constrained IK: `reach: hand_left ankle_left`, `reach: hands floor`.",
   pin: "Moves the body so an effector sits on an anchor: `pin: hands bar` (hang, pull up, step up, dip).",

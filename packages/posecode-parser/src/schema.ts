@@ -60,6 +60,7 @@ const stepSchema = z.object({
   easing: z.enum(MODES),
   targets: z.array(jointTargetSchema),
   groundLock: z.array(z.string()),
+  groundLockLine: z.number().optional(),
   reaches: z.array(reachSchema),
   pins: z.array(pinSchema),
   grips: z.array(pinSchema),

@@ -1110,7 +1110,7 @@ function floorHandSidesOf(
   };
   for (const r of reaches) if (r.target === "floor") add(r.effector);
   for (const p of pins) if (p.anchor === "floor") add(p.effector);
-  if (groundLock.includes("hands")) add("hands");
+  for (const effector of groundLock) add(effector);
   return sides;
 }
 

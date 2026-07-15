@@ -124,8 +124,11 @@ research §5.1 normative tables. Selected ceilings (degrees):
 2. **Grounding**: the figure is dropped so its lowest point rests on the floor
    (a bounding-box drop), which grounds standing, plank, and the lying/seated
    poses alike.
-3. **Ground-lock IK**: effectors listed in `ground-lock` (`hands`, `feet`) are
-   pinned to their planted floor position so they stay put while the body moves.
+3. **Ground-lock IK**: effectors listed in `ground-lock` (`hands`, `forearms`,
+   `feet`, or the per-side aliases `hand_left|hand_right`,
+   `elbow_left|elbow_right`, `foot_left|foot_right`) are pinned to their planted
+   floor position so they stay put while the body moves. Unsupported effector
+   names are line-anchored validation errors.
 4. **Reach-IK**: a `reach:` line drives an effector (`hand_left|hand_right|
    foot_left|foot_right`, or the groups `hands`/`feet` for both sides) to a
    world **target** via Cyclic Coordinate Descent (CCD) over the arm/leg chain.
@@ -202,7 +205,7 @@ interface PosecodeIR {
     durationSec: number;
     easing: "linear" | "ease-in" | "ease-out" | "ease-in-out";
     targets: { boneId: string; euler: { x: number; y: number; z: number } }[];
-    groundLock: string[];   // ["hands","feet"]
+    groundLock: string[];   // ["hands","feet"] or ["foot_right"]
     cue?: string;
   }[];
 }
