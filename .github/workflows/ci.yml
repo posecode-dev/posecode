@@ -25,6 +25,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Build publishable packages
+        run: npm run build:packages
+
       - name: Build playground
         run: npm run build
 

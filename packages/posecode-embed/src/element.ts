@@ -16,8 +16,10 @@
  */
 
 import { parse } from "posecode-parser";
+import type { ParseError, Warning } from "posecode-parser";
 import { encodePosecode } from "posecode-share";
 import type { Viewer } from "posecode-render";
+import { languageVersion, version } from "./compat.js";
 import { parseOptions, type PlayerOptions } from "./options.js";
 import { resolveSource } from "./source.js";
 import { PLAYER_CSS } from "./styles.js";
@@ -28,11 +30,26 @@ const PAUSE = "❚❚";
 /** Where the "open in playground" link points; overridable per element. */
 const DEFAULT_PLAYGROUND = "https://posecode.org/play";
 
+export interface PosecodeReadyDetail {
+  version: string;
+  languageVersion: string;
+  warnings: Warning[];
+}
+
+export interface PosecodeErrorDetail {
+  error: string;
+  code: "source" | "parse" | "render";
+  version: string;
+  languageVersion: string;
+  errors?: ParseError[];
+}
+
 export class PosecodePlayerElement extends HTMLElement {
   static readonly tagName = "posecode-player";
 
   #viewer: Viewer | null = null;
   #io: IntersectionObserver | null = null;
+  #connectTimer: number | null = null;
   #booted = false;
   #root: ShadowRoot;
   #canvas!: HTMLCanvasElement;
@@ -46,9 +63,25 @@ export class PosecodePlayerElement extends HTMLElement {
   }
 
   connectedCallback(): void {
-    // Capture inline text BEFORE we replace the light DOM with shadow markup.
-    this.#source = this.textContent ?? "";
+    this.setAttribute("data-posecode-state", "loading");
+    this.setAttribute("data-posecode-version", version);
+    this.setAttribute("data-posecode-language-version", languageVersion);
     this.#renderChrome();
+    // A synchronous CDN script can define this element before the HTML parser
+    // has appended its inline text children. Wait one task so
+    // `<script ...></script><posecode-player>...</posecode-player>` works in a
+    // plain document, while doc/src attributes still boot immediately after.
+    this.#connectTimer = window.setTimeout(() => {
+      this.#connectTimer = null;
+      this.#startConnected();
+    }, 0);
+  }
+
+  #startConnected(): void {
+    if (!this.isConnected || this.#booted) return;
+    this.#source = this.textContent ?? "";
+    const link = this.#root.querySelector("a.link") as HTMLAnchorElement | null;
+    if (link) link.href = this.#playgroundUrl();
     // Boot immediately UNLESS the element is measurably off-screen, in which
     // case defer the heavy renderer until it scrolls into view. The bias is
     // toward booting: an embed must never stay blank because we couldn't
@@ -75,6 +108,8 @@ export class PosecodePlayerElement extends HTMLElement {
   }
 
   disconnectedCallback(): void {
+    if (this.#connectTimer !== null) window.clearTimeout(this.#connectTimer);
+    this.#connectTimer = null;
     this.#io?.disconnect();
     this.#io = null;
     this.#viewer?.dispose();
@@ -160,14 +195,18 @@ export class PosecodePlayerElement extends HTMLElement {
       src: this.getAttribute("src"),
       text: this.#source,
     });
-    if (!resolved.ok) return this.#showMessage(resolved.error, true);
+    if (!resolved.ok) return this.#showError(resolved.error, "source");
 
     // Keep the resolved source so the "Edit" link matches what's rendered.
     this.#source = resolved.source;
-    const { ir, errors } = parse(resolved.source);
+    const { ir, errors, warnings } = parse(resolved.source);
     if (!ir || errors.length > 0) {
       const detail = errors[0] ? `${errors[0].message} (line ${errors[0].line})` : "";
-      return this.#showMessage(`Couldn't parse this movement. ${detail}`.trim(), true);
+      return this.#showError(
+        `Couldn't parse this movement. ${detail}`.trim(),
+        "parse",
+        errors,
+      );
     }
 
     const opts = this.#options();
@@ -176,43 +215,55 @@ export class PosecodePlayerElement extends HTMLElement {
       matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     // Lazy-import the heavy renderer only once we actually have work to show.
-    const { createViewer } = await import("posecode-render");
-    const viewer = createViewer(this.#canvas, {
-      autoRotate: opts.autoRotate && !reduceMotion,
-      ...(opts.characterUrl ? { characterUrl: opts.characterUrl } : {}),
-    });
-    this.#viewer = viewer;
-    viewer.onPhase(({ phaseName }) => {
-      this.#phaseEl.textContent = phaseName === "reset" ? "" : phaseName;
-    });
-    viewer.load(ir);
-    viewer.setLoop(opts.loop);
-    viewer.setSpeed(opts.speed);
+    try {
+      const { createViewer } = await import("posecode-render");
+      const viewer = createViewer(this.#canvas, {
+        autoRotate: opts.autoRotate && !reduceMotion,
+        ...(opts.characterUrl ? { characterUrl: opts.characterUrl } : {}),
+      });
+      this.#viewer = viewer;
+      viewer.onPhase(({ phaseName }) => {
+        this.#phaseEl.textContent = phaseName === "reset" ? "" : phaseName;
+      });
+      viewer.load(ir);
+      viewer.setLoop(opts.loop);
+      viewer.setSpeed(opts.speed);
 
-    const shouldPlay = opts.autoplay && !reduceMotion;
-    if (shouldPlay) viewer.play();
-    this.#reflectPlaying(shouldPlay);
+      const shouldPlay = opts.autoplay && !reduceMotion;
+      if (shouldPlay) viewer.play();
+      this.#reflectPlaying(shouldPlay);
 
-    // Update the Edit link now that we know the real source.
-    const link = this.#root.querySelector("a.link") as HTMLAnchorElement | null;
-    if (link) link.href = this.#playgroundUrl();
+      // Update the Edit link now that we know the real source.
+      const link = this.#root.querySelector("a.link") as HTMLAnchorElement | null;
+      if (link) link.href = this.#playgroundUrl();
 
-    this.dispatchEvent(new CustomEvent("posecode:ready", { bubbles: true }));
+      this.setAttribute("data-posecode-state", "ready");
+      const detail: PosecodeReadyDetail = { version, languageVersion, warnings };
+      this.dispatchEvent(new CustomEvent("posecode:ready", { bubbles: true, detail }));
+    } catch {
+      this.#viewer?.dispose();
+      this.#viewer = null;
+      this.#showError("Couldn't start the Posecode renderer.", "render");
+    }
   }
 
   #reflectPlaying(playing: boolean): void {
     this.#playBtn.textContent = playing ? PAUSE : PLAY;
   }
 
-  #showMessage(text: string, isError: boolean): void {
+  #showError(text: string, code: PosecodeErrorDetail["code"], errors?: ParseError[]): void {
     const msg = document.createElement("div");
-    msg.className = isError ? "msg error" : "msg";
+    msg.className = "msg error";
     msg.textContent = text;
     this.#root.append(msg);
-    if (isError) {
-      this.dispatchEvent(
-        new CustomEvent("posecode:error", { bubbles: true, detail: { error: text } }),
-      );
-    }
+    this.setAttribute("data-posecode-state", "error");
+    const detail: PosecodeErrorDetail = {
+      error: text,
+      code,
+      version,
+      languageVersion,
+      ...(errors ? { errors } : {}),
+    };
+    this.dispatchEvent(new CustomEvent("posecode:error", { bubbles: true, detail }));
   }
 }

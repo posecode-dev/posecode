@@ -9,7 +9,7 @@ the movement as an animated 3D figure, right where a share link would have gone.
 ## Quick start (CDN, no build step)
 
 ```html
-<script src="https://unpkg.com/posecode-embed/dist/posecode-embed.js"></script>
+<script src="https://unpkg.com/posecode-embed@0.2.0/dist/posecode-embed.js"></script>
 
 <!-- 1. From a share token (what a posecode.org permalink carries) -->
 <posecode-player doc="cG9zZWNvZGUgZXhlcmNpc2Ug…"></posecode-player>
@@ -22,10 +22,10 @@ the movement as an animated 3D figure, right where a share link would have gone.
 posecode exercise "Lateral raise"
   rig humanoid
   pose start = standing
-  step "Raise" 1.4s ease-out:
+  step "Raise" 1.4s settle:
     shoulders: abduct 90
     elbows: flex 10
-  step "Lower" 1.6s ease-in:
+  step "Lower" 1.6s drive:
     shoulders: abduct 0
     elbows: flex 0
   repeat 8
@@ -34,6 +34,10 @@ posecode exercise "Lateral raise"
 
 The script auto-registers the element and boots each player when it scrolls into
 view. That's it.
+
+Pin a package version in production, as above, so a deployment always uses a
+known parser/render pair. A `src` URL can be relative or absolute; cross-origin
+movement files must be served with CORS permission.
 
 ## With a bundler
 
@@ -86,11 +90,33 @@ Boolean attributes accept `false` / `0` / `no` / `off` to turn them off, so
 
 ```js
 const player = document.querySelector("posecode-player");
-player.addEventListener("posecode:ready", () => player.viewer.pause());
-player.addEventListener("posecode:error", (e) => console.warn(e.detail.error));
+player.addEventListener("posecode:ready", (e) => {
+  console.log(e.detail.version, e.detail.languageVersion, e.detail.warnings);
+  player.viewer.pause();
+});
+player.addEventListener("posecode:error", (e) => {
+  console.warn(e.detail.code, e.detail.error, e.detail.errors);
+});
 
 player.toggle();       // play / pause
 player.viewer;         // the underlying render Viewer (null until booted)
+```
+
+The host element reflects `data-posecode-state="loading|ready|error"`, plus the
+package and language versions, for integration tests and monitoring. Existing
+listeners that only read `event.detail.error` remain compatible.
+
+CDN users can validate source without creating WebGL:
+
+```js
+const result = Posecode.validatePosecode(source);
+console.log(Posecode.version, Posecode.languageVersion, result.errors);
+```
+
+For a movement library in CI, run:
+
+```bash
+npx posecode-parser@0.2.0 validate --strict ./movements
 ```
 
 MIT-licensed, part of [Posecode](https://github.com/posecode-dev/posecode).

@@ -9,6 +9,9 @@
 import { tokenize, TokenizeError, type Line, type Token } from "./tokenizer.js";
 import type { ParseError } from "./types.js";
 import { normalizeMode, MODES } from "./schema.js";
+import { GROUND_LOCK_EFFECTOR_NAMES } from "./joints.js";
+
+const GROUND_LOCK_EFFECTORS = new Set<string>(GROUND_LOCK_EFFECTOR_NAMES);
 
 export interface AstJointTarget {
   joint: string;
@@ -110,9 +113,17 @@ export function parseToAst(source: string): ParseAstResult {
   };
 
   let current: AstStep | null = null;
+  let invalidStepIndent: number | null = null;
 
   for (let i = 1; i < lines.length; i++) {
     const ln = lines[i]!;
+    // A malformed step header already explains why the phase cannot be parsed.
+    // Ignore its indented children so authors get one actionable diagnostic
+    // instead of a cascade of misleading "outside of a step" errors.
+    if (invalidStepIndent !== null) {
+      if (ln.indent > invalidStepIndent) continue;
+      invalidStepIndent = null;
+    }
     const head = word(ln.tokens[0]);
     const t = ln.tokens;
 
@@ -175,6 +186,7 @@ export function parseToAst(source: string): ParseAstResult {
                 : 'expected `step "<name>" <duration> <mode>:`',
           });
           current = null;
+          invalidStepIndent = ln.indent;
           break;
         }
         current = {
@@ -219,10 +231,32 @@ function parseStepChild(ln: Line, current: AstStep | null): ParseError | null {
 
   if (head === "ground-lock") {
     if (!current) return { line: ln.line, message: "`ground-lock` outside of a step" };
-    const effectors = t
-      .slice(1)
-      .filter((tok) => tok.type === "word")
-      .map((tok) => tok.value);
+    if (t[1]?.type !== "colon") {
+      return { line: ln.line, message: "expected `ground-lock: <effectors>`" };
+    }
+    const words = t.slice(2).filter((tok) => tok.type === "word").map((tok) => tok.value);
+    const effectors: string[] = [];
+    for (let i = 0; i < words.length; i++) {
+      const value = words[i]!;
+      if (value === "and") continue;
+      const next = words[i + 1];
+      if ((value === "left" || value === "right") && next) {
+        const base = next === "hand" ? "hand" : next === "foot" ? "foot" :
+          next === "forearm" || next === "elbow" ? "elbow" : null;
+        if (base) {
+          effectors.push(`${base}_${value}`);
+          i++;
+          continue;
+        }
+      }
+      if (!GROUND_LOCK_EFFECTORS.has(value)) {
+        return { line: ln.line, message: `unknown ground-lock effector: "${value}"` };
+      }
+      effectors.push(value);
+    }
+    if (effectors.length === 0) {
+      return { line: ln.line, message: "`ground-lock` requires at least one effector" };
+    }
     current.groundLock = effectors;
     current.groundLockLine = ln.line;
     return null;

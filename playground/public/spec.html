@@ -8,11 +8,11 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <meta name="description" content="The full Posecode v0.1 grammar, joints, actions, and range-of-motion tables: a small text language LLMs write to describe human movement as an animated 3D figure." />
+    <meta name="description" content="The full Posecode v0.2 grammar, timing modes, joints, actions, and range-of-motion tables: a small text language LLMs write to describe human movement as an animated 3D figure." />
     <link rel="canonical" href="https://posecode.org/spec.html" />
     <meta name="theme-color" content="#0a0d12" />
     <meta property="og:title" content="Posecode Language Specification: The .posecode Kinematic Motion DSL" />
-    <meta property="og:description" content="The full Posecode v0.1 grammar, joints, actions, and range-of-motion tables: a small text language LLMs write to describe human movement as an animated 3D figure." />
+    <meta property="og:description" content="The full Posecode v0.2 grammar, timing modes, joints, actions, and range-of-motion tables: a small text language LLMs write to describe human movement as an animated 3D figure." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://posecode.org/spec.html" />
     <meta property="og:site_name" content="Posecode" />
@@ -121,10 +121,10 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     </header>
     <main class="wrap">
       <p class="eyebrow">Reference</p>
-<h1>Posecode Protocol Specification v0.1</h1>
+<h1>Posecode Protocol Specification v0.2</h1>
 <p>Posecode is a small text language for describing a single person's <strong>kinematic movement</strong> so it can be rendered as an animated 3D figure in a web browser.</p>
 <p>It is to human movement what Mermaid is to diagrams: an LLM (or a human) writes a compact, readable document; a client-side parser + renderer turns it into a moving mannequin. The model never produces 3D matrices: it expresses the *semantic phases* of a movement, which it already understands.</p>
-<ul><li><strong>Version keyword:</strong> documents declare nothing; this is <code>posecode 0.1</code>.</li><li><strong>File extension:</strong> <code>.posecode</code></li><li><strong>Compute model:</strong> generation is pure text (server-cheap); all 3D math runs</li></ul>
+<ul><li><strong>Version keyword:</strong> documents declare nothing; this is <code>posecode 0.2</code>.</li><li><strong>Compatibility:</strong> v0.2 parsers continue to accept the v0.1 easing aliases.</li><li><strong>File extension:</strong> <code>.posecode</code></li><li><strong>Compute model:</strong> generation is pure text (server-cheap); all 3D math runs</li></ul>
 <p>on the client (Three.js). See the project research §6.</p>
 <hr>
 <h2>1. Grammar</h2>
@@ -138,8 +138,8 @@ prop       = &quot;prop&quot; WORD ;                              (* chair|wall|
 pose       = &quot;pose&quot; &quot;start&quot; &quot;=&quot; WORD ;                  (* neutral|standing|plank|supine|prone|seated *)
 clip       = &quot;clip&quot; STRING ;                            (* optional mocap clip; renderer may retarget &amp; blend *)
 repeat     = &quot;repeat&quot; NUMBER ;
-step       = &quot;step&quot; STRING DURATION easing &quot;:&quot; { child } ;
-easing     = &quot;linear&quot; | &quot;ease-in&quot; | &quot;ease-out&quot; | &quot;ease-in-out&quot; ;
+step       = &quot;step&quot; STRING DURATION timingMode &quot;:&quot; { child } ;
+timingMode = &quot;flow&quot; | &quot;settle&quot; | &quot;drive&quot; | &quot;snap&quot; | &quot;linear&quot; ;
 child      = jointTarget | groundLock | reach | pin | turn | travel | cue ;
 jointTarget= joint &quot;:&quot; action [ NUMBER ] ;
 groundLock = &quot;ground-lock&quot; &quot;:&quot; effector { &quot;,&quot; effector } ;
@@ -150,6 +150,16 @@ travel     = &quot;travel&quot; &quot;:&quot; NUMBER NUMBER ;              (* mo
 cue        = &quot;cue&quot; STRING ;
 DURATION   = NUMBER &quot;s&quot; ;                                (* e.g. 2s, 1.5s *)</code></pre>
 <p>A <code>step</code> is one <strong>phase</strong> of the movement. Phases run in sequence; within a phase, all joint targets apply concurrently.</p>
+<p>Ground locks accept the groups <code>hands</code>, <code>forearms</code>, and <code>feet</code>, plus the single-side forms <code>hand_left|hand_right</code>, <code>elbow_left|elbow_right</code>, and <code>foot_left|foot_right</code>. Human-readable <code>left foot</code>, <code>right foot</code>, <code>left hand</code>, and related forms normalize to the canonical side-specific names.</p>
+<p>Timing modes describe how motion crosses the phase boundary:</p>
+<div class="table-wrap"><table><thead><tr><th>Mode</th><th>Use</th></tr></thead><tbody>
+<tr><td><code>flow</code></td><td>Carry velocity smoothly through the pose.</td></tr>
+<tr><td><code>settle</code></td><td>Decelerate into a deliberate rest.</td></tr>
+<tr><td><code>drive</code></td><td>Accelerate out of rest.</td></tr>
+<tr><td><code>snap</code></td><td>Arrive quickly and stop sharply.</td></tr>
+<tr><td><code>linear</code></td><td>Even timing without a shaped acceleration curve.</td></tr>
+</tbody></table></div>
+<p>Legacy v0.1 spellings remain valid and normalize to canonical modes: <code>ease-in</code> → <code>drive</code>, <code>ease-out</code> → <code>settle</code>, and <code>ease-in-out</code> → <code>settle</code>. New documents should use the canonical v0.2 names.</p>
 <hr>
 <h2>2. Joints</h2>
 <div class="table-wrap"><table><thead><tr><th>Group (plural)</th><th>Bones</th><th>Singular forms</th></tr></thead><tbody>
@@ -195,8 +205,8 @@ DURATION   = NUMBER &quot;s&quot; ;                                (* e.g. 2s, 1
 <p>&gt;  These are general literature values, not medical advice. Consult a &gt; qualified professional for physiotherapy or exercise prescription.</p>
 <hr>
 <h2>5. Rendering model</h2>
-<ol><li><strong>Forward kinematics</strong>: each phase sets joint angles; the renderer slerps</li></ol>
-<p>bone rotations between phases with the phase's easing.</p>
+<ol><li><strong>Forward kinematics</strong>: each phase sets joint angles; the renderer uses</li></ol>
+<p>C1-continuous quaternion splines between keyframes, shaped by the destination phase's timing mode.</p>
 <ol><li><strong>Grounding</strong>: the figure is dropped so its lowest point rests on the floor</li></ol>
 <p>(a bounding-box drop), which grounds standing, plank, and the lying/seated poses alike.</p>
 <ol><li><strong>Ground-lock IK</strong>: effectors listed in <code>ground-lock</code> (<code>hands</code>, <code>forearms</code>,</li></ol>
@@ -204,7 +214,7 @@ DURATION   = NUMBER &quot;s&quot; ;                                (* e.g. 2s, 1
 <ol><li><strong>Reach-IK</strong>: a <code>reach:</code> line drives an effector (`hand_left|hand_right|</li></ol>
 <p>foot_left|foot_right<code>, or the groups </code>hands<code>/</code>feet<code> for both sides) to a world <strong>target</strong> via Cyclic Coordinate Descent (CCD) over the arm/leg chain. A target is a body landmark bone (e.g. </code>ankle_left<code>), the keyword </code>floor<code>, or a prop anchor (</code>bar<code>, </code>seat<code>, </code>wall`). The solve is <strong>ROM-constrained</strong>: each iteration clamps every chain joint into its §4 Range-of-Motion limits (expressed as a per-axis box in the bone's local Euler frame), so a reach toward an unsafe or unreachable target settles on the closest *healthy* pose; solved angles obey the same hard limits as authored ones.</p>
 <ol><li><strong>Props</strong>: <code>prop chair|wall|bar|box|dip-bars</code> adds a scene object at a</li></ol>
-<p>fixed default placement (chair/wall behind, bar overhead, box in front, dip bars either side); its named anchors (<code>seat</code>, <code>wall</code>, <code>bar</code>, <code>box</code>, <code>bars</code>) become reach/pin targets.</p>
+<p>fixed default placement (chair/wall behind, bar overhead, box in front, dip bars either side); its named anchors (<code>seat</code>, <code>wall</code>, <code>bar</code>, <code>box</code>, <code>bars</code>) become reach/pin targets. Props are <strong>solid</strong>: each prop declares blocking faces (the wall's surface, the chair's backrest and seat edge, the box's near face) and a contact pass removes any body overlap — either by translating the whole figure out along the face normal (a wall-sit slides down the wall's *surface*, feet walking forward, instead of the torso hinging through the slab) or by bending the offending limb's hip clear, ROM-clamped like every other solve. Limbs pinned, gripped, or reached to a prop anchor are that phase's declared support and are exempt (a foot standing on the box top is not &quot;inside&quot; the box).</p>
 <ol><li><strong>Pins</strong>: <code>pin: &lt;effector&gt; &lt;anchor&gt;</code> translates the whole figure so the</li></ol>
 <p>effector sits on the anchor (effectors accept the same <code>hands</code>/<code>feet</code> groups as reach: <code>pin: hands bar</code> pins both). Where ground-lock keeps a foot on the floor and reach moves a limb to a target, a <strong>pin moves the body</strong> while the contact stays put, so the figure hangs from a bar, pulls up toward it, rises onto a box, or lowers into a dip as the joints work. Symmetric bar contacts resolve to side-specific anchors automatically (<code>bar.left</code> / <code>bar.right</code>, <code>bars.left</code> / <code>bars.right</code>). Contact post-processing also keeps floor-contacting soles level and gives bar-contacting wrists a stable overhand orientation; existing Posecode syntax remains unchanged.</p>
 <ol><li><strong>Spatial choreography</strong>: <code>turn: &lt;deg&gt;</code> rotates the figure's facing (yaw</li></ol>
@@ -213,12 +223,12 @@ DURATION   = NUMBER &quot;s&quot; ;                                (* e.g. 2s, 1
 <p>count surfaced to the UI.</p>
 <p>When a mocap clip is active, the renderer selects the take containing the most actual bone motion (rather than blindly choosing the longest embedded take), retargets and blends it, then restores solved terminal contacts on the visible character. Mocap therefore cannot overwrite a planted sole or pinned grip.</p>
 <p><strong>Start poses:</strong> <code>neutral</code>, <code>standing</code>, <code>plank</code>, <code>supine</code> (face-up), <code>prone</code> (face-down), <code>seated</code> (long-sit on the floor).</p>
-<p><strong>IK note:</strong> Three.js's bundled <code>CCDIKSolver</code> targets <code>SkinnedMesh</code>; the Posecode mannequin is rigid capsule segments, so Posecode implements CCD directly over the Object3D bone hierarchy (<code>posecode-render/ik.ts</code>) for both ground-lock and reach. Two-person/dual-IK and collision detection remain deferred (research §5.2, §6.2).</p>
+<p><strong>IK note:</strong> Three.js's bundled <code>CCDIKSolver</code> targets <code>SkinnedMesh</code>; the Posecode mannequin is rigid capsule segments, so Posecode implements CCD directly over the Object3D bone hierarchy (<code>posecode-render/ik.ts</code>) for both ground-lock and reach. Self-collision (limb-vs-body) and body-vs-prop contact are solved; two-person/ dual-IK and figure-vs-figure collision remain deferred (research §5.2, §6.2).</p>
 <hr>
 <h2>6. Intermediate Representation (IR)</h2>
 <p><code>parse(source)</code> returns <code>{ ir, warnings, errors }</code>. The IR is renderer-agnostic; angles are in <strong>degrees</strong>.</p>
 <pre class="code-block" data-lang="ts"><code>interface PosecodeIR {
-  version: string;          // &quot;0.1&quot;
+  version: string;          // &quot;0.2&quot;
   kind: string;             // &quot;exercise&quot; | &quot;stretch&quot; | &quot;posture&quot;
   name: string;
   rig: string;              // &quot;humanoid&quot;
@@ -227,7 +237,7 @@ DURATION   = NUMBER &quot;s&quot; ;                                (* e.g. 2s, 1
   phases: {
     name: string;
     durationSec: number;
-    easing: &quot;linear&quot; | &quot;ease-in&quot; | &quot;ease-out&quot; | &quot;ease-in-out&quot;;
+    easing: &quot;flow&quot; | &quot;settle&quot; | &quot;drive&quot; | &quot;snap&quot; | &quot;linear&quot;;
     targets: { boneId: string; euler: { x: number; y: number; z: number } }[];
     groundLock: string[];   // [&quot;hands&quot;,&quot;feet&quot;] or [&quot;foot_right&quot;]
     cue?: string;

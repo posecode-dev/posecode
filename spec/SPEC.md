@@ -1,4 +1,4 @@
-# Posecode Protocol Specification v0.1
+# Posecode Protocol Specification v0.2
 
 Posecode is a small text language for describing a single person's **kinematic
 movement** so it can be rendered as an animated 3D figure in a web browser.
@@ -8,7 +8,8 @@ a compact, readable document; a client-side parser + renderer turns it into a
 moving mannequin. The model never produces 3D matrices: it expresses the
 *semantic phases* of a movement, which it already understands.
 
-- **Version keyword:** documents declare nothing; this is `posecode 0.1`.
+- **Version keyword:** documents declare nothing; this is `posecode 0.2`.
+- **Compatibility:** v0.2 parsers continue to accept the v0.1 easing aliases.
 - **File extension:** `.posecode`
 - **Compute model:** generation is pure text (server-cheap); all 3D math runs
   on the client (Three.js). See the project research §6.
@@ -29,8 +30,8 @@ prop       = "prop" WORD ;                              (* chair|wall|bar|box|di
 pose       = "pose" "start" "=" WORD ;                  (* neutral|standing|plank|supine|prone|seated *)
 clip       = "clip" STRING ;                            (* optional mocap clip; renderer may retarget & blend *)
 repeat     = "repeat" NUMBER ;
-step       = "step" STRING DURATION easing ":" { child } ;
-easing     = "linear" | "ease-in" | "ease-out" | "ease-in-out" ;
+step       = "step" STRING DURATION timingMode ":" { child } ;
+timingMode = "flow" | "settle" | "drive" | "snap" | "linear" ;
 child      = jointTarget | groundLock | reach | pin | turn | travel | cue ;
 jointTarget= joint ":" action [ NUMBER ] ;
 groundLock = "ground-lock" ":" effector { "," effector } ;
@@ -44,6 +45,25 @@ DURATION   = NUMBER "s" ;                                (* e.g. 2s, 1.5s *)
 
 A `step` is one **phase** of the movement. Phases run in sequence; within a
 phase, all joint targets apply concurrently.
+
+Ground locks accept the groups `hands`, `forearms`, and `feet`, plus the
+single-side forms `hand_left|hand_right`, `elbow_left|elbow_right`, and
+`foot_left|foot_right`. Human-readable `left foot`, `right foot`, `left hand`,
+and related forms normalize to the canonical side-specific names.
+
+Timing modes describe how motion crosses the phase boundary:
+
+| Mode | Use |
+| --- | --- |
+| `flow` | Carry velocity smoothly through the pose. |
+| `settle` | Decelerate into a deliberate rest. |
+| `drive` | Accelerate out of rest. |
+| `snap` | Arrive quickly and stop sharply. |
+| `linear` | Even timing without a shaped acceleration curve. |
+
+Legacy v0.1 spellings remain valid and normalize to canonical modes:
+`ease-in` → `drive`, `ease-out` → `settle`, and `ease-in-out` → `settle`.
+New documents should use the canonical v0.2 names.
 
 ---
 
@@ -119,8 +139,9 @@ research §5.1 normative tables. Selected ceilings (degrees):
 
 ## 5. Rendering model
 
-1. **Forward kinematics**: each phase sets joint angles; the renderer slerps
-   bone rotations between phases with the phase's easing.
+1. **Forward kinematics**: each phase sets joint angles; the renderer uses
+   C1-continuous quaternion splines between keyframes, shaped by the destination
+   phase's timing mode.
 2. **Grounding**: the figure is dropped so its lowest point rests on the floor
    (a bounding-box drop), which grounds standing, plank, and the lying/seated
    poses alike.
@@ -194,7 +215,7 @@ angles are in **degrees**.
 
 ```ts
 interface PosecodeIR {
-  version: string;          // "0.1"
+  version: string;          // "0.2"
   kind: string;             // "exercise" | "stretch" | "posture"
   name: string;
   rig: string;              // "humanoid"
@@ -203,7 +224,7 @@ interface PosecodeIR {
   phases: {
     name: string;
     durationSec: number;
-    easing: "linear" | "ease-in" | "ease-out" | "ease-in-out";
+    easing: "flow" | "settle" | "drive" | "snap" | "linear";
     targets: { boneId: string; euler: { x: number; y: number; z: number } }[];
     groundLock: string[];   // ["hands","feet"] or ["foot_right"]
     cue?: string;

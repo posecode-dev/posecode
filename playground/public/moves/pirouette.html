@@ -8,11 +8,11 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <meta name="description" content="How to do the pirouette (dance): 3 phases targeting the full body, body weight, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
+    <meta name="description" content="How to do the pirouette (dance): 4 phases targeting the full body, body weight, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
     <link rel="canonical" href="https://posecode.org/moves/pirouette.html" />
     <meta name="theme-color" content="#0a0d12" />
     <meta property="og:title" content="Pirouette: How to Do It (Animated 3D Guide) | Posecode" />
-    <meta property="og:description" content="How to do the pirouette (dance): 3 phases targeting the full body, body weight, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
+    <meta property="og:description" content="How to do the pirouette (dance): 4 phases targeting the full body, body weight, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://posecode.org/moves/pirouette.html" />
     <meta property="og:site_name" content="Posecode" />
@@ -99,7 +99,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 @media(max-width:600px){.wrap{padding:0 18px}}
 </style>
     <link rel="stylesheet" href="/content-theme.css" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to do a Pirouette","description":"How to do the pirouette (dance): 3 phases targeting the full body, body weight, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs.","step":[{"@type":"HowToStep","name":"Prep - plié","text":"Plié to load the turn, arms rounded low in first"},{"@type":"HowToStep","name":"Spot & spin","text":"Push up to relevé, pull the arms in, and spin a full turn"},{"@type":"HowToStep","name":"Land","text":"Land softly through the feet, arms floating back to the sides"}]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to do a Pirouette","description":"How to do the pirouette (dance): 4 phases targeting the full body, body weight, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs.","step":[{"@type":"HowToStep","name":"Prep - plié","text":"Plié to load the turn, arms rounded low in first"},{"@type":"HowToStep","name":"Spot & spin","text":"Push up to relevé, pull the arms in, and spin a full turn"},{"@type":"HowToStep","name":"Land through plié","text":"Finish the turn and absorb the landing through a soft plié"},{"@type":"HowToStep","name":"Recover","text":"Lengthen to standing and let the arms float back to the sides"}]}</script>
     <script>
       window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
     </script>
@@ -143,8 +143,12 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
           <span class="step-cue">Push up to relevé, pull the arms in, and spin a full turn</span>
         </li>
 <li>
-          <span class="step-name">Land<span class="step-dur">1s · settle</span></span>
-          <span class="step-cue">Land softly through the feet, arms floating back to the sides</span>
+          <span class="step-name">Land through plié<span class="step-dur">0.9s · settle</span></span>
+          <span class="step-cue">Finish the turn and absorb the landing through a soft plié</span>
+        </li>
+<li>
+          <span class="step-name">Recover<span class="step-dur">1.1s · settle</span></span>
+          <span class="step-cue">Lengthen to standing and let the arms float back to the sides</span>
         </li>
       </ol>
 
@@ -158,7 +162,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   step &quot;Prep - plié&quot; 1.2s flow:
     hips: rotate-out 25
     knees: flex 45
-    ankles: plantarflex 45
+    ankles: dorsiflex 12
     shoulders: flex 40
     elbows: flex 35
     ground-lock: feet
@@ -177,15 +181,28 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     pin: foot_left floor
     cue &quot;Push up to relevé, pull the arms in, and spin a full turn&quot;
 
-  step &quot;Land&quot; 1s settle:
+  step &quot;Land through plié&quot; 0.9s settle:
+    hip_right: flex 0
+    hip_right: rotate-out 0
+    knee_right: flex 28
+    ankle_right: dorsiflex 8
+    knee_left: flex 28
+    ankle_left: dorsiflex 8
+    shoulders: abduct 55
+    shoulders: flex 0
+    elbows: flex 18
+    ground-lock: feet
+    cue &quot;Finish the turn and absorb the landing through a soft plié&quot;
+
+  step &quot;Recover&quot; 1.1s settle:
     hips: flex 0
     hips: rotate-out 0
     knees: flex 0
-    ankles: plantarflex 0
-    shoulders: flex 0
+    ankles: dorsiflex 0
+    shoulders: abduct 0
     elbows: flex 0
     ground-lock: feet
-    cue &quot;Land softly through the feet, arms floating back to the sides&quot;
+    cue &quot;Lengthen to standing and let the arms float back to the sides&quot;
 
   repeat 3
 </code></pre>

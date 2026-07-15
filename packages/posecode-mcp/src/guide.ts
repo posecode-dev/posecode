@@ -35,9 +35,9 @@ Output ONLY a \`.posecode\` document in a code block, no prose.
 posecode <kind> "<Name>"          # kind = exercise | stretch | posture
   rig humanoid
   pose start = <pose>          # neutral | standing | plank
-  step "<Phase>" <Ns> <easing>:  # easing = linear | ease-in | ease-out | ease-in-out
+  step "<Phase>" <Ns> <mode>:  # mode = flow | settle | drive | snap | linear
     <joint>: <action> <degrees>
-    ground-lock: <effectors>   # hands and/or feet pinned to the floor
+    ground-lock: <effectors>   # feet/hands/forearms, or one side: foot_left / left foot
     cue "<short coaching cue>"
   repeat <count>
 \`\`\`

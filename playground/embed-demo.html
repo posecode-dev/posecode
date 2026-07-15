@@ -35,11 +35,11 @@
 posecode exercise "Lateral raise"
   rig humanoid
   pose start = standing
-  step "Raise" 1.4s ease-out:
+  step "Raise" 1.4s settle:
     shoulders: abduct 90
     elbows: flex 10
     cue "Lift out to shoulder height, soft elbows"
-  step "Lower" 1.6s ease-in:
+  step "Lower" 1.6s drive:
     shoulders: abduct 0
     elbows: flex 0
   repeat 8
@@ -55,13 +55,13 @@ posecode exercise "Lateral raise"
         const deadlift = `posecode exercise "Deadlift"
   rig humanoid
   pose start = standing
-  step "Lower" 1.8s ease-in-out:
+  step "Lower" 1.8s settle:
     pelvis: hinge 75
     knees: flex 25
     shoulders: extend 60
     ground-lock: feet
     cue "Push the hips back and hinge with a flat back"
-  step "Lift" 1.4s ease-out:
+  step "Lift" 1.4s drive:
     pelvis: hinge 0
     knees: flex 0
     shoulders: extend 0
