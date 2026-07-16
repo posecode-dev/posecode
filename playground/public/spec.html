@@ -140,7 +140,10 @@ step       = &quot;step&quot; STRING DURATION timingMode &quot;:&quot; { child }
 timingMode = &quot;flow&quot; | &quot;settle&quot; | &quot;drive&quot; | &quot;snap&quot; | &quot;linear&quot; ;
 child      = jointTarget | groundLock | reach | pin | turn | travel | cue ;
 jointTarget= joint &quot;:&quot; action [ NUMBER ] ;
-groundLock = &quot;ground-lock&quot; &quot;:&quot; effector { &quot;,&quot; effector } ;
+groundLock = &quot;ground-lock&quot; &quot;:&quot; floorContact { &quot;,&quot; floorContact } ;
+floorContact = &quot;hands&quot; | &quot;forearms&quot; | &quot;feet&quot; | &quot;back&quot;
+             | ( &quot;hand&quot; | &quot;elbow&quot; | &quot;foot&quot; ) &quot;_&quot; ( &quot;left&quot; | &quot;right&quot; )
+             | ( &quot;left&quot; | &quot;right&quot; ) ( &quot;hand&quot; | &quot;forearm&quot; | &quot;elbow&quot; | &quot;foot&quot; ) ;
 reach      = &quot;reach&quot; &quot;:&quot; effector target ;             (* effector → world target via ROM-constrained IK *)
 pin        = &quot;pin&quot; &quot;:&quot; effector anchor ;               (* move the BODY so effector sits on anchor *)
 turn       = &quot;turn&quot; &quot;:&quot; NUMBER ;                       (* face this yaw (deg) by phase end *)
@@ -207,8 +210,8 @@ DURATION   = NUMBER &quot;s&quot; ;                                (* e.g. 2s, 1
 <p>C1-continuous quaternion splines between keyframes, shaped by the destination phase's timing mode.</p>
 <ol><li><strong>Grounding</strong>: the figure is dropped so its lowest point rests on the floor</li></ol>
 <p>(a bounding-box drop), which grounds standing, plank, and the lying/seated poses alike.</p>
-<ol><li><strong>Ground-lock IK</strong>: effectors listed in <code>ground-lock</code> (<code>hands</code>, <code>forearms</code>,</li></ol>
-<p><code>feet</code>, or the per-side aliases <code>hand_left|hand_right</code>, <code>elbow_left|elbow_right</code>, <code>foot_left|foot_right</code>) are pinned to their planted floor position so they stay put while the body moves. Unsupported effector names are line-anchored validation errors.</p>
+<ol><li><strong>Ground-lock</strong>: contacts listed in <code>ground-lock</code> (<code>hands</code>, <code>forearms</code>,</li></ol>
+<p><code>feet</code>, or the per-side aliases <code>hand_left|hand_right</code>, <code>elbow_left|elbow_right</code>, <code>foot_left|foot_right</code>) stay planted while the body moves. <code>back</code> holds the pelvis-to-ribcage surface on the floor for supine work such as dead bugs. Unsupported contact names are line-anchored validation errors.</p>
 <ol><li><strong>Reach-IK</strong>: a <code>reach:</code> line drives an effector (`hand_left|hand_right|</li></ol>
 <p>foot_left|foot_right<code>, or the groups </code>hands<code>/</code>feet<code> for both sides) to a world <strong>target</strong> via Cyclic Coordinate Descent (CCD) over the arm/leg chain. A target is a body landmark bone (e.g. </code>ankle_left<code>), the keyword </code>floor<code>, or a prop anchor (</code>bar<code>, </code>seat<code>, </code>wall`). The solve is <strong>ROM-constrained</strong>: each iteration clamps every chain joint into its §4 Range-of-Motion limits (expressed as a per-axis box in the bone's local Euler frame), so a reach toward an unsafe or unreachable target settles on the closest *healthy* pose; solved angles obey the same hard limits as authored ones.</p>
 <ol><li><strong>Props</strong>: <code>prop chair|wall|bar|box|dip-bars</code> adds a scene object at a</li></ol>
@@ -237,7 +240,7 @@ DURATION   = NUMBER &quot;s&quot; ;                                (* e.g. 2s, 1
     durationSec: number;
     easing: &quot;flow&quot; | &quot;settle&quot; | &quot;drive&quot; | &quot;snap&quot; | &quot;linear&quot;;
     targets: { boneId: string; euler: { x: number; y: number; z: number } }[];
-    groundLock: string[];   // [&quot;hands&quot;,&quot;feet&quot;] or [&quot;foot_right&quot;]
+    groundLock: string[];   // [&quot;hands&quot;,&quot;feet&quot;], [&quot;foot_right&quot;], or [&quot;back&quot;]
     cue?: string;
   }[];
 }</code></pre>

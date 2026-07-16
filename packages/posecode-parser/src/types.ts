@@ -67,7 +67,7 @@ export interface Phase {
   durationSec: number;
   easing: Easing;
   targets: JointTarget[];
-  /** Grouped or per-side floor effectors pinned for this phase, e.g. ["feet"] or ["foot_right"]. */
+  /** Grouped, per-side, or axial floor contacts held this phase, e.g. ["foot_right"] or ["back"]. */
   groundLock: string[];
   /** Reach-IK goals active during this phase. */
   reaches: ReachTarget[];

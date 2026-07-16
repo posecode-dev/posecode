@@ -34,7 +34,10 @@ step       = "step" STRING DURATION timingMode ":" { child } ;
 timingMode = "flow" | "settle" | "drive" | "snap" | "linear" ;
 child      = jointTarget | groundLock | reach | pin | turn | travel | cue ;
 jointTarget= joint ":" action [ NUMBER ] ;
-groundLock = "ground-lock" ":" effector { "," effector } ;
+groundLock = "ground-lock" ":" floorContact { "," floorContact } ;
+floorContact = "hands" | "forearms" | "feet" | "back"
+             | ( "hand" | "elbow" | "foot" ) "_" ( "left" | "right" )
+             | ( "left" | "right" ) ( "hand" | "forearm" | "elbow" | "foot" ) ;
 reach      = "reach" ":" effector target ;             (* effector → world target via ROM-constrained IK *)
 pin        = "pin" ":" effector anchor ;               (* move the BODY so effector sits on anchor *)
 turn       = "turn" ":" NUMBER ;                       (* face this yaw (deg) by phase end *)
@@ -145,11 +148,12 @@ research §5.1 normative tables. Selected ceilings (degrees):
 2. **Grounding**: the figure is dropped so its lowest point rests on the floor
    (a bounding-box drop), which grounds standing, plank, and the lying/seated
    poses alike.
-3. **Ground-lock IK**: effectors listed in `ground-lock` (`hands`, `forearms`,
+3. **Ground-lock**: contacts listed in `ground-lock` (`hands`, `forearms`,
    `feet`, or the per-side aliases `hand_left|hand_right`,
-   `elbow_left|elbow_right`, `foot_left|foot_right`) are pinned to their planted
-   floor position so they stay put while the body moves. Unsupported effector
-   names are line-anchored validation errors.
+   `elbow_left|elbow_right`, `foot_left|foot_right`) stay planted while the body
+   moves. `back` holds the pelvis-to-ribcage surface on the floor for supine
+   work such as dead bugs. Unsupported contact names are line-anchored
+   validation errors.
 4. **Reach-IK**: a `reach:` line drives an effector (`hand_left|hand_right|
    foot_left|foot_right`, or the groups `hands`/`feet` for both sides) to a
    world **target** via Cyclic Coordinate Descent (CCD) over the arm/leg chain.
@@ -226,7 +230,7 @@ interface PosecodeIR {
     durationSec: number;
     easing: "flow" | "settle" | "drive" | "snap" | "linear";
     targets: { boneId: string; euler: { x: number; y: number; z: number } }[];
-    groundLock: string[];   // ["hands","feet"] or ["foot_right"]
+    groundLock: string[];   // ["hands","feet"], ["foot_right"], or ["back"]
     cue?: string;
   }[];
 }

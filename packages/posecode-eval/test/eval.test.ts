@@ -74,6 +74,15 @@ describe("metrics", () => {
 
     const pullUp = movement("pull-up");
     expect(Math.min(...pullUp.phases.map((p) => headPropClearance(pullUp, p)))).toBeGreaterThan(-0.01);
+
+    // A dead bug moves opposite limbs while the torso remains planted. This
+    // catches the old silent `ground-lock: back` no-op, where whole-figure
+    // floor reconciliation could move the torso with whichever limb was lowest.
+    const deadBug = movement("dead-bug");
+    for (const id of ["pelvis", "chest"]) {
+      const heights = deadBug.phases.map((p) => p.bones.get(id)![1]);
+      expect(Math.max(...heights) - Math.min(...heights)).toBeLessThan(0.01);
+    }
   });
 });
 
