@@ -24,7 +24,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "start": "tsx src/stdio.ts",
-    "build": "tsc -p tsconfig.json && esbuild src/stdio.ts --bundle --platform=node --format=esm --external:@modelcontextprotocol/sdk --external:zod --outfile=dist/posecode-mcp.mjs",
+    "build": "tsc -p tsconfig.json && node ../../scripts/copy-mcp-guide.mjs && esbuild src/stdio.ts --bundle --platform=node --format=esm --external:@modelcontextprotocol/sdk --external:zod --outfile=dist/posecode-mcp.mjs",
     "prepublishOnly": "npm run build"
   },
   "repository": {
@@ -50,7 +50,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
-    "esbuild": "^0.24.2",
+    "esbuild": "^0.28.1",
     "tsx": "^4.19.2"
   },
   "publishConfig": {
