@@ -2,7 +2,7 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    include: ["packages/**/test/**/*.test.ts"],
+    include: ["packages/**/test/**/*.test.ts", "playground/test/**/*.test.ts"],
     coverage: {
       provider: "v8",
       include: ["packages/posecode-parser/src/**/*.ts"],
