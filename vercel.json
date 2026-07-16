@@ -6,10 +6,12 @@
   "outputDirectory": "playground/dist",
   "redirects": [
     { "source": "/index.html", "destination": "/", "permanent": true },
-    { "source": "/play.html", "destination": "/play", "permanent": true }
+    { "source": "/play.html", "destination": "/play", "permanent": true },
+    { "source": "/for-products.html", "destination": "/for-products", "permanent": true }
   ],
   "rewrites": [
     { "source": "/play", "destination": "/play.html" },
-    { "source": "/play/:movement", "destination": "/play.html" }
+    { "source": "/play/:movement", "destination": "/play.html" },
+    { "source": "/for-products", "destination": "/for-products.html" }
   ]
 }

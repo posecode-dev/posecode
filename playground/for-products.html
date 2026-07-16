@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Use Posecode in Your Product | Open-Source Motion Tools</title>
+    <meta name="description" content="Embed Posecode movement in a web product today with an open-source web component, parser, renderer, share links, npm packages, or a local MCP server." />
+    <link rel="canonical" href="https://www.posecode.org/for-products" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#0b0c0d" />
+    <meta property="og:title" content="Use Posecode in your product" />
+    <meta property="og:description" content="Open-source building blocks for adding readable, editable 3D movement to web products—with a clear view of what exists today and what does not." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://www.posecode.org/for-products" />
+    <meta property="og:site_name" content="Posecode" />
+    <meta property="og:image" content="https://www.posecode.org/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Use Posecode in your product" />
+    <meta name="twitter:description" content="Embed readable, editable 3D movement with Posecode's open-source web component and TypeScript packages." />
+    <meta name="twitter:image" content="https://www.posecode.org/og.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" />
+    <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" /></noscript>
+    <link rel="stylesheet" href="./src/landing.css" />
+    <link rel="stylesheet" href="./src/for-products.css" />
+  </head>
+  <body class="product-page">
+    <div class="bg-fx" aria-hidden="true"></div>
+
+    <header class="nav">
+      <a class="brand" href="/" aria-label="Posecode home">
+        <svg class="logo" aria-hidden="true" viewBox="0 0 100 100" width="19" height="19" fill="none"><g stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path d="M50 34V55"/><path d="M50 35L34 26L23 15"/><path d="M50 35L66 26L77 15"/><path d="M50 54L36 72L28 88"/><path d="M50 54L64 72L72 88"/></g><circle cx="50" cy="20" r="10" fill="currentColor"/></svg>
+        <span class="wordmark">Posecode</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#integrate">Integrate</a>
+        <a href="#today">Available today</a>
+        <a href="#exploring">Exploring next</a>
+        <a href="https://github.com/posecode-dev/posecode" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+      <a class="btn primary nav-cta" href="mailto:hello@posecode.org?subject=Posecode%20product%20integration">Talk to us&nbsp;→</a>
+    </header>
+
+    <main>
+      <section class="product-hero">
+        <div class="product-hero-copy reveal">
+          <p class="eyebrow">For product owners &amp; developers</p>
+          <h1>Put movement inside your product.</h1>
+          <p class="product-lede">Posecode turns a small, readable text document into an editable 3D movement. Use the open-source pieces now—or help shape the product infrastructure that should come next.</p>
+          <div class="hero-cta">
+            <a class="btn primary lg" href="mailto:hello@posecode.org?subject=Posecode%20product%20integration">Discuss an integration&nbsp;→</a>
+            <a class="btn ghost lg" href="#today">See what exists today</a>
+          </div>
+        </div>
+        <aside class="reality-card reveal" aria-label="Posecode service status">
+          <p class="status-label"><span aria-hidden="true"></span> The honest version</p>
+          <h2>Open-source toolkit today.<br />No hosted commercial platform yet.</h2>
+          <p>You can ship the web component and TypeScript packages in your own product now. Hosted APIs, cloud rendering, private libraries, and enterprise operations are ideas we would explore with design partners—not services you can buy today.</p>
+        </aside>
+      </section>
+
+      <section id="integrate" class="product-section integration-section">
+        <header class="product-section-head reveal">
+          <p class="eyebrow">Ways to integrate</p>
+          <h2>Start at the layer you need.</h2>
+          <p>Keep the standard player, compose the lower-level libraries, or give a local agent movement tools.</p>
+        </header>
+        <div class="integration-grid">
+          <article class="integration-card reveal">
+            <span class="card-index">01 / embed</span>
+            <h3>Drop in a movement player</h3>
+            <p>Use the framework-free <code>&lt;posecode-player&gt;</code> web component with inline Posecode, a <code>.posecode</code> URL, or a share token.</p>
+            <pre aria-label="HTML web component example"><code>&lt;script src="https://unpkg.com/posecode-embed@0.2.2/dist/posecode-embed.js"&gt;&lt;/script&gt;
+&lt;posecode-player src="/moves/squat.posecode"&gt;&lt;/posecode-player&gt;</code></pre>
+          </article>
+          <article class="integration-card reveal">
+            <span class="card-index">02 / compose</span>
+            <h3>Own the interface</h3>
+            <p>Parse text into a typed, range-of-motion-clamped IR, then drive the Three.js renderer inside your own editor, lesson, or workflow.</p>
+            <pre aria-label="npm installation example"><code>npm install posecode-parser posecode-render three</code></pre>
+          </article>
+          <article class="integration-card reveal">
+            <span class="card-index">03 / agents</span>
+            <h3>Run movement tools locally</h3>
+            <p>The npm MCP server runs over stdio on your machine. It teaches an MCP client the language, validates documents, and creates playground links.</p>
+            <pre aria-label="Local MCP command example"><code>npx -y posecode-mcp@latest</code></pre>
+          </article>
+        </div>
+      </section>
+
+      <section class="product-section use-cases">
+        <header class="product-section-head reveal">
+          <p class="eyebrow">Where it fits</p>
+          <h2>Movement that stays inspectable.</h2>
+        </header>
+        <div class="use-case-grid">
+          <article class="use-case reveal"><h3>Animation editors</h3><p>Generate a first pass from text, expose timing and joint values, and let a human revise the movement instead of accepting a black-box clip.</p></article>
+          <article class="use-case reveal"><h3>Fitness &amp; rehab products</h3><p>Show an exercise beside a program or cue. Joint angles are clamped to general range-of-motion limits, but Posecode is not clinical advice or patient-specific validation.</p></article>
+          <article class="use-case reveal"><h3>Education tools</h3><p>Connect written instruction to a moving figure for anatomy, dance, physical education, or movement vocabulary.</p></article>
+          <article class="use-case reveal"><h3>Movement libraries</h3><p>Store small, diffable text files, validate them in CI, and open any movement in the browser without pre-rendering video.</p></article>
+          <article class="use-case reveal"><h3>Agent workflows</h3><p>Let an MCP-capable local agent write, validate, repair, and return a link to movement the user can inspect.</p></article>
+          <article class="use-case reveal"><h3>Other web products</h3><p>Use movement as editable content anywhere a video or static diagram is too rigid and a full animation pipeline is too heavy.</p></article>
+        </div>
+      </section>
+
+      <section id="today" class="product-section today-section">
+        <header class="product-section-head reveal">
+          <p class="eyebrow">Available today</p>
+          <h2>The current open-source surface.</h2>
+          <p>These pieces are in the public repository and licensed Apache-2.0. You run them in your browser, build, or local environment.</p>
+        </header>
+        <div class="capability-list" role="list">
+          <article class="capability-row reveal" role="listitem"><h3><code>posecode-embed</code></h3><p>A web component with lazy loading, controls, reduced-motion behavior, events, and inline, URL, or share-token inputs.</p><span>browser</span></article>
+          <article class="capability-row reveal" role="listitem"><h3><code>posecode-parser</code></h3><p>A TypeScript parser and CLI that produce typed movement data, diagnostics, and range-of-motion clamps.</p><span>npm + CLI</span></article>
+          <article class="capability-row reveal" role="listitem"><h3><code>posecode-render</code></h3><p>A Three.js client-side renderer for a procedural figure or a compatible Mixamo-rigged GLB.</p><span>npm</span></article>
+          <article class="capability-row reveal" role="listitem"><h3><code>posecode-share</code></h3><p>A dependency-free codec for URL-safe documents and playground permalinks. The document lives in the URL; this is not private cloud storage.</p><span>npm</span></article>
+          <article class="capability-row reveal" role="listitem"><h3>Share links</h3><p>The public playground opens encoded movements for viewing and editing in the browser.</p><span>posecode.org</span></article>
+          <article class="capability-row reveal" role="listitem"><h3><code>posecode-mcp</code></h3><p>A local stdio MCP server for authoring guidance, validation, and render links. It does not render in the cloud.</p><span>local npm process</span></article>
+        </div>
+        <p class="availability-note reveal"><strong>Operational boundary:</strong> there is currently no hosted product API, hosted MCP endpoint, account system, private content store, uptime commitment, or commercial support plan.</p>
+      </section>
+
+      <section id="exploring" class="product-section exploring-section">
+        <div class="exploring-copy reveal">
+          <p class="eyebrow">Exploring next</p>
+          <h2>Useful infrastructure should be shaped by real products.</h2>
+          <p>We are interested in working with a small number of design partners to learn which operational layer actually matters. Possibilities—not announced products—include:</p>
+        </div>
+        <ul class="future-list reveal">
+          <li>Hosted generation or validation API</li>
+          <li>Hosted MCP access</li>
+          <li>Cloud rendering and asset exports</li>
+          <li>Custom characters and rigs</li>
+          <li>Private movement libraries</li>
+          <li>White-label embeds</li>
+          <li>Usage analytics</li>
+          <li>Support, security review, and SLAs</li>
+        </ul>
+        <p class="future-qualifier reveal">None of these capabilities is generally available today. There is no published commercial pricing. A design-partner conversation is for scoping the problem, constraints, and a possible collaboration—not selling a service that already exists.</p>
+      </section>
+
+      <section class="product-cta reveal" aria-labelledby="product-cta-title">
+        <p class="eyebrow">Bring a concrete problem</p>
+        <h2 id="product-cta-title">What movement does your product need to explain?</h2>
+        <p>Tell us what you are building, where the animation would appear, and whether the open-source pieces cover the first version. We will reply from there.</p>
+        <a class="btn primary lg" href="mailto:hello@posecode.org?subject=Posecode%20product%20integration">Email hello@posecode.org&nbsp;→</a>
+      </section>
+    </main>
+
+    <footer class="footer product-footer">
+      <div class="footer-brand"><svg class="logo" aria-hidden="true" viewBox="0 0 100 100" width="19" height="19" fill="none"><g stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path d="M50 34V55"/><path d="M50 35L34 26L23 15"/><path d="M50 35L66 26L77 15"/><path d="M50 54L36 72L28 88"/><path d="M50 54L64 72L72 88"/></g><circle cx="50" cy="20" r="10" fill="currentColor"/></svg> Posecode <span class="footer-tag">kinematic motion as text</span></div>
+      <p class="footer-legal"><a href="/">Home</a> &nbsp;·&nbsp; <a href="/play">Playground</a> &nbsp;·&nbsp; <a href="/moves/">Movement library</a> &nbsp;·&nbsp; <a href="https://github.com/posecode-dev/posecode" target="_blank" rel="noopener">GitHub</a></p>
+    </footer>
+
+    <script type="module" src="./src/for-products.ts"></script>
+  </body>
+</html>
