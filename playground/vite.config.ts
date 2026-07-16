@@ -18,9 +18,11 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        // Build files behind the public `/` and `/play[/movement]` routes.
+        // Build files behind the public `/`, `/play[/movement]`, and
+        // `/for-products` routes.
         main: resolve(here, "index.html"),
         play: resolve(here, "play.html"),
+        forProducts: resolve(here, "for-products.html"),
       },
     },
   },
