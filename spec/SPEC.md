@@ -168,7 +168,7 @@ research §5.1 normative tables. Selected ceilings (degrees):
    dip bars either side); its named anchors (`seat`, `wall`, `bar`, `box`,
    `bars`) become reach/pin targets. Props are **solid**: each prop declares
    blocking faces (the wall's surface, the chair's backrest and seat edge,
-   the box's near face) and a contact pass removes any body overlap — either
+   the box's near face) and a contact pass removes any body overlap: either
    by translating the whole figure out along the face normal (a wall-sit
    slides down the wall's *surface*, feet walking forward, instead of the
    torso hinging through the slab) or by bending the offending limb's hip

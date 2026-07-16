@@ -74,7 +74,7 @@ export function getHover(
   if (KINDS.includes(token)) return md(`Movement kind **${token}**.`);
   if (POSES.includes(token)) return md(`Start pose **${token}**.`);
   if ((MODES as readonly string[]).includes(token)) {
-    return md(`**${token}** — ${KEYWORD_DOCS[token] ?? "timing mode"}`);
+    return md(`**${token}**: ${KEYWORD_DOCS[token] ?? "timing mode"}`);
   }
   return null;
 }
