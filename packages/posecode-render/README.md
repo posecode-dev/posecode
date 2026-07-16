@@ -48,4 +48,4 @@ rendering is plain forward kinematics.
 
 ## License
 
-MIT
+Apache-2.0

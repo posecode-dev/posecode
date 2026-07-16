@@ -30,7 +30,7 @@
     <img src="https://img.shields.io/npm/v/posecode-parser.svg?color=emerald" alt="npm version" />
   </a>
   <a href="https://github.com/posecode-dev/posecode/blob/main/LICENSE">
-    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license" />
+    <img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg" alt="Apache 2.0 license" />
   </a>
   <a href="https://github.com/posecode-dev/posecode/tree/main/packages/posecode-mcp">
     <img src="https://img.shields.io/badge/MCP-Compatible-orange.svg" alt="MCP compatible" />
@@ -635,7 +635,7 @@ The renderer also includes a zero-asset procedural fallback and can accept compa
 
 ## License
 
-Posecode's open-core packages and protocol are available under the [MIT License](LICENSE).
+Posecode's open-core packages and protocol are available under the [Apache License 2.0](LICENSE).
 
 Review the licenses and terms of any bundled or externally loaded character assets separately.
 

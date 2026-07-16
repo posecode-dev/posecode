@@ -156,7 +156,7 @@ export function pageShell({ title, description, canonicalPath, jsonLd, bodyHtml,
         <p>Range-of-motion values are general literature data, not medical advice. Consult a
         qualified professional for physiotherapy or exercise prescription.</p>
         <p>
-          <a href="/">Posecode</a>, MIT-licensed open core &nbsp;·&nbsp;
+          <a href="/">Posecode</a>, Apache-2.0-licensed open core &nbsp;·&nbsp;
           <a href="mailto:hello@posecode.org?subject=Posecode%20Feedback">Feedback</a> &nbsp;·&nbsp;
           <a href="https://github.com/posecode-dev/posecode/issues" target="_blank" rel="noopener">GitHub Issues</a>
         </p>

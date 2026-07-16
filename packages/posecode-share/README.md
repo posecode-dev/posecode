@@ -24,4 +24,4 @@ const source = readShareHash(window.location.hash);
 
 ## License
 
-MIT
+Apache-2.0

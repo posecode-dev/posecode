@@ -62,4 +62,4 @@ safe ceiling with a warning, never an anatomically impossible joint.
 
 ## License
 
-MIT
+Apache-2.0

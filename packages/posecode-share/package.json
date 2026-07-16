@@ -1,8 +1,8 @@
 {
   "name": "posecode-share",
-  "version": "0.2.0",
-  "description": "Encode/decode .posecode documents to URL-safe share tokens \u2014 the distribution primitive for Posecode permalinks and embeds.",
-  "license": "MIT",
+  "version": "0.2.1",
+  "description": "Encode/decode .posecode documents to URL-safe share tokens — the distribution primitive for Posecode permalinks and embeds.",
+  "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
