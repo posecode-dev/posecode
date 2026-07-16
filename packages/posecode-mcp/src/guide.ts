@@ -1,11 +1,11 @@
 /**
  * The Posecode authoring guide, served to agents so they can write `.posecode`
- * without a human first pasting in a system prompt. Reads the canonical
- * `spec/llm-authoring.md` from the repo; falls back to a compact inline grammar
- * if that file isn't reachable (e.g. the package running standalone).
+ * without a human first pasting in a system prompt. Reads the guide copied into
+ * the npm package, or the canonical `spec/llm-authoring.md` during repository
+ * development; falls back to a compact inline grammar if neither is reachable.
  */
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
@@ -16,9 +16,12 @@ export function authoringGuide(): string {
   let guide: string;
   try {
     const here = dirname(fileURLToPath(import.meta.url));
-    // src/ (or dist/) → packages/posecode-mcp → packages → repo root → spec/
-    const path = resolve(here, "../../../spec/llm-authoring.md");
-    guide = readFileSync(path, "utf8");
+    const packagedGuide = resolve(here, "llm-authoring.md");
+    const repositoryGuide = resolve(here, "../../../spec/llm-authoring.md");
+    guide = readFileSync(
+      existsSync(packagedGuide) ? packagedGuide : repositoryGuide,
+      "utf8",
+    );
   } catch {
     guide = FALLBACK_GUIDE;
   }
