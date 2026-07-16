@@ -2,6 +2,7 @@
   "name": "posecode-playground",
   "version": "0.2.1",
   "private": true,
+  "license": "Apache-2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

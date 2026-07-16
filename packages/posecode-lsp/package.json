@@ -3,7 +3,7 @@
   "version": "0.2.1",
   "private": true,
   "description": "Language Server Protocol implementation for the Posecode (.posecode) DSL: diagnostics, completion, and hover, powered by posecode-language.",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "main": "./src/server.ts",
   "exports": {

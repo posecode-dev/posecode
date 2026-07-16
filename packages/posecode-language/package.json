@@ -3,7 +3,7 @@
   "version": "0.2.1",
   "private": true,
   "description": "Editor language service for .posecode: diagnostics, completions, and hovers built on posecode-parser. Powers both the playground editor and the LSP.",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",

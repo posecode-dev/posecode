@@ -2,7 +2,7 @@
   "name": "posecode-embed",
   "version": "0.2.1",
   "description": "Embed a live 3D Posecode movement anywhere with one <script> tag — the <posecode-player> web component.",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
