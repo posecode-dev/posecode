@@ -22,7 +22,7 @@
     "posecode-parser": "0.2.1",
     "posecode-render": "0.2.1",
     "posecode-share": "0.2.1",
-    "three": "^0.171.0"
+    "three": "^0.185.1"
   },
   "devDependencies": {
     "typescript": "^5.7.2",
