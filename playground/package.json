@@ -1,6 +1,6 @@
 {
   "name": "posecode-playground",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "license": "Apache-2.0",
   "type": "module",
@@ -18,10 +18,10 @@
     "@codemirror/view": "^6.36.1",
     "@lezer/highlight": "^1.2.1",
     "@vercel/analytics": "^2.0.1",
-    "posecode-language": "0.2.0",
-    "posecode-parser": "0.2.0",
-    "posecode-render": "0.2.0",
-    "posecode-share": "0.2.0",
+    "posecode-language": "0.2.1",
+    "posecode-parser": "0.2.1",
+    "posecode-render": "0.2.1",
+    "posecode-share": "0.2.1",
     "three": "^0.171.0"
   },
   "devDependencies": {

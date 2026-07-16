@@ -1,7 +1,7 @@
 {
   "name": "posecode-embed",
-  "version": "0.2.0",
-  "description": "Embed a live 3D Posecode movement anywhere with one <script> tag \u2014 the <posecode-player> web component.",
+  "version": "0.2.1",
+  "description": "Embed a live 3D Posecode movement anywhere with one <script> tag — the <posecode-player> web component.",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -36,9 +36,9 @@
     "three.js"
   ],
   "dependencies": {
-    "posecode-parser": "0.2.0",
-    "posecode-render": "0.2.0",
-    "posecode-share": "0.2.0"
+    "posecode-parser": "0.2.1",
+    "posecode-render": "0.2.1",
+    "posecode-share": "0.2.1"
   },
   "devDependencies": {
     "esbuild": "^0.28.1"
