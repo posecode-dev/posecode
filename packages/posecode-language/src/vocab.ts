@@ -46,9 +46,9 @@ export const KEYWORD_DOCS: Record<string, string> = {
   step: 'A movement phase: `step "<name>" <Ns> <mode>:` where mode is flow | settle | drive | snap | linear.',
   flow: "Timing mode: pass through this pose with continuous velocity (flowing motion).",
   settle: "Timing mode: decelerate to a genuine rest at this pose (a deliberate pause).",
-  drive: "Timing mode: accelerate from rest — the concentric effort of a rep.",
-  snap: "Timing mode: fast, near-immediate arrival — an accent.",
-  linear: "Timing mode: constant velocity — intentionally mechanical.",
+  drive: "Timing mode: accelerate from rest, like the concentric effort of a rep.",
+  snap: "Timing mode: fast, near-immediate arrival with an accent.",
+  linear: "Timing mode: constant velocity; intentionally mechanical.",
   repeat: "How many times the movement loops.",
   "ground-lock": "Keeps grouped, per-side, or axial contacts on the floor: `feet`, `foot_left` (also `left foot`), `hands`, `forearms`, or `back` for supine work. Planted feet auto-level unless intentionally plantarflexed.",
   reach:

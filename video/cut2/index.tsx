@@ -197,7 +197,7 @@ const Result = () => {
       </div>
       <div style={{position: 'absolute', left: 'calc(50% - 30px)', top: 290, width: 60, height: 60, borderRadius: 60, background: C.lime, color: C.ink, display: 'grid', placeItems: 'center', fontSize: 31, fontWeight: 900, boxShadow: '0 0 30px rgba(198,242,74,.5)', transform: `scale(${split})`}}>→</div>
     </div>
-    <Caption keyword="renders">It renders — safe, 60fps.</Caption>
+    <Caption keyword="renders">It renders safely at 60fps.</Caption>
   </AbsoluteFill>;
 };
 
@@ -212,7 +212,7 @@ const Mcp = () => {
   ];
   return <AbsoluteFill style={{opacity: fade(frame, BEAT)}}>
     <div style={{position: 'absolute', top: 195, left: 135, right: 135, display: 'grid', gridTemplateColumns: '1.25fr .75fr', gap: 24, transform: `translateY(${rise(frame)}px)`}}>
-      <Window title="terminal — posecode-mcp">
+      <Window title="terminal: posecode-mcp">
         <div style={{height: 560, padding: '42px 42px', boxSizing: 'border-box', fontFamily: 'JetBrains Mono, monospace'}}>
           {entries.map(([a,b], i) => <div key={a} style={{display: 'flex', justifyContent: 'space-between', fontSize: i === 0 ? 25 : 20, lineHeight: 2.35, opacity: interpolate(frame, [i * 14, i * 14 + 8], [0, 1], clamp), color: i === 0 ? C.white : i === 1 ? C.lime : '#d2dae6'}}><span>{a}</span><span style={{color: i > 1 ? C.lime : C.muted}}>{b}</span></div>)}
         </div>
@@ -336,7 +336,7 @@ const VerticalCut2 = () => {
       <div style={{position: 'absolute', right: 48, top: 330, background: C.lime, color: C.ink, fontFamily: 'JetBrains Mono, monospace', fontWeight: 800, borderRadius: 999, padding: '13px 18px'}}>60 FPS</div>
     </div>}
     {beat === 4 && <div style={sceneStyle}>
-      <div style={{position: 'absolute', top: 285, left: 48, right: 48}}><VCard title="terminal — posecode-mcp"><div style={{height: 920, padding: '48px 38px', fontFamily: 'JetBrains Mono, monospace', fontSize: 25, lineHeight: 2.4}}><div style={{fontSize: 30, color: C.white}}>$ npx posecode-mcp</div><div style={{color: C.lime}}>● connected</div><div>→ authoring_guide <span style={{float: 'right', color: C.lime}}>✓</span></div><div>→ validate_posecode <span style={{float: 'right', color: C.lime}}>safe ✓</span></div><div>→ render_posecode <span style={{float: 'right', color: C.lime}}>ready ✓</span></div><div style={{height: 330, marginTop: 30, borderRadius: 22, border: `1px solid ${C.line}`}}><MoveVideo src="squat.mp4" style={{height: '100%', borderRadius: 22}} /></div></div></VCard></div>
+      <div style={{position: 'absolute', top: 285, left: 48, right: 48}}><VCard title="terminal: posecode-mcp"><div style={{height: 920, padding: '48px 38px', fontFamily: 'JetBrains Mono, monospace', fontSize: 25, lineHeight: 2.4}}><div style={{fontSize: 30, color: C.white}}>$ npx posecode-mcp</div><div style={{color: C.lime}}>● connected</div><div>→ authoring_guide <span style={{float: 'right', color: C.lime}}>✓</span></div><div>→ validate_posecode <span style={{float: 'right', color: C.lime}}>safe ✓</span></div><div>→ render_posecode <span style={{float: 'right', color: C.lime}}>ready ✓</span></div><div style={{height: 330, marginTop: 30, borderRadius: 22, border: `1px solid ${C.line}`}}><MoveVideo src="squat.mp4" style={{height: '100%', borderRadius: 22}} /></div></div></VCard></div>
     </div>}
     {beat === 5 && <div style={sceneStyle}>
       <div style={{position: 'absolute', top: 255, left: 42, right: 42}}><VCard title="demo.html"><div style={{height: 1050, padding: '45px 35px', boxSizing: 'border-box', fontFamily: 'JetBrains Mono, monospace', fontSize: 23, lineHeight: 1.7}}><div style={{color: '#8fd7ff'}}>&lt;script</div><div style={{paddingLeft: 24}}><span style={{color: C.lime}}>src</span>=<span style={{color: '#ffd38f'}}>"https://unpkg.com/</span></div><div style={{paddingLeft: 24, color: '#ffd38f'}}>posecode-embed/dist/</div><div style={{paddingLeft: 24, color: '#ffd38f'}}>posecode-embed.js"</div><div style={{color: '#8fd7ff'}}>&gt;&lt;/script&gt;</div><div style={{height: 34}}/><div style={{color: '#8fd7ff'}}>&lt;posecode-player</div><div style={{paddingLeft: 24}}><span style={{color: C.lime}}>src</span>=<span style={{color: '#ffd38f'}}>"/movements/</span></div><div style={{paddingLeft: 24, color: '#ffd38f'}}>squat.posecode"</div><div style={{color: '#8fd7ff'}}>&gt;&lt;/posecode-player&gt;</div><div style={{height: 360, marginTop: 30, border: `1px solid ${C.line}`, borderRadius: 22}}><MoveVideo src="squat.mp4" style={{height: '100%', borderRadius: 22}} /></div></div></VCard></div>
