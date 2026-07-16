@@ -35,6 +35,7 @@ describe("mannequin", () => {
     expect(m.effectors.forearms).toEqual(["elbow_left", "elbow_right"]);
     expect(m.effectors.feet).toEqual(["ankle_left", "ankle_right"]);
     expect(m.effectors.foot_right).toEqual(["ankle_right"]);
+    expect(m.effectors.back).toEqual(["pelvis", "spine", "chest"]);
   });
 });
 
@@ -464,6 +465,32 @@ describe("ground-lock (shared solver)", () => {
     applyGroundLock(m, ir!.phases[0]!.groundLock);
     const soleY = new THREE.Box3().setFromObject(m.bones.get("ankle_left")!).min.y;
     expect(Math.abs(soleY)).toBeLessThan(0.01);
+  });
+
+  it("plants the torso surface for a supine back lock", () => {
+    const m = buildMannequin();
+    const spec = poseFor("supine");
+    m.root.position.set(...spec.root!.position!);
+    const [rx, ry, rz] = spec.root!.rotationDeg!;
+    m.root.rotation.set(rx * DEG, ry * DEG, rz * DEG);
+    // Put the limbs into an asymmetric dead-bug phase before solving contact.
+    m.bones.get("shoulder_right")!.rotation.x = -150 * DEG;
+    m.bones.get("hip_left")!.rotation.x = -20 * DEG;
+    m.bones.get("knee_left")!.rotation.x = 5 * DEG;
+    m.root.updateMatrixWorld(true);
+
+    applyGroundLock(m, ["back"]);
+
+    // Measure meshes owned by the pelvis/spine/chest only. Descendant limbs
+    // are intentionally excluded: moving an arm must not lift the back.
+    const boneNodes = new Set(m.bones.values());
+    const backBox = new THREE.Box3();
+    for (const id of ["pelvis", "spine", "chest"]) {
+      for (const child of m.bones.get(id)!.children) {
+        if (!boneNodes.has(child)) backBox.union(new THREE.Box3().setFromObject(child));
+      }
+    }
+    expect(backBox.min.y).toBeCloseTo(0, 3);
   });
 
   it("is a no-op when no effectors are ground-locked", () => {

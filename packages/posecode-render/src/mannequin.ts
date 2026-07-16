@@ -240,6 +240,8 @@ export function buildMannequin(material?: THREE.Material, proportions?: Proporti
       feet: ["ankle_left", "ankle_right"],
       foot_left: ["ankle_left"],
       foot_right: ["ankle_right"],
+      // Axial surface used by supine floor work (dead bug, crunch, leg raise).
+      back: ["pelvis", "spine", "chest"],
     },
     collision: proportions?.collision ?? DEFAULT_COLLISION,
   };
