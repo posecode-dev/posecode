@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "description": "Model Context Protocol server for Posecode: let any LLM agent validate, ROM-check, and get a render link for a .posecode movement, natively.",
   "mcpName": "io.github.posecode-dev/posecode-mcp",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",

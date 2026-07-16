@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "private": true,
   "description": "Posecode: a kinematic motion protocol for LLMs. Describe 3D human movement as text; render it in the browser.",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "workspaces": [
     "packages/*",
     "playground",

@@ -2,7 +2,7 @@
   "name": "posecode-parser",
   "version": "0.2.0",
   "description": "Parse the .posecode kinematic motion DSL into a validated, ROM-clamped intermediate representation.",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
