@@ -20,7 +20,7 @@
     "posecode-language": "0.2.0",
     "posecode-parser": "0.2.0",
     "posecode-render": "0.2.0",
-    "posecode-share": "0.1.0",
+    "posecode-share": "0.2.0",
     "three": "^0.171.0"
   },
   "devDependencies": {

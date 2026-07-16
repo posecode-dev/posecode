@@ -1,6 +1,7 @@
 {
   "name": "posecode-eval",
   "version": "0.2.0",
+  "private": true,
   "description": "Fidelity eval harness for Posecode: headless kinematic probing + geometric invariant scoring.",
   "license": "MIT",
   "type": "module",

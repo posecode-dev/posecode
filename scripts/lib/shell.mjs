@@ -6,7 +6,7 @@
  * the "Kinetic Lab" tokens in playground/src/style.css.
  */
 
-const SITE = "https://posecode.org";
+const SITE = "https://www.posecode.org";
 
 export function esc(s) {
   return String(s)
@@ -108,10 +108,8 @@ export function pageShell({ title, description, canonicalPath, jsonLd, bodyHtml,
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>${safeTitle}</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <meta name="description" content="${safeDesc}" />
     <link rel="canonical" href="${canonical}" />
     <meta name="theme-color" content="#0a0d12" />
