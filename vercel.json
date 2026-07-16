@@ -5,6 +5,12 @@
   "buildCommand": "npm run build -w playground",
   "outputDirectory": "playground/dist",
   "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "posecode.org" }],
+      "destination": "https://www.posecode.org/:path*",
+      "permanent": true
+    },
     { "source": "/index.html", "destination": "/", "permanent": true },
     { "source": "/play.html", "destination": "/play", "permanent": true }
   ],
