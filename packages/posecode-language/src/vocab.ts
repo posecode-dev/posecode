@@ -22,7 +22,7 @@ export const KINDS = ["exercise", "stretch", "posture"];
 /** Recognised start poses (`pose start = ...`). */
 export const POSES = ["neutral", "standing", "plank", "supine", "prone", "seated"];
 
-/** Effectors that can be ground-locked. */
+/** Floor contacts that can be ground-locked. */
 export const EFFECTORS = [...GROUND_LOCK_EFFECTOR_NAMES];
 
 /** Reach/pin effectors (groups + per-side aliases), sourced from the parser. */
@@ -50,7 +50,7 @@ export const KEYWORD_DOCS: Record<string, string> = {
   snap: "Timing mode: fast, near-immediate arrival — an accent.",
   linear: "Timing mode: constant velocity — intentionally mechanical.",
   repeat: "How many times the movement loops.",
-  "ground-lock": "Pins grouped or per-side effectors to the floor: `feet`, `foot_left` (also written `left foot`), `hands`, or `forearms`. Planted feet auto-level unless the ankle is intentionally plantarflexed.",
+  "ground-lock": "Keeps grouped, per-side, or axial contacts on the floor: `feet`, `foot_left` (also `left foot`), `hands`, `forearms`, or `back` for supine work. Planted feet auto-level unless intentionally plantarflexed.",
   reach:
     "Drives an effector to a target via ROM-constrained IK: `reach: hand_left ankle_left`, `reach: hands floor`.",
   pin: "Moves the body so an effector sits on an anchor: `pin: hands bar` (hang, pull up, step up, dip).",

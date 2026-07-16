@@ -1,6 +1,7 @@
 {
   "name": "posecode-language",
   "version": "0.2.0",
+  "private": true,
   "description": "Editor language service for .posecode: diagnostics, completions, and hovers built on posecode-parser. Powers both the playground editor and the LSP.",
   "license": "Apache-2.0",
   "type": "module",

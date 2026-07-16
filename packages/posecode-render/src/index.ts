@@ -4,8 +4,9 @@
  * `createViewer(canvas)` sets up a Three.js studio scene with the procedural
  * mannequin and returns a controller. `load(ir)` builds a timeline from a parsed
  * PosecodeIR; the render loop applies forward kinematics each frame, then keeps
- * ground-locked contacts (hands/feet) planted via floating-root solving. The
- * camera auto-frames the figure and eases smoothly when a new movement loads.
+ * ground-locked contacts (hands/forearms/feet/back) planted via floating-root
+ * solving. The camera auto-frames the figure and eases smoothly when a new
+ * movement loads.
  */
 
 import * as THREE from "three";
@@ -1054,6 +1055,11 @@ function contactBoneIds(info: {
     if (effector === "forearms") {
       ids.add("elbow_left");
       ids.add("elbow_right");
+    }
+    if (effector === "back") {
+      ids.add("pelvis");
+      ids.add("spine");
+      ids.add("chest");
     }
   };
   for (const group of info.groundLock) addEffector(group);

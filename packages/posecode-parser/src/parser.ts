@@ -232,7 +232,7 @@ function parseStepChild(ln: Line, current: AstStep | null): ParseError | null {
   if (head === "ground-lock") {
     if (!current) return { line: ln.line, message: "`ground-lock` outside of a step" };
     if (t[1]?.type !== "colon") {
-      return { line: ln.line, message: "expected `ground-lock: <effectors>`" };
+      return { line: ln.line, message: "expected `ground-lock: <contacts>`" };
     }
     const words = t.slice(2).filter((tok) => tok.type === "word").map((tok) => tok.value);
     const effectors: string[] = [];
@@ -255,7 +255,7 @@ function parseStepChild(ln: Line, current: AstStep | null): ParseError | null {
       effectors.push(value);
     }
     if (effectors.length === 0) {
-      return { line: ln.line, message: "`ground-lock` requires at least one effector" };
+      return { line: ln.line, message: "`ground-lock` requires at least one contact" };
     }
     current.groundLock = effectors;
     current.groundLockLine = ln.line;

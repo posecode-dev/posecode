@@ -1,13 +1,17 @@
 {
   "name": "posecode-share",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Encode/decode .posecode documents to URL-safe share tokens \u2014 the distribution primitive for Posecode permalinks and embeds.",
   "license": "Apache-2.0",
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
   },
   "repository": {
     "type": "git",
@@ -28,5 +32,8 @@
   "files": [
     "dist",
     "README.md"
-  ]
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }

@@ -16,10 +16,10 @@ Key facts:
 
 ## Tools
 
-- [Playground](https://posecode.org/play): live editor with a 3D viewer, movement library, and shareable links
+- [Playground](https://www.posecode.org/play): live editor with a 3D viewer, movement library, and shareable links
 - [GitHub repository](https://github.com/posecode-dev/posecode): parser, renderer, share codec, embed web component, MCP server, and VS Code extension
 - [MCP server](https://github.com/posecode-dev/posecode/tree/main/packages/posecode-mcp): lets any AI agent validate a movement and get a render link
 
 ## Optional
 
-- [Landing page](https://posecode.org/): project overview and highlights
+- [Landing page](https://www.posecode.org/): project overview and highlights

@@ -3,8 +3,8 @@
  * render loop and the headless eval harness (posecode-eval) use the identical
  * solver.
  *
- * "Ground-lock" = keep the declared grouped or per-side effectors planted while the
- * body moves, tuned per support type:
+ * "Ground-lock" = keep the declared grouped, per-side, or axial contacts
+ * planted while the body moves, tuned per support type:
  *
  * - **Hands + feet (push-up / plank):** pivot the whole rigid body about the
  *   foot line (the toes stay planted) until the hands reach the floor. As the
@@ -23,6 +23,8 @@
  *   the heels). Only feet near the floor anchor (a swing leg in a curl or
  *   march must stay free), and only the average delta is corrected so
  *   symmetric spreads (jumping jacks) don't fight the lock.
+ * - **Back (dead bug / supine floor work):** translate the body vertically so
+ *   the pelvis-to-ribcage surface stays on the floor while the limbs move.
  *
  * Both paths ground the visible MESH (bounding boxes), not just bone origins:
  * an ankle bone sits ~0.04m above the sole, so anchoring bones alone left the
@@ -97,7 +99,13 @@ export function applyGroundLock(
   const hands = ids.filter((id) => id.startsWith("wrist"));
   const forearms = ids.filter((id) => id.startsWith("elbow"));
   const feet = ids.filter((id) => id.startsWith("ankle"));
+  const back = ids.filter((id) => id === "pelvis" || id === "spine" || id === "chest");
   const upperSupports = forearms.length > 0 ? forearms : hands;
+
+  if (back.length > 0) {
+    dropOwnMeshesToFloor(m, back);
+    return;
+  }
 
   if (upperSupports.length > 0 && feet.length > 0) {
     // Plant the feet FIRST: drop the body so the foot mesh rests on the floor,
@@ -143,6 +151,37 @@ export function applyGroundLock(
     // anchoring the bone itself left the visible foot sunk into the floor.
     dropFeetToFloor(m, feet);
     if (anchors) plantFeetHorizontally(m, feet, anchors);
+  }
+}
+
+/**
+ * Drop only the meshes owned by the selected bones onto the floor. `Box3` on
+ * a torso bone would include its child limbs, so an overhead arm could
+ * otherwise lift a supine person's back. Bone child subtrees are deliberately
+ * excluded; non-bone groups (capsules/ellipsoids) remain part of the surface.
+ */
+function dropOwnMeshesToFloor(m: Mannequin, boneIds: string[]): void {
+  const boneNodes = new Set(m.bones.values());
+  const box = new THREE.Box3();
+  const childBox = new THREE.Box3();
+  let found = false;
+
+  for (const id of boneIds) {
+    const bone = m.bones.get(id);
+    if (!bone) continue;
+    for (const child of bone.children) {
+      if (boneNodes.has(child)) continue;
+      childBox.setFromObject(child);
+      if (!childBox.isEmpty()) {
+        box.union(childBox);
+        found = true;
+      }
+    }
+  }
+
+  if (found && Number.isFinite(box.min.y)) {
+    m.root.position.y -= box.min.y;
+    m.root.updateMatrixWorld(true);
   }
 }
 

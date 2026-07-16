@@ -1,11 +1,11 @@
 /**
  * The Posecode authoring guide, served to agents so they can write `.posecode`
- * without a human first pasting in a system prompt. Reads the canonical
- * `spec/llm-authoring.md` from the repo; falls back to a compact inline grammar
- * if that file isn't reachable (e.g. the package running standalone).
+ * without a human first pasting in a system prompt. Reads the guide copied into
+ * the npm package, or the canonical `spec/llm-authoring.md` during repository
+ * development; falls back to a compact inline grammar if neither is reachable.
  */
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
@@ -16,9 +16,12 @@ export function authoringGuide(): string {
   let guide: string;
   try {
     const here = dirname(fileURLToPath(import.meta.url));
-    // src/ (or dist/) → packages/posecode-mcp → packages → repo root → spec/
-    const path = resolve(here, "../../../spec/llm-authoring.md");
-    guide = readFileSync(path, "utf8");
+    const packagedGuide = resolve(here, "llm-authoring.md");
+    const repositoryGuide = resolve(here, "../../../spec/llm-authoring.md");
+    guide = readFileSync(
+      existsSync(packagedGuide) ? packagedGuide : repositoryGuide,
+      "utf8",
+    );
   } catch {
     guide = FALLBACK_GUIDE;
   }
@@ -37,7 +40,7 @@ posecode <kind> "<Name>"          # kind = exercise | stretch | posture
   pose start = <pose>          # neutral | standing | plank
   step "<Phase>" <Ns> <mode>:  # mode = flow | settle | drive | snap | linear
     <joint>: <action> <degrees>
-    ground-lock: <effectors>   # feet/hands/forearms, or one side: foot_left / left foot
+    ground-lock: <contacts>    # feet/hands/forearms/back, or foot_left / left foot
     cue "<short coaching cue>"
   repeat <count>
 \`\`\`
@@ -47,4 +50,7 @@ wrists hips knees ankles. Actions (degrees are absolute targets): flex/extend,
 abduct/adduct, rotate-in/rotate-out, dorsiflex/plantarflex, hold neutral, and
 hinge (hips only, closed-chain hip flexion: torso tips over planted feet with
 a neutral spine; use for deadlift / forward fold instead of hips: flex).
-Stay within healthy range of motion; the renderer hard-clamps anything beyond.`;
+Stay within healthy range of motion; the renderer hard-clamps anything beyond.
+Use ground-lock: feet when standing, hands and feet in a high plank, forearms
+and feet in a forearm plank, and back for supine floor work such as a dead bug.
+Do not invent other contact names.`;

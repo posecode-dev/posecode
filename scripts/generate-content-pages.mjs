@@ -26,7 +26,7 @@ const repoRoot = resolve(here, "..");
 const playgroundRoot = resolve(repoRoot, "playground");
 const publicDir = resolve(playgroundRoot, "public");
 const movesDir = resolve(publicDir, "moves");
-const SITE = "https://posecode.org";
+const SITE = "https://www.posecode.org";
 const TODAY = new Date().toISOString().slice(0, 10);
 
 /** Pull the movement source text apart into steps (name, duration, cue). */

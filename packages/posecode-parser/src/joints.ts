@@ -121,9 +121,10 @@ const EFFECTOR_GROUPS: Record<string, string[]> = {
 export const EFFECTOR_NAMES = [...Object.keys(EFFECTOR_GROUPS), ...EFFECTOR_SIDES];
 
 /**
- * Effectors accepted by `ground-lock:`. Ground locking has historically
+ * Contacts accepted by `ground-lock:`. Ground locking has historically
  * supported the symmetric hand/forearm/foot groups; per-side aliases let a
  * movement keep one support planted while the opposite limb moves freely.
+ * `back` is an axial surface contact for supine floor work.
  */
 export const GROUND_LOCK_EFFECTOR_NAMES = [
   "hands",
@@ -135,6 +136,7 @@ export const GROUND_LOCK_EFFECTOR_NAMES = [
   "feet",
   "foot_left",
   "foot_right",
+  "back",
 ] as const;
 
 const GROUND_LOCK_EFFECTOR_SET = new Set<string>(GROUND_LOCK_EFFECTOR_NAMES);

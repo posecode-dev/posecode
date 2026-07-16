@@ -20,7 +20,7 @@ posecode <kind> "<Name>"          # kind = exercise | stretch | posture
   step "<Phase name>" <Ns> <mode>:     # mode = flow | settle | drive | snap | linear
     <joint>: <action> <degrees>
     reach: <effector> <target> # optional: drive a hand/foot to a target via IK
-    ground-lock: <effectors>   # groups, foot_left/foot_right, or natural left foot/right foot
+    ground-lock: <contacts>    # groups/back, foot_left, or natural left foot
     turn: <degrees>            # optional: face this yaw by phase end (standing only)
     travel: <x> <z>            # optional: move to this x z (metres) by phase end
     cue "<short coaching cue>"
@@ -53,8 +53,11 @@ wrists hips knees ankles`. Plural names move both sides symmetrically; use
    previous value.
 3. Stay within healthy range of motion (e.g. knee flex ≤ 144°, elbow flex ≤
    154°, shoulder flex ≤ 180°). The renderer hard-clamps anything beyond it.
-4. Add a one-line `cue` per phase. Use `ground-lock` for whatever touches the
-   floor (feet when standing; hands and feet in a plank).
+4. Add a one-line `cue` per phase. Ground contacts are a closed vocabulary:
+   use `ground-lock: feet` when standing, `ground-lock: hands, feet` in a high
+   plank, `ground-lock: forearms, feet` in a forearm plank, and
+   `ground-lock: back` for supine floor work such as a dead bug. Do not invent
+   other contact names.
 5. `repeat` the rep count.
 
 ## Timing modes
@@ -152,7 +155,8 @@ posecode exercise "Deadlift"
   flexing the elbows = a pull-up; `pin: foot_right box` + straightening the leg =
   a step-up; `pin: hands bars` (dip bars) + bending the elbows = a triceps dip.
 - **Lying / seated**: `pose start = supine | prone | seated` for floor and mat
-  work (glute bridge, dead bug, cobra, seated forward fold).
+  work (glute bridge, dead bug, cobra, seated forward fold). In a supine
+  exercise whose torso stays down, add `ground-lock: back` to each phase.
 - **Hands**: `fingers: flex 80` makes a fist; curl individual fingers for shapes
   (`index_right: flex 95`). Single-DOF per finger, good for grip and rough
   gesture, not exact sign language.

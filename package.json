@@ -16,6 +16,10 @@
     "dev": "npm run dev -w playground",
     "build": "npm run build -w playground",
     "build:packages": "npm run build -w posecode-parser && npm run build -w posecode-share && npm run build -w posecode-render && npm run build -w posecode-embed && npm run build -w posecode-mcp",
+    "check:packages": "node scripts/check-packages.mjs",
+    "changeset": "changeset",
+    "version-packages": "changeset version && node scripts/sync-mcp-version.mjs",
+    "release": "npm run build:packages && npm run check:packages && changeset publish",
     "prepare:xbot": "node scripts/prepare-xbot.mjs",
     "eval": "tsx packages/posecode-eval/src/cli.ts",
     "video:cut2": "remotion render video/cut2/index.tsx PosecodeCut2 docs/launch-media/posecode-cut2-builder-16x9.mp4 --public-dir video/cut2/public --codec h264 --crf 16",
@@ -25,13 +29,14 @@
     "gifs": "node scripts/capture-gifs.mjs"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.31.0",
     "@remotion/cli": "4.0.489",
-    "@vitest/coverage-v8": "^2.1.8",
+    "@vitest/coverage-v8": "^4.1.10",
     "gifenc": "^1.0.3",
     "playwright-core": "^1.61.1",
     "remotion": "4.0.489",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
+    "vitest": "^4.1.10"
   }
 }

@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://posecode.org/sitemap.xml
+Sitemap: https://www.posecode.org/sitemap.xml

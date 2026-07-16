@@ -5,10 +5,14 @@
   "mcpName": "io.github.posecode-dev/posecode-mcp",
   "license": "Apache-2.0",
   "type": "module",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
   },
   "bin": {
     "posecode-mcp": "dist/posecode-mcp.mjs"
@@ -20,7 +24,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "start": "tsx src/stdio.ts",
-    "build": "tsc -p tsconfig.json && esbuild src/stdio.ts --bundle --platform=node --format=esm --external:@modelcontextprotocol/sdk --external:zod --outfile=dist/posecode-mcp.mjs",
+    "build": "tsc -p tsconfig.json && node ../../scripts/copy-mcp-guide.mjs && esbuild src/stdio.ts --bundle --platform=node --format=esm --external:@modelcontextprotocol/sdk --external:zod --outfile=dist/posecode-mcp.mjs",
     "prepublishOnly": "npm run build"
   },
   "repository": {
@@ -41,12 +45,15 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",
     "posecode-parser": "0.2.0",
-    "posecode-share": "0.1.0",
+    "posecode-share": "0.2.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
-    "esbuild": "^0.24.2",
+    "esbuild": "^0.28.1",
     "tsx": "^4.19.2"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

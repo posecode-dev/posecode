@@ -6,12 +6,14 @@ posecode exercise "Dead bug"
     shoulders: flex 90
     hips: flex 90
     knees: flex 90
+    ground-lock: back
     cue "Arms reach to the ceiling, knees stacked over the hips"
 
   step "Extend right arm & left leg" 1.2s flow:
     shoulder_right: flex 150
     hip_left: flex 20
     knee_left: flex 5
+    ground-lock: back
     cue "Lower the right arm overhead and the left leg toward the floor"
 
   step "Switch" 1.2s flow:
@@ -21,12 +23,14 @@ posecode exercise "Dead bug"
     shoulder_left: flex 150
     hip_right: flex 20
     knee_right: flex 5
+    ground-lock: back
     cue "Return and switch: left arm and right leg reach out"
 
   step "Return" 1s settle:
     shoulder_left: flex 90
     hip_right: flex 90
     knee_right: flex 90
+    ground-lock: back
     cue "Bring everything back to the start position"
 
   repeat 4

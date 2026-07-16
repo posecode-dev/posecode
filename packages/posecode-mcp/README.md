@@ -21,8 +21,13 @@ the model knows to fix and retry.
 
 ## Run
 
-It's a TypeScript server; run it with [`tsx`](https://github.com/privatenumber/tsx)
-(no build step needed):
+Run the latest published server directly from npm:
+
+```bash
+npx -y posecode-mcp@latest
+```
+
+For local repository development:
 
 ```bash
 npm start -w posecode-mcp          # tsx src/stdio.ts
@@ -35,7 +40,7 @@ npm start -w posecode-mcp          # tsx src/stdio.ts
   "mcpServers": {
     "posecode": {
       "command": "npx",
-      "args": ["-y", "tsx", "/ABSOLUTE/PATH/TO/posecode/packages/posecode-mcp/src/stdio.ts"],
+      "args": ["-y", "posecode-mcp@latest"],
       "env": { "POSECODE_BASE_URL": "https://posecode.org" }
     }
   }

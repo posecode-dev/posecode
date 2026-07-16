@@ -287,7 +287,7 @@ Posecode includes a Model Context Protocol server for AI agents.
 Run it with:
 
 ```bash
-npx posecode-mcp
+npx -y posecode-mcp@latest
 ```
 
 Example MCP client configuration:
@@ -297,22 +297,16 @@ Example MCP client configuration:
   "mcpServers": {
     "posecode": {
       "command": "npx",
-      "args": ["-y", "posecode-mcp"]
+      "args": ["-y", "posecode-mcp@latest"]
     }
   }
 }
 ```
 
-Depending on the final Build Week implementation, the MCP server can expose tools such as:
+The MCP server exposes:
 
 - `validate_posecode`
 - `render_posecode`
-- `share_posecode`
-- `generate_posecode`
-- `critique_posecode`
-- `revise_posecode`
-
-> Only list tools that are actually implemented before submitting.
 
 See [`packages/posecode-mcp`](packages/posecode-mcp) for the complete configuration and tool documentation.
 
