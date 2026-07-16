@@ -1,6 +1,6 @@
 {
   "name": "posecode-language",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "description": "Editor language service for .posecode: diagnostics, completions, and hovers built on posecode-parser. Powers both the playground editor and the LSP.",
   "license": "MIT",
@@ -11,6 +11,6 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "posecode-parser": "0.2.0"
+    "posecode-parser": "0.2.1"
   }
 }
