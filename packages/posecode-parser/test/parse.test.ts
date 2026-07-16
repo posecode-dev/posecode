@@ -263,6 +263,29 @@ describe("reach/pin effectors", () => {
   });
 });
 
+describe("ground-lock contacts", () => {
+  it("accepts back as a supine floor contact", () => {
+    const result = parse(`posecode exercise "Dead bug"
+  rig humanoid
+  pose start = supine
+  step "Extend" 1s settle:
+    ground-lock: back`);
+    expect(result.errors).toEqual([]);
+    expect(result.ir?.phases[0]?.groundLock).toEqual(["back"]);
+  });
+
+  it("rejects unknown contacts instead of silently ignoring them", () => {
+    const result = parse(`posecode posture "Floor"
+  rig humanoid
+  step "Hold" 1s linear:
+    ground-lock: shoulders`);
+    expect(result.ir).toBeNull();
+    expect(result.errors).toEqual([
+      expect.objectContaining({ line: 4, message: expect.stringContaining("shoulders") }),
+    ]);
+  });
+});
+
 describe("clip directive", () => {
   const doc = (clipLine: string): string =>
     [

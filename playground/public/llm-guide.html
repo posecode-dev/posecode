@@ -133,7 +133,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   step &quot;&lt;Phase name&gt;&quot; &lt;Ns&gt; &lt;mode&gt;:     # mode = flow | settle | drive | snap | linear
     &lt;joint&gt;: &lt;action&gt; &lt;degrees&gt;
     reach: &lt;effector&gt; &lt;target&gt; # optional: drive a hand/foot to a target via IK
-    ground-lock: &lt;effectors&gt;   # groups, foot_left/foot_right, or natural left foot/right foot
+    ground-lock: &lt;contacts&gt;    # groups/back, foot_left, or natural left foot
     turn: &lt;degrees&gt;            # optional: face this yaw by phase end (standing only)
     travel: &lt;x&gt; &lt;z&gt;            # optional: move to this x z (metres) by phase end
     cue &quot;&lt;short coaching cue&gt;&quot;
@@ -149,8 +149,8 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 <p>previous value.</p>
 <ol><li>Stay within healthy range of motion (e.g. knee flex ≤ 144°, elbow flex ≤</li></ol>
 <p>154°, shoulder flex ≤ 180°). The renderer hard-clamps anything beyond it.</p>
-<ol><li>Add a one-line <code>cue</code> per phase. Use <code>ground-lock</code> for whatever touches the</li></ol>
-<p>floor (feet when standing; hands and feet in a plank).</p>
+<ol><li>Add a one-line <code>cue</code> per phase. Ground contacts are a closed vocabulary:</li></ol>
+<p>use <code>ground-lock: feet</code> when standing, <code>ground-lock: hands, feet</code> in a high plank, <code>ground-lock: forearms, feet</code> in a forearm plank, and <code>ground-lock: back</code> for supine floor work such as a dead bug. Do not invent other contact names.</p>
 <ol><li><code>repeat</code> the rep count.</li></ol>
 <h2>Timing modes</h2>
 <ul><li><code>flow</code>: carry momentum through an interior pose; use for continuous dance,</li></ul>
@@ -209,7 +209,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 <ul><li><strong>Pins</strong>: <code>pin: &lt;effector&gt; &lt;anchor&gt;</code> moves the whole BODY so the effector sits</li></ul>
 <p>on the anchor (vs <code>reach</code>, which moves just the limb). Same effectors as reach, including <code>hands</code> / <code>feet</code>. Use it for hanging and climbing: <code>pin: hands bar</code> + flexing the elbows = a pull-up; <code>pin: foot_right box</code> + straightening the leg = a step-up; <code>pin: hands bars</code> (dip bars) + bending the elbows = a triceps dip.</p>
 <ul><li><strong>Lying / seated</strong>: <code>pose start = supine | prone | seated</code> for floor and mat</li></ul>
-<p>work (glute bridge, dead bug, cobra, seated forward fold).</p>
+<p>work (glute bridge, dead bug, cobra, seated forward fold). In a supine exercise whose torso stays down, add <code>ground-lock: back</code> to each phase.</p>
 <ul><li><strong>Hands</strong>: <code>fingers: flex 80</code> makes a fist; curl individual fingers for shapes</li></ul>
 <p>(<code>index_right: flex 95</code>). Single-DOF per finger, good for grip and rough gesture, not exact sign language.</p>
 <h2>Authoring by domain</h2>
