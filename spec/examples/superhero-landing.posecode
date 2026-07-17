@@ -10,12 +10,12 @@ posecode posture "Superhero Three-Point Landing"
     knee_right: flex 123
     ankle_right: dorsiflex 15
     hip_left: extend 12
-    knee_left: flex 105
+    knee_left: flex 110
     ankle_left: plantarflex 28
     shoulder_left: flex 98
     shoulder_left: abduct 2
     elbow_left: flex 8
-    elbow_left: supinate 80
+    elbow_left: pronate 80
     fingers_left: flex 80
     shoulder_right: extend 24
     shoulder_right: abduct 22
@@ -27,14 +27,14 @@ posecode posture "Superhero Three-Point Landing"
 
   step "Make three-point contact" 0.3s settle:
     neck: extend 25
-    pin: knee_left floor
-    reach: foot_right floor
+    ground-lock: foot_right
+    reach: knee_left floor
     reach: fist_left floor
-    cue "Set the left knee and left fist on the floor beside the planted right foot"
+    cue "Keep the right foot planted as the left knee and left fist settle onto the floor"
 
   step "Hold the landing" 0.8s linear:
-    pin: knee_left floor
-    reach: foot_right floor
+    ground-lock: foot_right
+    reach: knee_left floor
     reach: fist_left floor
     cue "Hold the three contacts with the free right arm swept behind you"
 

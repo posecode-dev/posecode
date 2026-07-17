@@ -52,6 +52,19 @@ const STANDING: PoseSpec = {
   joints: { ...RELAXED_FOREARMS },
 };
 
+// Ballet first position: legs externally rotated from the hips while the
+// straight-leg chain stays vertical. Seeding turnout in the base pose means a
+// demi-plié can keep it constant instead of visibly twisting planted feet on
+// every descent and rise.
+const FIRST_POSITION: PoseSpec = {
+  root: { position: [0, 0, 0], rotationDeg: [0, 0, 0] },
+  joints: {
+    ...RELAXED_FOREARMS,
+    hip_left: [0, 30, 0],
+    hip_right: [0, -30, 0],
+  },
+};
+
 // Lying face-up. Rotating the standing figure -90° about X lays it on its back:
 // the original front (+Z) ends up facing the ceiling (+Y) and the head points
 // toward -Z. groundFigure() (bounding-box drop) then rests the back on the floor.
@@ -81,6 +94,7 @@ const SEATED: PoseSpec = {
 const POSES: Record<string, PoseSpec> = {
   neutral: NEUTRAL,
   standing: STANDING,
+  "first-position": FIRST_POSITION,
   plank: PLANK,
   supine: SUPINE,
   prone: PRONE,

@@ -9,6 +9,7 @@ export type RigName = (typeof RIG_NAMES)[number];
 export const START_POSE_NAMES = [
   "neutral",
   "standing",
+  "first-position",
   "plank",
   "supine",
   "prone",

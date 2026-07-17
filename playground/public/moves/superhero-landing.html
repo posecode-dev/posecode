@@ -141,7 +141,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
         </li>
 <li>
           <span class="step-name">Make three-point contact<span class="step-dur">0.3s · settle</span></span>
-          <span class="step-cue">Set the left knee and left fist on the floor beside the planted right foot</span>
+          <span class="step-cue">Keep the right foot planted as the left knee and left fist settle onto the floor</span>
         </li>
 <li>
           <span class="step-name">Hold the landing<span class="step-dur">0.8s · linear</span></span>
@@ -168,12 +168,12 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     knee_right: flex 123
     ankle_right: dorsiflex 15
     hip_left: extend 12
-    knee_left: flex 105
+    knee_left: flex 110
     ankle_left: plantarflex 28
     shoulder_left: flex 98
     shoulder_left: abduct 2
     elbow_left: flex 8
-    elbow_left: supinate 80
+    elbow_left: pronate 80
     fingers_left: flex 80
     shoulder_right: extend 24
     shoulder_right: abduct 22
@@ -185,14 +185,14 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 
   step &quot;Make three-point contact&quot; 0.3s settle:
     neck: extend 25
-    pin: knee_left floor
-    reach: foot_right floor
+    ground-lock: foot_right
+    reach: knee_left floor
     reach: fist_left floor
-    cue &quot;Set the left knee and left fist on the floor beside the planted right foot&quot;
+    cue &quot;Keep the right foot planted as the left knee and left fist settle onto the floor&quot;
 
   step &quot;Hold the landing&quot; 0.8s linear:
-    pin: knee_left floor
-    reach: foot_right floor
+    ground-lock: foot_right
+    reach: knee_left floor
     reach: fist_left floor
     cue &quot;Hold the three contacts with the free right arm swept behind you&quot;
 
