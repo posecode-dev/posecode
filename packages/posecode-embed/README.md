@@ -119,4 +119,4 @@ For a movement library in CI, run:
 npx posecode-parser@0.2.0 validate --strict ./movements
 ```
 
-Apache-2.0-licensed, part of [Posecode](https://github.com/posecode-dev/posecode).
+AGPL-3.0-only, part of [Posecode](https://github.com/posecode-dev/posecode). A [separate commercial license](https://github.com/posecode-dev/posecode/blob/main/COMMERCIAL-LICENSE.md) is available for closed-source product use.

@@ -1,6 +1,6 @@
 # Posecode
 
-> Posecode is an open-source (Apache-2.0) text-to-motion language: a small, Mermaid-style protocol that LLMs can write to describe single-person movement. A TypeScript parser validates a closed vocabulary and constrains joint targets to configured ranges of motion; a Three.js renderer then animates the result locally in the browser without generative-motion inference.
+> Posecode is an open-source text-to-motion language with an Apache-2.0 specification and parser plus an AGPL-3.0 product layer. It is a small, Mermaid-style protocol that LLMs can write to describe single-person movement. A TypeScript parser validates a closed vocabulary and constrains joint targets to configured ranges of motion; a Three.js renderer then animates the result locally in the browser without generative-motion inference.
 
 Key facts:
 - A model writes phases and joint angles ("knees: flex 95"), not 3D transforms.

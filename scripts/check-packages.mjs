@@ -12,6 +12,13 @@ const publicPackages = [
   "posecode-embed",
   "posecode-mcp",
 ];
+const expectedLicenses = new Map([
+  ["posecode-parser", "Apache-2.0"],
+  ["posecode-share", "Apache-2.0"],
+  ["posecode-render", "AGPL-3.0-only"],
+  ["posecode-embed", "AGPL-3.0-only"],
+  ["posecode-mcp", "AGPL-3.0-only"],
+]);
 
 const manifests = new Map(
   publicPackages.map((name) => {
@@ -32,8 +39,24 @@ for (const [name, { directory, manifest }] of manifests) {
   if (manifest.publishConfig?.access !== "public") {
     errors.push(`${name} must set publishConfig.access to public.`);
   }
-  if (!manifest.files?.includes("dist") || !manifest.files?.includes("README.md")) {
-    errors.push(`${name} must publish dist and README.md.`);
+  if (
+    !manifest.files?.includes("dist") ||
+    !manifest.files?.includes("README.md") ||
+    !manifest.files?.includes("LICENSE") ||
+    !manifest.files?.includes("NOTICE")
+  ) {
+    errors.push(`${name} must publish dist, README.md, LICENSE, and NOTICE.`);
+  }
+  if (manifest.license !== expectedLicenses.get(name)) {
+    errors.push(`${name} declares ${manifest.license}; expected ${expectedLicenses.get(name)}.`);
+  }
+
+  const licenseText = readFileSync(resolve(directory, "LICENSE"), "utf8");
+  const expectedHeading = manifest.license === "Apache-2.0"
+    ? "Apache License"
+    : "GNU AFFERO GENERAL PUBLIC LICENSE";
+  if (!licenseText.includes(expectedHeading)) {
+    errors.push(`${name} LICENSE does not contain the declared ${manifest.license} text.`);
   }
 
   const targets = new Set();
@@ -55,7 +78,8 @@ for (const [name, { directory, manifest }] of manifests) {
   for (const section of ["dependencies", "peerDependencies", "optionalDependencies"]) {
     for (const [dependency, range] of Object.entries(manifest[section] ?? {})) {
       const internal = manifests.get(dependency);
-      if (internal && range !== internal.manifest.version) {
+      const exactVersionRequired = section !== "peerDependencies";
+      if (internal && exactVersionRequired && range !== internal.manifest.version) {
         errors.push(
           `${name} ${section}.${dependency} is ${range}; expected ${internal.manifest.version}.`,
         );
@@ -76,6 +100,8 @@ for (const [name, { directory, manifest }] of manifests) {
   try {
     const report = JSON.parse(packed.stdout)[0];
     const files = new Set(report.files.map(({ path }) => path));
+    if (!files.has("LICENSE")) errors.push(`${name} tarball omits LICENSE.`);
+    if (!files.has("NOTICE")) errors.push(`${name} tarball omits NOTICE.`);
     for (const target of targets) {
       const packedPath = target.replace(/^\.\//, "");
       if (!files.has(packedPath)) errors.push(`${name} tarball omits ${packedPath}.`);

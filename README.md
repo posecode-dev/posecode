@@ -29,8 +29,8 @@
   <a href="https://www.npmjs.com/package/posecode-parser">
     <img src="https://img.shields.io/npm/v/posecode-parser.svg?color=emerald" alt="npm version" />
   </a>
-  <a href="https://github.com/posecode-dev/posecode/blob/main/LICENSE">
-    <img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg" alt="Apache 2.0 license" />
+  <a href="https://github.com/posecode-dev/posecode/blob/main/LICENSING.md">
+    <img src="https://img.shields.io/badge/license-Apache--2.0%20%2B%20AGPL--3.0-blue.svg" alt="Apache 2.0 and AGPL 3.0 licenses" />
   </a>
   <a href="https://github.com/posecode-dev/posecode/tree/main/packages/posecode-mcp">
     <img src="https://img.shields.io/badge/MCP-Compatible-orange.svg" alt="MCP compatible" />
@@ -625,19 +625,26 @@ See:
 
 ---
 
-## Character Asset
+## Character assets
 
-The 3D figure uses an Adobe Mixamo anatomical mannequin exported under the applicable Mixamo terms.
+The hosted playground currently uses an Adobe Mixamo character and one showcase animation under the applicable Adobe terms. These binary assets are not covered by Posecode's software licenses. See [third-party notices](THIRD_PARTY_NOTICES.md).
 
-The renderer also includes a zero-asset procedural fallback and can accept compatible Mixamo-rigged GLB characters through `characterUrl`.
+The renderer also includes a zero-asset procedural figure and accepts compatible humanoid GLB characters through `characterUrl`.
 
 ---
 
-## License
+## Licensing
 
-Posecode's open-core packages and protocol are available under the [Apache License 2.0](LICENSE).
+Posecode is open source with a clear standard and product boundary:
 
-Review the licenses and terms of any bundled or externally loaded character assets separately.
+| Layer | Components | License |
+| --- | --- | --- |
+| Open standard | Specification, examples, parser, share codec, language service, LSP, VS Code extension | Apache-2.0 |
+| Product layer | Renderer, web embed, MCP server, eval harness, hosted playground | AGPL-3.0-only |
+
+Organizations that need to use an AGPL component in a closed-source product may contact [hello@posecode.org](mailto:hello@posecode.org?subject=Posecode%20commercial%20license) about a separate commercial agreement.
+
+Earlier grants are unchanged. MIT revisions remain MIT, and the 0.2.2 npm packages remain Apache-2.0. See [LICENSING.md](LICENSING.md), [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md), and [TRADEMARK.md](TRADEMARK.md).
 
 ---
 

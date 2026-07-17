@@ -29,6 +29,7 @@ const PAUSE = "❚❚";
 
 /** Where the "open in playground" link points; overridable per element. */
 const DEFAULT_PLAYGROUND = "https://posecode.org/play";
+const LICENSING_URL = "https://github.com/posecode-dev/posecode/blob/main/LICENSING.md";
 
 export interface PosecodeReadyDetail {
   version: string;
@@ -168,11 +169,18 @@ export class PosecodePlayerElement extends HTMLElement {
     link.href = this.#playgroundUrl();
 
     const bar = document.createElement("div");
-    bar.className = opts.controls ? "bar" : "bar";
+    bar.className = "bar";
     if (!opts.controls) bar.style.display = "none";
     bar.append(this.#playBtn, this.#phaseEl, link);
 
-    this.#root.replaceChildren(style, this.#canvas, bar);
+    const legal = document.createElement("a");
+    legal.className = "legal";
+    legal.target = "_blank";
+    legal.rel = "noopener";
+    legal.textContent = "Posecode source";
+    legal.href = LICENSING_URL;
+
+    this.#root.replaceChildren(style, this.#canvas, bar, legal);
   }
 
   #playgroundUrl(): string {

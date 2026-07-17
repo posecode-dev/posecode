@@ -68,6 +68,21 @@ export const PLAYER_CSS = `
   }
   .link:hover { color: #e7ecf3; }
 
+  .legal {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    padding: 3px 6px;
+    border-radius: 4px;
+    background: rgba(6, 8, 12, 0.6);
+    color: #9aa4b2;
+    font-size: 10px;
+    line-height: 1.2;
+    text-decoration: none;
+    opacity: 0.72;
+  }
+  .legal:hover, .legal:focus-visible { color: #e7ecf3; opacity: 1; }
+
   .msg {
     position: absolute;
     inset: 0;

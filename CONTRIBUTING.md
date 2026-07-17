@@ -109,3 +109,19 @@ To add a new movement preset to the catalog:
 - **TypeScript First**: All core library files must be written in strongly-typed TypeScript.
 - **Framework-Agnostic Core**: Keep packages under `packages/` dependency-light and decoupled from frontend frameworks (like React or Vue) to maximize embeddability.
 - **Range of Motion Clamping**: Never bypass the `posecode-parser` ROM bounds. All custom rigs or movements must adhere to healthy physical thresholds.
+
+---
+
+## Licensing and sign-off
+
+Every commit must include a Developer Certificate of Origin sign-off:
+
+```bash
+git commit -s
+```
+
+The sign-off certifies the statements in [DCO](DCO). It does not transfer copyright.
+
+Contributions to Apache-2.0 components are accepted under Apache-2.0. Product-layer components are AGPL-3.0-only and are also intended for separate commercial licensing. External contributions to the product layer require a separately executed, lawyer-reviewed contributor license agreement before merge. Until that agreement is available, maintainers must not merge external product-layer code.
+
+Do not submit code, assets, model output, or employer-owned work unless you have the right to contribute it under the applicable terms. Identify material AI assistance in the pull request when it produced a substantial part of the contribution.
