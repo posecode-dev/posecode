@@ -1,10 +1,11 @@
 /**
- * Range-of-Motion (ROM) hard limits per joint type and action, in degrees.
+ * Configured Range-of-Motion (ROM) limits per joint type and action, in degrees.
  *
- * Values follow the maximum healthy limits in the project research
- * (CDC / clinical normative data), §5.1 Tables 1 & 2. The clamp pass treats
+ * Values are implementation bounds informed by the project's cited references;
+ * they are not a clinical assessment or a guarantee that a complete motion is
+ * safe for a particular person. The clamp pass treats
  * `max` as a HARD ceiling: e.g. a requested knee flexion of 200° is clamped to
- * 144°, so the renderer can never produce an anatomically impossible joint.
+ * 144°, preventing that authored channel from exceeding its configured bound.
  *
  * `min` is the floor of the achievable angle for that action direction (0 for
  * most; small positive ceilings on extension capture hyperextension limits).
@@ -37,6 +38,9 @@ const ROM: Record<string, ActionLimits> = {
   wrist: {
     flex: { min: 0, max: 80 },
     extend: { min: 0, max: 70 },
+    // Radial/ulnar deviation expressed in the DSL's midline-relative terms.
+    abduct: { min: 0, max: 20 },
+    adduct: { min: 0, max: 30 },
   },
   // --- Lower extremity (research Table 2) ---
   hip: {
@@ -70,12 +74,16 @@ const ROM: Record<string, ActionLimits> = {
     adduct: { min: 0, max: 35 },
     "rotate-in": { min: 0, max: 45 },
     "rotate-out": { min: 0, max: 45 },
+    "twist-left": { min: 0, max: 45 },
+    "twist-right": { min: 0, max: 45 },
   },
   chest: {
     flex: { min: 0, max: 30 },
     extend: { min: 0, max: 20 },
     "rotate-in": { min: 0, max: 35 },
     "rotate-out": { min: 0, max: 35 },
+    "twist-left": { min: 0, max: 35 },
+    "twist-right": { min: 0, max: 35 },
   },
   neck: {
     flex: { min: 0, max: 50 },
@@ -84,6 +92,21 @@ const ROM: Record<string, ActionLimits> = {
     adduct: { min: 0, max: 45 },
     "rotate-in": { min: 0, max: 80 },
     "rotate-out": { min: 0, max: 80 },
+    "twist-left": { min: 0, max: 80 },
+    "twist-right": { min: 0, max: 80 },
+  },
+  // The head control is the upper-cervical share of motion, not a second full
+  // neck. Conservative limits prevent neck+head targets from silently doubling
+  // the complete cervical range.
+  head: {
+    flex: { min: 0, max: 25 },
+    extend: { min: 0, max: 25 },
+    abduct: { min: 0, max: 20 },
+    adduct: { min: 0, max: 20 },
+    "rotate-in": { min: 0, max: 40 },
+    "rotate-out": { min: 0, max: 40 },
+    "twist-left": { min: 0, max: 40 },
+    "twist-right": { min: 0, max: 40 },
   },
   // --- Hand / fingers (single-DOF curl per finger) ---
   index: { flex: { min: 0, max: 100 }, extend: { min: 0, max: 20 } },
@@ -98,7 +121,14 @@ const ROM: Record<string, ActionLimits> = {
   },
 };
 
-import { actionAxis, boneType, flexionSign, isLeft } from "./joints.js";
+import {
+  ACTION_NAMES,
+  actionAxis,
+  boneType,
+  expandJoint,
+  flexionSign,
+  isLeft,
+} from "./joints.js";
 import type { Axis } from "./types.js";
 
 /** Look up the ROM limit for a bone + action, or null if undefined. */
@@ -106,6 +136,35 @@ export function romFor(boneId: string, action: string): RomLimit | null {
   const limits = ROM[boneType(boneId)];
   if (!limits) return null;
   return limits[action] ?? null;
+}
+
+/** True when an anatomical action is defined for this concrete bone. */
+export function isActionAllowed(boneId: string, action: string): boolean {
+  return romFor(boneId, action) !== null;
+}
+
+/**
+ * Actions valid for every bone represented by a DSL joint/group name. The
+ * intersection makes completions for heterogeneous groups such as `fingers`
+ * safe: thumb-only abduction is not offered for all fingers at once.
+ */
+export function actionsForJoint(joint: string): string[] {
+  const bones = expandJoint(joint);
+  if (bones.length === 0) return [];
+  const axial = bones.every((bone) => AXIAL_TYPES.has(boneType(bone)));
+  return ACTION_NAMES.filter(
+    (action) =>
+      (!axial || (action !== "rotate-in" && action !== "rotate-out")) &&
+      bones.every((bone) => isActionAllowed(bone, action)),
+  );
+}
+
+const AXIAL_TYPES = new Set(["spine", "chest", "neck", "head"]);
+
+/** True for the accepted-but-deprecated ambiguous axial rotation spelling. */
+export function isLegacyAxialAction(boneId: string, action: string): boolean {
+  return AXIAL_TYPES.has(boneType(boneId)) &&
+    (action === "rotate-in" || action === "rotate-out");
 }
 
 /** Signed per-axis rotation range, degrees, in a bone's LOCAL Euler frame. */
@@ -117,8 +176,8 @@ export type EulerRom = Record<Axis, RomLimit>;
  * (flexion-sign per joint, Y/Z mirrored on left-side bones). Each axis range is
  * the union of every action that rotates it; axes with no ROM entry stay
  * `{min: 0, max: 0}`, locking them (a knee is a pure hinge). This is what lets
- * the IK solver honour the same hard limits as authored angles: any solved
- * joint rotation clamped into this box is inside the healthy ROM.
+ * the IK solver honour the same configured limits as authored angles: any
+ * solved joint rotation clamped into this box is inside that ROM box.
  *
  * Returns null for bones without ROM data (e.g. `head`).
  */

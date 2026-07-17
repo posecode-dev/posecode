@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tendu: How to Do It (Animated 3D Guide) | Posecode</title>
+    <title>Tendu: Posecode Movement Example | Posecode</title>
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="description" content="How to do the tendu (dance): 2 phases targeting the hip flexors, body weight, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
+    <meta name="description" content="Tendu is an intermediate-level dance Posecode example with 2 inspectable phases and a link to live 3D playback." />
     <link rel="canonical" href="https://www.posecode.org/moves/tendu.html" />
     <meta name="theme-color" content="#0a0d12" />
-    <meta property="og:title" content="Tendu: How to Do It (Animated 3D Guide) | Posecode" />
-    <meta property="og:description" content="How to do the tendu (dance): 2 phases targeting the hip flexors, body weight, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
+    <meta property="og:title" content="Tendu: Posecode Movement Example | Posecode" />
+    <meta property="og:description" content="Tendu is an intermediate-level dance Posecode example with 2 inspectable phases and a link to live 3D playback." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.posecode.org/moves/tendu.html" />
     <meta property="og:site_name" content="Posecode" />
@@ -97,7 +97,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 @media(max-width:600px){.wrap{padding:0 18px}}
 </style>
     <link rel="stylesheet" href="/content-theme.css" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to do a Tendu","description":"How to do the tendu (dance): 2 phases targeting the hip flexors, body weight, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs.","step":[{"@type":"HowToStep","name":"Brush and point","text":"Brush the right foot forward to a fully pointed tendu, leg turned out"},{"@type":"HowToStep","name":"Close through the floor","text":"Draw the foot back to first position, heel down"}]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Tendu: a Posecode movement example","description":"Tendu is an intermediate-level dance Posecode example with 2 inspectable phases and a link to live 3D playback."}</script>
     <script>
       window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
     </script>
@@ -123,14 +123,17 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h1>Tendu</h1>
       <p class="meta-line"><b>Target</b> Hip flexors &nbsp;·&nbsp; <b>Equipment</b> Body weight
         &nbsp;·&nbsp; <b>Level</b> Intermediate &nbsp;·&nbsp; <b>Reps</b> 4</p>
-      <p>Tendu is a intermediate-level dance movement targeting the
+      <p>Tendu is an intermediate-level dance movement targeting the
         hip flexors, written in <a href="/">Posecode</a>, a small open-source language
-        that LLMs like ChatGPT, Claude, and Gemini can write to describe human movement as text.
-        Every joint angle below is hard-clamped to a safe range of motion.</p>
+        that capable language models can use to describe human movement as text.
+        Authored joint targets and reach-IK solves are constrained to Posecode's configured
+        per-axis bounds. Those bounds constrain the visualization, but they do not certify
+        that a complete movement is safe or clinically correct.
+        This page documents a code example; it is not exercise instruction.</p>
 
       <a class="btn" href="/play/tendu">▶ Open Tendu in the playground →</a>
 
-      <h2>How to do it</h2>
+      <h2>Movement phases</h2>
       <ol class="steps">
 <li>
           <span class="step-name">Brush and point<span class="step-dur">1.8s · settle</span></span>
@@ -143,7 +146,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       </ol>
 
       <h2>The .posecode source</h2>
-      <p>This is the exact text an LLM writes to produce the animation above: phases and joint
+      <p>This is the exact text used by the linked playground animation: phases and joint
         angles, not 3D transforms.</p>
       <pre class="code-block"><code>posecode exercise &quot;Tendu&quot;
   rig humanoid
@@ -172,8 +175,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 </code></pre>
 
       <h2>More dance movements</h2>
-         <div class="chip-list"><a href="/moves/dance-phrase.html">Dance phrase (8-count)</a><a href="/moves/demi-plie.html">Demi-plié</a><a href="/moves/releve.html">Relevé</a><a href="/moves/port-de-bras.html">Port de bras</a><a href="/moves/pirouette.html">Pirouette (full turn)</a><a href="/moves/box-step.html">Box step (travels)</a></div>
-    
+         <div class="chip-list"><a href="/moves/demi-plie.html">Demi-plié</a><a href="/moves/releve.html">Relevé</a><a href="/moves/pirouette.html">Pirouette (full turn)</a><a href="/moves/box-step.html">Box step (travels)</a><a href="/moves/grapevine.html">Grapevine (travels)</a><a href="/moves/waltz-box.html">Waltz box step</a></div>
     </main>
     <footer class="site-footer">
       <div class="wrap">

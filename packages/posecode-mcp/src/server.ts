@@ -3,7 +3,7 @@
  *
  * Three tools turn "an LLM knows biomechanics" into "an LLM can show movement":
  *   - posecode_authoring_guide: learn the .posecode language inline
- *   - validate_posecode:       parse + surface range-of-motion safety clamps
+ *   - validate_posecode:       parse + surface configured range-of-motion clamps
  *   - render_posecode:         get a playground link that animates the movement
  *
  * The server is decoupled from any transport so it can be driven over stdio in
@@ -49,7 +49,7 @@ export function createPosecodeServer(opts: PosecodeServerOptions = {}): McpServe
     {
       title: "Validate a Posecode movement",
       description:
-        "Parse a .posecode document and return any errors plus range-of-motion (ROM) safety clamps. Use this to check a movement before showing it to a user.",
+        "Parse a .posecode document and return any errors plus configured range-of-motion (ROM) clamps. Use this to check the source before showing it to a user; a clean result is not a clinical safety assessment.",
       inputSchema: sourceSchema,
     },
     async ({ source }) => {

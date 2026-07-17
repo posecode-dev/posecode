@@ -3,17 +3,17 @@ posecode stretch "Spine rotation (ROM demo)"
   pose start = standing
 
   step "Rotate right" 2.5s flow:
-    spine: rotate-out 45
+    spine: twist-right 45
     ground-lock: feet
     cue "Rotate the trunk to the right: transverse-plane spinal rotation"
 
   step "Rotate left" 2.5s flow:
-    spine: rotate-in 45
+    spine: twist-left 45
     ground-lock: feet
     cue "Pass through center and rotate to the left"
 
   step "Center" 2s settle:
-    spine: rotate-in 0
+    spine: twist-left 0
     ground-lock: feet
     cue "Return to a neutral facing"
 

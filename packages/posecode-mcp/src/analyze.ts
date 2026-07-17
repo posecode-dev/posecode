@@ -2,7 +2,7 @@
  * Pure, transport-agnostic core of the Posecode MCP server.
  *
  * Turns a `.posecode` document into the structured results the MCP tools
- * return: a validation summary (errors + ROM-safety clamps) and a render
+ * return: a validation summary (errors + configured ROM clamps) and a render
  * result that adds a playground permalink. No MCP or I/O here: just parse →
  * shape, so it is trivially unit-testable.
  */
@@ -31,7 +31,7 @@ export interface ValidationSummary {
   phases?: PhaseSummary[];
   /** Fatal parse/validation errors (empty when ok). */
   errors: { line: number; message: string }[];
-  /** Angles that exceeded a healthy range of motion and were clamped. */
+  /** Angles that exceeded the configured rig range and were clamped. */
   romWarnings: Warning[];
 }
 

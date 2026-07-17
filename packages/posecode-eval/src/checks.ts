@@ -6,12 +6,16 @@
  */
 
 import type { PhasePose, ProbeResult } from "./probe.js";
+import { REACH_TOLERANCE } from "posecode-render";
 import {
   balanceOverflow,
   distanceBetween,
   feetCenterSkateDistance,
+  fistFloorAngleDeg,
   footIsSupported,
   footSkateDistance,
+  footWorldSkateDistance,
+  forwardCoordinate,
   headPropClearance,
   heightOf,
   kneeFlexionDeg,
@@ -20,7 +24,9 @@ import {
   phaseMaxLandmarkSpeed,
   propPenetrationDepth,
   segmentTiltDeg,
+  soleUpAngleDeg,
   spineCurlDeg,
+  torsoForwardPitchDeg,
   torsoPitchDeg,
 } from "./metrics.js";
 
@@ -37,9 +43,45 @@ export interface MovementChecks {
   checks: ((result: ProbeResult) => CheckOutcome)[];
 }
 
+/** Maximum positional error for a declared reach/pin/grip contact. */
+export const CONTACT_ERROR_MAX = REACH_TOLERANCE;
+
 /** Find a phase by name; throws a failing outcome path if missing. */
 function phase(result: ProbeResult, name: string): PhasePose | null {
   return result.phases.find((p) => p.name === name) ?? null;
+}
+
+/** Expanded identities of every body part explicitly supported by the floor. */
+function floorSupportEffectors(pose: PhasePose): Set<string> {
+  const supports = new Set<string>();
+  const add = (effector: string): void => {
+    const groups: Readonly<Record<string, readonly string[]>> = {
+      feet: ["foot_left", "foot_right"],
+      hands: ["hand_left", "hand_right"],
+      fists: ["fist_left", "fist_right"],
+      knees: ["knee_left", "knee_right"],
+      forearms: ["elbow_left", "elbow_right"],
+    };
+    for (const item of groups[effector] ?? [effector]) supports.add(item);
+  };
+  pose.groundLock.forEach(add);
+  pose.reaches.filter((reach) => reach.target === "floor").forEach((reach) => add(reach.effector));
+  pose.pins.filter((pin) => pin.anchor === "floor").forEach((pin) => add(pin.effector));
+  return supports;
+}
+
+function footSupportKind(
+  pose: PhasePose,
+  side: "left" | "right",
+): "ground-lock" | "pin" | null {
+  if (pose.pins.some((pin) =>
+    (pin.effector === "feet" || pin.effector === `foot_${side}`) && pin.anchor === "floor")) {
+    return "pin";
+  }
+  if (pose.groundLock.includes("feet") || pose.groundLock.includes(`foot_${side}`)) {
+    return "ground-lock";
+  }
+  return null;
 }
 
 /** Build a check on one named phase with a measured value and a predicate. */
@@ -78,6 +120,13 @@ export function genericChecks(result: ProbeResult): CheckOutcome[] {
           .map((w) => `${w.joint} ${w.action} ${w.requested}→${w.clamped}`)
           .join("; ") || "no warnings",
     },
+    {
+      id: "has-phases",
+      pass: result.phases.length > 0,
+      detail: result.phases.length > 0
+        ? `${result.phases.length} phase(s)`
+        : "no movement phases to evaluate",
+    },
   ];
   for (const p of result.phases) {
     // The one universal contact invariant: nothing sinks through the floor.
@@ -98,28 +147,56 @@ export function genericChecks(result: ProbeResult): CheckOutcome[] {
     if (p.floorBound) {
       out.push({
         id: `grounded-not-floating:${p.name}`,
-        pass: p.meshMinY < 0.02,
-        detail: `mesh floats ${p.meshMinY.toFixed(3)}m above floor (want < 0.020)`,
+        pass: p.meshMinY > -0.02 && p.meshMinY < 0.02,
+        detail: `mesh floor offset ${p.meshMinY.toFixed(3)}m (want -0.020 to +0.020)`,
       });
     }
 
+    // A contact declaration is an executable promise, not metadata. Every
+    // reach/pin/grip must either resolve within tolerance or fail explicitly;
+    // unsupported targets/solver paths must never disappear into a green score.
+    p.contactResiduals.forEach((contact, index) => {
+      const suffix = `${p.name}:${contact.kind}:${contact.effector}:${contact.target}:${index}`;
+      if (contact.status === "unsupported" || contact.error === null) {
+        out.push({
+          id: `contact-supported:${suffix}`,
+          pass: false,
+          detail: contact.reason ?? "contact could not be evaluated",
+        });
+        return;
+      }
+      out.push({
+        id: `contact-position:${suffix}`,
+        pass: contact.error <= CONTACT_ERROR_MAX,
+        detail: `${contact.error.toFixed(3)}m residual (want ≤ ${CONTACT_ERROR_MAX.toFixed(3)}m)`,
+      });
+    });
+
     const floorHands = new Set<string>();
-    for (const r of p.reaches) {
-      if (r.target !== "floor") continue;
-      if (r.effector === "hands" || r.effector === "hand_left") floorHands.add("left");
-      if (r.effector === "hands" || r.effector === "hand_right") floorHands.add("right");
-    }
-    for (const pin of p.pins) {
-      if (pin.anchor !== "floor") continue;
-      if (pin.effector === "hands" || pin.effector === "hand_left") floorHands.add("left");
-      if (pin.effector === "hands" || pin.effector === "hand_right") floorHands.add("right");
-    }
+    const floorFists = new Set<string>();
+    const collectFloorHand = (effector: string): void => {
+      if (effector === "hands" || effector === "hand_left") floorHands.add("left");
+      if (effector === "hands" || effector === "hand_right") floorHands.add("right");
+      if (effector === "fists" || effector === "fist_left") floorFists.add("left");
+      if (effector === "fists" || effector === "fist_right") floorFists.add("right");
+    };
+    p.reaches.filter((reach) => reach.target === "floor").forEach((reach) => collectFloorHand(reach.effector));
+    p.pins.filter((pin) => pin.anchor === "floor").forEach((pin) => collectFloorHand(pin.effector));
+    p.groundLock.forEach(collectFloorHand);
     for (const side of floorHands) {
       const angle = palmFloorAngleDeg(p, side as "left" | "right");
       out.push({
         id: `palm-normal:${p.name}:${side}`,
         pass: angle < 55,
         detail: `${angle.toFixed(1)}° from palm-down (want < 55°)`,
+      });
+    }
+    for (const side of floorFists) {
+      const angle = fistFloorAngleDeg(p, side as "left" | "right");
+      out.push({
+        id: `fist-normal:${p.name}:${side}`,
+        pass: angle < 55,
+        detail: `${angle.toFixed(1)}° from knuckles-down (want < 55°)`,
       });
     }
 
@@ -167,14 +244,30 @@ export function genericChecks(result: ProbeResult): CheckOutcome[] {
       });
     }
     for (const side of ["left", "right"] as const) {
-      const explicitlyPinned = (phase: PhasePose) => phase.pins.some((p) =>
-        (p.effector === "feet" || p.effector === `foot_${side}`) && p.anchor === "floor");
-      if (!explicitlyPinned(previous) || !explicitlyPinned(current)) continue;
-      const skate = footSkateDistance(previous, current, side);
+      // With both feet down, a deliberate stance-width change may move each
+      // foot symmetrically while the support center stays fixed (checked
+      // above). A single carried support, however, must not jump when the
+      // author switches between ground-lock and pin semantics.
+      if (bothSupported || !footIsSupported(previous, side) || !footIsSupported(current, side)) continue;
+      const previousKind = footSupportKind(previous, side);
+      const currentKind = footSupportKind(current, side);
+      // Releasing a world pin into a ground-locked landing deliberately lets
+      // the foot travel to its new planted position during this phase (step
+      // closes, marches, and dance phrases). Endpoint displacement is motion,
+      // not a boundary snap, so it is covered by speed/contact checks instead.
+      if (previousKind === "pin" && currentKind === "ground-lock") continue;
+      // Ground-lock anchors travel/yaw with the figure, so compare in its
+      // choreography-relative frame. A floor pin is a fixed WORLD anchor;
+      // subtracting authored travel fabricates skate (forward lunge reported
+      // 30 cm while the pinned foot was actually motionless). Handoffs to or
+      // from a pin are continuity checks in world space too.
+      const skate = previousKind === "ground-lock" && currentKind === "ground-lock"
+        ? footSkateDistance(previous, current, side)
+        : footWorldSkateDistance(previous, current, side);
       out.push({
         id: `foot-skate:${current.name}:${side}`,
-        pass: skate < 0.08,
-        detail: `${skate.toFixed(3)}m pinned-foot drift (want < 0.08m)`,
+        pass: skate < 0.03,
+        detail: `${skate.toFixed(3)}m single-support drift (want < 0.03m)`,
       });
     }
     const speed = phaseMaxLandmarkSpeed(previous, current);
@@ -200,6 +293,151 @@ export function genericChecks(result: ProbeResult): CheckOutcome[] {
  * a leg-swing (the pre-hinge bug) fails these loudly.
  */
 export const MOVEMENT_CHECKS: MovementChecks[] = [
+  {
+    movement: "glute-bridge",
+    checks: [
+      phaseCheck(
+        "bridge-pelvis-raised",
+        "Bridge up",
+        (p) => heightOf(p, "pelvis"),
+        (v) => v > 0.5,
+        "pelvis > 0.50m",
+      ),
+      phaseCheck(
+        "lower-pelvis-on-floor",
+        "Lower",
+        (p) => heightOf(p, "pelvis"),
+        (v) => v < 0.16,
+        "pelvis < 0.16m",
+      ),
+      (result) => {
+        const up = phase(result, "Bridge up");
+        const down = phase(result, "Lower");
+        if (!up || !down) return { id: "bridge-has-real-height-change", pass: false, detail: "bridge phase missing" };
+        const delta = heightOf(up, "pelvis") - heightOf(down, "pelvis");
+        return {
+          id: "bridge-has-real-height-change",
+          pass: delta > 0.4,
+          detail: `${delta.toFixed(3)}m pelvis height change (want > 0.40m)`,
+        };
+      },
+    ],
+  },
+  {
+    // Three-point landing: the front sole, rear knee, and opposite fist must
+    // form distinct supports while the torso stays above the floor. Contact
+    // residuals alone once allowed a folded body with a vertical planted foot.
+    movement: "superhero-landing",
+    checks: [
+      phaseCheck(
+        "torso-forward-not-collapsed",
+        "Hold the landing",
+        torsoForwardPitchDeg,
+        (v) => v >= 65 && v <= 100,
+        "65–100° character-forward pitch",
+      ),
+      (result) => {
+        const p = phase(result, "Hold the landing");
+        if (!p) return { id: "exact-three-supports", pass: false, detail: "phase \"Hold the landing\" not found" };
+        const actual = floorSupportEffectors(p);
+        const expected = ["foot_right", "knee_left", "fist_left"];
+        const pass = actual.size === expected.length && expected.every((item) => actual.has(item));
+        return {
+          id: "exact-three-supports",
+          pass,
+          detail: `floor supports: ${[...actual].sort().join(", ") || "none"} (want ${expected.join(", ")})`,
+        };
+      },
+      (result) => {
+        const phases = [
+          phase(result, "Drop into the landing"),
+          phase(result, "Make three-point contact"),
+          phase(result, "Hold the landing"),
+        ];
+        if (phases.some((item) => !item)) {
+          return { id: "three-supports-stay-planted", pass: false, detail: "landing phase missing" };
+        }
+        let maxDrift = 0;
+        for (let i = 1; i < phases.length; i++) {
+          const a = phases[i - 1]!;
+          const b = phases[i]!;
+          for (const boneId of ["ankle_right", "knee_left", "wrist_left"]) {
+            const pa = a.bones.get(boneId)!;
+            const pb = b.bones.get(boneId)!;
+            maxDrift = Math.max(maxDrift, Math.hypot(pb[0] - pa[0], pb[2] - pa[2]));
+          }
+        }
+        return {
+          id: "three-supports-stay-planted",
+          pass: maxDrift < 0.03,
+          detail: `${maxDrift.toFixed(3)}m maximum support drift (want < 0.03m)`,
+        };
+      },
+      phaseCheck(
+        "front-sole-planted",
+        "Hold the landing",
+        (p) => soleUpAngleDeg(p, "right"),
+        (v) => v < 25,
+        "< 25° from flat",
+      ),
+      phaseCheck(
+        "rear-knee-down",
+        "Hold the landing",
+        (p) => heightOf(p, "knee_left"),
+        (v) => v < 0.12,
+        "left knee < 0.12m",
+      ),
+      phaseCheck(
+        "fist-down",
+        "Hold the landing",
+        (p) => heightOf(p, "wrist_left"),
+        (v) => v < 0.13,
+        "left fist < 0.13m",
+      ),
+      phaseCheck(
+        "head-clear-of-floor",
+        "Hold the landing",
+        (p) => heightOf(p, "head"),
+        (v) => v > 0.4,
+        "head > 0.40m",
+      ),
+      phaseCheck(
+        "front-knee-up",
+        "Hold the landing",
+        (p) => heightOf(p, "knee_right"),
+        (v) => v > 0.3,
+        "right knee > 0.30m",
+      ),
+      phaseCheck(
+        "supports-separated",
+        "Hold the landing",
+        (p) => Math.min(
+          distanceBetween(p, "ankle_right", "knee_left"),
+          distanceBetween(p, "ankle_right", "wrist_left"),
+          distanceBetween(p, "knee_left", "wrist_left"),
+        ),
+        (v) => v > 0.2,
+        "every support pair > 0.20m apart",
+      ),
+      phaseCheck(
+        "supports-front-to-back",
+        "Hold the landing",
+        (p) => Math.min(
+          forwardCoordinate(p, "ankle_right") - forwardCoordinate(p, "knee_left"),
+          forwardCoordinate(p, "wrist_left") - forwardCoordinate(p, "knee_left"),
+        ),
+        (v) => v > 0.12,
+        "front foot and fist > 0.12m ahead of rear knee",
+      ),
+      phaseCheck(
+        "free-arm-raised",
+        "Hold the landing",
+        (p) => heightOf(p, "wrist_right") - heightOf(p, "pelvis"),
+        (v) => v > 0.12,
+        "right wrist > 0.12m above pelvis",
+      ),
+    ],
+  },
   {
     // `pelvis: hinge`: torso tips forward over vertical legs (deadlift phases
     // "Lower"/"Lift"). Regressing the hinge into a leg-swing or a backward

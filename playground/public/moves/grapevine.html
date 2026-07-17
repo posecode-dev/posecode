@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Grapevine: How to Do It (Animated 3D Guide) | Posecode</title>
+    <title>Grapevine: Posecode Movement Example | Posecode</title>
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="description" content="How to do the grapevine (dance): 8 phases targeting the full body, body weight, beginner level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
+    <meta name="description" content="Grapevine is a beginner-level dance Posecode example with 8 inspectable phases and a link to live 3D playback." />
     <link rel="canonical" href="https://www.posecode.org/moves/grapevine.html" />
     <meta name="theme-color" content="#0a0d12" />
-    <meta property="og:title" content="Grapevine: How to Do It (Animated 3D Guide) | Posecode" />
-    <meta property="og:description" content="How to do the grapevine (dance): 8 phases targeting the full body, body weight, beginner level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
+    <meta property="og:title" content="Grapevine: Posecode Movement Example | Posecode" />
+    <meta property="og:description" content="Grapevine is a beginner-level dance Posecode example with 8 inspectable phases and a link to live 3D playback." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.posecode.org/moves/grapevine.html" />
     <meta property="og:site_name" content="Posecode" />
@@ -97,7 +97,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 @media(max-width:600px){.wrap{padding:0 18px}}
 </style>
     <link rel="stylesheet" href="/content-theme.css" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to do a Grapevine","description":"How to do the grapevine (dance): 8 phases targeting the full body, body weight, beginner level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs.","step":[{"@type":"HowToStep","name":"Left step side","text":"Step the left foot to the side and begin travelling"},{"@type":"HowToStep","name":"Right crosses behind","text":"Cross the right foot behind without stopping the sideways momentum"},{"@type":"HowToStep","name":"Left step side again","text":"Step left again and keep the shoulders quiet"},{"@type":"HowToStep","name":"Right touch","text":"Touch the right foot in lightly before reversing"},{"@type":"HowToStep","name":"Right step side","text":"Step the right foot to the side to travel back"},{"@type":"HowToStep","name":"Left crosses behind","text":"Cross the left foot behind and continue through the beat"},{"@type":"HowToStep","name":"Right step side again","text":"Step right and arrive back near the starting place"},{"@type":"HowToStep","name":"Close home","text":"Close the left foot under the body and settle the phrase"}]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Grapevine: a Posecode movement example","description":"Grapevine is a beginner-level dance Posecode example with 8 inspectable phases and a link to live 3D playback."}</script>
     <script>
       window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
     </script>
@@ -125,12 +125,15 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
         &nbsp;·&nbsp; <b>Level</b> Beginner &nbsp;·&nbsp; <b>Reps</b> 3</p>
       <p>Grapevine is a beginner-level dance movement targeting the
         full body, written in <a href="/">Posecode</a>, a small open-source language
-        that LLMs like ChatGPT, Claude, and Gemini can write to describe human movement as text.
-        Every joint angle below is hard-clamped to a safe range of motion.</p>
+        that capable language models can use to describe human movement as text.
+        Authored joint targets and reach-IK solves are constrained to Posecode's configured
+        per-axis bounds. Those bounds constrain the visualization, but they do not certify
+        that a complete movement is safe or clinically correct.
+        This page documents a code example; it is not exercise instruction.</p>
 
       <a class="btn" href="/play/grapevine">▶ Open Grapevine in the playground →</a>
 
-      <h2>How to do it</h2>
+      <h2>Movement phases</h2>
       <ol class="steps">
 <li>
           <span class="step-name">Left step side<span class="step-dur">0.65s · flow</span></span>
@@ -167,14 +170,14 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       </ol>
 
       <h2>The .posecode source</h2>
-      <p>This is the exact text an LLM writes to produce the animation above: phases and joint
+      <p>This is the exact text used by the linked playground animation: phases and joint
         angles, not 3D transforms.</p>
       <pre class="code-block"><code>posecode exercise &quot;Grapevine&quot;
   rig humanoid
   pose start = standing
 
   step &quot;Left step side&quot; 0.65s flow:
-    hip_left: abduct 28
+    hip_left: abduct 16
     shoulders: abduct 40
     travel: 0.3 0
     pin: foot_right floor
@@ -195,7 +198,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     hip_right: rotate-in 0
     knee_right: flex 0
     ankle_right: plantarflex 0
-    hip_left: abduct 28
+    hip_left: abduct 16
     travel: 0.9 0
     pin: foot_right floor
     reach: foot_left floor
@@ -206,13 +209,14 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     knee_right: flex 16
     ankle_right: plantarflex 20
     travel: 1 0
-    ground-lock: feet
+    ground-lock: foot_left
+    reach: foot_right floor
     cue &quot;Touch the right foot in lightly before reversing&quot;
 
   step &quot;Right step side&quot; 0.65s flow:
     knee_right: flex 0
     ankle_right: plantarflex 0
-    hip_right: abduct 28
+    hip_right: abduct 16
     travel: 0.7 0
     pin: foot_left floor
     reach: foot_right floor
@@ -232,7 +236,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     hip_left: rotate-in 0
     knee_left: flex 0
     ankle_left: plantarflex 0
-    hip_right: abduct 28
+    hip_right: abduct 16
     travel: 0.1 0
     pin: foot_left floor
     reach: foot_right floor
@@ -249,8 +253,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 </code></pre>
 
       <h2>More dance movements</h2>
-         <div class="chip-list"><a href="/moves/dance-phrase.html">Dance phrase (8-count)</a><a href="/moves/demi-plie.html">Demi-plié</a><a href="/moves/releve.html">Relevé</a><a href="/moves/tendu.html">Tendu</a><a href="/moves/port-de-bras.html">Port de bras</a><a href="/moves/pirouette.html">Pirouette (full turn)</a></div>
-    
+         <div class="chip-list"><a href="/moves/demi-plie.html">Demi-plié</a><a href="/moves/releve.html">Relevé</a><a href="/moves/tendu.html">Tendu</a><a href="/moves/pirouette.html">Pirouette (full turn)</a><a href="/moves/box-step.html">Box step (travels)</a><a href="/moves/waltz-box.html">Waltz box step</a></div>
     </main>
     <footer class="site-footer">
       <div class="wrap">

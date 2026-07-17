@@ -24,6 +24,14 @@ export interface Mannequin {
   effectors: Record<string, string[]>;
   /** Body-part radii for the self-collision pass (metres). */
   collision: CollisionRadii;
+  /** Visible meshes that form semantic local support surfaces. */
+  contactSurfaces: {
+    /** Trunk/mat surface used by `pin: pelvis floor`. */
+    pelvis: THREE.Object3D[];
+    /** Rounded thigh/shin caps that meet at each supporting knee. */
+    knee_left: THREE.Object3D[];
+    knee_right: THREE.Object3D[];
+  };
 }
 
 /** Capsule/sphere radii approximating the visible body for self-collision. */
@@ -185,6 +193,7 @@ export function buildMannequin(material?: THREE.Material, proportions?: Proporti
   root.name = "posecode-mannequin";
 
   const bones = new Map<string, THREE.Object3D>();
+  const jointCaps = new Map<string, THREE.Object3D[]>();
 
   for (const spec of SKELETON) {
     const bone = new THREE.Object3D();
@@ -201,9 +210,25 @@ export function buildMannequin(material?: THREE.Material, proportions?: Proporti
     // Draw the segment from the parent joint to this joint, on the parent.
     if (spec.parent && spec.radius) {
       const mat = segmentMaterial(spec.id, mats);
-      const seg = isFinger(spec.id)
-        ? makeSegment(offset.length(), spec.radius, mats.skin)
-        : makeTaperedSegment(offset.length(), spec.radius, spec.radiusEnd ?? spec.radius, mat);
+      let seg: THREE.Object3D;
+      if (isFinger(spec.id)) {
+        seg = makeSegment(offset.length(), spec.radius, mats.skin);
+      } else {
+        const tapered = makeTaperedSegment(
+          offset.length(),
+          spec.radius,
+          spec.radiusEnd ?? spec.radius,
+          mat,
+        );
+        seg = tapered.group;
+        const addCap = (joint: string, cap: THREE.Object3D): void => {
+          const caps = jointCaps.get(joint) ?? [];
+          caps.push(cap);
+          jointCaps.set(joint, caps);
+        };
+        addCap(spec.parent, tapered.proximalCap);
+        addCap(spec.id, tapered.distalCap);
+      }
       orientSegment(seg, offset);
       bones.get(spec.parent)!.add(seg);
     }
@@ -227,6 +252,23 @@ export function buildMannequin(material?: THREE.Material, proportions?: Proporti
   addShoe(bones.get("ankle_left")!, mats, proportions?.soleDrop);
   addShoe(bones.get("ankle_right")!, mats, proportions?.soleDrop);
 
+  // A pelvis floor pin represents the trunk's mat contact, whose thickness
+  // changes with orientation (supine/prone) and spinal pose. A fixed proxy
+  // radius cannot serve both a flat prone lower and a supine bridge. Record
+  // the actual trunk meshes so contact code can measure that surface without
+  // accidentally including descendant arms or legs in the pelvis subtree.
+  const boneIdByNode = new Map<THREE.Object3D, string>(
+    [...bones].map(([id, node]) => [node, id]),
+  );
+  const trunkIds = new Set(["pelvis", "spine", "chest", "neck", "head"]);
+  const pelvisSurface: THREE.Object3D[] = [];
+  root.traverse((obj) => {
+    if (!(obj as THREE.Mesh).isMesh) return;
+    let owner = obj.parent;
+    while (owner && !boneIdByNode.has(owner)) owner = owner.parent;
+    if (owner && trunkIds.has(boneIdByNode.get(owner)!)) pelvisSurface.push(obj);
+  });
+
   return {
     root,
     bones,
@@ -234,9 +276,15 @@ export function buildMannequin(material?: THREE.Material, proportions?: Proporti
       hands: ["wrist_left", "wrist_right"],
       hand_left: ["wrist_left"],
       hand_right: ["wrist_right"],
+      fists: ["wrist_left", "wrist_right"],
+      fist_left: ["wrist_left"],
+      fist_right: ["wrist_right"],
       forearms: ["elbow_left", "elbow_right"],
       elbow_left: ["elbow_left"],
       elbow_right: ["elbow_right"],
+      knees: ["knee_left", "knee_right"],
+      knee_left: ["knee_left"],
+      knee_right: ["knee_right"],
       feet: ["ankle_left", "ankle_right"],
       foot_left: ["ankle_left"],
       foot_right: ["ankle_right"],
@@ -244,6 +292,11 @@ export function buildMannequin(material?: THREE.Material, proportions?: Proporti
       back: ["pelvis", "spine", "chest"],
     },
     collision: proportions?.collision ?? DEFAULT_COLLISION,
+    contactSurfaces: {
+      pelvis: pelvisSurface,
+      knee_left: jointCaps.get("knee_left") ?? [],
+      knee_right: jointCaps.get("knee_right") ?? [],
+    },
   };
 }
 
@@ -265,7 +318,11 @@ function makeTaperedSegment(
   rProx: number,
   rDist: number,
   mat: THREE.Material,
-): THREE.Object3D {
+): {
+  group: THREE.Group;
+  proximalCap: THREE.Mesh;
+  distalCap: THREE.Mesh;
+} {
   const group = new THREE.Group();
   // +Y end maps to the CHILD joint after orientSegment (dir = offset).
   const shaft = new THREE.Mesh(new THREE.CylinderGeometry(rDist, rProx, length, 22, 1), mat);
@@ -276,7 +333,7 @@ function makeTaperedSegment(
   const capProx = new THREE.Mesh(new THREE.SphereGeometry(rProx, 22, 16), mat);
   capProx.position.y = -length / 2;
   group.add(capProx);
-  return group;
+  return { group, proximalCap: capProx, distalCap: capDist };
 }
 
 /** Position/orient a +Y segment so it spans from the parent joint to `offset`. */
@@ -372,7 +429,11 @@ function addHead(head: THREE.Object3D, mats: FigureMaterials, headLength?: numbe
 
 /** A flattened palm instead of a ball: hands read as hands, not maracas. */
 function addPalm(wrist: THREE.Object3D, mat: THREE.Material): void {
-  addEllipsoid(wrist, 0.045, [0.85, 1.05, 0.5], [0, -0.02, 0.004], mat);
+  // The ellipsoid's thinnest axis is local Z, so +Z is the procedural palm's
+  // outward face normal on BOTH sides. Contact orientation must use this mesh
+  // convention (not an anatomical left/right guess such as +/-X).
+  const palm = addEllipsoid(wrist, 0.045, [0.85, 1.05, 0.5], [0, -0.02, 0.004], mat);
+  palm.name = `palm_${wrist.name.replace("wrist_", "")}`;
 }
 
 /**

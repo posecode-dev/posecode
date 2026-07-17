@@ -1,34 +1,79 @@
 /**
  * Headless kinematic probe.
  *
- * Runs a `.posecode` source through the REAL production pipeline (parser →
- * timeline → mannequin FK → root choreography (yaw/travel) → ground-lock →
- * floor clamp) without a WebGL context (three.js scene-graph math is pure),
- * and returns world-space bone positions at the end of every phase. This is
- * the ground truth the invariant checks score against.
+ * Runs a `.posecode` source through the production authored-motion pipeline
+ * (parser → timeline → mannequin FK → root choreography → contacts → floor
+ * clamp) without a WebGL context and returns world-space phase endpoints.
+ * Presentation-only breathing/blinking, free-arm ambience, camera behavior,
+ * and optional mocap overlays are deliberately outside this deterministic
+ * authoring gate; browser tests cover the shipped visible character.
  *
- * Floor, body-landmark, and built-in prop pins are deterministic, so the probe
- * resolves those exactly like the viewer. Reach-IK remains the one intentional
- * gap; phase orientations still receive semantic palm-contact alignment.
+ * Contact solving reuses the production CCD/ground/contact primitives and
+ * mirrors the viewer's reach, pin, and grip ordering. Every declared contact
+ * is returned with an explicit residual (or an explicit unsupported status),
+ * so a solver gap can never be mistaken for a successful movement.
  */
 
 import * as THREE from "three";
-import { parse, type TimingMode, type ParseError, type PinTarget, type ReachTarget, type Warning } from "posecode-parser";
+import {
+  parse,
+  type GripTarget,
+  type TimingMode,
+  type ParseError,
+  type PinTarget,
+  type ReachTarget,
+  type Warning,
+} from "posecode-parser";
 import {
   applyGroundLock,
-  alignFloorPalms,
+  alignFloorContacts,
+  alignGripFrames,
   buildMannequin,
   buildProps,
   buildTimeline,
   depenetrate,
+  effectorBoneId,
+  enforceContactRom,
+  floorContactHeight,
+  floorTargetForEffector,
+  formFists,
   groundFigure,
+  isDipBarGrip,
   levelPlantedFeet,
+  prepareGripFrames,
   propContactExemptions,
+  reachChain,
   resolvePropContacts,
+  solveCCD,
+  solveReachToPoint,
+  wrapGrip,
+  type Character,
+  type Proportions,
 } from "posecode-render";
 
 export type Vec3 = readonly [x: number, y: number, z: number];
 export type Quat = readonly [x: number, y: number, z: number, w: number];
+
+export type ContactKind = "reach" | "pin" | "grip" | "ground-lock";
+export type ContactStatus = "resolved" | "unsupported";
+
+/** A declared contact measured against the final, fully solved phase pose. */
+export interface ContactResidual {
+  kind: ContactKind;
+  effector: string;
+  target: string;
+  effectorBone: string;
+  /** Contact activation weight (terminal declarations are 1; blended-out reaches approach 0). */
+  weight: number;
+  status: ContactStatus;
+  /** Final world-space effector/target positions, when they can be resolved. */
+  effectorPosition: Vec3 | null;
+  targetPosition: Vec3 | null;
+  /** Euclidean positional error in metres; null means the evaluator cannot solve it. */
+  error: number | null;
+  /** Explicit reason for an unsupported path. Never silently treated as a pass. */
+  reason?: string;
+}
 
 export interface PhasePose {
   /** Phase name from the document. */
@@ -39,6 +84,9 @@ export interface PhasePose {
   groundLock: readonly string[];
   pins: readonly PinTarget[];
   reaches: readonly ReachTarget[];
+  grips: readonly GripTarget[];
+  /** Positional truth for every declared reach/pin/grip in this phase. */
+  contactResiduals: readonly ContactResidual[];
   rootOffset: Vec3;
   rootYaw: number;
   /**
@@ -49,8 +97,6 @@ export interface PhasePose {
    * do for authored travel.
    */
   propPush: Vec3;
-  /** True when the phase relies on pins/reach-IK the probe cannot solve. */
-  usesSceneIk: boolean;
   /** Whether the phase should rest on the floor (no elevated prop/grip support). */
   floorBound: boolean;
   /**
@@ -71,22 +117,62 @@ export interface ProbeResult {
   warnings: readonly Warning[];
   phases: readonly PhasePose[];
   propTypes: readonly string[];
+  /** Flattened contact residuals for scorecards/consumers that do not walk phases. */
+  contactResiduals: readonly ContactResidual[];
 }
 
 const DEG = Math.PI / 180;
 const EPS = 1e-4;
 const WORLD_Y = new THREE.Vector3(0, 1, 0);
 
+type TargetReference =
+  | { kind: "fixed"; point: THREE.Vector3 }
+  | { kind: "floor"; point: THREE.Vector3 }
+  | { kind: "landmark"; boneId: string };
+
+interface PendingContact {
+  kind: ContactKind;
+  effector: string;
+  target: string;
+  effectorBone: string;
+  weight: number;
+  targetRef: TargetReference | null;
+  reason?: string;
+}
+
+function fistSidesOf(
+  reaches: readonly ReachTarget[],
+  pins: readonly PinTarget[],
+  groundLock: readonly string[],
+): Set<"left" | "right"> {
+  const sides = new Set<"left" | "right">();
+  const add = (effector: string): void => {
+    if (effector === "fists" || effector === "fist_left") sides.add("left");
+    if (effector === "fists" || effector === "fist_right") sides.add("right");
+  };
+  for (const reach of reaches) add(reach.effector);
+  for (const pin of pins) add(pin.effector);
+  for (const effector of groundLock) add(effector);
+  return sides;
+}
+
 /** Probe a movement: FK + root solving at each phase end, viewer-faithful. */
-export function probeMovement(source: string): ProbeResult {
+export function probeMovement(
+  source: string,
+  proportions?: Proportions,
+  character?: Character,
+): ProbeResult {
   const { ir, errors, warnings } = parse(source);
   if (!ir || errors.length > 0) {
-    return { ok: false, errors, warnings, phases: [], propTypes: [] };
+    return { ok: false, errors, warnings, phases: [], propTypes: [], contactResiduals: [] };
   }
 
-  const m = buildMannequin();
+  const m = buildMannequin(undefined, proportions);
   const tl = buildTimeline(ir);
   const propScene = buildProps(ir.props);
+  const authoredFingers = new Set(tl.bonesUsed.filter((id) =>
+    /^(thumb|index|middle|ring|pinky)_(left|right)$/.test(id),
+  ));
 
   // Mirror Viewer.load(): reset bones, apply the base-pose root, pose at t=0,
   // then drop the figure onto the floor and remember the grounded base root.
@@ -97,6 +183,21 @@ export function probeMovement(source: string): ProbeResult {
   m.root.rotation.set(rx * DEG, ry * DEG, rz * DEG);
   tl.sample(0, m.bones);
   m.root.updateMatrixWorld(true);
+  formFists(
+    m,
+    fistSidesOf(
+      ir.phases[0]?.reaches ?? [],
+      ir.phases[0]?.pins ?? [],
+      ir.phases[0]?.groundLock ?? [],
+    ),
+    authoredFingers,
+  );
+  alignFloorContacts(
+    m,
+    ir.phases[0]?.reaches ?? [],
+    ir.phases[0]?.pins ?? [],
+    ir.phases[0]?.groundLock ?? [],
+  );
   depenetrate(m);
   groundFigure(m);
   resolvePropContacts(m, propScene.colliders, propContactExemptions([
@@ -121,13 +222,7 @@ export function probeMovement(source: string): ProbeResult {
   const segmentStartEffectors: Map<string, THREE.Vector3>[] = [];
   const tempYawQ = new THREE.Quaternion();
   
-  const getEffectorId = (eff: string) => {
-    if (eff === "hand_left") return "wrist_left";
-    if (eff === "hand_right") return "wrist_right";
-    if (eff === "foot_left") return "ankle_left";
-    if (eff === "foot_right") return "ankle_right";
-    return eff;
-  };
+  const getEffectorId = (eff: string) => effectorBoneId(eff);
 
   let prevEffectorsMap: Map<string, THREE.Vector3> | null = null;
   let prevPins: typeof ir.phases[number]["pins"] = [];
@@ -178,12 +273,298 @@ export function probeMovement(source: string): ProbeResult {
   depenetrate(m);
   groundFigure(m);
 
+  const resolveTarget = (
+    target: string,
+    effectorName: string,
+  ): { point: THREE.Vector3; ref: TargetReference } | null => {
+    if (target === "floor") {
+      const point = floorTargetForEffector(m, effectorName);
+      if (!point) return null;
+      return { point, ref: { kind: "floor", point: point.clone() } };
+    }
+    const prop = propScene.anchors.get(target);
+    if (prop) {
+      const point = prop.clone();
+      return { point, ref: { kind: "fixed", point: point.clone() } };
+    }
+    const landmark = m.bones.get(target);
+    if (landmark) {
+      return {
+        point: landmark.getWorldPosition(new THREE.Vector3()),
+        ref: { kind: "landmark", boneId: target },
+      };
+    }
+    return null;
+  };
+
+  const unsupported = (
+    kind: ContactKind,
+    effector: string,
+    target: string,
+    effectorBone: string,
+    reason: string,
+    weight = 1,
+  ): PendingContact => ({ kind, effector, target, effectorBone, weight, targetRef: null, reason });
+
+  const applyPins = (pins: readonly PinTarget[], phaseIndex: number): PendingContact[] => {
+    const dipBarPins = pins.filter((pin) => isDipBarGrip(pin.anchor));
+    prepareGripFrames(m, dipBarPins);
+    const contacts: PendingContact[] = [];
+    const solvable: Array<{ contact: PendingContact; effector: THREE.Object3D; point: THREE.Vector3 }> = [];
+    for (const pin of pins) {
+      const effectorBone = getEffectorId(pin.effector);
+      const effector = m.bones.get(effectorBone);
+      if (!effector) {
+        contacts.push(unsupported("pin", pin.effector, pin.anchor, effectorBone, `unknown effector bone "${effectorBone}"`));
+        continue;
+      }
+      let resolved: { point: THREE.Vector3; ref: TargetReference } | null = null;
+      if (pin.anchor === "floor") {
+        const start = segmentStartEffectors[phaseIndex]?.get(effectorBone);
+        if (start) {
+          const point = start.clone();
+          point.y = floorTargetForEffector(m, pin.effector)?.y ?? 0;
+          resolved = { point, ref: { kind: "floor", point: point.clone() } };
+        }
+      }
+      resolved ??= resolveTarget(pin.anchor, pin.effector);
+      if (!resolved) {
+        contacts.push(unsupported("pin", pin.effector, pin.anchor, effectorBone, `unknown anchor "${pin.anchor}"`));
+        continue;
+      }
+      const contact: PendingContact = {
+        kind: "pin",
+        effector: pin.effector,
+        target: pin.anchor,
+        effectorBone,
+        weight: 1,
+        targetRef: resolved.ref,
+      };
+      contacts.push(contact);
+      solvable.push({ contact, effector, point: resolved.point });
+    }
+    if (solvable.length > 0) {
+      const delta = new THREE.Vector3();
+      for (const item of solvable) {
+        delta.add(item.point.clone().sub(item.effector.getWorldPosition(new THREE.Vector3())));
+      }
+      m.root.position.add(delta.multiplyScalar(1 / solvable.length));
+      m.root.updateMatrixWorld(true);
+    }
+    alignGripFrames(m, dipBarPins);
+    return contacts;
+  };
+
+  const applyGrips = (grips: readonly GripTarget[]): PendingContact[] => {
+    prepareGripFrames(m, grips);
+    const contacts: PendingContact[] = [];
+    const solvable: Array<{
+      contact: PendingContact;
+      effector: THREE.Object3D;
+      point: THREE.Vector3;
+    }> = [];
+    for (const grip of grips) {
+      const effectorBone = getEffectorId(grip.effector);
+      const effector = m.bones.get(effectorBone);
+      if (!effector) {
+        contacts.push(unsupported("grip", grip.effector, grip.anchor, effectorBone, `unknown effector bone "${effectorBone}"`));
+        continue;
+      }
+      const resolved = resolveTarget(grip.anchor, grip.effector)
+        ?? resolveTarget(grip.anchor.replace(/_(left|right)$/, ""), grip.effector);
+      if (!resolved) {
+        contacts.push(unsupported("grip", grip.effector, grip.anchor, effectorBone, `unknown anchor "${grip.anchor}"`));
+        continue;
+      }
+      const contact: PendingContact = {
+        kind: "grip",
+        effector: grip.effector,
+        target: grip.anchor,
+        effectorBone,
+        weight: 1,
+        targetRef: resolved.ref,
+      };
+      contacts.push(contact);
+      solvable.push({ contact, effector, point: resolved.point });
+    }
+    if (solvable.length > 0) {
+      const delta = new THREE.Vector3();
+      for (const item of solvable) {
+        delta.add(item.point.clone().sub(item.effector.getWorldPosition(new THREE.Vector3())));
+      }
+      m.root.position.add(delta.multiplyScalar(1 / solvable.length));
+      m.root.updateMatrixWorld(true);
+    }
+    for (const item of solvable) {
+      const { joints, limits } = reachChain(m, item.contact.effector);
+      if (joints.length === 0) {
+        item.contact.reason = "production IK unsupported: unsupported effector";
+        item.contact.targetRef = null;
+        continue;
+      }
+      if (isDipBarGrip(item.contact.target)) {
+        // Viewer parity: keep the elbow's axial solution fixed so a dip-bar
+        // palm cannot flip between or away from the parallel rails.
+        for (let i = 0; i < joints.length; i++) {
+          if (!joints[i]!.name.startsWith("elbow_")) continue;
+          const limit = limits[i];
+          if (limit) limits[i] = { ...limit, y: [0, 0] };
+        }
+      }
+      solveCCD({ joints, limits, effector: item.effector, target: item.point }, 12);
+    }
+    alignGripFrames(m, grips);
+    wrapGrip(m, grips);
+    m.root.updateMatrixWorld(true);
+    return contacts;
+  };
+
+  const applyReaches = (
+    reaches: readonly (ReachTarget & { weight: number })[],
+  ): PendingContact[] => {
+    const contacts: PendingContact[] = [];
+    for (const reach of reaches) {
+      const effectorBone = getEffectorId(reach.effector);
+      const effector = m.bones.get(effectorBone);
+      if (!effector) {
+        contacts.push(unsupported("reach", reach.effector, reach.target, effectorBone, `unknown effector bone "${effectorBone}"`, reach.weight));
+        continue;
+      }
+      const resolved = resolveTarget(reach.target, reach.effector);
+      if (!resolved) {
+        contacts.push(unsupported("reach", reach.effector, reach.target, effectorBone, `unknown target "${reach.target}"`, reach.weight));
+        continue;
+      }
+      const solved = solveReachToPoint(
+        m,
+        reach.effector,
+        reach.target,
+        resolved.point,
+        reach.weight,
+      );
+      if (solved.distance === null) {
+        contacts.push(unsupported(
+          "reach",
+          reach.effector,
+          reach.target,
+          effectorBone,
+          `production IK unsupported: ${solved.reason ?? "unknown reason"}`,
+          reach.weight,
+        ));
+        continue;
+      }
+      contacts.push({
+        kind: "reach",
+        effector: reach.effector,
+        target: reach.target,
+        effectorBone,
+        weight: reach.weight,
+        targetRef: resolved.ref,
+      });
+    }
+    return contacts;
+  };
+
+  const finalizeContacts = (pending: readonly PendingContact[]): ContactResidual[] =>
+    pending.map((contact) => {
+      // Contact targets are defined against the calibrated production driver
+      // surfaces (sole/glute/knuckle offsets differ from raw skinned joint
+      // origins). The visible character is sampled separately below for actual
+      // skeleton geometry and exact skinned-mesh floor bounds.
+      const effectorPoint = m.bones.get(contact.effectorBone)
+        ?.getWorldPosition(new THREE.Vector3()) ?? null;
+      let targetPoint: THREE.Vector3 | null = null;
+      if (contact.targetRef?.kind === "fixed") {
+        targetPoint = contact.targetRef.point.clone();
+      } else if (contact.targetRef?.kind === "landmark") {
+        targetPoint = m.bones.get(contact.targetRef.boneId)
+          ?.getWorldPosition(new THREE.Vector3()) ?? null;
+      } else if (contact.targetRef?.kind === "floor" && effectorPoint) {
+        const height = floorContactHeight(m, contact.effector);
+        if (height !== null) {
+          targetPoint = contact.targetRef.point.clone().setY(effectorPoint.y - height);
+        }
+      }
+      const status: ContactStatus = contact.reason || !effectorPoint || !targetPoint
+        ? "unsupported"
+        : "resolved";
+      return {
+        kind: contact.kind,
+        effector: contact.effector,
+        target: contact.target,
+        effectorBone: contact.effectorBone,
+        weight: contact.weight,
+        status,
+        effectorPosition: effectorPoint ? vectorTuple(effectorPoint) : null,
+        targetPosition: targetPoint ? vectorTuple(targetPoint) : null,
+        error: status === "resolved" ? effectorPoint!.distanceTo(targetPoint!) : null,
+        ...(contact.reason ? { reason: contact.reason } : {}),
+      };
+    });
+
+  const measureGroundLocks = (active: readonly string[]): ContactResidual[] => {
+    const bones = new Set<string>();
+    for (const name of active) {
+      const expanded = m.effectors[name];
+      if (expanded) expanded.forEach((id) => bones.add(id));
+      else bones.add(effectorBoneId(name));
+    }
+    return [...bones].map((boneId) => {
+      const effector = m.bones.get(boneId);
+      const point = effector?.getWorldPosition(new THREE.Vector3()) ?? null;
+      const height = floorContactHeight(m, boneId);
+      const target = point && height !== null
+        ? point.clone().setY(point.y - height)
+        : null;
+      const side = boneId.endsWith("_left") ? "left" : "right";
+      const semantic = boneId.startsWith("ankle_")
+        ? `foot_${side}`
+        : boneId.startsWith("wrist_")
+          ? `hand_${side}`
+          : boneId.startsWith("elbow_")
+            ? `elbow_${side}`
+            : boneId;
+      const status: ContactStatus = point && target && height !== null ? "resolved" : "unsupported";
+      return {
+        kind: "ground-lock" as const,
+        effector: semantic,
+        target: "floor",
+        effectorBone: boneId,
+        weight: 1,
+        status,
+        effectorPosition: point ? vectorTuple(point) : null,
+        targetPosition: target ? vectorTuple(target) : null,
+        error: status === "resolved" ? Math.abs(height!) : null,
+        ...(status === "unsupported" ? { reason: "ground-lock surface could not be evaluated" } : {}),
+      };
+    });
+  };
+
   // Sample the end of each phase, applying the viewer's per-frame root
   // pipeline: base root → yaw/travel → ground-lock → floor safety clamp.
   const yawQ = new THREE.Quaternion();
+  let previousSolvedEffectors: Map<string, THREE.Vector3> | null = null;
+  const activeFloorPinTargets = new Map<string, THREE.Vector3>();
   const phases: PhasePose[] = tl.segments.map((seg, phaseIndex) => {
     const authored = ir.phases[phaseIndex]!;
     const info = tl.sample(seg.end - EPS, m.bones);
+    const currentFloorPins = new Set(
+      info.pins
+        .filter((pin) => pin.anchor === "floor")
+        .map((pin) => effectorBoneId(pin.effector)),
+    );
+    for (const boneId of [...activeFloorPinTargets.keys()]) {
+      if (!currentFloorPins.has(boneId)) activeFloorPinTargets.delete(boneId);
+    }
+    for (const boneId of currentFloorPins) {
+      let target = activeFloorPinTargets.get(boneId);
+      if (!target) {
+        target = previousSolvedEffectors?.get(boneId)?.clone()
+          ?? segmentStartEffectors[phaseIndex]?.get(boneId)?.clone();
+        if (target) activeFloorPinTargets.set(boneId, target);
+      }
+      if (target) segmentStartEffectors[phaseIndex]?.set(boneId, target.clone());
+    }
     m.root.position.copy(baseRootPos);
     m.root.quaternion.copy(baseRootQuat);
     if (info.rootYaw !== 0) {
@@ -193,6 +574,12 @@ export function probeMovement(source: string): ProbeResult {
     m.root.position.x += info.rootOffset.x;
     m.root.position.z += info.rootOffset.z;
     m.root.updateMatrixWorld(true);
+    formFists(
+      m,
+      fistSidesOf(info.reaches, info.pins, info.groundLock),
+      authoredFingers,
+    );
+    alignFloorContacts(m, info.reaches, info.pins, info.groundLock);
     // Self-collision resolution, then contact solving (same order as the viewer).
     depenetrate(m);
     // Mirror the viewer's per-frame anchors: captured targets carried along
@@ -208,48 +595,13 @@ export function probeMovement(source: string): ProbeResult {
       anchors.set(id, v);
     }
     applyGroundLock(m, info.groundLock, anchors);
-    // Resolve scene-independent pins. Unknown names here are prop anchors and
-    // intentionally remain for browser-level coverage.
-    if (info.pins.length > 0) {
-      const delta = new THREE.Vector3();
-      let pinCount = 0;
-      for (const pin of info.pins) {
-        const effectorId = pin.effector === "hand_left"
-          ? "wrist_left"
-          : pin.effector === "hand_right"
-            ? "wrist_right"
-            : pin.effector === "foot_left"
-              ? "ankle_left"
-              : pin.effector === "foot_right"
-                ? "ankle_right"
-                : pin.effector;
-        const effector = m.bones.get(effectorId);
-        if (!effector) continue;
-        let target: THREE.Vector3 | null = null;
-        if (pin.anchor === "floor") {
-          const startPos = segmentStartEffectors[phaseIndex]?.get(effectorId);
-          if (startPos) {
-            target = startPos.clone();
-            target.y = 0;
-          } else {
-            target = effector.getWorldPosition(new THREE.Vector3());
-            target.y = 0;
-          }
-        } else if (propScene.anchors.has(pin.anchor)) {
-          target = propScene.anchors.get(pin.anchor)!.clone();
-        } else {
-          const landmark = m.bones.get(pin.anchor);
-          if (landmark) target = landmark.getWorldPosition(new THREE.Vector3());
-        }
-        if (!target) continue;
-        delta.add(target.sub(effector.getWorldPosition(new THREE.Vector3())));
-        pinCount++;
-      }
-      if (pinCount > 0) {
-        m.root.position.add(delta.multiplyScalar(1 / pinCount));
-        m.root.updateMatrixWorld(true);
-      }
-    }
+    // Same production ordering as Viewer.frame(): whole-body pins, bar grips,
+    // solid-prop correction, then ROM-constrained per-limb reach IK.
+    const pendingContacts: PendingContact[] = [
+      ...applyPins(info.pins, phaseIndex),
+      ...applyGrips(info.grips),
+    ];
+    let reachContacts: PendingContact[] = [];
     // Props are solid (viewer parity): after the root solvers place the body,
     // push it back out of any prop face it crossed and bend swing legs clear.
     // Limbs pinned/gripped to a prop anchor are declared support, exempt.
@@ -260,10 +612,23 @@ export function probeMovement(source: string): ProbeResult {
       ...info.reaches.map((r) => ({ effector: r.effector, anchor: r.target })),
     ]));
     const propPush: Vec3 = [m.root.position.x - prePush.x, 0, m.root.position.z - prePush.z];
-    alignFloorPalms(m, info.reaches, info.pins, info.groundLock);
+    reachContacts = applyReaches(info.reaches);
+    alignFloorContacts(m, info.reaches, info.pins, info.groundLock);
     // Plantigrade correction (viewer parity): flatten planted soles. This lifts
     // the foot mesh a little, so it must run BEFORE the floor clamp reconciles.
     levelPlantedFeet(m, info.groundLock);
+    enforceContactRom(m);
+    // Production bounded multi-contact refinement: a limb reach runs after
+    // ground-lock and can alter which mesh point is lowest. Replant the root
+    // support, then solve the independent limbs once more before floor safety.
+    if (info.groundLock.length > 0 && info.reaches.length > 0) {
+      for (let refinement = 0; refinement < 3; refinement++) {
+        applyGroundLock(m, info.groundLock, anchors);
+        reachContacts = applyReaches(info.reaches);
+        alignFloorContacts(m, info.reaches, info.pins, info.groundLock);
+        enforceContactRom(m);
+      }
+    }
     // Viewer safety net: a ground-locked phase is planted, so clamp both ways
     // (its lowest point sits exactly on the floor); an unlocked phase may be
     // airborne, so only rescue parts that dip below y=0. Mirror index.ts.
@@ -274,26 +639,67 @@ export function probeMovement(source: string): ProbeResult {
       m.root.position.y -= box.min.y;
       m.root.updateMatrixWorld(true);
     }
-    const finalBox = new THREE.Box3().setFromObject(m.root);
+    // Production visible-rig path: retarget the solved driver, then reconcile
+    // the exact skinned surface with the floor exactly as Viewer.frame does.
+    if (character) {
+      character.sync(m);
+      if (floorBound) character.reconcileFloor();
+    }
+    const finalBox = character
+      ? character.getBounds()
+      : new THREE.Box3().setFromObject(m.root);
+    // At an endpoint, timeline blending retains the previous phase's reach at
+    // a vanishing weight. It is executed for viewer continuity but is not a
+    // contact declaration of this phase and must not create a false failure.
+    const contactResiduals = [
+      ...finalizeContacts(
+        [...pendingContacts, ...reachContacts]
+          .filter((contact) => contact.kind !== "reach" || contact.weight >= 0.99),
+      ),
+      ...measureGroundLocks(info.groundLock),
+    ];
+    previousSolvedEffectors = new Map();
+    for (const ids of Object.values(m.effectors)) {
+      for (const id of ids) {
+        const node = m.bones.get(id);
+        if (node) previousSolvedEffectors.set(id, node.getWorldPosition(new THREE.Vector3()));
+      }
+    }
     return {
       name: seg.name,
       durationSec: authored.durationSec,
       easing: authored.easing,
       groundLock: [...info.groundLock],
-      pins: [...info.pins],
-      reaches: [...info.reaches],
+      pins: [...authored.pins],
+      reaches: [...authored.reaches],
+      grips: [...authored.grips],
+      contactResiduals,
       rootOffset: [info.rootOffset.x, 0, info.rootOffset.z],
       rootYaw: info.rootYaw,
       propPush,
-      usesSceneIk: info.pins.length > 0 || info.reaches.length > 0 || info.grips.length > 0,
       floorBound,
       meshMinY: Number.isFinite(finalBox.min.y) ? finalBox.min.y : 0,
-      bones: snapshotBones(m.bones),
-      boneQuaternions: snapshotBoneQuaternions(m.bones),
+      bones: character
+        ? snapshotCharacterBones(m.bones.keys(), character)
+        : snapshotBones(m.bones),
+      boneQuaternions: character
+        ? snapshotCharacterQuaternions(m.bones.keys(), character)
+        : snapshotBoneQuaternions(m.bones),
     };
   });
 
-  return { ok: true, errors, warnings, phases, propTypes: [...ir.props] };
+  return {
+    ok: true,
+    errors,
+    warnings,
+    phases,
+    propTypes: [...ir.props],
+    contactResiduals: phases.flatMap((phase) => [...phase.contactResiduals]),
+  };
+}
+
+function vectorTuple(v: THREE.Vector3): Vec3 {
+  return [v.x, v.y, v.z];
 }
 
 function snapshotBoneQuaternions(bones: Map<string, THREE.Object3D>): Map<string, Quat> {
@@ -312,6 +718,24 @@ function snapshotBones(bones: Map<string, THREE.Object3D>): Map<string, Vec3> {
   for (const [id, node] of bones) {
     node.getWorldPosition(v);
     out.set(id, [v.x, v.y, v.z]);
+  }
+  return out;
+}
+
+function snapshotCharacterBones(ids: Iterable<string>, character: Character): Map<string, Vec3> {
+  const out = new Map<string, Vec3>();
+  for (const id of ids) {
+    const v = character.getJointWorldPosition(id);
+    if (v) out.set(id, vectorTuple(v));
+  }
+  return out;
+}
+
+function snapshotCharacterQuaternions(ids: Iterable<string>, character: Character): Map<string, Quat> {
+  const out = new Map<string, Quat>();
+  for (const id of ids) {
+    const q = character.getJointDriverQuaternion(id);
+    if (q) out.set(id, [q.x, q.y, q.z, q.w]);
   }
   return out;
 }

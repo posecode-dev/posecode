@@ -53,6 +53,9 @@ export {
   JOINT_NAMES,
   ACTION_NAMES,
   EFFECTOR_NAMES,
+  REACH_EFFECTOR_NAMES,
+  PIN_EFFECTOR_NAMES,
+  GRIP_EFFECTOR_NAMES,
   GROUND_LOCK_EFFECTOR_NAMES,
   expandJoint,
   expandEffector,
@@ -60,5 +63,31 @@ export {
   actionAxis,
   boneType,
 } from "./joints.js";
-export { romFor, clampAngle, eulerRomFor, type RomLimit, type EulerRom } from "./rom.js";
+export {
+  romFor,
+  clampAngle,
+  eulerRomFor,
+  isActionAllowed,
+  actionsForJoint,
+  isLegacyAxialAction,
+  type RomLimit,
+  type EulerRom,
+} from "./rom.js";
 export { EASINGS, MODES, LEGACY_MODE_ALIASES, normalizeMode } from "./schema.js";
+export {
+  MOVEMENT_KINDS,
+  RIG_NAMES,
+  START_POSE_NAMES,
+  PROP_TYPES,
+  PROP_ANCHORS,
+  isMovementKind,
+  isRigName,
+  isStartPoseName,
+  isPropType,
+  propForAnchor,
+  anchorsForProps,
+  type MovementKind,
+  type RigName,
+  type StartPoseName,
+  type PropType,
+} from "./protocol.js";

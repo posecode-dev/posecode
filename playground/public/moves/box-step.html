@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Box step: How to Do It (Animated 3D Guide) | Posecode</title>
+    <title>Box step: Posecode Movement Example | Posecode</title>
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="description" content="How to do the box step (dance): 4 phases targeting the full body, body weight, beginner level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
+    <meta name="description" content="Box step is a beginner-level dance Posecode example with 4 inspectable phases and a link to live 3D playback." />
     <link rel="canonical" href="https://www.posecode.org/moves/box-step.html" />
     <meta name="theme-color" content="#0a0d12" />
-    <meta property="og:title" content="Box step: How to Do It (Animated 3D Guide) | Posecode" />
-    <meta property="og:description" content="How to do the box step (dance): 4 phases targeting the full body, body weight, beginner level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
+    <meta property="og:title" content="Box step: Posecode Movement Example | Posecode" />
+    <meta property="og:description" content="Box step is a beginner-level dance Posecode example with 4 inspectable phases and a link to live 3D playback." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.posecode.org/moves/box-step.html" />
     <meta property="og:site_name" content="Posecode" />
@@ -97,7 +97,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 @media(max-width:600px){.wrap{padding:0 18px}}
 </style>
     <link rel="stylesheet" href="/content-theme.css" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to do a Box step","description":"How to do the box step (dance): 4 phases targeting the full body, body weight, beginner level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs.","step":[{"@type":"HowToStep","name":"Right foot forward","text":"Step forward onto the right foot with an easy contralateral arm swing"},{"@type":"HowToStep","name":"Left foot side","text":"Transfer left to the side, keeping the torso lifted"},{"@type":"HowToStep","name":"Right foot back","text":"Step back onto the right foot to trace the third side of the box"},{"@type":"HowToStep","name":"Left foot closes home","text":"Close the left foot and settle over both feet, completing the square"}]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Box step: a Posecode movement example","description":"Box step is a beginner-level dance Posecode example with 4 inspectable phases and a link to live 3D playback."}</script>
     <script>
       window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
     </script>
@@ -125,12 +125,15 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
         &nbsp;·&nbsp; <b>Level</b> Beginner &nbsp;·&nbsp; <b>Reps</b> 4</p>
       <p>Box step is a beginner-level dance movement targeting the
         full body, written in <a href="/">Posecode</a>, a small open-source language
-        that LLMs like ChatGPT, Claude, and Gemini can write to describe human movement as text.
-        Every joint angle below is hard-clamped to a safe range of motion.</p>
+        that capable language models can use to describe human movement as text.
+        Authored joint targets and reach-IK solves are constrained to Posecode's configured
+        per-axis bounds. Those bounds constrain the visualization, but they do not certify
+        that a complete movement is safe or clinically correct.
+        This page documents a code example; it is not exercise instruction.</p>
 
       <a class="btn" href="/play/box-step">▶ Open Box step in the playground →</a>
 
-      <h2>How to do it</h2>
+      <h2>Movement phases</h2>
       <ol class="steps">
 <li>
           <span class="step-name">Right foot forward<span class="step-dur">0.9s · flow</span></span>
@@ -151,7 +154,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       </ol>
 
       <h2>The .posecode source</h2>
-      <p>This is the exact text an LLM writes to produce the animation above: phases and joint
+      <p>This is the exact text used by the linked playground animation: phases and joint
         angles, not 3D transforms.</p>
       <pre class="code-block"><code>posecode exercise &quot;Box step&quot;
   rig humanoid
@@ -206,8 +209,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 </code></pre>
 
       <h2>More dance movements</h2>
-         <div class="chip-list"><a href="/moves/dance-phrase.html">Dance phrase (8-count)</a><a href="/moves/demi-plie.html">Demi-plié</a><a href="/moves/releve.html">Relevé</a><a href="/moves/tendu.html">Tendu</a><a href="/moves/port-de-bras.html">Port de bras</a><a href="/moves/pirouette.html">Pirouette (full turn)</a></div>
-    
+         <div class="chip-list"><a href="/moves/demi-plie.html">Demi-plié</a><a href="/moves/releve.html">Relevé</a><a href="/moves/tendu.html">Tendu</a><a href="/moves/pirouette.html">Pirouette (full turn)</a><a href="/moves/grapevine.html">Grapevine (travels)</a><a href="/moves/waltz-box.html">Waltz box step</a></div>
     </main>
     <footer class="site-footer">
       <div class="wrap">

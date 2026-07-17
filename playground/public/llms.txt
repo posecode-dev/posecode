@@ -1,12 +1,12 @@
 # Posecode
 
-> Posecode is an open-source (Apache-2.0) text-to-motion language: a small, Mermaid-style protocol that LLMs can write to describe human movement (exercises, stretches, physiotherapy, yoga, dance, sign language). A pure-TypeScript parser validates the text and clamps every joint angle to a clinical range of motion, and a Three.js renderer animates it as a 3D figure in the browser at 60fps with no GPU or diffusion model.
+> Posecode is an open-source (Apache-2.0) text-to-motion language: a small, Mermaid-style protocol that LLMs can write to describe single-person movement. A TypeScript parser validates a closed vocabulary and constrains joint targets to configured ranges of motion; a Three.js renderer then animates the result locally in the browser without generative-motion inference.
 
 Key facts:
 - A model writes phases and joint angles ("knees: flex 95"), not 3D transforms.
-- Every angle is hard-clamped to an anatomically safe range of motion.
-- Rendering is client-side forward kinematics plus ground-lock IK.
-- Any LLM (ChatGPT, Claude, Gemini) can author .posecode after reading one system prompt.
+- Authored and IK-generated joint angles are constrained to configured range-of-motion limits; this is not a guarantee that a whole movement is safe or accurate.
+- Rendering combines client-side forward kinematics, contact constraints, and inverse kinematics.
+- The authoring guide gives an LLM the closed vocabulary, contact rules, and self-checks needed to produce documents that the parser can validate.
 
 ## Docs
 

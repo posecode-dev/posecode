@@ -335,6 +335,19 @@ select:hover {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.lib-current-status {
+  flex: none;
+  font-family: var(--mono);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.45px;
+  text-transform: uppercase;
+  color: #f0bd68;
+  background: rgba(240, 189, 104, 0.1);
+  border: 1px solid rgba(240, 189, 104, 0.3);
+  border-radius: 999px;
+  padding: 4px 6px 3px;
+}
 .lib-caret {
   width: 7px;
   height: 7px;
@@ -524,7 +537,7 @@ select:hover {
   background: var(--panel);
 }
 .warnings:empty::before {
-  content: "✓  parses clean, no warnings";
+  content: "✓  source valid; no active reach misses";
   color: var(--accent);
   opacity: 0.85;
 }

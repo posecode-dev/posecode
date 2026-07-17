@@ -3,7 +3,7 @@ posecode exercise "Grapevine"
   pose start = standing
 
   step "Left step side" 0.65s flow:
-    hip_left: abduct 28
+    hip_left: abduct 16
     shoulders: abduct 40
     travel: 0.3 0
     pin: foot_right floor
@@ -24,7 +24,7 @@ posecode exercise "Grapevine"
     hip_right: rotate-in 0
     knee_right: flex 0
     ankle_right: plantarflex 0
-    hip_left: abduct 28
+    hip_left: abduct 16
     travel: 0.9 0
     pin: foot_right floor
     reach: foot_left floor
@@ -35,13 +35,14 @@ posecode exercise "Grapevine"
     knee_right: flex 16
     ankle_right: plantarflex 20
     travel: 1 0
-    ground-lock: feet
+    ground-lock: foot_left
+    reach: foot_right floor
     cue "Touch the right foot in lightly before reversing"
 
   step "Right step side" 0.65s flow:
     knee_right: flex 0
     ankle_right: plantarflex 0
-    hip_right: abduct 28
+    hip_right: abduct 16
     travel: 0.7 0
     pin: foot_left floor
     reach: foot_right floor
@@ -61,7 +62,7 @@ posecode exercise "Grapevine"
     hip_left: rotate-in 0
     knee_left: flex 0
     ankle_left: plantarflex 0
-    hip_right: abduct 28
+    hip_right: abduct 16
     travel: 0.1 0
     pin: foot_left floor
     reach: foot_right floor

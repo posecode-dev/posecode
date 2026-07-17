@@ -75,6 +75,10 @@ export interface Character {
   correctContacts(driver: Mannequin, boneIds: readonly string[]): void;
   /** Precise CPU-skinned world bounds for diagnostics/export validation. */
   getBounds(): THREE.Box3;
+  /** World position of one mapped character joint, addressed by driver id. */
+  getJointWorldPosition(driverId: string): THREE.Vector3 | null;
+  /** Character orientation expressed back in the driver's semantic frame. */
+  getJointDriverQuaternion(driverId: string): THREE.Quaternion | null;
   /** Fast sampled visible-surface correction; returns the applied Y delta. */
   reconcileFloor(floorY?: number): number;
   /**
@@ -447,6 +451,24 @@ export function rigCharacter(charScene: THREE.Object3D): Character {
     return foundSkin ? box : new THREE.Box3().setFromObject(group);
   }
 
+  function getJointWorldPosition(driverId: string): THREE.Vector3 | null {
+    const mappedBone = mappedById.get(driverId);
+    if (!mappedBone) return null;
+    return mappedBone.node.getWorldPosition(new THREE.Vector3());
+  }
+
+  function getJointDriverQuaternion(driverId: string): THREE.Quaternion | null {
+    const mappedBone = mappedById.get(driverId);
+    if (!mappedBone) return null;
+    // sync writes characterWorld = driverWorld * calibratedRestWorld.
+    // Removing the rest frame yields an orientation whose local axes match the
+    // driver metrics (sole/palm/knuckle normals) while still sampling the
+    // actual retargeted character skeleton.
+    return mappedBone.node
+      .getWorldQuaternion(new THREE.Quaternion())
+      .multiply(mappedBone.restWorld.clone().invert());
+  }
+
   // A dense uniform sample plus every rest-pose axis extremum. Xbot's 28k
   // vertices reduce to ~3.6k skin transforms per frame while retaining sole,
   // back, head, hand, and limb surface coverage under arbitrary articulation.
@@ -497,6 +519,8 @@ export function rigCharacter(charScene: THREE.Object3D): Character {
     sync,
     correctContacts,
     getBounds,
+    getJointWorldPosition,
+    getJointDriverQuaternion,
     reconcileFloor,
     skinnedMesh,
     drivenNodes,

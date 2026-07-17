@@ -8,7 +8,6 @@
 import { parse } from "posecode-parser";
 import { inject } from "@vercel/analytics";
 import { PRESETS } from "./presets.js";
-import { SHOWCASE_CLIPS } from "./clips.js";
 import llmPrompt from "../../spec/llm-authoring.md?raw";
 
 inject();
@@ -33,17 +32,14 @@ function initHero(): void {
       // Realistic skinned figure without flashing the procedural fallback.
       characterUrl: "/models/xbot.glb",
       showProceduralWhileLoading: false,
-      // Marketing surface: the hero movement declares `clip "jumping-jacks"`, so
-      // it plays the retargeted Mixamo mocap for maximum polish on first paint.
-      clips: SHOWCASE_CLIPS,
     });
     const phaseEl = document.getElementById("hero-phase");
     viewer.onPhase(({ phaseName }) => {
       if (phaseEl) phaseEl.textContent = phaseName === "reset" ? "" : phaseName;
     });
-    // Hero movement: jumping jacks. Full-body, symmetric, and cyclical, so it
-    // reads instantly and loops seamlessly through the neutral standing pose.
-    const heroPreset = PRESETS.find((p) => p.id === "jumping-jacks") ?? PRESETS[0]!;
+    // The launch hero is procedural. The visible chip is a contact-phase
+    // excerpt from the preset source driving the XBot, with no hidden mocap.
+    const heroPreset = PRESETS.find((p) => p.id === "superhero-landing") ?? PRESETS[0]!;
     const { ir } = parse(heroPreset.source);
     if (ir) {
       viewer.load(ir);
@@ -61,13 +57,24 @@ if ("requestIdleCallback" in window) {
   setTimeout(initHero, 200);
 }
 
-// --- Examples gallery: a curated taste, not the full 65 ---------------------
+// --- Examples gallery: a curated taste, not the full library ----------------
 // The full library already has a proper filterable/grouped gallery in the
 // playground itself (domain, body part, equipment, difficulty). Dumping all
-// 65 cards into the landing page turned this section into a long doom-scroll
+// library into the landing page turned this section into a long doom-scroll
 // on mobile, so show a handful of visually distinct highlights spanning
 // different domains, then hand off to the real gallery.
-const HIGHLIGHT_IDS = ["dance-phrase", "pull-up", "cobra", "touch-toes", "hand-wave"];
+// Launch surfaces feature examples that have cleared the experimental
+// gate. Experimental movements remain available in the full library.
+const HIGHLIGHT_IDS = ["squat", "deadlift", "front-kick", "sit-to-stand", "demi-plie"];
+const READY_PRESETS = PRESETS.filter((p) => p.status === "ready");
+const EXPERIMENTAL_PRESETS = PRESETS.filter((p) => p.status === "experimental");
+
+const catalogMeta = document.getElementById("catalog-meta");
+if (catalogMeta) {
+  catalogMeta.textContent =
+    `${READY_PRESETS.length} launch-ready moves · ${EXPERIMENTAL_PRESETS.length} experimental previews · ` +
+    "validated text · open source · runs on-device";
+}
 
 const grid = document.getElementById("examples-grid");
 if (grid) {
@@ -85,14 +92,14 @@ if (grid) {
     grid.append(card);
   }
 
-  const remaining = PRESETS.length - HIGHLIGHT_IDS.length;
+  const remaining = READY_PRESETS.length - HIGHLIGHT_IDS.length;
   const more = document.createElement("a");
   more.className = "example-card example-more";
   more.href = "/play";
   more.innerHTML = `
     <span class="example-kind">Full library</span>
-    <span class="example-name">+${remaining} more movements</span>
-    <span class="example-go">Browse &amp; filter by domain →</span>`;
+    <span class="example-name">+${remaining} more launch-ready movements</span>
+    <span class="example-go">Browse ready work or opt into ${EXPERIMENTAL_PRESETS.length} previews →</span>`;
   grid.append(more);
 }
 

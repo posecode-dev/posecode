@@ -10,7 +10,7 @@ posecode exercise "Body-weight squat"
     shoulders: flex 70
     neck: extend 10
     ground-lock: feet
-    cue "Sit the hips back, chest proud, knees track over the toes"
+    cue "Flex both hips and knees as the pelvis hinges over the planted feet"
 
   step "Drive up" 1.2s drive:
     hips: flex 0
@@ -20,6 +20,6 @@ posecode exercise "Body-weight squat"
     shoulders: flex 0
     neck: extend 0
     ground-lock: feet
-    cue "Drive through the heels to stand tall"
+    cue "Straighten both hips and knees and return the torso and arms to neutral"
 
   repeat 8

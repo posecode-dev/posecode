@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Seated forward fold: How to Do It (Animated 3D Guide) | Posecode</title>
+    <title>Seated forward fold: Posecode Movement Example | Posecode</title>
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="description" content="How to do the seated forward fold (yoga): 2 phases targeting the hamstrings, body weight, beginner level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
+    <meta name="description" content="Seated forward fold is a beginner-level yoga Posecode example with 2 inspectable phases and a link to live 3D playback." />
     <link rel="canonical" href="https://www.posecode.org/moves/seated-forward-fold.html" />
     <meta name="theme-color" content="#0a0d12" />
-    <meta property="og:title" content="Seated forward fold: How to Do It (Animated 3D Guide) | Posecode" />
-    <meta property="og:description" content="How to do the seated forward fold (yoga): 2 phases targeting the hamstrings, body weight, beginner level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
+    <meta property="og:title" content="Seated forward fold: Posecode Movement Example | Posecode" />
+    <meta property="og:description" content="Seated forward fold is a beginner-level yoga Posecode example with 2 inspectable phases and a link to live 3D playback." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.posecode.org/moves/seated-forward-fold.html" />
     <meta property="og:site_name" content="Posecode" />
@@ -97,7 +97,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 @media(max-width:600px){.wrap{padding:0 18px}}
 </style>
     <link rel="stylesheet" href="/content-theme.css" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to do a Seated forward fold","description":"How to do the seated forward fold (yoga): 2 phases targeting the hamstrings, body weight, beginner level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs.","step":[{"@type":"HowToStep","name":"Fold","text":"Hinge forward from the hips over the legs, reaching toward the feet"},{"@type":"HowToStep","name":"Rise","text":"Roll back up to a tall seated spine"}]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Seated forward fold: a Posecode movement example","description":"Seated forward fold is a beginner-level yoga Posecode example with 2 inspectable phases and a link to live 3D playback."}</script>
     <script>
       window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
     </script>
@@ -125,12 +125,15 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
         &nbsp;·&nbsp; <b>Level</b> Beginner &nbsp;·&nbsp; <b>Reps</b> 3</p>
       <p>Seated forward fold is a beginner-level yoga movement targeting the
         hamstrings, written in <a href="/">Posecode</a>, a small open-source language
-        that LLMs like ChatGPT, Claude, and Gemini can write to describe human movement as text.
-        Every joint angle below is hard-clamped to a safe range of motion.</p>
+        that capable language models can use to describe human movement as text.
+        Authored joint targets and reach-IK solves are constrained to Posecode's configured
+        per-axis bounds. Those bounds constrain the visualization, but they do not certify
+        that a complete movement is safe or clinically correct.
+        This page documents a code example; it is not exercise instruction.</p>
 
       <a class="btn" href="/play/seated-forward-fold">▶ Open Seated forward fold in the playground →</a>
 
-      <h2>How to do it</h2>
+      <h2>Movement phases</h2>
       <ol class="steps">
 <li>
           <span class="step-name">Fold<span class="step-dur">3s · flow</span></span>
@@ -143,7 +146,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       </ol>
 
       <h2>The .posecode source</h2>
-      <p>This is the exact text an LLM writes to produce the animation above: phases and joint
+      <p>This is the exact text used by the linked playground animation: phases and joint
         angles, not 3D transforms.</p>
       <pre class="code-block"><code>posecode stretch &quot;Seated forward fold&quot;
   rig humanoid
@@ -169,8 +172,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 </code></pre>
 
       <h2>More yoga movements</h2>
-         <div class="chip-list"><a href="/moves/chair.html">Chair pose</a><a href="/moves/sidebend.html">Standing side bend</a><a href="/moves/cobra.html">Cobra</a></div>
-    
+         <div class="chip-list"><a href="/moves/chair.html">Chair pose</a><a href="/moves/sidebend.html">Standing side bend</a></div>
     </main>
     <footer class="site-footer">
       <div class="wrap">

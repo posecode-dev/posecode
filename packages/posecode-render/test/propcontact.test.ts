@@ -91,11 +91,11 @@ describe("solid prop contact", () => {
 
   it("maps effector spellings and floor anchors correctly in propContactExemptions", () => {
     const e = propContactExemptions([
-      { effector: "feet", anchor: "box" },
-      { effector: "hand_left", anchor: "bar" },
+      { effector: "knee_left", anchor: "seat" },
+      { effector: "fist_right", anchor: "wall" },
       { effector: "foot_right", anchor: "floor" }, // floor: not a prop contact
     ]);
-    expect([...e.legs].sort()).toEqual(["left", "right"]);
-    expect([...e.arms]).toEqual(["left"]);
+    expect([...e.legs]).toEqual(["left"]);
+    expect([...e.arms]).toEqual(["right"]);
   });
 });

@@ -77,7 +77,10 @@ describe("euler ROM boxes (eulerRomFor)", () => {
     expect(eulerRomFor("pelvis")!.x).toEqual({ min: 0, max: 120 });
   });
 
-  it("returns null for a bone without ROM data", () => {
-    expect(eulerRomFor("head")).toBeNull();
+  it("bounds the upper-cervical head share independently from the neck", () => {
+    const box = eulerRomFor("head")!;
+    expect(box.x).toEqual({ min: -25, max: 25 });
+    expect(box.y).toEqual({ min: -40, max: 40 });
+    expect(box.z).toEqual({ min: -20, max: 20 });
   });
 });

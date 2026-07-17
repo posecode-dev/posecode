@@ -426,7 +426,7 @@ It explains biomechanical problems in natural language and proposes specific rev
 | Package | Purpose |
 | --- | --- |
 | [`posecode-language`](packages/posecode-language) | Language definitions and editor support |
-| [`posecode-parser`](packages/posecode-parser) | Converts `.posecode` text into validated, ROM-constrained intermediate representation |
+| [`posecode-parser`](packages/posecode-parser) | Converts `.posecode` text into a validated, range-constrained intermediate representation |
 | [`posecode-render`](packages/posecode-render) | Renders animated figures with Three.js, forward kinematics, and IK |
 | [`posecode-share`](packages/posecode-share) | Encodes Posecode documents into URL-safe share tokens |
 | [`posecode-mcp`](packages/posecode-mcp) | Exposes Posecode capabilities to AI agents through MCP |
@@ -482,7 +482,7 @@ Posecode currently focuses on:
 The following are outside the current scope:
 
 - two-person or partner motion,
-- collision detection,
+- comprehensive collision detection and rigid-body dynamics,
 - detailed object physics,
 - advanced equipment simulation,
 - multi-joint finger animation,

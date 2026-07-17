@@ -5,7 +5,7 @@
  * development; falls back to a compact inline grammar if neither is reachable.
  */
 
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
@@ -13,44 +13,58 @@ let cached: string | null = null;
 
 export function authoringGuide(): string {
   if (cached !== null) return cached;
-  let guide: string;
-  try {
-    const here = dirname(fileURLToPath(import.meta.url));
-    const packagedGuide = resolve(here, "llm-authoring.md");
-    const repositoryGuide = resolve(here, "../../../spec/llm-authoring.md");
-    guide = readFileSync(
-      existsSync(packagedGuide) ? packagedGuide : repositoryGuide,
-      "utf8",
-    );
-  } catch {
-    guide = FALLBACK_GUIDE;
+  const here = dirname(fileURLToPath(import.meta.url));
+  // Published builds ship a generated copy beside the bundle. Repository
+  // development reads the canonical spec directly. Trying both fixes the old
+  // package behavior where every installed MCP server silently fell back to a
+  // stale, much smaller grammar because `../../../spec` was not published.
+  const candidates = [
+    resolve(here, "llm-authoring.md"),
+    resolve(here, "../../../spec/llm-authoring.md"),
+  ];
+  let guide = "";
+  for (const path of candidates) {
+    try {
+      guide = readFileSync(path, "utf8");
+      break;
+    } catch {
+      // Try the next distribution layout.
+    }
   }
+  if (!guide) guide = FALLBACK_GUIDE;
   cached = guide;
   return guide;
 }
 
 const FALLBACK_GUIDE = `# Authoring Posecode
 
-Output ONLY a \`.posecode\` document in a code block, no prose.
+When the request is representable, output ONLY the raw \`.posecode\` document,
+with no Markdown fence or prose. If it needs free flight, multiple people,
+arbitrary equipment, exact sign language, or detailed facial/scapular motion,
+say that Posecode cannot yet represent the missing capability.
 
 ## Grammar
 \`\`\`
 posecode <kind> "<Name>"          # kind = exercise | stretch | posture
   rig humanoid
-  pose start = <pose>          # neutral | standing | plank
+  prop <type>                  # optional: chair | wall | bar | box | dip-bars
+  pose start = <pose>          # neutral | standing | plank | supine | prone | seated
   step "<Phase>" <Ns> <mode>:  # mode = flow | settle | drive | snap | linear
     <joint>: <action> <degrees>
-    ground-lock: <contacts>    # feet/hands/forearms/back, or foot_left / left foot
+    ground-lock: <contacts>    # repeat feet/hands/forearms/back or side-specific supports
+    reach: <effector> <target> # supported hand/fist/elbow/knee/foot toward a validated target
+    pin: <effector> <anchor>   # move the body around one primary contact
+    grip: hands <anchor>       # declared bar / rails, two independent hand contacts
     cue "<short coaching cue>"
   repeat <count>
 \`\`\`
 
 Joints: neck head spine chest pelvis, and (singular or plural) shoulders elbows
 wrists hips knees ankles. Actions (degrees are absolute targets): flex/extend,
-abduct/adduct, rotate-in/rotate-out, dorsiflex/plantarflex, hold neutral, and
-hinge (hips only, closed-chain hip flexion: torso tips over planted feet with
-a neutral spine; use for deadlift / forward fold instead of hips: flex).
-Stay within healthy range of motion; the renderer hard-clamps anything beyond.
-Use ground-lock: feet when standing, hands and feet in a high plank, forearms
-and feet in a forearm plank, and back for supine floor work such as a dead bug.
-Do not invent other contact names.`;
+abduct/adduct, rotate-in/rotate-out (shoulder/hip), twist-left/twist-right
+(axial joints), dorsiflex/plantarflex, hold neutral, and hinge (pelvis only).
+Use only joint/action pairs and declared prop anchors accepted by the validator.
+Author the gross pose before reach; a parsed reach is not proof of contact.
+Keep cues, sides, and declared contacts consistent through every phase. Floor
+contacts are a closed vocabulary: use feet when standing, hands and feet in a
+high plank, forearms and feet in a forearm plank, and back for supine work.`;

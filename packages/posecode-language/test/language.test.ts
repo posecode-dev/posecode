@@ -34,7 +34,13 @@ describe("getDiagnostics", () => {
   });
 
   it("returns nothing for a clean document", () => {
-    const clean = 'posecode posture "P"\n  rig humanoid\n  pose start = standing';
+    const clean = [
+      'posecode posture "P"',
+      "  rig humanoid",
+      "  pose start = standing",
+      '  step "Hold" 1s linear:',
+      "    pelvis: hold neutral",
+    ].join("\n");
     expect(getDiagnostics(clean)).toEqual([]);
   });
 });
@@ -57,10 +63,28 @@ describe("getCompletions", () => {
     expect(l).toContain("cue");
   });
 
+  it("suggests document directives, not joints, at the two-space top level", () => {
+    const l = onLine("  ", 2);
+    expect(l).toEqual(expect.arrayContaining(["step", "repeat", "pose"]));
+    expect(l).not.toContain("knees");
+    expect(l).not.toContain("cue");
+  });
+
   it("suggests actions after `<joint>: `", () => {
-    expect(onLine("    knees: ", 11)).toEqual(
-      expect.arrayContaining(["flex", "extend"]),
+    const kneeActions = onLine("    knees: ", 11);
+    expect(kneeActions).toEqual(expect.arrayContaining(["flex", "extend", "hold"]));
+    expect(kneeActions).not.toContain("abduct");
+    expect(kneeActions).not.toContain("rotate-in");
+  });
+
+  it("offers joint-specific wrist deviation and explicit axial twist", () => {
+    expect(onLine("    wrist_left: ", 16)).toEqual(
+      expect.arrayContaining(["flex", "extend", "abduct", "adduct"]),
     );
+    const chestActions = onLine("    chest: ", 11);
+    expect(chestActions).toEqual(expect.arrayContaining(["twist-left", "twist-right"]));
+    expect(chestActions).not.toContain("rotate-in");
+    expect(chestActions).not.toContain("rotate-out");
   });
 
   it("suggests timing modes inside a step header", () => {
@@ -89,9 +113,41 @@ describe("getCompletions", () => {
 
   it("suggests reach effectors (groups + sides) after `reach: ` and `pin: `", () => {
     expect(onLine("    reach: ", 11)).toEqual(
-      expect.arrayContaining(["hands", "hand_left", "foot_right"]),
+      expect.arrayContaining(["hands", "fists", "knees", "hand_left", "fist_right", "foot_right"]),
     );
     expect(onLine("    pin: ", 9)).toEqual(expect.arrayContaining(["feet"]));
+    expect(onLine("    reach: ", 11)).not.toContain("pelvis");
+    expect(onLine("    pin: ", 9)).toContain("pelvis");
+    expect(onLine("    grip: ", 10)).toEqual(
+      expect.arrayContaining(["hands", "hand_left", "hand_right"]),
+    );
+    expect(onLine("    grip: ", 10)).not.toContain("feet");
+  });
+});
+
+describe("strict movement diagnostics", () => {
+  it("reports unsupported joint/action combinations as errors", () => {
+    const doc = [
+      'posecode posture "Bad knee"',
+      "  rig humanoid",
+      '  step "Pose" 1s linear:',
+      "    knee_left: abduct 20",
+    ].join("\n");
+    expect(getDiagnostics(doc)).toContainEqual(
+      expect.objectContaining({ line: 4, severity: "error", message: expect.stringMatching(/not supported/i) }),
+    );
+  });
+
+  it("nudges legacy axial rotation toward explicit direction", () => {
+    const doc = [
+      'posecode posture "Twist"',
+      "  rig humanoid",
+      '  step "Pose" 1s linear:',
+      "    chest: rotate-out 20",
+    ].join("\n");
+    expect(getDiagnostics(doc)).toContainEqual(
+      expect.objectContaining({ line: 4, severity: "hint", message: expect.stringContaining("twist-right") }),
+    );
   });
 });
 

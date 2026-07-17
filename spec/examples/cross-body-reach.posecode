@@ -3,24 +3,30 @@ posecode stretch "Cross-body reach"
   pose start = standing
 
   step "Reach across right" 2s flow:
-    shoulder_right: flex 80
-    reach: hand_right shoulder_left
+    shoulder_right: flex 90
+    shoulder_right: adduct 45
+    elbow_right: flex 110
     ground-lock: feet
-    cue "Pull the right arm across the chest toward the left shoulder"
+    cue "Fold the right arm across the chest and reach toward the left shoulder"
 
   step "Return" 1.4s settle:
     shoulder_right: flex 0
+    shoulder_right: adduct 0
+    elbow_right: flex 0
     ground-lock: feet
     cue "Release back to center"
 
   step "Reach across left" 2s flow:
-    shoulder_left: flex 80
-    reach: hand_left shoulder_right
+    shoulder_left: flex 90
+    shoulder_left: adduct 45
+    elbow_left: flex 110
     ground-lock: feet
     cue "Pull the left arm across the chest toward the right shoulder"
 
   step "Center" 1.4s settle:
     shoulder_left: flex 0
+    shoulder_left: adduct 0
+    elbow_left: flex 0
     ground-lock: feet
     cue "Return to center"
 

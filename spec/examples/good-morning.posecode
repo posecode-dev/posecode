@@ -5,17 +5,17 @@ posecode exercise "Good morning"
   step "Hinge" 2s flow:
     pelvis: hinge 80
     knees: flex 15
-    ankles: plantarflex 15
+    ankles: dorsiflex 0
     shoulders: abduct 45
     elbows: flex 110
     neck: extend 10
     ground-lock: feet
-    cue "Hands behind the head, hinge from the hips with a flat back"
+    cue "Keep the elbows wide and hinge from the hips with a flat back"
 
   step "Stand" 1.8s settle:
     pelvis: hinge 0
     knees: flex 0
-    ankles: plantarflex 0
+    ankles: dorsiflex 0
     shoulders: abduct 45
     elbows: flex 110
     neck: extend 0

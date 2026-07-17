@@ -101,8 +101,14 @@ export function expandJoint(name: string): string[] {
 const EFFECTOR_SIDES = [
   "hand_left",
   "hand_right",
+  // Closed-fist floor contacts use the wrist chain for positioning, but retain
+  // their semantic contact surface for the renderer's orientation solver.
+  "fist_left",
+  "fist_right",
   "elbow_left",
   "elbow_right",
+  "knee_left",
+  "knee_right",
   "foot_left",
   "foot_right",
   // Axial support point for floor-based poses such as cobra. Unlike a reach,
@@ -113,12 +119,19 @@ const EFFECTOR_SIDES = [
 /** Symmetric effector groups → the per-side effectors they expand to. */
 const EFFECTOR_GROUPS: Record<string, string[]> = {
   hands: ["hand_left", "hand_right"],
+  fists: ["fist_left", "fist_right"],
   forearms: ["elbow_left", "elbow_right"],
+  knees: ["knee_left", "knee_right"],
   feet: ["foot_left", "foot_right"],
 };
 
 /** Every effector name `reach:` / `pin:` accept: groups + per-side aliases. */
 export const EFFECTOR_NAMES = [...Object.keys(EFFECTOR_GROUPS), ...EFFECTOR_SIDES];
+
+/** Capability-specific contact vocabularies exposed to validators/editors. */
+export const REACH_EFFECTOR_NAMES = EFFECTOR_NAMES.filter((name) => name !== "pelvis");
+export const PIN_EFFECTOR_NAMES = [...EFFECTOR_NAMES];
+export const GRIP_EFFECTOR_NAMES = ["hands", "hand_left", "hand_right"] as const;
 
 /**
  * Contacts accepted by `ground-lock:`. Ground locking has historically
@@ -177,6 +190,12 @@ const ACTIONS: Record<string, ActionAxis> = {
   adduct: { axis: "z", sign: 1 },
   "rotate-in": { axis: "y", sign: 1 },
   "rotate-out": { axis: "y", sign: -1 },
+  // Axial rotation must use world-independent anatomical directions. Internal
+  // and external rotation make sense for paired ball-and-socket joints, but
+  // are ambiguous on the spine/cervical chain. Facing +Z, +Y turns the torso
+  // toward the person's left (+X), and -Y turns it right (-X).
+  "twist-left": { axis: "y", sign: 1 },
+  "twist-right": { axis: "y", sign: -1 },
   supinate: { axis: "y", sign: 1 },
   pronate: { axis: "y", sign: -1 },
   // The foot points FORWARD (+Z): lifting the toes toward the shin

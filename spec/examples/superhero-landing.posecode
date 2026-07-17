@@ -1,0 +1,59 @@
+posecode posture "Superhero Three-Point Landing"
+  rig humanoid
+  pose start = standing
+
+  step "Drop into the landing" 0.55s flow:
+    pelvis: hinge 45
+    spine: flex 50
+    chest: flex 9
+    hip_right: flex 84
+    knee_right: flex 123
+    ankle_right: dorsiflex 15
+    hip_left: extend 12
+    knee_left: flex 105
+    ankle_left: plantarflex 28
+    shoulder_left: flex 98
+    shoulder_left: abduct 2
+    elbow_left: flex 8
+    fingers_left: flex 80
+    shoulder_right: extend 24
+    shoulder_right: abduct 22
+    elbow_right: flex 16
+    ground-lock: foot_right
+    reach: knee_left floor
+    reach: fist_left floor
+    cue "Drop over the planted right foot as the left knee and fist descend"
+
+  step "Make three-point contact" 0.3s settle:
+    neck: extend 25
+    pin: knee_left floor
+    reach: foot_right floor
+    reach: fist_left floor
+    cue "Set the left knee and left fist on the floor beside the planted right foot"
+
+  step "Hold the landing" 0.8s linear:
+    pin: knee_left floor
+    reach: foot_right floor
+    reach: fist_left floor
+    cue "Hold the three contacts with the free right arm swept behind you"
+
+  step "Recover to standing" 0.9s drive:
+    pelvis: hold neutral
+    spine: hold neutral
+    hip_right: hold neutral
+    knee_right: hold neutral
+    ankle_right: hold neutral
+    hip_left: hold neutral
+    knee_left: hold neutral
+    ankle_left: hold neutral
+    neck: hold neutral
+    chest: hold neutral
+    shoulder_left: hold neutral
+    elbow_left: hold neutral
+    fingers_left: hold neutral
+    shoulder_right: hold neutral
+    elbow_right: hold neutral
+    ground-lock: feet
+    cue "Press through both feet and return to standing"
+
+  repeat 1

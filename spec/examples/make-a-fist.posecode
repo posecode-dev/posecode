@@ -6,7 +6,7 @@ posecode posture "Make a fist"
     fingers: flex 80
     cue "Curl the fingers and thumb in to make a closed fist"
 
-  step "Open" 1.2s drive:
+  step "Open" 1.2s settle:
     fingers: flex 0
     cue "Spread the fingers wide open"
 

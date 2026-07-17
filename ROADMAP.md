@@ -1,8 +1,9 @@
 # Posecode: domains & roadmap
 
-Posecode's vision is broad: **describe any single-person movement as text and render it
-safely in 3D.** The *protocol* is general; the *current renderer* is deliberately
-scoped (one figure, forward kinematics, ground-locked hands/feet, no props). This
+Posecode's vision is broad: **describe single-person movement as text and render it
+as inspectable 3D motion.** The *protocol* is general; the *current renderer* is deliberately
+scoped to one simplified figure with forward kinematics, constrained contacts,
+starter props, and no rigid-body dynamics. This
 doc maps the domains Posecode can serve, what already works, and what each remaining
 domain needs, so contributions land where they unlock the most.
 
@@ -10,9 +11,9 @@ domain needs, so contributions land where they unlock the most.
 
 | Domain | Example uses | Status |
 | --- | --- | --- |
-| **Physiotherapy / rehab** | Range-of-motion demos, home-exercise programs, post-op protocols, cervical/shoulder mobility |  Strong fit today: the ROM safety clamp is a clinical feature. Many moves render now; equipment (bands, balls) is future. |
-| **Ergonomics / desk & posture** | Posture resets, seated/standing stretch breaks, "do this every hour" prompts |  Works today for standing variants; true *seated* needs a chair prop (below). |
-| **Yoga & mobility** | Standing poses (chair, side bend, twist), flows, mobility drills |  Standing poses work; floor/inversion/lying poses need lying base poses + a mat. |
+| **Physiotherapy / rehab** | Range-of-motion demos, home-exercise programs, post-op protocols, cervical/shoulder mobility |  Useful for reviewed visualization: ROM constraints and diagnostics are explicit. Clinical use still requires qualified review; bands and balls are future. |
+| **Ergonomics / desk & posture** | Posture resets, seated/standing stretch breaks, "do this every hour" prompts |  Standing and floor-seated variants work; chair-seated motion needs a dedicated base pose. |
+| **Yoga & mobility** | Standing poses (chair, side bend, twist), flows, mobility drills |  Standing and basic supine/prone/long-seated poses work; inversions and detailed mat contacts remain limited. |
 | **Movement education / anatomy** | Demonstrate joint actions ("what is shoulder abduction?"), biomechanics teaching |  Excellent fit: single-joint demos are exactly what the rig does. |
 | **Fitness / strength** | Body-weight and free-form movement coaching |  Core today (squat, curl, raise). Barbell/dumbbell/machine work needs props + grip. |
 | **Functional / elderly care** | Sit-to-stand, balance, gentle ROM, fall-prevention drills |  Partial: sit-to-stand works; reaching/balance need reach-IK + props. |

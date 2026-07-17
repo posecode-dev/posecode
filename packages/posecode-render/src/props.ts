@@ -147,7 +147,9 @@ export function buildProps(types: string[], material?: THREE.Material): PropScen
       // the floor. The single `bars` grip anchor sits at the midpoint between
       // the rails at grip height: pins translate the BODY so the average hand
       // position meets the anchor, which leaves each authored hand over its
-      // own rail.
+      // own rail. Side-specific anchors are required because grouped grips are
+      // resolved to `bars_left` / `bars_right`; falling back to the centre
+      // collapses both hands onto one point and twists the shoulders together.
       const railH = 1.1;
       const halfSpan = 0.22;
       for (const x of [-halfSpan, halfSpan]) {
@@ -168,6 +170,8 @@ export function buildProps(types: string[], material?: THREE.Material): PropScen
         }
       }
       anchors.set("bars", new THREE.Vector3(0, railH, 0));
+      anchors.set("bars_left", new THREE.Vector3(halfSpan, railH, 0));
+      anchors.set("bars_right", new THREE.Vector3(-halfSpan, railH, 0));
     } else if (type === "box") {
       // A low step/plateau placed IN FRONT of the figure (+Z): the lead foot
       // steps forward and up onto it. Top surface at ~0.30 m; `box` anchor sits

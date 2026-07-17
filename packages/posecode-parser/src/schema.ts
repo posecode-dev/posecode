@@ -10,6 +10,12 @@
 import { z } from "zod";
 import type { ParseError, TimingMode } from "./types.js";
 import type { AstDoc } from "./parser.js";
+import {
+  MOVEMENT_KINDS,
+  PROP_TYPES,
+  RIG_NAMES,
+  START_POSE_NAMES,
+} from "./protocol.js";
 
 export const MODES = ["flow", "settle", "drive", "snap", "linear"] as const;
 
@@ -71,13 +77,13 @@ const stepSchema = z.object({
 });
 
 const docSchema = z.object({
-  kind: z.string().min(1),
+  kind: z.enum(MOVEMENT_KINDS),
   name: z.string().min(1),
-  rig: z.string().min(1),
-  startPose: z.string().optional(),
-  props: z.array(z.string()),
+  rig: z.enum(RIG_NAMES),
+  startPose: z.enum(START_POSE_NAMES).optional(),
+  props: z.array(z.enum(PROP_TYPES)),
   repeat: z.number().int().positive(),
-  steps: z.array(stepSchema),
+  steps: z.array(stepSchema).min(1, "a Posecode document requires at least one step"),
 });
 
 /**

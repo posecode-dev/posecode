@@ -19,18 +19,19 @@ posecode exercise "Step-up"
     pin: foot_right box
     cue "Drive through the top foot to stand tall on the box"
 
-  step "Step down" 1.4s drive:
-    hip_right: flex 70
-    knee_right: flex 90
-    ankle_right: plantarflex 50
-    hip_left: flex 0
-    knee_left: flex 0
+  step "Step down" 1.4s settle:
+    hip_right: flex 55
+    knee_right: flex 65
+    ankle_right: dorsiflex 10
+    hip_left: flex 15
+    knee_left: flex 25
     pin: foot_right box
-    cue "Lower the trailing foot back to the floor"
+    cue "Lower the trailing foot toward the floor while staying tall on the box"
 
   step "Off the box" 0.8s settle:
     hip_right: flex 0
     knee_right: flex 0
+    ankle_right: dorsiflex 0
     ground-lock: feet
     cue "Step the lead foot down to meet it, standing tall on the floor"
 

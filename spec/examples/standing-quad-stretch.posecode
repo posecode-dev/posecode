@@ -3,15 +3,23 @@ posecode stretch "Standing quad stretch"
   pose start = standing
 
   step "Catch the foot" 3s flow:
+    spine: twist-right 15
+    chest: twist-right 10
     knee_right: flex 144
     hip_right: extend 20
+    shoulder_right: extend 35
+    elbow_right: flex 20
     reach: hand_right ankle_right
     pin: foot_left floor
-    cue "Bend the right knee back and reach the hand for the ankle"
+    cue "Turn slightly right, draw the heel toward the seat, and catch the ankle"
 
   step "Release" 2s settle:
+    spine: twist-right 0
+    chest: twist-right 0
     knee_right: flex 0
     hip_right: extend 0
+    shoulder_right: extend 0
+    elbow_right: flex 0
     pin: foot_left floor
     cue "Release the foot and return to standing"
 

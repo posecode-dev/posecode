@@ -3,9 +3,9 @@ posecode exercise "Chassé"
   pose start = standing
 
   step "Right foot reaches" 0.65s flow:
-    hip_right: abduct 26
+    hip_right: abduct 20
     knee_right: flex 20
-    ankle_right: plantarflex 24
+    ankle_right: plantarflex 30
     ankle_left: plantarflex 20
     shoulders: abduct 60
     elbows: flex 18
@@ -20,7 +20,7 @@ posecode exercise "Chassé"
     ankle_right: plantarflex 0
     hip_left: abduct 18
     knee_left: flex 22
-    ankle_left: plantarflex 24
+    ankle_left: plantarflex 30
     travel: 0.66 0
     pin: foot_right floor
     cue "Let the left foot chase under the body without breaking the sideways flow"
@@ -29,9 +29,9 @@ posecode exercise "Chassé"
     hip_left: abduct 0
     knee_left: flex 0
     ankle_left: plantarflex 18
-    hip_right: abduct 26
+    hip_right: abduct 20
     knee_right: flex 20
-    ankle_right: plantarflex 24
+    ankle_right: plantarflex 30
     travel: 1 0
     pin: foot_left floor
     reach: foot_right floor
@@ -41,9 +41,9 @@ posecode exercise "Chassé"
     hip_right: abduct 0
     knee_right: flex 0
     ankle_right: plantarflex 20
-    hip_left: abduct 26
+    hip_left: abduct 20
     knee_left: flex 20
-    ankle_left: plantarflex 24
+    ankle_left: plantarflex 30
     travel: 0.66 0
     pin: foot_right floor
     reach: foot_left floor
@@ -55,7 +55,7 @@ posecode exercise "Chassé"
     ankle_left: plantarflex 0
     hip_right: abduct 18
     knee_right: flex 22
-    ankle_right: plantarflex 24
+    ankle_right: plantarflex 30
     travel: 0.34 0
     pin: foot_left floor
     cue "Let the right foot chase under the body on the return"

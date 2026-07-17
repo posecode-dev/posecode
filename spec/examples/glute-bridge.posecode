@@ -9,17 +9,17 @@ posecode exercise "Glute bridge"
     spine: extend 10
     shoulders: rotate-in 70
     elbows: pronate 80
-    reach: hands floor
     ground-lock: feet
     cue "Press through the feet and lift the hips toward the ceiling"
 
-  step "Lower" 1.6s drive:
+  step "Lower" 1.6s settle:
     hips: extend 0
     spine: flex 0
+    ankles: hold neutral
     shoulders: rotate-in 70
     elbows: pronate 80
-    reach: hands floor
-    ground-lock: feet
-    cue "Lower the hips back to the floor, one vertebra at a time"
+    pin: pelvis floor
+    reach: feet floor
+    cue "Lower the pelvis to the floor while both feet return to floor contact"
 
   repeat 10

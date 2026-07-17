@@ -1,10 +1,12 @@
-/** Render parse errors and ROM-clamp warnings into the side panel. */
+/** Render source validation plus live contact-solve diagnostics. */
 import type { ParseError, Warning } from "posecode-parser";
+import type { ReachResidual } from "posecode-render";
 
 export function renderWarnings(
   el: HTMLElement,
   errors: ParseError[],
   warnings: Warning[],
+  contacts: readonly ReachResidual[] = [],
 ): void {
   const rows: string[] = [];
 
@@ -17,6 +19,29 @@ export function renderWarnings(
         w.action,
       )} ${w.requested}° → clamped to ${w.clamped}° (ROM ${w.limit.min}–${w.limit.max}°)</div>`,
     );
+  }
+
+  const seenContacts = new Set<string>();
+  for (const contact of contacts) {
+    // A reach intentionally blends in through a phase. Diagnose only once it
+    // is fully active, otherwise every normal transition would flash red.
+    if (contact.weight < 0.98 || contact.reached) continue;
+    const key = `${contact.effector}|${contact.target}`;
+    if (seenContacts.has(key)) continue;
+    seenContacts.add(key);
+    if (contact.distance === null) {
+      rows.push(
+        `<div class="row err">✗ contact ${escape(contact.effector)} → ${escape(
+          contact.target,
+        )} could not be solved${contact.reason ? ` (${escape(contact.reason)})` : ""}</div>`,
+      );
+    } else {
+      rows.push(
+        `<div class="row warn">⚠ contact miss · ${escape(contact.effector)} → ${escape(
+          contact.target,
+        )} remains ${Math.round(contact.distance * 100)} cm away</div>`,
+      );
+    }
   }
 
   el.innerHTML = rows.join("");

@@ -33,6 +33,7 @@
 
 import * as THREE from "three";
 import type { Mannequin } from "./mannequin.js";
+import { floorTargetForEffector } from "./contacts.js";
 
 const ROOT_X = new THREE.Vector3(1, 0, 0);
 
@@ -121,11 +122,24 @@ export function applyGroundLock(
     // Newton iterations: rotate about the toes until the authored upper-body
     // support reaches the floor (palms for high plank, elbows for forearm
     // plank). The final bbox correction accounts for the support mesh radius.
+    const upperSurfaceError = (): number => {
+      let sum = 0;
+      let count = 0;
+      for (const id of upperSupports) {
+        const node = m.bones.get(id);
+        if (!node) continue;
+        const semantic = id.replace("wrist_", "hand_");
+        const targetY = floorTargetForEffector(m, semantic)?.y ?? 0;
+        sum += node.getWorldPosition(new THREE.Vector3()).y - targetY;
+        count++;
+      }
+      return count > 0 ? sum / count : 0;
+    };
     for (let i = 0; i < 8; i++) {
-      const y0 = avgWorld(m, upperSupports).y;
+      const y0 = upperSurfaceError();
       if (Math.abs(y0) < 0.004) break;
       rotateRootAboutPivot(m, pivot, 0.01);
-      const y1 = avgWorld(m, upperSupports).y;
+      const y1 = upperSurfaceError();
       rotateRootAboutPivot(m, pivot, -0.01);
       const deriv = (y1 - y0) / 0.01;
       if (Math.abs(deriv) < 1e-4) break;

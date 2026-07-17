@@ -56,9 +56,10 @@ aliases `ease-in`, `ease-out`, and `ease-in-out` remain accepted so existing
 movement files keep working.
 
 `parse()` never throws: malformed or out-of-range documents come back as
-structured `errors`/`warnings` instead. Every joint angle in `ir` is hard-clamped
-to a healthy range of motion, so a hallucinated `knee: flex 200` renders at its
-safe ceiling with a warning, never an anatomically impossible joint.
+structured `errors`/`warnings` instead. Every joint angle in `ir` is clamped to
+Posecode's configured range-of-motion bounds, so a hallucinated
+`knee: flex 200` renders at the configured 144° ceiling with a warning. These
+rig constraints are not a clinical safety assessment of the full movement.
 
 ## License
 

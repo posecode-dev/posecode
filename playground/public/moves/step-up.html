@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Step-up: How to Do It (Animated 3D Guide) | Posecode</title>
+    <title>Step-up: Posecode Movement Example | Posecode</title>
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="description" content="How to do the step-up (functional): 4 phases targeting the quadriceps, box, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
+    <meta name="description" content="Step-up is an intermediate-level functional Posecode example with 4 inspectable phases and a link to live 3D playback." />
     <link rel="canonical" href="https://www.posecode.org/moves/step-up.html" />
     <meta name="theme-color" content="#0a0d12" />
-    <meta property="og:title" content="Step-up: How to Do It (Animated 3D Guide) | Posecode" />
-    <meta property="og:description" content="How to do the step-up (functional): 4 phases targeting the quadriceps, box, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
+    <meta property="og:title" content="Step-up: Posecode Movement Example | Posecode" />
+    <meta property="og:description" content="Step-up is an intermediate-level functional Posecode example with 4 inspectable phases and a link to live 3D playback." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.posecode.org/moves/step-up.html" />
     <meta property="og:site_name" content="Posecode" />
@@ -97,7 +97,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 @media(max-width:600px){.wrap{padding:0 18px}}
 </style>
     <link rel="stylesheet" href="/content-theme.css" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to do a Step-up","description":"How to do the step-up (functional): 4 phases targeting the quadriceps, box, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs.","step":[{"@type":"HowToStep","name":"Plant the foot","text":"Plant the right foot up on top of the box"},{"@type":"HowToStep","name":"Drive up","text":"Drive through the top foot to stand tall on the box"},{"@type":"HowToStep","name":"Step down","text":"Lower the trailing foot back to the floor"},{"@type":"HowToStep","name":"Off the box","text":"Step the lead foot down to meet it, standing tall on the floor"}]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Step-up: a Posecode movement example","description":"Step-up is an intermediate-level functional Posecode example with 4 inspectable phases and a link to live 3D playback."}</script>
     <script>
       window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
     </script>
@@ -123,14 +123,17 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h1>Step-up</h1>
       <p class="meta-line"><b>Target</b> Quadriceps &nbsp;·&nbsp; <b>Equipment</b> Box
         &nbsp;·&nbsp; <b>Level</b> Intermediate &nbsp;·&nbsp; <b>Reps</b> 6</p>
-      <p>Step-up is a intermediate-level functional movement targeting the
+      <p>Step-up is an intermediate-level functional movement targeting the
         quadriceps, written in <a href="/">Posecode</a>, a small open-source language
-        that LLMs like ChatGPT, Claude, and Gemini can write to describe human movement as text.
-        Every joint angle below is hard-clamped to a safe range of motion.</p>
+        that capable language models can use to describe human movement as text.
+        Authored joint targets and reach-IK solves are constrained to Posecode's configured
+        per-axis bounds. Those bounds constrain the visualization, but they do not certify
+        that a complete movement is safe or clinically correct.
+        This page documents a code example; it is not exercise instruction.</p>
 
       <a class="btn" href="/play/step-up">▶ Open Step-up in the playground →</a>
 
-      <h2>How to do it</h2>
+      <h2>Movement phases</h2>
       <ol class="steps">
 <li>
           <span class="step-name">Plant the foot<span class="step-dur">1s · flow</span></span>
@@ -141,8 +144,8 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
           <span class="step-cue">Drive through the top foot to stand tall on the box</span>
         </li>
 <li>
-          <span class="step-name">Step down<span class="step-dur">1.4s · drive</span></span>
-          <span class="step-cue">Lower the trailing foot back to the floor</span>
+          <span class="step-name">Step down<span class="step-dur">1.4s · settle</span></span>
+          <span class="step-cue">Lower the trailing foot toward the floor while staying tall on the box</span>
         </li>
 <li>
           <span class="step-name">Off the box<span class="step-dur">0.8s · settle</span></span>
@@ -151,7 +154,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       </ol>
 
       <h2>The .posecode source</h2>
-      <p>This is the exact text an LLM writes to produce the animation above: phases and joint
+      <p>This is the exact text used by the linked playground animation: phases and joint
         angles, not 3D transforms.</p>
       <pre class="code-block"><code>posecode exercise &quot;Step-up&quot;
   rig humanoid
@@ -174,18 +177,19 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     pin: foot_right box
     cue &quot;Drive through the top foot to stand tall on the box&quot;
 
-  step &quot;Step down&quot; 1.4s drive:
-    hip_right: flex 70
-    knee_right: flex 90
-    ankle_right: plantarflex 50
-    hip_left: flex 0
-    knee_left: flex 0
+  step &quot;Step down&quot; 1.4s settle:
+    hip_right: flex 55
+    knee_right: flex 65
+    ankle_right: dorsiflex 10
+    hip_left: flex 15
+    knee_left: flex 25
     pin: foot_right box
-    cue &quot;Lower the trailing foot back to the floor&quot;
+    cue &quot;Lower the trailing foot toward the floor while staying tall on the box&quot;
 
   step &quot;Off the box&quot; 0.8s settle:
     hip_right: flex 0
     knee_right: flex 0
+    ankle_right: dorsiflex 0
     ground-lock: feet
     cue &quot;Step the lead foot down to meet it, standing tall on the floor&quot;
 
@@ -194,7 +198,6 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 
       <h2>More functional movements</h2>
          <div class="chip-list"><a href="/moves/sit-to-stand.html">Sit to stand (chair)</a></div>
-    
     </main>
     <footer class="site-footer">
       <div class="wrap">

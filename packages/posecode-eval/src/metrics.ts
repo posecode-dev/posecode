@@ -41,6 +41,20 @@ export function torsoPitchDeg(pose: PhasePose): number {
   return segmentTiltDeg(pose, "pelvis", "neck");
 }
 
+/**
+ * Signed torso pitch in the character's travel-relative sagittal plane.
+ * Positive values lean character-forward; backward and sideways collapses do
+ * not masquerade as a valid forward hinge merely because their unsigned tilt
+ * is large.
+ */
+export function torsoForwardPitchDeg(pose: PhasePose): number {
+  const direction = sub(bone(pose, "neck"), bone(pose, "pelvis"));
+  const c = Math.cos(-pose.rootYaw);
+  const s = Math.sin(-pose.rootYaw);
+  const localForward = direction[0] * s + direction[2] * c;
+  return Math.atan2(localForward, direction[1]) * RAD2DEG;
+}
+
 /** Interior angle at joint b formed by segments b→a and b→c (180 = straight). */
 export function jointAngleDeg(pose: PhasePose, a: string, b: string, c: string): number {
   return angleBetweenDeg(sub(bone(pose, a), bone(pose, b)), sub(bone(pose, c), bone(pose, b)));
@@ -88,8 +102,27 @@ function rotateByQuat(v: Vec3, q: Quat): Vec3 {
 export function palmFloorAngleDeg(pose: PhasePose, side: "left" | "right"): number {
   const q = pose.boneQuaternions.get(`wrist_${side}`);
   if (!q) return 180;
-  // The flattened palm's face normal is mirrored local X on the two wrists.
-  return angleBetweenDeg(rotateByQuat(side === "left" ? [1, 0, 0] : [-1, 0, 0], q), [0, -1, 0]);
+  // The procedural palm is shallow on local Z for both sides (the same
+  // geometry axis used by render's production floor-contact solver).
+  return angleBetweenDeg(rotateByQuat([0, 0, 1], q), [0, -1, 0]);
+}
+
+/** Angle between the semantic fist's knuckle direction and floor-down. */
+export function fistFloorAngleDeg(pose: PhasePose, side: "left" | "right"): number {
+  const q = pose.boneQuaternions.get(`wrist_${side}`);
+  if (!q) return 180;
+  // Same wrist→knuckle axis used by render's production fist contact solver.
+  return angleBetweenDeg(rotateByQuat([0, -1, 0], q), [0, -1, 0]);
+}
+
+/** Landmark position along character-forward after undoing authored root yaw. */
+export function forwardCoordinate(pose: PhasePose, id: string): number {
+  const p = bone(pose, id);
+  const x = p[0] - pose.rootOffset[0];
+  const z = p[2] - pose.rootOffset[2];
+  const c = Math.cos(-pose.rootYaw);
+  const s = Math.sin(-pose.rootYaw);
+  return x * s + z * c;
 }
 
 /** Angle between the sole's local up axis and world up (0 = foot flat). */
@@ -103,8 +136,7 @@ export function soleUpAngleDeg(pose: PhasePose, side: "left" | "right"): number 
 export function palmBarAngleDeg(pose: PhasePose, side: "left" | "right"): number {
   const q = pose.boneQuaternions.get(`wrist_${side}`);
   if (!q) return 180;
-  const localNormal: Vec3 = side === "left" ? [1, 0, 0] : [-1, 0, 0];
-  return angleBetweenDeg(rotateByQuat(localNormal, q), [0, 0, 1]);
+  return angleBetweenDeg(rotateByQuat([0, 0, 1], q), [0, 0, 1]);
 }
 
 /** Distance from a wrist to its side-specific pull-up-bar grip anchor. */
@@ -137,19 +169,37 @@ function supportBoneIds(pose: PhasePose): string[] {
   const ids = new Set<string>();
   const addGroup = (name: string) => {
     if (name === "feet") { ids.add("ankle_left"); ids.add("ankle_right"); }
+    if (name === "foot_left") ids.add("ankle_left");
+    if (name === "foot_right") ids.add("ankle_right");
     if (name === "hands") { ids.add("wrist_left"); ids.add("wrist_right"); }
+    if (name === "hand_left") ids.add("wrist_left");
+    if (name === "hand_right") ids.add("wrist_right");
+    if (name === "fists") { ids.add("wrist_left"); ids.add("wrist_right"); }
+    if (name === "fist_left") ids.add("wrist_left");
+    if (name === "fist_right") ids.add("wrist_right");
     if (name === "forearms") { ids.add("elbow_left"); ids.add("elbow_right"); }
+    if (name === "elbow_left") ids.add("elbow_left");
+    if (name === "elbow_right") ids.add("elbow_right");
+    if (name === "knees") { ids.add("knee_left"); ids.add("knee_right"); }
+    if (name === "knee_left") ids.add("knee_left");
+    if (name === "knee_right") ids.add("knee_right");
   };
   pose.groundLock.forEach(addGroup);
   for (const reach of pose.reaches) {
     if (reach.target !== "floor") continue;
     addGroup(reach.effector);
-    const mapped = reach.effector.replace("hand_", "wrist_").replace("foot_", "ankle_");
+    const mapped = reach.effector
+      .replace("hand_", "wrist_")
+      .replace("fist_", "wrist_")
+      .replace("foot_", "ankle_");
     if (pose.bones.has(mapped)) ids.add(mapped);
   }
   for (const pin of pose.pins) {
     addGroup(pin.effector);
-    const mapped = pin.effector.replace("hand_", "wrist_").replace("foot_", "ankle_");
+    const mapped = pin.effector
+      .replace("hand_", "wrist_")
+      .replace("fist_", "wrist_")
+      .replace("foot_", "ankle_");
     if (pose.bones.has(mapped)) ids.add(mapped);
   }
   // Floor poses also distribute load through the torso/pelvis even when the
@@ -164,9 +214,16 @@ function supportBoneIds(pose: PhasePose): string[] {
 /** Horizontal COM distance outside the active support bounding box (0 = inside). */
 export function balanceOverflow(pose: PhasePose): number {
   const supports = supportBoneIds(pose).map((id) => bone(pose, id));
-  if (supports.length < 2) return 0;
+  // No authored support information remains unscored for backward
+  // compatibility. A single support, however, is a real balance constraint:
+  // measure outside a foot/hand-sized disc instead of auto-passing it.
+  if (supports.length === 0) return 0;
   const com = centerOfMass(pose);
   const margin = 0.14;
+  if (supports.length === 1) {
+    const support = supports[0]!;
+    return Math.max(0, Math.hypot(com[0] - support[0], com[2] - support[2]) - margin);
+  }
   const minX = Math.min(...supports.map((p) => p[0])) - margin;
   const maxX = Math.max(...supports.map((p) => p[0])) + margin;
   const minZ = Math.min(...supports.map((p) => p[2])) - margin;
@@ -232,7 +289,6 @@ const PART_RADII = { torso: 0.13, head: 0.105, thigh: 0.075, shin: 0.055, arm: 0
 
 /**
  * Worst body penetration into a solid prop face (metres, ≤0 when clear), or
- * -Infinity when the document declares no solid-faced prop. Limbs pinned or
  * reached to a non-floor anchor are that phase's declared prop support and
  * don't count (a foot standing ON the box is not "in" the box).
  */
@@ -303,6 +359,17 @@ export function footSkateDistance(previous: PhasePose, pose: PhasePose, side: "l
   };
   const a = local(bone(previous, id), previous), b = local(bone(pose, id), pose);
   return Math.hypot(b[0] - a[0], b[1] - a[1]);
+}
+
+/** World-space X/Z drift for a support whose anchor is fixed in the scene. */
+export function footWorldSkateDistance(
+  previous: PhasePose,
+  pose: PhasePose,
+  side: "left" | "right",
+): number {
+  const a = bone(previous, `ankle_${side}`);
+  const b = bone(pose, `ankle_${side}`);
+  return Math.hypot(b[0] - a[0], b[2] - a[2]);
 }
 
 /** Drift of the planted foot-pair center, ignoring intentional stance-width changes. */

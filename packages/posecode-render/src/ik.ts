@@ -7,8 +7,9 @@
  * world target while the rest of the body moves. Chains may carry per-joint
  * Euler angle limits (the joint's Range of Motion expressed as a local-frame
  * box, see posecode-parser's `eulerRomFor`); each iteration clamps the joint back
- * inside its box, so a solved pose can never exceed the healthy ROM any more
- * than an authored angle can.
+ * inside its box, so a solved joint cannot exceed the configured ROM any more
+ * than an authored joint can. This is a mechanical constraint, not a safety
+ * or clinical assessment of the complete movement.
  */
 
 import * as THREE from "three";
