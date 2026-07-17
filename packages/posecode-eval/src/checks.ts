@@ -327,6 +327,33 @@ export const MOVEMENT_CHECKS: MovementChecks[] = [
     ],
   },
   {
+    // A demi-plié keeps the turnout established at the hips while both feet
+    // remain planted. Checking each ankle independently catches the symmetric
+    // outward/inward skate that a center-only ground-lock metric cannot see.
+    movement: "demi-plie",
+    checks: [
+      (result) => {
+        if (result.phases.length < 2) {
+          return { id: "demi-plie-feet-stay-planted", pass: false, detail: "plié phases missing" };
+        }
+        let maxDrift = 0;
+        for (let i = 1; i < result.phases.length; i++) {
+          for (const side of ["left", "right"] as const) {
+            maxDrift = Math.max(
+              maxDrift,
+              footSkateDistance(result.phases[i - 1]!, result.phases[i]!, side),
+            );
+          }
+        }
+        return {
+          id: "demi-plie-feet-stay-planted",
+          pass: maxDrift < 0.015,
+          detail: `${maxDrift.toFixed(3)}m maximum ankle drift (want < 0.015m)`,
+        };
+      },
+    ],
+  },
+  {
     // Three-point landing: the front sole, rear knee, and opposite fist must
     // form distinct supports while the torso stays above the floor. Contact
     // residuals alone once allowed a folded body with a vertical planted foot.
@@ -338,6 +365,13 @@ export const MOVEMENT_CHECKS: MovementChecks[] = [
         torsoForwardPitchDeg,
         (v) => v >= 65 && v <= 100,
         "65–100° character-forward pitch",
+      ),
+      phaseCheck(
+        "planted-fist-palm-inward",
+        "Hold the landing",
+        (p) => palmInwardAngleDeg(p, "left"),
+        (v) => v < 30,
+        "< 30° from inward",
       ),
       (result) => {
         const p = phase(result, "Hold the landing");

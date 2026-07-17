@@ -286,4 +286,14 @@ describe("fixture scorecard", () => {
     expect(movement.passed).toBeLessThan(movement.total);
     expect(failed.some((check) => check.id.startsWith("contact-position:"))).toBe(true);
   });
+
+  it("rejects a superhero landing whose planted fist faces away from the body", () => {
+    const fixtures = loadFixtures(examplesDir);
+    const source = fixtures.find((fixture) => fixture.movement === "superhero-landing")!.source;
+    const outward = source.replace("elbow_left: pronate 80", "elbow_left: supinate 80");
+    const check = runEval([{ movement: "superhero-landing", source: outward }])
+      .movements[0]!.checks.find((item) => item.id === "planted-fist-palm-inward");
+
+    expect(check).toEqual(expect.objectContaining({ pass: false }));
+  });
 });

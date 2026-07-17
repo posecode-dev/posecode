@@ -775,8 +775,12 @@ a.dev-card:hover {
 .studio-bar { background: #0d0f10; }
 .studio-bar .dots { display: none; }
 .code-chip {
-  right: -28px;
-  bottom: -30px;
+  position: static;
+  width: max-content;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 14px 0 0 auto;
+  overflow-x: auto;
   border-radius: 2px;
   background: #0b0d0e;
   backdrop-filter: none;

@@ -137,11 +137,11 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <ol class="steps">
 <li>
           <span class="step-name">Plié<span class="step-dur">2.2s · settle</span></span>
-          <span class="step-cue">Turn out from the hips and bend the knees over the toes: heels down</span>
+          <span class="step-cue">Lower straight down with the knees tracking the turned-out toes and both heels anchored</span>
         </li>
 <li>
           <span class="step-name">Straighten<span class="step-dur">2.2s · settle</span></span>
-          <span class="step-cue">Press the floor away and rise to a tall first position</span>
+          <span class="step-cue">Press the floor away and rise without changing the turnout or moving the feet</span>
         </li>
       </ol>
 
@@ -150,29 +150,29 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
         angles, not 3D transforms.</p>
       <pre class="code-block"><code>posecode exercise &quot;Demi-plié&quot;
   rig humanoid
-  pose start = standing
+  pose start = first-position
 
   step &quot;Plié&quot; 2.2s settle:
-    hips: flex 20
-    hips: rotate-out 30
+    hips: flex 31.5
+    hips: abduct 17
     knees: flex 55
     ankles: dorsiflex 15
     shoulders: abduct 70
     elbows: flex 15
     spine: extend 4
     ground-lock: feet
-    cue &quot;Turn out from the hips and bend the knees over the toes: heels down&quot;
+    cue &quot;Lower straight down with the knees tracking the turned-out toes and both heels anchored&quot;
 
   step &quot;Straighten&quot; 2.2s settle:
     hips: flex 0
-    hips: rotate-out 0
+    hips: abduct 0
     knees: flex 0
-    ankles: plantarflex 0
+    ankles: dorsiflex 0
     shoulders: abduct 0
     elbows: flex 0
-    spine: flex 0
+    spine: extend 0
     ground-lock: feet
-    cue &quot;Press the floor away and rise to a tall first position&quot;
+    cue &quot;Press the floor away and rise without changing the turnout or moving the feet&quot;
 
   repeat 4
 </code></pre>

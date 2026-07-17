@@ -48,7 +48,7 @@ say that Posecode cannot yet represent the missing capability.
 posecode <kind> "<Name>"          # kind = exercise | stretch | posture
   rig humanoid
   prop <type>                  # optional: chair | wall | bar | box | dip-bars
-  pose start = <pose>          # neutral | standing | plank | supine | prone | seated
+  pose start = <pose>          # neutral | standing | first-position | plank | supine | prone | seated
   step "<Phase>" <Ns> <mode>:  # mode = flow | settle | drive | snap | linear
     <joint>: <action> <degrees>
     ground-lock: <contacts>    # repeat feet/hands/forearms/back or side-specific supports
