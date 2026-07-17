@@ -27,7 +27,7 @@ beginning `Posecode cannot yet represent...` and name the missing capability.
 posecode <kind> "<Name>"          # kind = exercise | stretch | posture
   rig humanoid
   prop <type>                  # optional: chair | wall | bar | box | dip-bars (repeatable)
-  pose start = <pose>          # neutral | standing | plank | supine | prone | seated
+  pose start = <pose>          # neutral | standing | first-position | plank | supine | prone | seated
   step "<Phase name>" <Ns> <mode>:     # mode = flow | settle | drive | snap | linear
     <joint>: <action> <degrees>
     reach: <effector> <target> # limb IK to a landmark, floor, or declared prop anchor
@@ -229,6 +229,8 @@ posecode exercise "Body-weight hip hinge"
   prop contact. It assigns separate left/right anchors, solves both arms, and
   closes the fingers. Declare `prop bar` or `prop dip-bars` first. Prefer this
   to multiple pins for a pull-up, hang, or dip.
+- **Dance turnout**: `pose start = first-position` for ballet movements that
+  must keep the legs externally rotated without twisting planted feet
 - **Lying / seated**: `pose start = supine | prone | seated` for floor and mat
   work (glute bridge, dead bug, cobra, seated forward fold). In a supine
   exercise whose torso stays down, add `ground-lock: back` to each phase.

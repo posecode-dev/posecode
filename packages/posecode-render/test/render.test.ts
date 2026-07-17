@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import fs from "node:fs";
 import * as THREE from "three";
 import { buildMannequin } from "../src/mannequin.js";
 import { buildTimeline } from "../src/timeline.js";
@@ -472,6 +473,49 @@ describe("ground-lock (shared solver)", () => {
     m.root.updateMatrixWorld(true);
     return m;
   }
+
+  it("keeps the canonical demi-plié turned out without foot friction", () => {
+    const source = fs.readFileSync(
+      new URL("../../../spec/examples/demi-plie.posecode", import.meta.url),
+      "utf8",
+    );
+    const { ir, errors } = parse(source);
+    expect(errors).toEqual([]);
+    const timeline = buildTimeline(ir!);
+    const m = buildMannequin();
+
+    expect(timeline.basePose.joints?.hip_left?.[1]).toBe(30);
+    expect(timeline.basePose.joints?.hip_right?.[1]).toBe(-30);
+
+    timeline.sample(0, m.bones);
+    groundFigure(m);
+    const basePosition = m.root.position.clone();
+    const baseRotation = m.root.quaternion.clone();
+    const anchors = new Map(
+      ["ankle_left", "ankle_right"].map((id) => [
+        id,
+        m.bones.get(id)!.getWorldPosition(new THREE.Vector3()),
+      ]),
+    );
+
+    let maxDrift = 0;
+    for (let t = 0; t < timeline.duration; t += 0.025) {
+      m.root.position.copy(basePosition);
+      m.root.quaternion.copy(baseRotation);
+      const info = timeline.sample(t, m.bones);
+      m.root.updateMatrixWorld(true);
+      applyGroundLock(m, info.groundLock, anchors);
+      levelPlantedFeet(m, info.groundLock);
+      m.root.updateMatrixWorld(true);
+      for (const id of ["ankle_left", "ankle_right"]) {
+        const point = m.bones.get(id)!.getWorldPosition(new THREE.Vector3());
+        const anchor = anchors.get(id)!;
+        maxDrift = Math.max(maxDrift, Math.hypot(point.x - anchor.x, point.z - anchor.z));
+      }
+    }
+
+    expect(maxDrift).toBeLessThan(0.01);
+  });
 
   it("drops the body and plants the foot mesh for a feet-only squat", () => {
     const m = posedRaw(

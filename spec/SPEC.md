@@ -28,7 +28,7 @@ directive  = rig | prop | pose | clip | step | repeat ;
 rig        = "rig" "humanoid" ;
 prop       = "prop" ("chair"|"wall"|"bar"|"box"|"dip-bars") ;
 pose       = "pose" "start" "=" startPose ;
-startPose  = "neutral"|"standing"|"plank"|"supine"|"prone"|"seated" ;
+startPose  = "neutral"|"standing"|"first-position"|"plank"|"supine"|"prone"|"seated" ;
 clip       = "clip" STRING ;                            (* optional mocap clip; renderer may retarget & blend *)
 repeat     = "repeat" NUMBER ;
 step       = "step" STRING DURATION timingMode ":" { child } ;
@@ -258,8 +258,9 @@ actual bone motion (rather than blindly choosing the longest embedded take),
 retargets and blends it, then restores solved terminal contacts on the visible
 character. Mocap therefore cannot overwrite a planted sole or active grip.
 
-**Start poses:** `neutral`, `standing`, `plank`, `supine` (face-up), `prone`
-(face-down), `seated` (long-sit on the floor).
+**Start poses:** `neutral`, `standing`, `first-position` (ballet turnout),
+`plank`, `supine` (face-up), `prone` (face-down), `seated` (long-sit on the
+floor).
 
 **IK note:** Three.js's bundled `CCDIKSolver` targets `SkinnedMesh`; the Posecode
 mannequin is rigid capsule segments, so Posecode implements CCD directly over the

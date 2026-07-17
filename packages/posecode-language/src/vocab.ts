@@ -55,7 +55,7 @@ export const KEYWORD_DOCS: Record<string, string> = {
   posecode: 'Document header: `posecode <kind> "<name>"`.',
   rig: "Selects the rig (currently `humanoid`).",
   prop: "Adds a scene object: `prop chair | wall | bar | box | dip-bars`. Supplies declared reach, pin, and grip anchors.",
-  pose: "Sets the starting pose: `pose start = standing | neutral | plank | supine | prone | seated`.",
+  pose: "Sets the starting pose: `pose start = standing | first-position | neutral | plank | supine | prone | seated`.",
   start: "Used in `pose start = <pose>`.",
   clip: 'Optional mocap clip: `clip "walk"`. A renderer with a matching retargeted animation plays it crossfaded over the procedural pose; others ignore it.',
   step: 'A movement phase: `step "<name>" <Ns> <mode>:` where mode is flow | settle | drive | snap | linear.',
