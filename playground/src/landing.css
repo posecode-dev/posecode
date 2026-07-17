@@ -775,12 +775,20 @@ a.dev-card:hover {
 .studio-bar { background: #0d0f10; }
 .studio-bar .dots { display: none; }
 .code-chip {
-  position: static;
+  position: absolute;
+  z-index: 2;
+  top: 44px;
+  right: -28px;
+  bottom: auto;
   width: max-content;
-  max-width: 100%;
+  max-width: calc(100% - 48px);
   box-sizing: border-box;
-  margin: 14px 0 0 auto;
-  overflow-x: auto;
+  margin: 0;
+  overflow: hidden;
+  pointer-events: none;
+  padding: 12px 14px;
+  font-size: 10.5px;
+  line-height: 1.6;
   border-radius: 2px;
   background: #0b0d0e;
   backdrop-filter: none;
@@ -847,6 +855,14 @@ a.dev-card:hover {
 @media (max-width: 920px) {
   .hero { grid-template-columns: 1fr; min-height: auto; }
   .headline { max-width: 12ch; }
+  .code-chip {
+    position: static;
+    width: max-content;
+    max-width: 100%;
+    margin: 14px 0 0 auto;
+    overflow-x: auto;
+    pointer-events: auto;
+  }
   .prop:nth-child(2) { border-left: 1px solid var(--border); }
   .example-card:nth-child(3n + 1) { border-left: 0; }
   .example-card:nth-child(2n + 1) { border-left: 1px solid var(--border); }

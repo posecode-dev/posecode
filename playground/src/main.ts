@@ -18,6 +18,7 @@ import {
 } from "./nice-share.js";
 import type { PosecodeEditor } from "./editor.js";
 import { ANIMATION_PROGRESS_MESSAGE, PRESETS } from "./presets.js";
+import { prioritizeFeaturedMovement } from "./library-order.js";
 import { SHOWCASE_CLIPS } from "./clips.js";
 
 // Open on a deterministic, fully procedural movement. Mocap-backed or
@@ -363,13 +364,15 @@ function fold(s: string): string {
 
 function libraryMatches(): typeof PRESETS {
   const q = fold(libQuery.trim());
-  return PRESETS.filter(
-    (p) =>
-      (!libDomain || p.domain === libDomain) &&
-      (!libLevel || p.difficulty === libLevel) &&
-      (!libStatus || p.status === libStatus) &&
-      (!q ||
-        fold(`${p.label} ${p.target} ${p.domain} ${p.bodyPart} ${p.equipment}`).includes(q)),
+  return prioritizeFeaturedMovement(
+    PRESETS.filter(
+      (p) =>
+        (!libDomain || p.domain === libDomain) &&
+        (!libLevel || p.difficulty === libLevel) &&
+        (!libStatus || p.status === libStatus) &&
+        (!q ||
+          fold(`${p.label} ${p.target} ${p.domain} ${p.bodyPart} ${p.equipment}`).includes(q)),
+    ),
   );
 }
 
