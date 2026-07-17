@@ -61,3 +61,7 @@ repository checkout, an absolute source path, or a separate `tsx` install.
 permalink primitive the playground uses, and validates with
 [`posecode-parser`](../posecode-parser). The server does not render the movement
 itself; 3D math runs in the user's browser when the link is opened.
+
+## License
+
+AGPL-3.0-only. A [separate commercial license](https://github.com/posecode-dev/posecode/blob/main/COMMERCIAL-LICENSE.md) is available for closed-source product use.

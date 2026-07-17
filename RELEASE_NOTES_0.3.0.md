@@ -1,0 +1,27 @@
+# Posecode 0.3.0 release notes (draft)
+
+Posecode 0.3.0 establishes a clear boundary between the open standard and the product-facing implementation while keeping the project open source.
+
+## Licensing in 0.3.0
+
+- The Posecode specification, format, parser, share codec, language tooling, LSP, and VS Code extension remain Apache-2.0.
+- The renderer, web embed, MCP server, evaluation package, and playground are AGPL-3.0-only.
+- Organizations may use AGPL components under AGPL-3.0 and comply with its terms. Organizations that need alternative terms for closed-source embedding, white-label distribution, support, or service-level commitments can contact hello@posecode.org about a separate commercial agreement.
+- The Posecode name and logos are governed separately by `TRADEMARK.md`.
+
+This change is prospective. It does not revoke or narrow rights already granted for earlier versions. Repository revisions released under MIT remain available under MIT, and the 0.2.2 npm packages remain available under Apache-2.0.
+
+## Packaging and transparency
+
+- Every published package declares its own license and includes matching `LICENSE` and `NOTICE` files.
+- The embedded player and hosted product surfaces link to source and licensing information.
+- The repository documents third-party dependencies and separates Mixamo-derived character and motion assets from the software licenses.
+- The unused legacy `character.glb` asset was removed. Active XBot and jumping-jacks assets remain because the current product and regression tests use them.
+
+## Contributor policy
+
+Contributions require a Developer Certificate of Origin sign-off. Product-layer contributions that may need commercial relicensing must not be merged from external contributors until a lawyer-reviewed contributor license agreement is available.
+
+## Before publishing
+
+This draft must be reviewed together with `LICENSING.md`, the package tarballs, and the release checks. Publishing the npm packages, tag, or GitHub release requires explicit final approval.

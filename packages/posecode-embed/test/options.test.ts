@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { parseOptions, DEFAULT_OPTIONS } from "../src/options.js";
+import { parseOptions, DEFAULT_CHARACTER_URL, DEFAULT_OPTIONS } from "../src/options.js";
 
 describe("parseOptions", () => {
   it("returns sensible defaults for an element with no attributes", () => {
     expect(parseOptions({})).toEqual(DEFAULT_OPTIONS);
+    expect(DEFAULT_CHARACTER_URL).toBe("https://posecode.org/models/xbot.glb");
   });
 
   it("treats boolean attributes as present-means-true", () => {

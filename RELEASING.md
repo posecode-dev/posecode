@@ -11,6 +11,12 @@ PoseCode publishes five npm packages as one fixed-version release:
 The release workflow also publishes `packages/posecode-mcp/server.json` to the
 official MCP Registry after npm publication succeeds.
 
+The 0.3 release uses a mixed open-source model. `posecode-parser` and
+`posecode-share` remain Apache-2.0. `posecode-render`, `posecode-embed`, and
+`posecode-mcp` are AGPL-3.0-only with a separately negotiated commercial
+option. Run the package checks to verify that each tarball contains the license
+declared by its manifest.
+
 ## One-time repository setup
 
 For each npm package above, configure an npm trusted publisher with:
@@ -30,9 +36,10 @@ requests. The workflow also needs the permissions declared in
 
 1. Run `npm run changeset` in each pull request that changes a public package.
 2. Merge the pull request into `main`.
-3. Review and merge the automatically maintained `chore: release packages`
-   pull request.
-4. The next release workflow publishes the npm packages, creates GitHub
+3. Review the automatically maintained `chore: release packages` pull request.
+4. Obtain explicit final approval for the irreversible npm and GitHub release.
+5. Merge the release pull request only after that approval.
+6. The next release workflow publishes the npm packages, creates GitHub
    releases, and updates the official MCP Registry through GitHub OIDC.
 
 The first run can be started from the Actions tab with **Release packages → Run

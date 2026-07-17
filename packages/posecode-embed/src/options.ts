@@ -28,7 +28,7 @@ export interface PlayerOptions {
 }
 
 /** The character the hosted playground uses, served from the same origin. */
-export const DEFAULT_CHARACTER_URL = "https://posecode.org/models/character.glb";
+export const DEFAULT_CHARACTER_URL = "https://posecode.org/models/xbot.glb";
 
 export const DEFAULT_OPTIONS: PlayerOptions = {
   autoplay: true,

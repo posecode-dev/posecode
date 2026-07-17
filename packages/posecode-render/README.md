@@ -28,7 +28,7 @@ const viewer = createViewer(canvas, {
   autoRotate: false,
   // Optional: realistic skinned character (Mixamo bone naming). Omit for the
   // zero-asset procedural figure.
-  characterUrl: "https://posecode.org/models/character.glb",
+  characterUrl: "https://posecode.org/models/xbot.glb",
 });
 
 const { ir } = parse(myPosecodeSource);
@@ -48,4 +48,4 @@ rendering is plain forward kinematics.
 
 ## License
 
-Apache-2.0
+AGPL-3.0-only. A separate commercial license is available for closed-source product use; see [commercial licensing](https://github.com/posecode-dev/posecode/blob/main/COMMERCIAL-LICENSE.md).
