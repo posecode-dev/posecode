@@ -6,12 +6,12 @@
     "url": "https://github.com/posecode-dev/posecode",
     "source": "github"
   },
-  "version": "0.2.2",
+  "version": "0.3.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "posecode-mcp",
-      "version": "0.2.2",
+      "version": "0.3.0",
       "transport": {
         "type": "stdio"
       },
