@@ -74,4 +74,6 @@ export const KEYWORD_DOCS: Record<string, string> = {
   travel: "Moves the figure across the floor: `travel: 0.4 0` (world x z metres from the start spot). Absolute, carried across phases. Standing poses only.",
   cue: "A short coaching cue shown while this phase plays.",
   hold: "Reset every rotation channel on this joint to its neutral / rest angle: `<joint>: hold neutral`.",
+  pronate: "Rolls the forearm toward palm-down. With upright arms at the sides, about 80° faces the palm inward toward the thigh; final world facing also depends on the arm pose.",
+  supinate: "Rolls the forearm in the palm-up direction; final world facing also depends on the shoulder and elbow pose.",
 };

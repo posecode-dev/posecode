@@ -107,6 +107,31 @@ export function palmFloorAngleDeg(pose: PhasePose, side: "left" | "right"): numb
   return angleBetweenDeg(rotateByQuat([0, 0, 1], q), [0, -1, 0]);
 }
 
+/** Angle between the palm face normal and world-up (0 = palm facing up). */
+export function palmUpAngleDeg(pose: PhasePose, side: "left" | "right"): number {
+  const q = pose.boneQuaternions.get(`wrist_${side}`);
+  if (!q) return 180;
+  return angleBetweenDeg(rotateByQuat([0, 0, 1], q), [0, 1, 0]);
+}
+
+/** Angle between the palm face normal and character-forward (+Z at zero yaw). */
+export function palmForwardAngleDeg(pose: PhasePose, side: "left" | "right"): number {
+  const q = pose.boneQuaternions.get(`wrist_${side}`);
+  if (!q) return 180;
+  const forward: Vec3 = [Math.sin(pose.rootYaw), 0, Math.cos(pose.rootYaw)];
+  return angleBetweenDeg(rotateByQuat([0, 0, 1], q), forward);
+}
+
+/** Angle between a palm and the body's lateral midline direction. */
+export function palmInwardAngleDeg(pose: PhasePose, side: "left" | "right"): number {
+  const q = pose.boneQuaternions.get(`wrist_${side}`);
+  if (!q) return 180;
+  const inward = side === "left"
+    ? sub(bone(pose, "shoulder_right"), bone(pose, "shoulder_left"))
+    : sub(bone(pose, "shoulder_left"), bone(pose, "shoulder_right"));
+  return angleBetweenDeg(rotateByQuat([0, 0, 1], q), inward);
+}
+
 /** Angle between the semantic fist's knuckle direction and floor-down. */
 export function fistFloorAngleDeg(pose: PhasePose, side: "left" | "right"): number {
   const q = pose.boneQuaternions.get(`wrist_${side}`);

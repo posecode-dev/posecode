@@ -38,7 +38,7 @@ posecode exercise "Triceps dips"
   step "Dismount" 0.8s settle:
     shoulders: abduct 0
     elbows: flex 0
-    elbows: pronate 0
+    elbows: pronate 80
     fingers: flex 0
     knees: flex 0
     ankles: plantarflex 0

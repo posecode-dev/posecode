@@ -47,9 +47,10 @@ export interface ReachTarget {
 
 /**
  * A contact pin: translate the whole figure so `effector` sits on a fixed
- * `anchor` (a prop anchor, a landmark, or `floor`). Unlike a reach (which moves
- * the limb to a target) a pin moves the BODY, so the figure can hang from a bar,
- * rise onto a box, or lower into a dip while the contact stays put.
+ * world `anchor` (a declared prop anchor or `floor`). Unlike a reach (which
+ * moves the limb to a target) a pin moves the BODY, so a body landmark cannot
+ * serve as its anchor: that landmark would move with the same root. Pins let the
+ * figure hang from a bar, rise onto a box, or keep one floor support fixed.
  */
 export interface PinTarget {
   effector: string;

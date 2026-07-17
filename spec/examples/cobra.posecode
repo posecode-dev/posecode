@@ -9,7 +9,7 @@ posecode stretch "Cobra"
     shoulders: flex 100
     shoulders: rotate-out 60
     elbows: flex 40
-    elbows: pronate 80
+    forearms: pronate 80
     pin: pelvis floor
     reach: feet floor
     reach: hands floor
@@ -22,7 +22,7 @@ posecode stretch "Cobra"
     shoulders: flex 0
     shoulders: rotate-out 0
     elbows: flex 0
-    elbows: pronate 80
+    forearms: pronate 80
     pin: pelvis floor
     reach: feet floor
     cue "Lower the chest back to the floor with control"

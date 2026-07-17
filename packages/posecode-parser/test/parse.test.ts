@@ -54,6 +54,25 @@ describe("parse", () => {
     expect(elbowL.euler.x).toBe(-90);
   });
 
+  it("accepts `forearms` as the anatomical alias for palm rotation", () => {
+    const { ir, errors } = parse([
+      'posecode posture "Palms inward"',
+      "  rig humanoid",
+      '  step "Turn palms" 1s settle:',
+      "    forearms: pronate 80",
+    ].join("\n"));
+    expect(errors).toEqual([]);
+    const targets = ir!.phases[0]!.targets;
+    expect(targets.find((target) => target.boneId === "elbow_left")).toMatchObject({
+      euler: { y: -80 },
+      axes: ["y"],
+    });
+    expect(targets.find((target) => target.boneId === "elbow_right")).toMatchObject({
+      euler: { y: 80 },
+      axes: ["y"],
+    });
+  });
+
   it("clamps out-of-range angles and records a warning", () => {
     const src = [
       'posecode exercise "Bad knee"',

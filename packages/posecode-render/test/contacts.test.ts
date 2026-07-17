@@ -110,11 +110,58 @@ describe("contact geometry", () => {
     }
   });
 
+  it("plants authored-pronated palms by twisting forearms without moving wrist targets", () => {
+    const m = buildMannequin();
+    const wristPositions = new Map<string, THREE.Vector3>();
+    for (const side of ["left", "right"] as const) {
+      // Cobra-like arms: flexed/externally-rotated shoulders, bent elbows, and
+      // full semantic pronation (mirrored in the two local rig frames).
+      m.bones.get(`shoulder_${side}`)!.rotation.set(
+        -100 * DEG,
+        (side === "left" ? 60 : -60) * DEG,
+        0,
+      );
+      m.bones.get(`elbow_${side}`)!.rotation.set(
+        -40 * DEG,
+        (side === "left" ? -80 : 80) * DEG,
+        0,
+      );
+    }
+    m.root.updateMatrixWorld(true);
+    for (const side of ["left", "right"] as const) {
+      wristPositions.set(
+        side,
+        m.bones.get(`wrist_${side}`)!.getWorldPosition(new THREE.Vector3()),
+      );
+    }
+
+    alignFloorContacts(m, [], [{ effector: "hands", anchor: "floor" }], []);
+    for (const side of ["left", "right"] as const) {
+      const elbow = m.bones.get(`elbow_${side}`)!;
+      const wrist = m.bones.get(`wrist_${side}`)!;
+      const normal = new THREE.Vector3(...PALM_LOCAL_NORMAL)
+        .applyQuaternion(wrist.getWorldQuaternion(new THREE.Quaternion()))
+        .normalize();
+      const local = new THREE.Euler().setFromQuaternion(elbow.quaternion, "XYZ");
+      // The solver uses the matching anatomical supination frame to enter a
+      // strong palm-down cone while preserving the solved wrist endpoint.
+      expect(normal.dot(down)).toBeGreaterThan(Math.cos(45.5 * DEG));
+      expect(wrist.getWorldPosition(new THREE.Vector3()).distanceTo(wristPositions.get(side)!))
+        .toBeLessThan(1e-7);
+      expect(local.x).toBeGreaterThanOrEqual(-154 * DEG - 1e-6);
+      expect(local.x).toBeLessThanOrEqual(10 * DEG + 1e-6);
+      expect(local.y).toBeGreaterThanOrEqual((side === "left" ? -84 : -92) * DEG - 1e-6);
+      expect(local.y).toBeLessThanOrEqual((side === "left" ? 92 : 84) * DEG + 1e-6);
+      expect(Math.abs(local.z)).toBeLessThan(1e-6);
+    }
+  });
+
   it("plants a fist on its knuckles, distinctly from a palm, without losing curl", () => {
     const m = buildMannequin();
     m.bones.get("wrist_left")!.rotation.x = -30 * DEG;
     formFists(m, new Set(["left"]));
     const curlBefore = m.bones.get("index_left")!.quaternion.clone();
+    const elbowBefore = m.bones.get("elbow_left")!.quaternion.clone();
     alignFloorContacts(m, [{ effector: "fist_left", target: "floor", weight: 1 }], [], []);
 
     const wristWorld = m.bones.get("wrist_left")!.getWorldQuaternion(new THREE.Quaternion());
@@ -123,6 +170,7 @@ describe("contact geometry", () => {
     expect(knuckles.dot(down)).toBeGreaterThan(0.995);
     expect(Math.abs(palm.dot(down))).toBeLessThan(0.1);
     expect(m.bones.get("index_left")!.quaternion.angleTo(curlBefore)).toBeLessThan(1e-8);
+    expect(m.bones.get("elbow_left")!.quaternion.angleTo(elbowBefore)).toBeLessThan(1e-8);
     expect(m.bones.get("index_left")!.rotation.x).toBeLessThan(-1);
   });
 
@@ -209,6 +257,7 @@ describe("relaxHands (L4.1)", () => {
     relaxHands(m, new Set(), new Set(), new Set());
     const freeCurl = m.bones.get("index_left")!.rotation.x;
     expect(freeCurl).toBeLessThan(-0.3);
+    expect(freeCurl).toBeGreaterThan(-0.4); // relaxed, not a near-fist
     // ...but a hand pressed to the floor (plank/push-up) lies extended.
     relaxHands(m, new Set(), new Set(), new Set(["left"]));
     expect(m.bones.get("index_left")!.rotation.x).toBeLessThan(0.1); // flat

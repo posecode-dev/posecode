@@ -20,7 +20,7 @@ posecode exercise "Dead hang"
   step "Down" 1.5s settle:
     shoulders: flex 0
     elbows: flex 0
-    elbows: pronate 0
+    elbows: pronate 80
     fingers: flex 0
     ground-lock: feet
     cue "Drop down off the bar and shake out the arms"

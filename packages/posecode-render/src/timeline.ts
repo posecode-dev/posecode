@@ -72,6 +72,8 @@ export interface BuiltTimeline {
     t: number,
     bones: Map<string, THREE.Object3D>,
   ): {
+    /** Zero-based real phase index, or -1 while blending through loop reset. */
+    phaseIndex: number;
     phaseName: string;
     cue?: string;
     groundLock: string[];
@@ -390,6 +392,7 @@ export function buildTimeline(ir: PosecodeIR): BuiltTimeline {
             z: hermite(a.pos.z, b.pos.z, zA, zB, span, eased),
           };
       return {
+        phaseIndex: i < segments.length ? i : -1,
         phaseName: b.name,
         ...(b.cue ? { cue: b.cue } : {}),
         groundLock: b.groundLock,

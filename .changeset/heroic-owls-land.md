@@ -4,4 +4,7 @@
 "posecode-mcp": patch
 ---
 
-Strengthen Posecode motion authoring and playback with strict contact validation, grounded multi-contact solving, continuous sparse transitions, and more lifelike canonical movement guidance.
+Strengthen Posecode motion authoring and playback with strict contact validation,
+grounded multi-contact solving, continuous sparse transitions, explicit forearm
+roll guidance, natural relaxed hands, a mobile-safe phase rail, and more lifelike
+canonical movements.

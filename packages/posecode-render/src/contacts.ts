@@ -5,7 +5,12 @@ import type { Mannequin } from "./mannequin.js";
 import { effectorBoneId } from "./reach.js";
 
 const DOWN = new THREE.Vector3(0, -1, 0);
+const FOREARM_AXIS = new THREE.Vector3(0, 1, 0);
 const DEG = Math.PI / 180;
+/** Strong palm-down cone with 10° margin inside eval's 55° contact limit. */
+const PALM_DOWN_TARGET_DOT = Math.cos(45 * DEG);
+/** Natural outward travel as an arm straightens toward an unconstrained floor. */
+const HAND_FLOOR_OUTSET = 0.04;
 const CONTACT_EULER = new THREE.Euler();
 
 export type HandSide = "left" | "right";
@@ -78,6 +83,147 @@ function alignWristNormal(
   return true;
 }
 
+function quaternionIsInRom(q: THREE.Quaternion, boneId: string): boolean {
+  const rom = eulerRomFor(boneId);
+  if (!rom) return false;
+  const euler = new THREE.Euler().setFromQuaternion(q, "XYZ");
+  // CCD and world/local quaternion round-trips can leave locked axes a few
+  // ten-thousandths of a degree off zero. Treat that as numerical noise, not
+  // an authored ROM violation that disables the whole contact solver.
+  const epsilon = 1e-4;
+  return (
+    euler.x >= rom.x.min * DEG - epsilon && euler.x <= rom.x.max * DEG + epsilon &&
+    euler.y >= rom.y.min * DEG - epsilon && euler.y <= rom.y.max * DEG + epsilon &&
+    euler.z >= rom.z.min * DEG - epsilon && euler.z <= rom.z.max * DEG + epsilon
+  );
+}
+
+/**
+ * Find the legal forearm-axis twist that gives the wrist the best attainable
+ * palm-down frame. A post-multiplied local-Y twist leaves the elbow→wrist
+ * offset ([0,-length,0]) unchanged, so this can re-orient a planted palm
+ * without pulling its solved contact point away from the floor target.
+ */
+function bestPalmForearmTwist(m: Mannequin, side: HandSide): number | null {
+  const elbowId = `elbow_${side}`;
+  const wristId = `wrist_${side}`;
+  const elbow = m.bones.get(elbowId);
+  const wrist = m.bones.get(wristId);
+  const wristRom = eulerRomFor(wristId);
+  if (!elbow?.parent || wrist?.parent !== elbow || !wristRom) return null;
+
+  m.root.updateMatrixWorld(true);
+  const elbowParentWorld = elbow.parent.getWorldQuaternion(new THREE.Quaternion());
+  const authoredElbow = elbow.quaternion.clone();
+  const authoredWrist = wrist.quaternion.clone();
+  const twist = new THREE.Quaternion();
+  const candidateElbow = new THREE.Quaternion();
+  const elbowWorld = new THREE.Quaternion();
+  const wristWorld = new THREE.Quaternion();
+  const correction = new THREE.Quaternion();
+  const desiredWorld = new THREE.Quaternion();
+  const desiredLocal = new THREE.Quaternion();
+  const clampedWrist = new THREE.Quaternion();
+  const finalWorld = new THREE.Quaternion();
+  const wristEuler = new THREE.Euler();
+  const candidateEuler = new THREE.Euler();
+  const currentNormal = new THREE.Vector3();
+  const finalNormal = new THREE.Vector3();
+  const authoredEuler = new THREE.Euler().setFromQuaternion(authoredElbow, "XYZ");
+  const desiredSupinationY = (side === "left" ? 1 : -1) * Math.abs(authoredEuler.y);
+
+  const score = (radians: number): number | null => {
+    twist.setFromAxisAngle(FOREARM_AXIS, radians);
+    candidateElbow.copy(authoredElbow).multiply(twist);
+    if (!quaternionIsInRom(candidateElbow, elbowId)) return null;
+
+    elbowWorld.copy(elbowParentWorld).multiply(candidateElbow);
+    wristWorld.copy(elbowWorld).multiply(authoredWrist);
+    currentNormal.set(...PALM_LOCAL_NORMAL).applyQuaternion(wristWorld).normalize();
+    correction.setFromUnitVectors(currentNormal, DOWN);
+    desiredWorld.copy(correction).multiply(wristWorld);
+    desiredLocal.copy(elbowWorld).invert().multiply(desiredWorld);
+
+    // Simulate the exact wrist correction and hard ROM clamp used below. The
+    // search therefore prefers a forearm twist the real wrist can finish.
+    wristEuler.setFromQuaternion(desiredLocal, "XYZ");
+    wristEuler.set(
+      THREE.MathUtils.clamp(wristEuler.x, wristRom.x.min * DEG, wristRom.x.max * DEG),
+      THREE.MathUtils.clamp(wristEuler.y, wristRom.y.min * DEG, wristRom.y.max * DEG),
+      THREE.MathUtils.clamp(wristEuler.z, wristRom.z.min * DEG, wristRom.z.max * DEG),
+      "XYZ",
+    );
+    clampedWrist.setFromEuler(wristEuler);
+    finalWorld.copy(elbowWorld).multiply(clampedWrist);
+    finalNormal.set(...PALM_LOCAL_NORMAL).applyQuaternion(finalWorld).normalize();
+    return finalNormal.dot(DOWN);
+  };
+
+  let bestRadians = 0;
+  let bestScore = score(0) ?? -Infinity;
+  // Most palms need only the cheap wrist correction. In particular this keeps
+  // plank/mountain-climber geometry unchanged and avoids a search per frame.
+  if (bestScore >= PALM_DOWN_TARGET_DOT) return 0;
+  let targetRadians: number | null = null;
+  let targetYDistance = Infinity;
+  const consider = (radians: number): void => {
+    const candidateScore = score(radians);
+    if (candidateScore === null) return;
+    const scoreGain = candidateScore - bestScore;
+    if (scoreGain > 1e-9 || (Math.abs(scoreGain) <= 1e-9 && Math.abs(radians) < Math.abs(bestRadians))) {
+      bestScore = candidateScore;
+      bestRadians = radians;
+    }
+    // A declared palm-floor contact overrides incompatible pronation with the
+    // corresponding anatomical supination frame. Prefer that semantic mirror
+    // over a mathematical maximum at the extreme edge of the ROM box.
+    candidateEuler.setFromQuaternion(candidateElbow, "XYZ");
+    const isSupinationHalf = side === "left" ? candidateEuler.y >= -1e-6 : candidateEuler.y <= 1e-6;
+    const yDistance = Math.abs(candidateEuler.y - desiredSupinationY);
+    if (candidateScore >= PALM_DOWN_TARGET_DOT && isSupinationHalf && yDistance < targetYDistance) {
+      targetYDistance = yDistance;
+      targetRadians = radians;
+    }
+  };
+
+  // Coarse global search handles authored full pronation (±80°), whose
+  // palm-down solution can lie roughly 160° away at the opposite ROM edge.
+  const coarseStep = 5 * DEG;
+  for (let radians = -Math.PI; radians <= Math.PI + 1e-8; radians += coarseStep) {
+    consider(Math.min(Math.PI, radians));
+  }
+  // Refine locally so the semantic supination mirror is not quantized to the
+  // coarse search step.
+  const coarseBest = targetRadians ?? bestRadians;
+  const fineStep = 0.25 * DEG;
+  for (let radians = coarseBest - coarseStep; radians <= coarseBest + coarseStep + 1e-8; radians += fineStep) {
+    consider(THREE.MathUtils.clamp(radians, -Math.PI, Math.PI));
+  }
+  return Number.isFinite(bestScore) ? targetRadians ?? bestRadians : null;
+}
+
+function alignPalmNormal(m: Mannequin, side: HandSide, weight: number): boolean {
+  const elbowId = `elbow_${side}`;
+  const elbow = m.bones.get(elbowId);
+  const bestTwist = bestPalmForearmTwist(m, side);
+  if (!elbow || bestTwist === null) {
+    return alignWristNormal(m, side, PALM_LOCAL_NORMAL, weight);
+  }
+
+  const safeWeight = THREE.MathUtils.clamp(weight, 0, 1);
+  const weightedTwist = new THREE.Quaternion().setFromAxisAngle(
+    FOREARM_AXIS,
+    bestTwist * safeWeight,
+  );
+  const candidate = elbow.quaternion.clone().multiply(weightedTwist);
+  // Both endpoints of the interpolation are legal in normal operation. Keep a
+  // defensive fallback for unusual imported rigs/Euler singularities without
+  // ever clamping the elbow in a way that could move the wrist endpoint.
+  if (quaternionIsInRom(candidate, elbowId)) elbow.quaternion.copy(candidate);
+  m.root.updateMatrixWorld(true);
+  return alignWristNormal(m, side, PALM_LOCAL_NORMAL, weight);
+}
+
 function collectFloorHandContacts(
   reaches: readonly (ReachTarget & { weight?: number })[],
   pins: readonly PinTarget[],
@@ -114,7 +260,9 @@ function collectFloorHandContacts(
 /**
  * Orient floor contacts by their real geometry: a palm presents its flattened
  * +Z face, while a fist presents the wrist→knuckle (-Y) direction. The two are
- * intentionally distinct, and both corrections are strict wrist-ROM-clamped.
+ * intentionally distinct. Palm contacts may also redistribute orientation
+ * into a legal forearm-axis twist; fists remain wrist-only so knuckle and grip
+ * semantics are unaffected. Every wrist correction is strict-ROM-clamped.
  */
 export function alignFloorContacts(
   m: Mannequin,
@@ -125,8 +273,9 @@ export function alignFloorContacts(
   const contacts = collectFloorHandContacts(reaches, pins, groundLock);
   let changed = false;
   for (const [side, contact] of contacts) {
-    const normal = contact.kind === "fist" ? FIST_LOCAL_NORMAL : PALM_LOCAL_NORMAL;
-    changed = alignWristNormal(m, side, normal, contact.weight) || changed;
+    changed = contact.kind === "palm"
+      ? alignPalmNormal(m, side, contact.weight) || changed
+      : alignWristNormal(m, side, FIST_LOCAL_NORMAL, contact.weight) || changed;
   }
   if (changed) m.root.updateMatrixWorld(true);
 }
@@ -174,6 +323,25 @@ export function floorTargetForEffector(
   if (effectorName.startsWith("elbow_")) {
     p.y = m.collision.arm;
     return p;
+  }
+  // Fists are fixed knuckle contacts (e.g. superhero landing), not sliding
+  // open palms, so they deliberately retain their authored X/Z target.
+  const handMatch = /^(?:hand|wrist)_(left|right)$/.exec(effectorName);
+  if (handMatch) {
+    // A floor is an infinite contact plane, not a fixed X/Z landmark. Lowering
+    // a nearly straight arm naturally carries the hand a few centimetres away
+    // from the shoulder; targeting the wrist's old vertical projection makes
+    // safe elbow ROM miss Cobra's otherwise reachable landing point.
+    const shoulder = m.bones.get(`shoulder_${handMatch[1]}`);
+    if (shoulder) {
+      const shoulderPosition = shoulder.getWorldPosition(new THREE.Vector3());
+      const outward = new THREE.Vector3(
+        p.x - shoulderPosition.x,
+        0,
+        p.z - shoulderPosition.z,
+      );
+      if (outward.lengthSq() > 1e-8) p.add(outward.normalize().multiplyScalar(HAND_FLOOR_OUTSET));
+    }
   }
   const box = new THREE.Box3().setFromObject(effector);
   p.y = Number.isFinite(box.min.y) ? Math.max(0, p.y - box.min.y) : 0;
@@ -424,12 +592,12 @@ export function wrapGrip(m: Mannequin, grips: readonly GripTarget[]): void {
 
 /**
  * Relaxed resting finger curl (radians) for an idle hand in the air. A truly
- * relaxed hand is not flat: the fingers settle into a soft inward hook (~30°),
+ * relaxed hand is not flat: the fingers settle into a soft inward hook (~18°),
  * which reads as a natural cupped hand instead of a stiff splayed palm.
  */
-export const REST_CURL = -0.55;
+export const REST_CURL = -0.32;
 /** Gentle thumb opposition for a relaxed hand, within adduction ROM. */
-export const REST_THUMB_OPPOSE = 0.4;
+export const REST_THUMB_OPPOSE = 0.26;
 /** Finger bones are intentionally single-DOF; their authored rest offsets
  * provide natural spacing without inventing an out-of-ROM lateral rotation. */
 export const REST_ADDUCT = 0;

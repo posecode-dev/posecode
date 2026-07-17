@@ -4,38 +4,45 @@ posecode exercise "Jab-cross"
 
   step "Jab" 0.4s settle:
     shoulder_left: flex 85
+    shoulder_left: rotate-in 70
     elbow_left: flex 15
-    elbow_left: pronate 80
+    elbow_left: pronate 84
+    shoulder_right: flex 60
+    elbow_right: flex 130
+    elbow_right: pronate 80
     spine: twist-right 10
     fingers: flex 80
     ground-lock: feet
-    cue "Snap the lead (left) hand straight out, rotating slightly into it"
+    cue "Snap the lead fist straight out with the palm down and the rear fist guarding the face"
 
   step "Recoil jab" 0.4s drive:
-    shoulder_left: flex 0
-    elbow_left: flex 90
-    elbow_left: pronate 0
+    shoulder_left: flex 60
+    shoulder_left: rotate-in 0
+    elbow_left: flex 130
+    elbow_left: pronate 80
     spine: twist-right 0
     fingers: flex 80
     ground-lock: feet
-    cue "Bring the hand back to guard"
+    cue "Bring the lead fist back high with both palms facing inward"
 
   step "Cross" 0.45s settle:
     shoulder_right: flex 90
+    shoulder_right: rotate-in 70
     elbow_right: flex 10
-    elbow_right: pronate 80
+    elbow_right: pronate 84
     spine: twist-left 35
     fingers: flex 80
     ground-lock: feet
-    cue "Drive the rear (right) hand across, rotating the trunk"
+    cue "Drive the rear fist across with the palm down as the trunk turns"
 
   step "Recoil cross" 0.45s drive:
-    shoulder_right: flex 0
-    elbow_right: flex 90
-    elbow_right: pronate 0
+    shoulder_right: flex 60
+    shoulder_right: rotate-in 0
+    elbow_right: flex 130
+    elbow_right: pronate 80
     spine: twist-left 0
     fingers: flex 80
     ground-lock: feet
-    cue "Return to guard, hands high"
+    cue "Return to a high guard with both palms facing inward"
 
   repeat 4

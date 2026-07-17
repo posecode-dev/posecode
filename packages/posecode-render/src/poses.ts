@@ -19,6 +19,12 @@ const NEUTRAL: PoseSpec = {
   joints: {},
 };
 
+/** Half-pronated forearms: palms face the thighs instead of away from them. */
+const RELAXED_FOREARMS: NonNullable<PoseSpec["joints"]> = {
+  elbow_left: [0, -80, 0],
+  elbow_right: [0, 80, 0],
+};
+
 // Face-down support position: torso horizontal, arms reaching to the floor.
 // Ground-lock IK plants hands and feet; this just gets the gross posture right.
 const PLANK: PoseSpec = {
@@ -43,10 +49,7 @@ const PLANK: PoseSpec = {
 // Left/right Y signs mirror in the rig, matching `elbows: pronate 80`.
 const STANDING: PoseSpec = {
   root: { position: [0, 0, 0], rotationDeg: [0, 0, 0] },
-  joints: {
-    elbow_left: [0, 80, 0],
-    elbow_right: [0, -80, 0],
-  },
+  joints: { ...RELAXED_FOREARMS },
 };
 
 // Lying face-up. Rotating the standing figure -90° about X lays it on its back:
@@ -69,6 +72,7 @@ const PRONE: PoseSpec = {
 const SEATED: PoseSpec = {
   root: { position: [0, 0.5, 0], rotationDeg: [0, 0, 0] },
   joints: {
+    ...RELAXED_FOREARMS,
     hip_left: [-90, 0, 0],
     hip_right: [-90, 0, 0],
   },

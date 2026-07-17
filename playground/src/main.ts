@@ -60,9 +60,9 @@ let viewer: Viewer | null = null;
 let scrubbing = false;
 let repeat = 1;
 let rep = 1;
-// Maps each phase name → the 1-based line range of its `step` block, so the
+// Maps each phase index → the 1-based line range of its `step` block, so the
 // editor can highlight the lines driving the currently-animating phase.
-let phaseRanges = new Map<string, { from: number; to: number }>();
+let phaseRanges: Array<{ from: number; to: number }> = [];
 let lastParseErrors: ParseError[] = [];
 let lastRomWarnings: Warning[] = [];
 let lastContactSignature = "";
@@ -101,12 +101,12 @@ function paintScrub(): void {
 
 /** Wire the viewer's playback callbacks. Runs once, after the renderer loads. */
 function wireViewer(v: Viewer): void {
-  v.onPhase(({ phaseName, cue }) => {
+  v.onPhase(({ phaseIndex, phaseName, cue }) => {
     phaseEl.textContent = phaseName === "reset" ? "" : phaseName;
     cueEl.textContent = cue ?? "";
-    highlightChip(phaseName);
+    highlightChip(phaseIndex);
     // Light up the step block driving this phase (cleared between loops / on reset).
-    const range = phaseName === "reset" ? undefined : phaseRanges.get(phaseName);
+    const range = phaseIndex < 0 ? undefined : phaseRanges[phaseIndex];
     editorApi?.highlightPhase(range ? range.from : null, range?.to);
     refreshContactDiagnostics(true);
   });
@@ -137,11 +137,12 @@ function buildRibbonAndMarkers(): void {
   ribbon.innerHTML = "";
   markers.innerHTML = "";
   if (!tl) return;
-  for (const seg of tl.segments) {
+  for (const [index, seg] of tl.segments.entries()) {
     const chip = document.createElement("button");
+    chip.type = "button";
     chip.className = "chip";
     chip.textContent = seg.name;
-    chip.dataset.name = seg.name;
+    chip.dataset.index = String(index);
     chip.title = seg.cue ?? "";
     chip.addEventListener("click", () => viewer?.seek(seg.start + 1e-3));
     ribbon.append(chip);
@@ -155,9 +156,29 @@ function buildRibbonAndMarkers(): void {
   }
 }
 
-function highlightChip(name: string): void {
+function highlightChip(index: number): void {
+  let active: HTMLElement | null = null;
   for (const el of ribbon.querySelectorAll<HTMLElement>(".chip")) {
-    el.classList.toggle("active", el.dataset.name === name);
+    const selected = Number(el.dataset.index) === index;
+    el.classList.toggle("active", selected);
+    if (selected) el.setAttribute("aria-current", "step");
+    else el.removeAttribute("aria-current");
+    if (selected) active = el;
+  }
+  if (active && ribbon.scrollWidth > ribbon.clientWidth) {
+    const gutter = 12;
+    const visibleStart = ribbon.scrollLeft + gutter;
+    const visibleEnd = ribbon.scrollLeft + ribbon.clientWidth - gutter;
+    const chipStart = active.offsetLeft;
+    const chipEnd = chipStart + active.offsetWidth;
+    let left: number | null = null;
+    if (chipStart < visibleStart) left = chipStart - gutter;
+    else if (chipEnd > visibleEnd) left = chipEnd - ribbon.clientWidth + gutter;
+    if (left === null) return;
+    ribbon.scrollTo({
+      left: Math.max(0, left),
+      behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+    });
   }
 }
 
@@ -168,8 +189,8 @@ function highlightChip(name: string): void {
  */
 function computePhaseRanges(
   text: string,
-  segmentNames: string[],
-): Map<string, { from: number; to: number }> {
+  segmentCount: number,
+): Array<{ from: number; to: number }> {
   const lines = text.split(/\r?\n/);
   const stepLines: number[] = [];
   const boundaries: number[] = [];
@@ -178,13 +199,13 @@ function computePhaseRanges(
     if (isStep) stepLines.push(i + 1);
     if (isStep || /^\s*repeat\b/.test(lines[i]!)) boundaries.push(i + 1);
   }
-  const ranges = new Map<string, { from: number; to: number }>();
-  for (let s = 0; s < stepLines.length && s < segmentNames.length; s++) {
+  const ranges: Array<{ from: number; to: number }> = [];
+  for (let s = 0; s < stepLines.length && s < segmentCount; s++) {
     const from = stepLines[s]!;
     const next = boundaries.find((b) => b > from);
     let to = next ? next - 1 : lines.length;
     while (to > from && lines[to - 1]!.trim() === "") to--;
-    ranges.set(segmentNames[s]!, { from, to });
+    ranges.push({ from, to });
   }
   return ranges;
 }
@@ -242,7 +263,7 @@ function recompile(): void {
     buildRibbonAndMarkers();
     phaseRanges = computePhaseRanges(
       ed.getValue(),
-      (tl?.segments ?? []).map((s) => s.name),
+      tl?.segments.length ?? 0,
     );
     ed.highlightPhase(null); // next onPhase paints the active block
   }

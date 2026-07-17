@@ -64,8 +64,8 @@ describe("euler ROM boxes (eulerRomFor)", () => {
     const right = eulerRomFor("elbow_right")!;
     const left = eulerRomFor("elbow_left")!;
     // supinate 92 / pronate 84 flip sides under the mirror.
-    expect(right.y).toEqual({ min: -84, max: 92 });
-    expect(left.y).toEqual({ min: -92, max: 84 });
+    expect(right.y).toEqual({ min: -92, max: 84 });
+    expect(left.y).toEqual({ min: -84, max: 92 });
     // X (sagittal) is never mirrored.
     expect(left.x).toEqual(right.x);
   });

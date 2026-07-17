@@ -60,6 +60,8 @@ import { solveCCD } from "./ik.js";
 const DEG = Math.PI / 180;
 
 export interface ViewerPhaseInfo {
+  /** Zero-based real phase index, or -1 while blending through loop reset. */
+  phaseIndex: number;
   phaseName: string;
   cue?: string;
 }
@@ -361,7 +363,7 @@ export function createViewer(
   let phaseCb: (info: ViewerPhaseInfo) => void = () => {};
   let tickCb: (time: number, duration: number) => void = () => {};
   let loopCb: () => void = () => {};
-  let lastPhaseName = "";
+  let lastPhaseIndex = -2;
   let activeSegIndex = 0;
   // `load()` briefly solves each real phase endpoint to seed any floor pin
   // introduced by the following phase from the *fully solved* prior pose.
@@ -681,15 +683,7 @@ export function createViewer(
     if (timeline) {
       const info = timeline.sample(time, mannequin.bones);
       solvedInfo = info;
-      activeSegIndex = 0;
-      const tt = timeline.duration > 0 ? ((time % timeline.duration) + timeline.duration) % timeline.duration : 0;
-      for (let k = 0; k < timeline.segments.length; k++) {
-        const seg = timeline.segments[k]!;
-        if (tt >= seg.start && tt <= seg.end) {
-          activeSegIndex = k;
-          break;
-        }
-      }
+      activeSegIndex = info.phaseIndex >= 0 ? info.phaseIndex : 0;
       // Life layer rides on wall-clock time (not timeline time) so the figure
       // keeps breathing and blinking while paused or scrubbing.
       if (!precomputingAnchors) applyLife(performance.now() / 1000);
@@ -812,9 +806,13 @@ export function createViewer(
         mannequin.root.updateMatrixWorld(true);
       }
       refreshReachResiduals();
-      if (!precomputingAnchors && info.phaseName !== lastPhaseName) {
-        lastPhaseName = info.phaseName;
-        phaseCb({ phaseName: info.phaseName, ...(info.cue ? { cue: info.cue } : {}) });
+      if (!precomputingAnchors && info.phaseIndex !== lastPhaseIndex) {
+        lastPhaseIndex = info.phaseIndex;
+        phaseCb({
+          phaseIndex: info.phaseIndex,
+          phaseName: info.phaseName,
+          ...(info.cue ? { cue: info.cue } : {}),
+        });
       }
     }
     if (precomputingAnchors) return;
@@ -883,7 +881,7 @@ export function createViewer(
       lastIR = ir;
       timeline = buildTimeline(ir);
       time = 0;
-      lastPhaseName = "";
+      lastPhaseIndex = -2;
       reachResiduals = [];
       reachResidualTargets = [];
       authoredFingers = new Set(timeline.bonesUsed.filter(isFingerId));
