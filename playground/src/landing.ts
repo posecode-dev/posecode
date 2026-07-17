@@ -104,18 +104,51 @@ if (grid) {
 }
 
 // --- Copy the LLM authoring prompt ------------------------------------------
-const copyBtn = document.getElementById("copy-prompt") as HTMLButtonElement | null;
-if (copyBtn) {
+async function writeClipboard(text: string): Promise<void> {
+  if (navigator.clipboard?.writeText) {
+    try {
+      // Clipboard permissions can remain pending in embedded browsers. Keep
+      // the button responsive and fall back to the classic selection path.
+      await Promise.race([
+        navigator.clipboard.writeText(text),
+        new Promise<never>((_, reject) =>
+          window.setTimeout(() => reject(new Error("clipboard timeout")), 800),
+        ),
+      ]);
+      return;
+    } catch {
+      // Continue to the local fallback below.
+    }
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  document.body.append(textarea);
+  textarea.select();
+  const copied = document.execCommand("copy");
+  textarea.remove();
+  if (!copied) throw new Error("clipboard unavailable");
+}
+
+for (const copyBtn of document.querySelectorAll<HTMLButtonElement>("[data-copy-prompt]")) {
   const lbl = copyBtn.querySelector<HTMLElement>(".lbl") ?? copyBtn;
   copyBtn.addEventListener("click", async () => {
     const prev = lbl.textContent;
+    copyBtn.disabled = true;
+    lbl.textContent = "Copying…";
     try {
-      await navigator.clipboard.writeText(llmPrompt);
+      await writeClipboard(llmPrompt);
       lbl.textContent = "Copied ✓";
     } catch {
       lbl.textContent = "Copy failed";
     }
-    window.setTimeout(() => (lbl.textContent = prev), 1500);
+    window.setTimeout(() => {
+      lbl.textContent = prev;
+      copyBtn.disabled = false;
+    }, 1500);
   });
 }
 

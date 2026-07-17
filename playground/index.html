@@ -126,7 +126,6 @@
   <body>
     <div class="bg-fx" aria-hidden="true"></div>
 
-    <!-- Nav -->
     <header class="nav">
       <a class="brand" href="/" aria-label="Posecode home">
         <svg class="logo" aria-hidden="true" viewBox="0 0 100 100" width="19" height="19" fill="none"><g stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path d="M50 34V55"/><path d="M50 35L34 26L23 15"/><path d="M50 35L66 26L77 15"/><path d="M50 54L36 72L28 88"/><path d="M50 54L64 72L72 88"/></g><circle cx="50" cy="20" r="10" fill="currentColor"/></svg>
@@ -134,216 +133,168 @@
       </a>
       <nav class="nav-links" aria-label="Primary">
         <a href="#how">How it works</a>
-        <a href="#examples">Examples</a>
-        <a href="./moves/">Movement library</a>
+        <a href="#examples">Movements</a>
         <a href="#developers">Developers</a>
         <a href="/for-products">For products</a>
         <a href="https://github.com/posecode-dev/posecode" target="_blank" rel="noopener">GitHub</a>
       </nav>
-      <a class="btn primary nav-cta" href="/play">Open playground&nbsp;→</a>
+      <a class="btn primary nav-cta" href="/play">Try it live&nbsp;→</a>
     </header>
 
-    <!-- Hero -->
-    <section class="hero">
-      <div class="hero-copy reveal">
-        <p class="eyebrow">Movement is programmable</p>
-        <h1 class="headline">
-          Write the move.<br /><span class="hl">Watch it happen.</span>
-        </h1>
-        <p class="subhead">
-          Turn readable instructions into structured, inspectable 3D motion. Build exercises,
-          stretches, dance phrases, and rehab routines, then edit every beat live in
-          the browser.
-        </p>
+    <main>
+      <section class="hero">
+        <div class="hero-copy reveal">
+          <p class="eyebrow">A motion language for LLMs</p>
+          <h1 class="headline">Give your LLM<br /><span class="hl">a body.</span></h1>
+          <p class="subhead">
+            Posecode turns LLM-written text into structured, editable 3D human motion, live in your browser.
+          </p>
+          <div class="hero-cta">
+            <a class="btn primary lg" href="/play">Open the playground&nbsp;→</a>
+            <button class="btn ghost lg" data-copy-prompt>
+              <span class="lbl">Copy prompt for your LLM</span>
+            </button>
+          </div>
+          <div class="hero-meta" aria-label="Project highlights">
+            <span>Open source</span>
+            <span>Runs on-device</span>
+            <span>LLM-ready</span>
+          </div>
+        </div>
+
+        <div class="hero-stage reveal" aria-label="A prompt becoming a live 3D movement">
+          <div class="prompt-card">
+            <span class="prompt-label">Prompt to a capable LLM</span>
+            <p>“Write a controlled superhero landing.”</p>
+          </div>
+
+          <div class="studio">
+            <div class="studio-bar" aria-hidden="true">
+              <span class="studio-kicker">AI output</span>
+              <span class="studio-title">superhero-landing.posecode</span>
+              <span class="studio-live"><i></i>live 3D</span>
+            </div>
+            <canvas id="hero-canvas"></canvas>
+            <div class="studio-hud"><span id="hero-phase">Drop into the landing</span></div>
+          </div>
+
+          <pre class="code-chip" aria-hidden="true"><span class="code-label">LLM-WRITTEN</span>
+<span class="t-kw">step</span> <span class="t-str">"Make three-point contact"</span> <span class="t-num">0.3s</span><span class="t-punct">:</span>
+  <span class="t-kw">ground-lock</span><span class="t-punct">:</span> <span class="t-atom">foot_right</span>
+  <span class="t-kw">reach</span><span class="t-punct">:</span> <span class="t-atom">knee_left floor</span>
+  <span class="t-kw">reach</span><span class="t-punct">:</span> <span class="t-atom">fist_left floor</span></pre>
+        </div>
+      </section>
+
+      <section class="proof" aria-label="Why Posecode">
+        <article class="proof-item reveal">
+          <span class="proof-n">01</span>
+          <div><strong>LLM-native</strong><p>Readable movement, not matrices.</p></div>
+        </article>
+        <article class="proof-item reveal">
+          <span class="proof-n">02</span>
+          <div><strong>Range-aware</strong><p>Targets stay within configured ranges.</p></div>
+        </article>
+        <article class="proof-item reveal">
+          <span class="proof-n">03</span>
+          <div><strong>Browser-native</strong><p>Live 3D, no server-side diffusion.</p></div>
+        </article>
+      </section>
+
+      <section id="how" class="how">
+        <header class="section-head reveal">
+          <p class="eyebrow">How it works</p>
+          <h2>One prompt. Three clear steps.</h2>
+        </header>
+        <ol class="how-steps">
+          <li class="reveal">
+            <span class="how-n">01</span>
+            <h3>Ask</h3>
+            <p>Describe a representable movement.</p>
+          </li>
+          <li class="reveal">
+            <span class="how-n">02</span>
+            <h3>Generate</h3>
+            <p>A capable LLM writes a tiny <code>.posecode</code> file.</p>
+          </li>
+          <li class="reveal">
+            <span class="how-n">03</span>
+            <h3>Move</h3>
+            <p>The browser validates, constrains, and animates it.</p>
+          </li>
+        </ol>
+      </section>
+
+      <section id="examples" class="examples">
+        <header class="section-head reveal">
+          <p class="eyebrow">Movement library</p>
+          <h2>Ask for almost any move.</h2>
+          <p class="section-sub">Explore launch-ready examples across fitness, rehab, dance, and more.</p>
+        </header>
+        <div id="examples-grid" class="examples-grid"></div>
+      </section>
+
+      <section id="developers" class="developers">
+        <header class="section-head reveal">
+          <p class="eyebrow">For developers</p>
+          <h2>Open all the way down.</h2>
+          <p class="section-sub">Use the language, parser, renderer, or agent tools. Everything is Apache 2.0 licensed.</p>
+        </header>
+        <div class="dev-grid">
+          <a class="dev-card reveal" href="/play">
+            <span class="dev-kind">Build</span>
+            <h3>Playground <span>→</span></h3>
+            <p>Edit and preview movement live.</p>
+          </a>
+          <div class="dev-card reveal">
+            <span class="dev-kind">Connect</span>
+            <h3>MCP server</h3>
+            <p>Let agents validate movement.</p>
+          </div>
+          <a class="dev-card reveal" href="./spec.html">
+            <span class="dev-kind">Author</span>
+            <h3>Language spec <span>→</span></h3>
+            <p>A small, semantic grammar.</p>
+          </a>
+          <a class="dev-card reveal" href="https://github.com/posecode-dev/posecode" target="_blank" rel="noopener">
+            <span class="dev-kind">Extend</span>
+            <h3>Apache packages <span>→</span></h3>
+            <p>Parser, renderer, share codec.</p>
+          </a>
+        </div>
+      </section>
+
+      <section class="final-cta reveal">
+        <p class="eyebrow">Your turn</p>
+        <h2>What should a body do?</h2>
+        <p>Ask your LLM. Paste the result. Watch it move.</p>
         <div class="hero-cta">
-          <a class="btn primary lg" href="/play">Open the playground&nbsp;→</a>
-          <button id="copy-prompt" class="btn ghost lg">
+          <a class="btn primary lg" href="/play">Start with the playground&nbsp;→</a>
+          <button class="btn ghost lg" data-copy-prompt>
             <span class="lbl">Copy LLM prompt</span>
           </button>
         </div>
-        <p id="catalog-meta" class="hero-meta">
-          48 launch-ready moves &nbsp;·&nbsp; 25 experimental previews &nbsp;·&nbsp; validated text &nbsp;·&nbsp; open source
-        </p>
-      </div>
+      </section>
+    </main>
 
-      <div class="hero-stage reveal" aria-label="Live 3D preview with a contact-phase source excerpt">
-        <div class="studio">
-          <div class="studio-bar" aria-hidden="true">
-            <span class="dots"></span>
-            <span class="studio-title">superhero-landing.posecode</span>
-            <span class="studio-live"><i></i>live</span>
-          </div>
-          <canvas id="hero-canvas"></canvas>
-          <div class="studio-hud"><span id="hero-phase">Drop into the landing</span></div>
-        </div>
-
-        <!-- Compact contact-phase excerpt, pinned above the motion on wide screens. -->
-        <pre class="code-chip" aria-hidden="true"># contact-phase excerpt
-<span class="t-kw">step</span> <span class="t-str">"Make three-point contact"</span> <span class="t-num">0.3s</span> <span class="t-atom">settle</span><span class="t-punct">:</span>
-    <span class="t-kw">ground-lock</span><span class="t-punct">:</span> <span class="t-atom">foot_right</span>
-    <span class="t-kw">reach</span><span class="t-punct">:</span> <span class="t-atom">knee_left floor</span>
-    <span class="t-kw">reach</span><span class="t-punct">:</span> <span class="t-atom">fist_left floor</span>
-    <span class="t-kw">cue</span> <span class="t-str">"Set all three contacts"</span></pre>
-      </div>
-    </section>
-
-    <!-- Value props -->
-    <section class="props">
-      <article class="prop reveal">
-        <div class="prop-mark">⌁</div>
-        <h3>Semantic, not matrices</h3>
-        <p>
-          Models write phases and joint angles, like <code>knees: flex 95</code>,
-          instead of 3D transforms. The closed syntax makes the intended anatomy inspectable.
-        </p>
-      </article>
-      <article class="prop reveal">
-        <div class="prop-mark">⛨</div>
-        <h3>Range-aware &amp; testable</h3>
-        <p>
-          Joint targets are constrained to configured reference ranges, while reach
-          residuals expose a fist, foot, or knee that remains short of its target.
-        </p>
-      </article>
-      <article class="prop reveal">
-        <div class="prop-mark">◴</div>
-        <h3>Cheap &amp; client-side</h3>
-        <p>
-          Generation is compact text. Rendering is forward kinematics and constrained IK
-          in Three.js on the user's device, with no server-side diffusion pipeline.
-        </p>
-      </article>
-    </section>
-
-    <!-- Examples -->
-    <section id="examples" class="examples">
-      <header class="section-head reveal">
-        <p class="eyebrow">See it move</p>
-        <h2>One language, many practices</h2>
-        <p class="section-sub">
-          A taste of the library, from physiotherapy and posture to yoga, dance, and
-          martial arts. Every movement opens in the playground, editable and
-          shareable.
-        </p>
-      </header>
-      <div id="examples-grid" class="examples-grid"></div>
-    </section>
-
-    <!-- How it works -->
-    <section id="how" class="how">
-      <header class="section-head reveal">
-        <p class="eyebrow">How it works</p>
-        <h2>From a sentence to a moving figure</h2>
-      </header>
-      <ol class="how-steps">
-        <li class="reveal">
-          <span class="how-n">1</span>
-          <h3>A capable model writes <code>.posecode</code></h3>
-          <p>Give the Posecode authoring guide to a capable model and ask for a representable movement. For a supported request, its raw <code>.posecode</code> output remains editable and reviewable.</p>
-        </li>
-        <li class="reveal">
-          <span class="how-n">2</span>
-          <h3>The parser validates &amp; clamps</h3>
-          <p>A TypeScript parser enforces the closed vocabulary, joint/action compatibility, contacts, and configured range limits.</p>
-        </li>
-        <li class="reveal">
-          <span class="how-n">3</span>
-          <h3>Three.js renders it</h3>
-          <p>Forward kinematics plus constrained contact IK animate a low-poly figure live in the browser.</p>
-        </li>
-      </ol>
-    </section>
-
-    <!-- Developers -->
-    <section id="developers" class="developers">
-      <header class="section-head reveal">
-        <p class="eyebrow">For developers</p>
-        <h2>An open core you can build on</h2>
-      </header>
-      <div class="dev-grid">
-        <a class="dev-card reveal" href="/play">
-          <h3>Playground →</h3>
-          <p>Live editor, 3D viewport, syntax highlighting, inline range-of-motion diagnostics.</p>
-        </a>
-        <div class="dev-card reveal">
-          <h3>MCP server</h3>
-          <p>Let a model in an MCP client validate a movement and get back a render link.</p>
-          <code class="dev-code">npx -y posecode-mcp</code>
-        </div>
-        <div class="dev-card reveal">
-          <h3>VS Code extension</h3>
-          <p>Highlighting, completion, hover docs, and ROM diagnostics for <code>.posecode</code> files.</p>
-        </div>
-        <a class="dev-card reveal" href="https://github.com/posecode-dev/posecode" target="_blank" rel="noopener">
-          <h3>Apache 2.0 libraries</h3>
-          <p><code>posecode-parser</code>, <code>posecode-render</code>, and <code>posecode-share</code> are framework-agnostic and on GitHub.</p>
-        </a>
-      </div>
-    </section>
-
-    <!-- FAQ -->
-    <section id="faq" class="faq">
-      <header class="section-head reveal">
-        <p class="eyebrow">FAQ</p>
-        <h2>Common questions</h2>
-      </header>
-      <dl class="faq-list">
-        <div class="faq-item reveal">
-          <dt>What is Posecode?</dt>
-          <dd>
-            Posecode is an open-source text-to-motion language. You describe single-person
-            movement as phases, joint targets, timing, and contacts; the browser validates
-            the document and renders it as an animated 3D figure.
-          </dd>
-        </div>
-        <div class="faq-item reveal">
-          <dt>How do I generate an exercise animation with an LLM?</dt>
-          <dd>
-            Copy the authoring guide into a capable chat model and ask for a representable
-            movement such as a hip hinge or hamstring stretch. For a representable request,
-            the model should return raw <code>.posecode</code> text. Paste it into the
-            playground: valid documents animate, while parse errors, range clamps, and
-            unresolved reach targets appear as diagnostics.
-          </dd>
-        </div>
-        <div class="faq-item reveal">
-          <dt>Does Posecode guarantee a movement is safe?</dt>
-          <dd>
-            No. Posecode constrains authored and IK-generated joint targets to configured
-            reference ranges and reports unresolved reach targets. A simplified rig cannot
-            certify that a whole movement is safe, accurate, or appropriate for a person.
-            It is not medical advice.
-          </dd>
-        </div>
-        <div class="faq-item reveal">
-          <dt>Is Posecode free to use?</dt>
-          <dd>
-            Yes. Posecode is Apache-2.0-licensed and open source: the parser, 3D renderer, share
-            codec, MCP server, and VS Code extension are all free, and rendering runs
-            locally in a WebGL-capable browser without server-side motion generation.
-          </dd>
-        </div>
-      </dl>
-    </section>
-
-    <!-- Footer -->
     <footer class="footer">
-      <div class="footer-brand">
-        <svg class="logo" aria-hidden="true" viewBox="0 0 100 100" width="19" height="19" fill="none"><g stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path d="M50 34V55"/><path d="M50 35L34 26L23 15"/><path d="M50 35L66 26L77 15"/><path d="M50 54L36 72L28 88"/><path d="M50 54L64 72L72 88"/></g><circle cx="50" cy="20" r="10" fill="currentColor"/></svg> Posecode
-        <span class="footer-tag">kinematic motion as text</span>
+      <div class="footer-top">
+        <div class="footer-brand">
+          <svg class="logo" aria-hidden="true" viewBox="0 0 100 100" width="19" height="19" fill="none"><g stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path d="M50 34V55"/><path d="M50 35L34 26L23 15"/><path d="M50 35L66 26L77 15"/><path d="M50 54L36 72L28 88"/><path d="M50 54L64 72L72 88"/></g><circle cx="50" cy="20" r="10" fill="currentColor"/></svg>
+          <span>Posecode</span>
+          <small>human movement, written as text</small>
+        </div>
+        <nav class="footer-links" aria-label="Footer">
+          <a href="./moves/">Movements</a>
+          <a href="./spec.html">Spec</a>
+          <a href="./llm-guide.html">LLM guide</a>
+          <a href="/for-products">For products</a>
+          <a href="mailto:hello@posecode.org?subject=Posecode%20Feedback">Feedback</a>
+          <a href="https://github.com/posecode-dev/posecode" target="_blank" rel="noopener">GitHub</a>
+        </nav>
       </div>
       <p class="footer-note">
-        Range-of-motion values are general literature data, not medical advice.
-        Consult a qualified professional for physiotherapy or exercise prescription.
-      </p>
-      <p class="footer-legal">
-        Apache-2.0-licensed open core · v0.2 &nbsp;·&nbsp;
-        <a href="./moves/">Movement library</a> &nbsp;·&nbsp;
-        <a href="./spec.html">Language spec</a> &nbsp;·&nbsp;
-        <a href="./llm-guide.html">LLM guide</a> &nbsp;·&nbsp;
-        <a href="/for-products">For products</a> &nbsp;·&nbsp;
-        <a href="mailto:hello@posecode.org?subject=Posecode%20Feedback">Feedback</a> &nbsp;·&nbsp;
-        <a href="https://github.com/posecode-dev/posecode/issues" target="_blank" rel="noopener">Issues</a>
+        Apache-2.0-licensed · Range-of-motion values are general literature data, not medical advice.
       </p>
     </footer>
 
