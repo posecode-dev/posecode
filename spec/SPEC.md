@@ -57,6 +57,15 @@ The header kind, rig, props, start poses, joints, actions, effectors, targets,
 and timing modes are closed vocabularies. Unknown values are errors; the parser
 does not accept a plausible-looking word and leave it for the renderer to ignore.
 
+Contact target vocabularies are capability-specific. `reach` accepts `floor`, a
+rig body landmark, or an anchor from a declared prop. `pin` accepts only fixed
+world anchors (`floor` or a declared prop anchor), because translating the root
+cannot pin one body landmark to another landmark that moves with that same root.
+`grip` accepts only anchors supplied by a declared `bar` or `dip-bars` prop.
+Grouped `grip: hands ...` uses the bare `bar` / `bars` anchor and expands to
+separate left/right anchors; an explicitly sided grip anchor is valid only with
+the matching single-hand effector.
+
 Ground locks accept the groups `hands`, `forearms`, and `feet`, the axial
 surface contact `back`, plus the single-side forms `hand_left|hand_right`,
 `elbow_left|elbow_right`, and `foot_left|foot_right`. Human-readable `left foot`,
@@ -85,6 +94,7 @@ New documents should use the canonical v0.2 names.
 | --- | --- | --- |
 | `shoulders` | `shoulder_left`, `shoulder_right` | yes |
 | `elbows` | `elbow_left`, `elbow_right` | yes |
+| `forearms` (alias) | `elbow_left`, `elbow_right` | use `elbow_left` / `elbow_right` |
 | `wrists` | `wrist_left`, `wrist_right` | yes |
 | `hips` | `hip_left`, `hip_right` | yes |
 | `knees` | `knee_left`, `knee_right` | yes |
@@ -110,7 +120,7 @@ where the previous phase left it).
 | `abduct` / `adduct` | Z (frontal) | away from / toward midline |
 | `rotate-in` / `rotate-out` | Y (longitudinal) | internal / external rotation |
 | `twist-left` / `twist-right` | Y (longitudinal) | unambiguous axial turn for spine, chest, neck, or head |
-| `supinate` / `pronate` | Y | forearm turn |
+| `supinate` / `pronate` | Y | forearm roll toward palm-up / palm-down |
 | `dorsiflex` / `plantarflex` | X | ankle up / down |
 | `hinge` | X | tip the torso forward over the hips (`pelvis` only) |
 | `hold neutral` | all | reset every channel on the named joint to rest |
@@ -128,6 +138,15 @@ an authoring hint.
 Each authored action changes one Euler channel. Other channels on that joint
 carry forward from the prior phase. `hold neutral` is the deliberate exception:
 it resets all three channels, so it is suitable for an explicit recovery.
+
+Forearm roll is authored on `elbows` or its anatomical alias `forearms` because
+the wrist itself does not pronate. With upright arms at the sides,
+`forearms: pronate 80` faces the palms inward toward the thighs; `pronate 0`
+faces them forward. The final world-facing direction also depends on shoulder
+and elbow pose, so use `supinate` / `pronate` as anatomical rotation rather than
+as an absolute world-space palm constraint. Because targets are absolute,
+`pronate 0` and `supinate 0` name the same zero-angle reference; the action name
+selects the direction only when the authored magnitude is greater than zero.
 
 **Coordinate convention:** rest pose is standing, arms at sides, facing +Z. The
 renderer's mannequin is built in this same convention so the parser's resolved
@@ -192,7 +211,11 @@ newly authored channel when their composed local hip angle would exceed 135°.
    authored ones. The viewer records a post-solve residual for every active
    reach. A reach target is not reported as reached merely because its syntax
    parsed: missing, unsupported, and geometrically unreachable reach targets
-   remain explicit diagnostics.
+   remain explicit diagnostics. A palm or fist declared against the floor also
+   presents its matching contact surface to the floor. For a palm, the solver
+   may redistribute incompatible authored roll into a legal forearm/wrist frame;
+   the explicit floor contact takes priority, and every adjusted joint remains
+   inside the same configured ROM.
 5. **Props**: `prop chair|wall|bar|box|dip-bars` adds a scene object at a
    fixed default placement (chair/wall behind, bar overhead, box in front,
    dip bars either side); its named anchors (`seat`, `wall`, `bar`, `box`,

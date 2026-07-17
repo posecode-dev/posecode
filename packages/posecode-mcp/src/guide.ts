@@ -60,9 +60,13 @@ posecode <kind> "<Name>"          # kind = exercise | stretch | posture
 \`\`\`
 
 Joints: neck head spine chest pelvis, and (singular or plural) shoulders elbows
-wrists hips knees ankles. Actions (degrees are absolute targets): flex/extend,
+forearms wrists hips knees ankles. \`forearms\` aliases the elbow bones for palm
+roll. Actions (degrees are absolute targets): flex/extend,
 abduct/adduct, rotate-in/rotate-out (shoulder/hip), twist-left/twist-right
-(axial joints), dorsiflex/plantarflex, hold neutral, and hinge (pelvis only).
+(axial joints), supinate/pronate (forearm roll), dorsiflex/plantarflex, hold
+neutral, and hinge (pelvis only). With upright arms at the sides,
+\`forearms: pronate 80\` faces the palms inward toward the thighs.
+At zero degrees, \`pronate 0\` and \`supinate 0\` are the same absolute target.
 Use only joint/action pairs and declared prop anchors accepted by the validator.
 Author the gross pose before reach; a parsed reach is not proof of contact.
 Keep cues, sides, and declared contacts consistent through every phase. Floor

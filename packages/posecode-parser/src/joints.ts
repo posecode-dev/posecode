@@ -70,6 +70,9 @@ const FINGERS_RIGHT: BoneId[] = [
 const GROUPS: Record<string, BoneId[]> = {
   shoulders: ["shoulder_left", "shoulder_right"],
   elbows: ["elbow_left", "elbow_right"],
+  // Anatomical authoring alias: forearm axial rotation lives on the elbow
+  // bone in the rig, but `forearms: pronate 80` is clearer to authors.
+  forearms: ["elbow_left", "elbow_right"],
   wrists: ["wrist_left", "wrist_right"],
   hips: ["hip_left", "hip_right"],
   knees: ["knee_left", "knee_right"],
@@ -196,8 +199,10 @@ const ACTIONS: Record<string, ActionAxis> = {
   // toward the person's left (+X), and -Y turns it right (-X).
   "twist-left": { axis: "y", sign: 1 },
   "twist-right": { axis: "y", sign: -1 },
-  supinate: { axis: "y", sign: 1 },
-  pronate: { axis: "y", sign: -1 },
+  // From the palm-forward driver rest, pronation turns each palm toward its
+  // own thigh. The left-side mirror in clamp.ts supplies the opposite sign.
+  supinate: { axis: "y", sign: -1 },
+  pronate: { axis: "y", sign: 1 },
   // The foot points FORWARD (+Z): lifting the toes toward the shin
   // (dorsiflexion) is a -X rotation, pointing them is +X.
   dorsiflex: { axis: "x", sign: -1 },

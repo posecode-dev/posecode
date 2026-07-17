@@ -43,7 +43,8 @@ posecode <kind> "<Name>"          # kind = exercise | stretch | posture
 ## Joints
 
 `neck head spine chest pelvis` and (singular or plural) `shoulders elbows
-wrists hips knees ankles`. Plural names move both sides symmetrically; use
+forearms wrists hips knees ankles`. `forearms` is an anatomical alias for the
+two elbow bones when authoring palm roll. Plural names move both sides symmetrically; use
 `elbow_left` etc. for one side. Fingers: `fingers` (or `fingers_left` /
 `fingers_right`), and individually `thumb_* index_* middle_* ring_* pinky_*`.
 
@@ -54,7 +55,11 @@ wrists hips knees ankles`. Plural names move both sides symmetrically; use
 - `rotate-in` / `rotate-out`: internal / external rotation of a shoulder or hip
 - `twist-left` / `twist-right`: turn an axial joint (spine, chest, neck, or
   head) toward the named side
-- `supinate` / `pronate`: forearm turn (palm up / down)
+- `supinate` / `pronate`: forearm roll toward palm-up / palm-down. With upright
+  arms at the sides, `forearms: pronate 80` faces the palms inward toward the
+  thighs and `pronate 0` faces them forward. Shoulder/elbow pose still affects
+  the final world-facing direction. Since targets are absolute, `pronate 0`
+  and `supinate 0` resolve to the same zero-angle reference.
 - `dorsiflex` / `plantarflex`: ankle up / down
 - `hinge`: **hip hinge** (on `pelvis` only): tip the torso forward over the
   hips with a flat back, legs staying planted. Use this, not spinal `flex`,
@@ -62,7 +67,7 @@ wrists hips knees ankles`. Plural names move both sides symmetrically; use
 - `hold neutral`: set every channel on that joint to its rest value (no angle)
 
 Use only anatomically compatible pairs. Examples: knees take flex/extend, ankles
-take dorsiflex/plantarflex, elbows take flex/extend/pronate/supinate, wrists take
+take dorsiflex/plantarflex, elbows/forearms take flex/extend/pronate/supinate, wrists take
 flex/extend/abduct/adduct, and `hinge` belongs only to the pelvis. The validator
 rejects globally-known actions on the wrong joint; never use the absence of a
 warning as permission to invent a pairing.
@@ -207,6 +212,10 @@ posecode exercise "Body-weight hip hinge"
     cue "Hinge and reach toward the ankles"
   ```
 
+  A hand or fist sent to the floor is also oriented onto its palm or knuckles.
+  That explicit surface contact can adjust forearm/wrist roll within ROM, so do
+  not fight it with a contradictory palm-facing cue.
+
 - **Props**: `prop chair | wall | bar | box | dip-bars` (top level). The chair
   sits behind the figure (sit-to-stand, box squat), the wall behind that (wall
   sit), the bar overhead, the box in front (step-ups), and the dip bars either
@@ -284,7 +293,7 @@ posecode posture "Superhero Three-Point Landing"
     neck: hold neutral
     chest: hold neutral
     shoulders: hold neutral
-    elbows: hold neutral
+    elbows: flex 0
     fingers_left: hold neutral
     ground-lock: feet
     cue "Press through both feet and return to standing"

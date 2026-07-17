@@ -57,12 +57,13 @@ export function getHover(
     if (bone && token !== "hold") {
       const rom = romFor(bone, token);
       if (rom) {
+        const detail = KEYWORD_DOCS[token];
         return md(
-          `**${boneType(bone)} · ${token}**: configured range **${rom.min}–${rom.max}°**. Angles beyond this are clamped with a diagnostic.`,
+          `**${boneType(bone)} · ${token}**: configured range **${rom.min}–${rom.max}°**. Angles beyond this are clamped with a diagnostic.${detail ? ` ${detail}` : ""}`,
         );
       }
     }
-    return md(`Action **${token}**.`);
+    return md(`Action **${token}**.${KEYWORD_DOCS[token] ? ` ${KEYWORD_DOCS[token]}` : ""}`);
   }
 
   if (JOINT_NAMES.includes(token)) {

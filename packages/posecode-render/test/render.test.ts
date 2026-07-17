@@ -6,7 +6,7 @@ import { solveCCD } from "../src/ik.js";
 import { poseFor } from "../src/poses.js";
 import { buildProps } from "../src/props.js";
 import { applyGroundLock, groundFigure } from "../src/groundlock.js";
-import { levelPlantedFeet, wrapGrip } from "../src/contacts.js";
+import { PALM_LOCAL_NORMAL, formFists, levelPlantedFeet, wrapGrip } from "../src/contacts.js";
 import { effectorBoneId, missingReachTarget, solveReachToPoint } from "../src/reach.js";
 import { parse, eulerRomFor } from "posecode-parser";
 
@@ -48,8 +48,31 @@ describe("mannequin", () => {
 describe("timeline", () => {
   it("starts standing poses with relaxed palms facing the thighs", () => {
     const joints = poseFor("standing").joints!;
-    expect(joints.elbow_left).toEqual([0, 80, 0]);
-    expect(joints.elbow_right).toEqual([0, -80, 0]);
+    expect(joints.elbow_left).toEqual([0, -80, 0]);
+    expect(joints.elbow_right).toEqual([0, 80, 0]);
+
+    const m = buildMannequin();
+    for (const [boneId, rotation] of Object.entries(joints)) {
+      const [x, y, z] = rotation;
+      m.bones.get(boneId)!.rotation.set(x * DEG, y * DEG, z * DEG);
+    }
+    m.root.updateMatrixWorld(true);
+    const pelvis = m.bones.get("pelvis")!.getWorldPosition(new THREE.Vector3());
+    const expectPalmsInward = (): void => {
+      for (const side of ["left", "right"] as const) {
+        const wrist = m.bones.get(`wrist_${side}`)!;
+        const palm = new THREE.Vector3(...PALM_LOCAL_NORMAL)
+          .applyQuaternion(wrist.getWorldQuaternion(new THREE.Quaternion()))
+          .normalize();
+        const towardBody = pelvis.clone()
+          .sub(wrist.getWorldPosition(new THREE.Vector3()))
+          .normalize();
+        expect(palm.dot(towardBody)).toBeGreaterThan(0.8);
+      }
+    };
+    expectPalmsInward();
+    formFists(m, new Set(["left", "right"]));
+    expectPalmsInward(); // finger curl never changes palm facing
   });
 
   const PUSHUP = [

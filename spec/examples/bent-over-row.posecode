@@ -33,7 +33,7 @@ posecode exercise "Bent-over row"
     ankles: dorsiflex 0
     shoulders: flex 0
     elbows: flex 0
-    elbows: pronate 0
+    elbows: pronate 80
     neck: extend 0
     ground-lock: feet
     cue "Stand up tall between sets"

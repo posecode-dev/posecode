@@ -15,6 +15,7 @@ posecode posture "Superhero Three-Point Landing"
     shoulder_left: flex 98
     shoulder_left: abduct 2
     elbow_left: flex 8
+    elbow_left: supinate 80
     fingers_left: flex 80
     shoulder_right: extend 24
     shoulder_right: abduct 22
@@ -49,10 +50,11 @@ posecode posture "Superhero Three-Point Landing"
     neck: hold neutral
     chest: hold neutral
     shoulder_left: hold neutral
-    elbow_left: hold neutral
+    elbow_left: flex 0
     fingers_left: hold neutral
     shoulder_right: hold neutral
-    elbow_right: hold neutral
+    elbow_right: flex 0
+    forearms: pronate 80
     ground-lock: feet
     cue "Press through both feet and return to standing"
 

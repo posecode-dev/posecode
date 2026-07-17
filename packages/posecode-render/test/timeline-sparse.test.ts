@@ -11,6 +11,28 @@ function eulerDegrees(node: THREE.Object3D): THREE.Euler {
 }
 
 describe("sparse timeline targets", () => {
+  it("keeps duplicate phase names distinct by timeline index", () => {
+    const result = parse([
+      'posecode posture "Repeated label"',
+      "  rig humanoid",
+      '  step "Hold" 1s linear:',
+      "    elbows: flex 20",
+      '  step "Hold" 1s linear:',
+      "    elbows: flex 40",
+    ].join("\n"));
+    const timeline = buildTimeline(result.ir!);
+    const mannequin = buildMannequin();
+
+    expect(timeline.sample(0.5, mannequin.bones)).toMatchObject({
+      phaseIndex: 0,
+      phaseName: "Hold",
+    });
+    expect(timeline.sample(1.5, mannequin.bones)).toMatchObject({
+      phaseIndex: 1,
+      phaseName: "Hold",
+    });
+  });
+
   it("preserves an unauthored standing-pose forearm rotation", () => {
     const result = parse([
       'posecode posture "Curl"',
@@ -24,7 +46,7 @@ describe("sparse timeline targets", () => {
     timeline.sample(1, mannequin.bones);
     const euler = eulerDegrees(mannequin.bones.get("elbow_left")!);
     expect(euler.x * DEG).toBeCloseTo(-30, 4);
-    expect(euler.y * DEG).toBeCloseTo(80, 4);
+    expect(euler.y * DEG).toBeCloseTo(-80, 4);
   });
 
   it("carries flexion when a later phase authors only axial rotation", () => {
@@ -41,7 +63,7 @@ describe("sparse timeline targets", () => {
     timeline.sample(2, mannequin.bones);
     const euler = eulerDegrees(mannequin.bones.get("elbow_right")!);
     expect(euler.x * DEG).toBeCloseTo(-60, 4);
-    expect(euler.y * DEG).toBeCloseTo(-35, 4);
+    expect(euler.y * DEG).toBeCloseTo(35, 4);
   });
 
   it("defensively clamps coupled hips in manually constructed legacy IR", () => {

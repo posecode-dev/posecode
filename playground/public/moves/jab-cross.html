@@ -137,19 +137,19 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <ol class="steps">
 <li>
           <span class="step-name">Jab<span class="step-dur">0.4s · settle</span></span>
-          <span class="step-cue">Snap the lead (left) hand straight out, rotating slightly into it</span>
+          <span class="step-cue">Snap the lead fist straight out with the palm down and the rear fist guarding the face</span>
         </li>
 <li>
           <span class="step-name">Recoil jab<span class="step-dur">0.4s · drive</span></span>
-          <span class="step-cue">Bring the hand back to guard</span>
+          <span class="step-cue">Bring the lead fist back high with both palms facing inward</span>
         </li>
 <li>
           <span class="step-name">Cross<span class="step-dur">0.45s · settle</span></span>
-          <span class="step-cue">Drive the rear (right) hand across, rotating the trunk</span>
+          <span class="step-cue">Drive the rear fist across with the palm down as the trunk turns</span>
         </li>
 <li>
           <span class="step-name">Recoil cross<span class="step-dur">0.45s · drive</span></span>
-          <span class="step-cue">Return to guard, hands high</span>
+          <span class="step-cue">Return to a high guard with both palms facing inward</span>
         </li>
       </ol>
 
@@ -162,39 +162,46 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 
   step &quot;Jab&quot; 0.4s settle:
     shoulder_left: flex 85
+    shoulder_left: rotate-in 70
     elbow_left: flex 15
-    elbow_left: pronate 80
+    elbow_left: pronate 84
+    shoulder_right: flex 60
+    elbow_right: flex 130
+    elbow_right: pronate 80
     spine: twist-right 10
     fingers: flex 80
     ground-lock: feet
-    cue &quot;Snap the lead (left) hand straight out, rotating slightly into it&quot;
+    cue &quot;Snap the lead fist straight out with the palm down and the rear fist guarding the face&quot;
 
   step &quot;Recoil jab&quot; 0.4s drive:
-    shoulder_left: flex 0
-    elbow_left: flex 90
-    elbow_left: pronate 0
+    shoulder_left: flex 60
+    shoulder_left: rotate-in 0
+    elbow_left: flex 130
+    elbow_left: pronate 80
     spine: twist-right 0
     fingers: flex 80
     ground-lock: feet
-    cue &quot;Bring the hand back to guard&quot;
+    cue &quot;Bring the lead fist back high with both palms facing inward&quot;
 
   step &quot;Cross&quot; 0.45s settle:
     shoulder_right: flex 90
+    shoulder_right: rotate-in 70
     elbow_right: flex 10
-    elbow_right: pronate 80
+    elbow_right: pronate 84
     spine: twist-left 35
     fingers: flex 80
     ground-lock: feet
-    cue &quot;Drive the rear (right) hand across, rotating the trunk&quot;
+    cue &quot;Drive the rear fist across with the palm down as the trunk turns&quot;
 
   step &quot;Recoil cross&quot; 0.45s drive:
-    shoulder_right: flex 0
-    elbow_right: flex 90
-    elbow_right: pronate 0
+    shoulder_right: flex 60
+    shoulder_right: rotate-in 0
+    elbow_right: flex 130
+    elbow_right: pronate 80
     spine: twist-left 0
     fingers: flex 80
     ground-lock: feet
-    cue &quot;Return to guard, hands high&quot;
+    cue &quot;Return to a high guard with both palms facing inward&quot;
 
   repeat 4
 </code></pre>

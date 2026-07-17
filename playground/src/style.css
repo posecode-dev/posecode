@@ -559,15 +559,17 @@ select:hover {
 /* --- Viewer pane ---------------------------------------------------------- */
 .viewer-pane {
   position: relative;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto auto;
   min-height: 0;
+  overflow: hidden;
   background: var(--bg-viewer);
 }
 #canvas {
-  flex: 1;
   width: 100%;
+  height: 100%;
   display: block;
+  min-width: 0;
   min-height: 0;
 }
 /* Top vignette so HUD text stays legible over bright poses */
@@ -635,12 +637,24 @@ select:hover {
 
 /* --- Phase ribbon --------------------------------------------------------- */
 .ribbon {
+  position: relative;
   display: flex;
   gap: 7px;
   padding: 12px 16px 4px;
-  flex-wrap: wrap;
+  flex: 0 0 auto;
+  flex-wrap: nowrap;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.ribbon::-webkit-scrollbar {
+  display: none;
 }
 .ribbon .chip {
+  flex: 0 0 auto;
   font-family: var(--sans);
   font-size: 12px;
   font-weight: 600;
@@ -653,6 +667,7 @@ select:hover {
   display: inline-flex;
   align-items: center;
   gap: 7px;
+  white-space: nowrap;
   transition:
     color 0.15s var(--ease),
     border-color 0.15s var(--ease),
@@ -1269,6 +1284,10 @@ select:hover {
 
 /* --- Responsive ----------------------------------------------------------- */
 @media (max-width: 860px) {
+  body {
+    height: 100dvh;
+  }
+
   /* Topbar: brand on its own line; below it one row with the Movement button
      plus the two icon actions, then the primary CTA. Two dropdown-free rows
      instead of the old three rows of selects. */
@@ -1416,6 +1435,7 @@ select:hover {
 .ribbon { gap: 0; padding: 0 16px; border-top: 1px solid var(--border); }
 .ribbon .chip { border: 0; border-right: 1px solid var(--border); border-radius: 0; background: transparent; padding: 10px 14px; }
 .ribbon .chip:first-child { border-left: 1px solid var(--border); }
+.ribbon .chip:focus-visible { outline-offset: -3px; }
 .ribbon .chip::before { border-radius: 0; }
 .ribbon .chip:hover { background: var(--panel-2); }
 .ribbon .chip.active { background: var(--text); color: var(--bg); border-color: var(--border); box-shadow: none; }

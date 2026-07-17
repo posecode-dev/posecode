@@ -59,7 +59,7 @@ describe("getCompletions", () => {
 
   it("suggests joints (and child keywords) at the start of an indented line", () => {
     const l = onLine("    ", 4);
-    expect(l).toEqual(expect.arrayContaining(["knees", "elbows"]));
+    expect(l).toEqual(expect.arrayContaining(["knees", "elbows", "forearms"]));
     expect(l).toContain("cue");
   });
 
@@ -85,6 +85,15 @@ describe("getCompletions", () => {
     expect(chestActions).toEqual(expect.arrayContaining(["twist-left", "twist-right"]));
     expect(chestActions).not.toContain("rotate-in");
     expect(chestActions).not.toContain("rotate-out");
+  });
+
+  it("offers and explains anatomical forearm rotation", () => {
+    expect(onLine("    forearms: ", 14)).toEqual(
+      expect.arrayContaining(["pronate", "supinate"]),
+    );
+    const line = "    forearms: pronate 80";
+    const hover = getHover(line, 0, line.indexOf("pronate") + 1);
+    expect(hover?.contents).toContain("thigh");
   });
 
   it("suggests timing modes inside a step header", () => {

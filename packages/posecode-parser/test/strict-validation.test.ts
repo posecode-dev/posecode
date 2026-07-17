@@ -179,6 +179,22 @@ describe("contact namespace", () => {
     expect(parse(crossed).errors[0]?.message).toMatch(/does not match/i);
   });
 
+  it("expands a valid grouped grip onto distinct declared side anchors", () => {
+    const source = [
+      'posecode exercise "Grip"',
+      "  rig humanoid",
+      "  prop bar",
+      '  step "Hold" 1s settle:',
+      "    grip: hands bar",
+    ].join("\n");
+    const result = parse(source);
+    expect(result.errors).toEqual([]);
+    expect(result.ir?.phases[0]?.grips).toEqual([
+      { effector: "hand_left", anchor: "bar_left" },
+      { effector: "hand_right", anchor: "bar_right" },
+    ]);
+  });
+
   it("rejects competing whole-root contact solvers in one step", () => {
     const result = parse(doc("pin: knee_left floor", "ground-lock: foot_right"));
     expect(result.ir).toBeNull();
