@@ -10,7 +10,7 @@ const SPORTS_MOVE = `posecode exercise "Crossover"
     knees: flex 68
     ground-lock: feet
   step "Cross" 0.22s drive:
-    pelvis: rotate-out 14
+    turn: -14
     travel: -0.18 0
     ground-lock: feet
   repeat 2

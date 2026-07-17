@@ -1,5 +1,5 @@
 /**
- * Hover info. The biggest win is showing a joint+action's safe range of motion
+ * Hover info. The biggest win is showing a joint+action's configured range of motion
  * right where it's authored, so the "why was my angle clamped?" answer is one
  * hover away. Falls back to short docs for keywords, kinds, poses, and easings.
  */
@@ -58,7 +58,7 @@ export function getHover(
       const rom = romFor(bone, token);
       if (rom) {
         return md(
-          `**${boneType(bone)} · ${token}**: safe range **${rom.min}–${rom.max}°**. Angles beyond this are hard-clamped.`,
+          `**${boneType(bone)} · ${token}**: configured range **${rom.min}–${rom.max}°**. Angles beyond this are clamped with a diagnostic.`,
         );
       }
     }

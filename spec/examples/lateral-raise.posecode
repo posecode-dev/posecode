@@ -7,7 +7,7 @@ posecode exercise "Lateral raise"
     elbows: flex 10
     cue "Lift out to shoulder height, soft elbows"
 
-  step "Lower" 1.6s drive:
+  step "Lower" 1.6s settle:
     shoulders: abduct 0
     elbows: flex 0
     cue "Lower slowly, resist on the way down"

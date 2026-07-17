@@ -10,7 +10,7 @@ posecode exercise "Triceps dips"
     fingers: flex 80
     knees: flex 70
     ankles: plantarflex 20
-    pin: hands bars
+    grip: hands bars
     cue "Press up to a straight-arm support between the bars"
 
   step "Lower" 1.2s flow:
@@ -21,7 +21,7 @@ posecode exercise "Triceps dips"
     fingers: flex 80
     knees: flex 70
     ankles: plantarflex 20
-    pin: hands bars
+    grip: hands bars
     cue "Bend the elbows to lower the chest, elbows tracking back"
 
   step "Press" 1s settle:
@@ -32,10 +32,10 @@ posecode exercise "Triceps dips"
     fingers: flex 80
     knees: flex 70
     ankles: plantarflex 20
-    pin: hands bars
+    grip: hands bars
     cue "Press through the palms to straighten the arms"
 
-  step "Dismount" 0.8s drive:
+  step "Dismount" 0.8s settle:
     shoulders: abduct 0
     elbows: flex 0
     elbows: pronate 0

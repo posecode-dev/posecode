@@ -1,13 +1,13 @@
 /**
- * Prop contact solving: props are solid, not just visual.
+ * Bounded prop-contact correction for selected blocking surfaces.
  *
  * Authored poses are pure joint rotations relative to the root, and the root
  * solvers (ground-lock, pins) only know about the floor and named anchors, so
  * nothing stopped a wall-sit's pelvis from hinging straight through the wall
  * or a sit-to-stand's torso from sinking into the chair's backrest. This pass
  * samples the body as capsules (torso, head, thighs, shins, forearms) against
- * each prop's declared solid faces (`FaceCollider`, see props.ts) and removes
- * any overlap:
+ * selected declared faces (`FaceCollider`, see props.ts) and reduces sampled
+ * overlap. This is deliberately not comprehensive collision detection:
  *
  * - **Body-resolved faces** (wall, backrest, seat edge) translate the WHOLE
  *   figure along the face normal — the physical resolution of leaning into a
@@ -21,7 +21,7 @@
  *
  * Same principles as the self-collision pass (depenetrate.ts): minimal (a
  * pose with no overlap is untouched, contact settles ON the surface),
- * deterministic (pure function of the pose), and ROM-safe.
+ * deterministic (pure function of the pose), and ROM-bounded.
  *
  * Runs after ground-lock / pins / grips (it must see the final root
  * placement) and before reach-IK (reached hands must not be dragged off
@@ -127,8 +127,20 @@ export function propContactExemptions(
   for (const c of contacts) {
     if (c.anchor === "floor") continue;
     for (const side of ["left", "right"] as const) {
-      if (c.effector === "feet" || c.effector === `foot_${side}` || c.effector === `ankle_${side}`) legs.add(side);
-      if (c.effector === "hands" || c.effector === `hand_${side}` || c.effector === `wrist_${side}`) arms.add(side);
+      if (
+        c.effector === "feet" ||
+        c.effector === "knees" ||
+        c.effector === `foot_${side}` ||
+        c.effector === `ankle_${side}` ||
+        c.effector === `knee_${side}`
+      ) legs.add(side);
+      if (
+        c.effector === "hands" ||
+        c.effector === "fists" ||
+        c.effector === `hand_${side}` ||
+        c.effector === `fist_${side}` ||
+        c.effector === `wrist_${side}`
+      ) arms.add(side);
     }
   }
   return { legs, arms };

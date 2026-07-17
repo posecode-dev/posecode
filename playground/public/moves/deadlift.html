@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Deadlift: How to Do It (Animated 3D Guide) | Posecode</title>
+    <title>Deadlift: Posecode Movement Example | Posecode</title>
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="description" content="How to do the deadlift (fitness): 2 phases targeting the hamstrings &amp; glutes, body weight, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
+    <meta name="description" content="Deadlift is an intermediate-level fitness Posecode example with 2 inspectable phases and a link to live 3D playback." />
     <link rel="canonical" href="https://www.posecode.org/moves/deadlift.html" />
     <meta name="theme-color" content="#0a0d12" />
-    <meta property="og:title" content="Deadlift: How to Do It (Animated 3D Guide) | Posecode" />
-    <meta property="og:description" content="How to do the deadlift (fitness): 2 phases targeting the hamstrings &amp; glutes, body weight, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
+    <meta property="og:title" content="Deadlift: Posecode Movement Example | Posecode" />
+    <meta property="og:description" content="Deadlift is an intermediate-level fitness Posecode example with 2 inspectable phases and a link to live 3D playback." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.posecode.org/moves/deadlift.html" />
     <meta property="og:site_name" content="Posecode" />
@@ -97,7 +97,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 @media(max-width:600px){.wrap{padding:0 18px}}
 </style>
     <link rel="stylesheet" href="/content-theme.css" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to do a Deadlift","description":"How to do the deadlift (fitness): 2 phases targeting the hamstrings & glutes, body weight, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs.","step":[{"@type":"HowToStep","name":"Lower","text":"Push the hips back and hinge with a flat back: let the arms hang to the bar"},{"@type":"HowToStep","name":"Lift","text":"Drive the hips forward to stand tall, bar close to the body"}]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Deadlift: a Posecode movement example","description":"Deadlift is an intermediate-level fitness Posecode example with 2 inspectable phases and a link to live 3D playback."}</script>
     <script>
       window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
     </script>
@@ -123,27 +123,30 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h1>Deadlift</h1>
       <p class="meta-line"><b>Target</b> Hamstrings &amp; glutes &nbsp;·&nbsp; <b>Equipment</b> Body weight
         &nbsp;·&nbsp; <b>Level</b> Intermediate &nbsp;·&nbsp; <b>Reps</b> 8</p>
-      <p>Deadlift is a intermediate-level fitness movement targeting the
+      <p>Deadlift is an intermediate-level fitness movement targeting the
         hamstrings &amp; glutes, written in <a href="/">Posecode</a>, a small open-source language
-        that LLMs like ChatGPT, Claude, and Gemini can write to describe human movement as text.
-        Every joint angle below is hard-clamped to a safe range of motion.</p>
+        that capable language models can use to describe human movement as text.
+        Authored joint targets and reach-IK solves are constrained to Posecode's configured
+        per-axis bounds. Those bounds constrain the visualization, but they do not certify
+        that a complete movement is safe or clinically correct.
+        This page documents a code example; it is not exercise instruction.</p>
 
       <a class="btn" href="/play/deadlift">▶ Open Deadlift in the playground →</a>
 
-      <h2>How to do it</h2>
+      <h2>Movement phases</h2>
       <ol class="steps">
 <li>
           <span class="step-name">Lower<span class="step-dur">1.8s · flow</span></span>
-          <span class="step-cue">Push the hips back and hinge with a flat back: let the arms hang to the bar</span>
+          <span class="step-cue">Push the hips back with a flat back as the arms hang below the shoulders</span>
         </li>
 <li>
           <span class="step-name">Lift<span class="step-dur">1.4s · settle</span></span>
-          <span class="step-cue">Drive the hips forward to stand tall, bar close to the body</span>
+          <span class="step-cue">Drive the hips forward and return to a tall stance</span>
         </li>
       </ol>
 
       <h2>The .posecode source</h2>
-      <p>This is the exact text an LLM writes to produce the animation above: phases and joint
+      <p>This is the exact text used by the linked playground animation: phases and joint
         angles, not 3D transforms.</p>
       <pre class="code-block"><code>posecode exercise &quot;Deadlift&quot;
   rig humanoid
@@ -157,7 +160,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     elbows: pronate 80
     neck: extend 12
     ground-lock: feet
-    cue &quot;Push the hips back and hinge with a flat back: let the arms hang to the bar&quot;
+    cue &quot;Push the hips back with a flat back as the arms hang below the shoulders&quot;
 
   step &quot;Lift&quot; 1.4s settle:
     pelvis: hinge 0
@@ -167,14 +170,13 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     elbows: pronate 80
     neck: extend 0
     ground-lock: feet
-    cue &quot;Drive the hips forward to stand tall, bar close to the body&quot;
+    cue &quot;Drive the hips forward and return to a tall stance&quot;
 
   repeat 8
 </code></pre>
 
       <h2>More fitness movements</h2>
-         <div class="chip-list"><a href="/moves/squat.html">Body-weight squat</a><a href="/moves/plank-hold.html">Plank hold</a><a href="/moves/mountain-climber.html">Mountain climber</a><a href="/moves/crunch.html">Crunch</a><a href="/moves/bicycle-crunch.html">Bicycle crunch</a><a href="/moves/supine-leg-raise.html">Lying leg raise</a></div>
-    
+         <div class="chip-list"><a href="/moves/squat.html">Body-weight squat</a><a href="/moves/plank-hold.html">Plank hold</a><a href="/moves/crunch.html">Crunch</a><a href="/moves/supine-leg-raise.html">Lying leg raise</a><a href="/moves/forward-lunge.html">Forward lunge</a><a href="/moves/calf-raise.html">Single-leg calf raise</a></div>
     </main>
     <footer class="site-footer">
       <div class="wrap">

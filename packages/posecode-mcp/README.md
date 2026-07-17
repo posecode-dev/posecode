@@ -1,9 +1,9 @@
 # posecode-mcp
 
 A [Model Context Protocol](https://modelcontextprotocol.io) server for **Posecode**.
-It gives any MCP-capable agent (Claude Desktop, Cursor, …) a native way to *show
-movement*: learn the `.posecode` language, validate a movement against healthy
-range-of-motion limits, and get a link that animates it as a 3D figure.
+It lets a model in an MCP client learn the `.posecode` language, validate a
+movement against configured range-of-motion limits, and return a link that
+animates the movement as a 3D figure.
 
 This closes the loop the playground left open: no copy-pasting a system prompt
 or shuttling text between a chat window and the editor.
@@ -12,14 +12,14 @@ or shuttling text between a chat window and the editor.
 
 | Tool | What it does |
 | --- | --- |
-| `posecode_authoring_guide` | Returns the Posecode authoring guide (grammar, joints, actions, example) so the model can write valid `.posecode`. |
-| `validate_posecode` | Parses a `.posecode` document and returns errors plus any **range-of-motion safety clamps** (the angles that were out of healthy range). |
+| `posecode_authoring_guide` | Returns the Posecode authoring guide (grammar, joints, actions, example) so a capable model can draft raw `.posecode` for validation. |
+| `validate_posecode` | Parses a `.posecode` document and returns errors plus any **range-of-motion clamps** (angles outside the configured rig bounds). |
 | `render_posecode` | Validates, then returns a **permalink** that renders the movement in the Posecode playground. Hand it to the user to watch. |
 
 `validate_posecode` / `render_posecode` flag invalid documents as MCP error results so
 the model knows to fix and retry.
 
-## Run
+## Use from an MCP client
 
 Run the latest published server directly from npm:
 
@@ -27,13 +27,7 @@ Run the latest published server directly from npm:
 npx -y posecode-mcp@latest
 ```
 
-For local repository development:
-
-```bash
-npm start -w posecode-mcp          # tsx src/stdio.ts
-```
-
-### Add to Claude Desktop / Cursor
+For an MCP client that accepts JSON server configuration:
 
 ```json
 {
@@ -50,9 +44,20 @@ npm start -w posecode-mcp          # tsx src/stdio.ts
 `POSECODE_BASE_URL` is optional: it sets the playground that render permalinks
 point at (defaults to the hosted playground).
 
+## Local development
+
+From the Posecode monorepo, run the TypeScript source with the workspace script:
+
+```bash
+npm start -w posecode-mcp
+```
+
+That development command uses `tsx src/stdio.ts`; MCP consumers do not need a
+repository checkout, an absolute source path, or a separate `tsx` install.
+
 ## How it fits
 
 `render_posecode` builds its links with [`posecode-share`](../posecode-share), the same
 permalink primitive the playground uses, and validates with
-[`posecode-parser`](../posecode-parser). The server holds no rendering itself; 3D math
-runs client-side when the link is opened.
+[`posecode-parser`](../posecode-parser). The server does not render the movement
+itself; 3D math runs in the user's browser when the link is opened.

@@ -3,17 +3,17 @@ posecode stretch "Neck rotation"
   pose start = standing
 
   step "Look right" 2s flow:
-    neck: rotate-out 60
+    neck: twist-right 60
     ground-lock: feet
     cue "Turn slowly to look over the right shoulder"
 
   step "Look left" 2.4s flow:
-    neck: rotate-in 60
+    neck: twist-left 60
     ground-lock: feet
     cue "Pass through center and turn to the left"
 
   step "Center" 1.6s settle:
-    neck: rotate-in 0
+    neck: twist-left 0
     ground-lock: feet
     cue "Return the head to neutral"
 

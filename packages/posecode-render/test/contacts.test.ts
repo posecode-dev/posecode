@@ -1,7 +1,20 @@
 import { describe, it, expect } from "vitest";
 import * as THREE from "three";
 import { buildMannequin } from "../src/mannequin.js";
-import { levelPlantedFeet, relaxHands, swingArms, aimHead } from "../src/contacts.js";
+import {
+  FIST_LOCAL_NORMAL,
+  PALM_LOCAL_NORMAL,
+  alignFloorContacts,
+  alignGripFrames,
+  enforceContactRom,
+  floorTargetForEffector,
+  formFists,
+  levelPlantedFeet,
+  prepareGripFrames,
+  relaxHands,
+  swingArms,
+  aimHead,
+} from "../src/contacts.js";
 import { groundFigure } from "../src/groundlock.js";
 
 const DEG = Math.PI / 180;
@@ -65,20 +78,122 @@ describe("levelPlantedFeet", () => {
   });
 });
 
+describe("contact geometry", () => {
+  const down = new THREE.Vector3(0, -1, 0);
+
+  it("uses the flattened palm mesh's +Z face on both sides and stays in wrist ROM", () => {
+    const m = buildMannequin();
+    for (const side of ["left", "right"] as const) {
+      const palm = m.bones.get(`wrist_${side}`)!.getObjectByName(`palm_${side}`) as THREE.Mesh;
+      palm.geometry.computeBoundingBox();
+      const size = palm.geometry.boundingBox!.getSize(new THREE.Vector3()).multiply(palm.scale);
+      // Ground the axis convention in the actual mesh: Z is its shallow face.
+      expect(size.z).toBeLessThan(size.x);
+      expect(size.z).toBeLessThan(size.y);
+      // Twenty degrees of safe shoulder extension lets the wrist's 70deg
+      // extension ceiling reach a fully palm-down 90deg world frame.
+      m.bones.get(`shoulder_${side}`)!.rotation.x = 20 * DEG;
+    }
+    m.root.updateMatrixWorld(true);
+
+    alignFloorContacts(m, [], [{ effector: "hands", anchor: "floor" }], []);
+    for (const side of ["left", "right"] as const) {
+      const wrist = m.bones.get(`wrist_${side}`)!;
+      const normal = new THREE.Vector3(...PALM_LOCAL_NORMAL)
+        .applyQuaternion(wrist.getWorldQuaternion(new THREE.Quaternion()))
+        .normalize();
+      expect(normal.dot(down)).toBeGreaterThan(0.995);
+      const local = new THREE.Euler().setFromQuaternion(wrist.quaternion, "XYZ");
+      expect(local.x).toBeLessThanOrEqual(70 * DEG + 1e-6);
+      expect(Math.abs(local.y)).toBeLessThan(1e-6);
+      expect(Math.abs(local.z)).toBeLessThan(1e-6);
+    }
+  });
+
+  it("plants a fist on its knuckles, distinctly from a palm, without losing curl", () => {
+    const m = buildMannequin();
+    m.bones.get("wrist_left")!.rotation.x = -30 * DEG;
+    formFists(m, new Set(["left"]));
+    const curlBefore = m.bones.get("index_left")!.quaternion.clone();
+    alignFloorContacts(m, [{ effector: "fist_left", target: "floor", weight: 1 }], [], []);
+
+    const wristWorld = m.bones.get("wrist_left")!.getWorldQuaternion(new THREE.Quaternion());
+    const knuckles = new THREE.Vector3(...FIST_LOCAL_NORMAL).applyQuaternion(wristWorld).normalize();
+    const palm = new THREE.Vector3(...PALM_LOCAL_NORMAL).applyQuaternion(wristWorld).normalize();
+    expect(knuckles.dot(down)).toBeGreaterThan(0.995);
+    expect(Math.abs(palm.dot(down))).toBeLessThan(0.1);
+    expect(m.bones.get("index_left")!.quaternion.angleTo(curlBefore)).toBeLessThan(1e-8);
+    expect(m.bones.get("index_left")!.rotation.x).toBeLessThan(-1);
+  });
+
+  it("targets the knee surface, not the bottom of its shin/foot subtree", () => {
+    const m = buildMannequin();
+    m.root.updateMatrixWorld(true);
+    const wristBefore = m.bones.get("wrist_left")!.quaternion.clone();
+    const target = floorTargetForEffector(m, "knee_left");
+    expect(target).not.toBeNull();
+    expect(m.contactSurfaces.knee_left).toHaveLength(2);
+    expect(target!.y).toBeGreaterThan(0.05);
+    expect(target!.y).toBeLessThan(0.07);
+    alignFloorContacts(m, [{ effector: "knee_left", target: "floor", weight: 1 }], [], []);
+    expect(m.bones.get("wrist_left")!.quaternion.angleTo(wristBefore)).toBeLessThan(1e-8);
+  });
+
+  it("targets the local pelvis surface instead of its whole body subtree", () => {
+    const m = buildMannequin();
+    m.root.updateMatrixWorld(true);
+    const target = floorTargetForEffector(m, "pelvis");
+    expect(target).not.toBeNull();
+    expect(m.contactSurfaces.pelvis.length).toBeGreaterThan(0);
+    expect(target!.y).toBeGreaterThan(0.08);
+    expect(target!.y).toBeLessThan(0.16);
+  });
+
+  it("strictly clears forbidden ankle Y/Z and clamps terminal joints", () => {
+    const m = buildMannequin();
+    m.bones.get("ankle_left")!.rotation.set(0.2, 0.5, -0.4);
+    m.bones.get("wrist_right")!.rotation.set(0.2, 0.3, -0.8);
+    enforceContactRom(m);
+    const ankle = new THREE.Euler().setFromQuaternion(m.bones.get("ankle_left")!.quaternion, "XYZ");
+    const wrist = new THREE.Euler().setFromQuaternion(m.bones.get("wrist_right")!.quaternion, "XYZ");
+    expect(Math.abs(ankle.y)).toBeLessThan(1e-7);
+    expect(Math.abs(ankle.z)).toBeLessThan(1e-7);
+    expect(ankle.x).toBeLessThanOrEqual(50 * DEG + 1e-6);
+    expect(wrist.x).toBeLessThanOrEqual(70 * DEG + 1e-6);
+    expect(Math.abs(wrist.y)).toBeLessThan(1e-7);
+    expect(wrist.z).toBeGreaterThanOrEqual(-20 * DEG - 1e-6);
+    expect(wrist.z).toBeLessThanOrEqual(30 * DEG + 1e-6);
+  });
+
+  it("builds a stable palm-down dip-bar frame", () => {
+    const m = buildMannequin();
+    m.bones.get("shoulder_left")!.rotation.x = 20 * DEG;
+    m.bones.get("elbow_left")!.rotation.y = 80 * DEG;
+    const grips = [{ effector: "hand_left", anchor: "bars_left" }];
+    prepareGripFrames(m, grips);
+    expect(Math.abs(m.bones.get("elbow_left")!.rotation.y)).toBeLessThan(1e-7);
+    alignGripFrames(m, grips);
+    const normal = new THREE.Vector3(...PALM_LOCAL_NORMAL).applyQuaternion(
+      m.bones.get("wrist_left")!.getWorldQuaternion(new THREE.Quaternion()),
+    );
+    expect(normal.dot(down)).toBeGreaterThan(0.995);
+  });
+});
+
 describe("relaxHands (L4.1)", () => {
   it("curls the fingers of an idle, un-authored hand into a natural rest", () => {
     const m = buildMannequin();
     expect(m.bones.get("index_left")!.rotation.x).toBeCloseTo(0, 5); // flat at rest
     relaxHands(m, new Set(), new Set());
-    expect(m.bones.get("index_left")!.rotation.x).toBeGreaterThan(0.1);
-    expect(m.bones.get("middle_right")!.rotation.x).toBeGreaterThan(0.1);
+    expect(m.bones.get("index_left")!.rotation.x).toBeLessThan(-0.1);
+    expect(m.bones.get("middle_right")!.rotation.x).toBeLessThan(-0.1);
   });
 
   it("leaves a gripping hand for wrapGrip (skips grip sides)", () => {
     const m = buildMannequin();
     relaxHands(m, new Set(["left"]), new Set());
     expect(m.bones.get("index_left")!.rotation.x).toBeCloseTo(0, 5); // untouched
-    expect(m.bones.get("index_right")!.rotation.x).toBeGreaterThan(0.1); // right relaxed
+    expect(m.bones.get("index_right")!.rotation.x).toBeLessThan(-0.1); // right relaxed
   });
 
   it("does not override an explicitly authored finger", () => {
@@ -93,11 +208,11 @@ describe("relaxHands (L4.1)", () => {
     // A free hand takes the soft inward hook...
     relaxHands(m, new Set(), new Set(), new Set());
     const freeCurl = m.bones.get("index_left")!.rotation.x;
-    expect(freeCurl).toBeGreaterThan(0.3);
+    expect(freeCurl).toBeLessThan(-0.3);
     // ...but a hand pressed to the floor (plank/push-up) lies extended.
     relaxHands(m, new Set(), new Set(), new Set(["left"]));
     expect(m.bones.get("index_left")!.rotation.x).toBeLessThan(0.1); // flat
-    expect(m.bones.get("index_right")!.rotation.x).toBeGreaterThan(0.3); // right still hooked
+    expect(m.bones.get("index_right")!.rotation.x).toBeLessThan(-0.3); // right still hooked
   });
 });
 

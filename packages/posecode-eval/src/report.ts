@@ -5,6 +5,7 @@
 
 import { probeMovement } from "./probe.js";
 import { genericChecks, MOVEMENT_CHECKS, type CheckOutcome } from "./checks.js";
+import type { Character, Proportions } from "posecode-render";
 
 export interface MovementSource {
   /** Identifier matched against MOVEMENT_CHECKS (e.g. file stem "deadlift"). */
@@ -32,8 +33,18 @@ export interface EvalReport {
   };
 }
 
-export function runEval(sources: readonly MovementSource[]): EvalReport {
-  const movements = sources.map((s) => evalMovement(s));
+export interface EvalOptions {
+  /** Driver proportions used by the production character being evaluated. */
+  proportions?: Proportions;
+  /** Optional retargeted visible character sampled after each solved phase. */
+  character?: Character;
+}
+
+export function runEval(
+  sources: readonly MovementSource[],
+  options: EvalOptions = {},
+): EvalReport {
+  const movements = sources.map((s) => evalMovement(s, options));
   return {
     movements,
     summary: {
@@ -46,8 +57,11 @@ export function runEval(sources: readonly MovementSource[]): EvalReport {
   };
 }
 
-function evalMovement({ movement, source }: MovementSource): MovementReport {
-  const result = probeMovement(source);
+function evalMovement(
+  { movement, source }: MovementSource,
+  options: EvalOptions,
+): MovementReport {
+  const result = probeMovement(source, options.proportions, options.character);
   const specific = MOVEMENT_CHECKS.find((m) => m.movement === movement);
   const checks = [
     ...genericChecks(result),

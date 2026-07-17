@@ -6,11 +6,11 @@
     <title>Posecode Language Specification: The .posecode Kinematic Motion DSL</title>
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="description" content="The full Posecode v0.2 grammar, timing modes, joints, actions, and range-of-motion tables: a small text language LLMs write to describe human movement as an animated 3D figure." />
+    <meta name="description" content="The full Posecode v0.2 grammar, timing modes, joints, actions, and configured range-of-motion tables for a text language capable LLMs can use to describe human movement." />
     <link rel="canonical" href="https://www.posecode.org/spec.html" />
     <meta name="theme-color" content="#0a0d12" />
     <meta property="og:title" content="Posecode Language Specification: The .posecode Kinematic Motion DSL" />
-    <meta property="og:description" content="The full Posecode v0.2 grammar, timing modes, joints, actions, and range-of-motion tables: a small text language LLMs write to describe human movement as an animated 3D figure." />
+    <meta property="og:description" content="The full Posecode v0.2 grammar, timing modes, joints, actions, and configured range-of-motion tables for a text language capable LLMs can use to describe human movement." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.posecode.org/spec.html" />
     <meta property="og:site_name" content="Posecode" />
@@ -122,36 +122,40 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 <h1>Posecode Protocol Specification v0.2</h1>
 <p>Posecode is a small text language for describing a single person's <strong>kinematic movement</strong> so it can be rendered as an animated 3D figure in a web browser.</p>
 <p>It is to human movement what Mermaid is to diagrams: an LLM (or a human) writes a compact, readable document; a client-side parser + renderer turns it into a moving mannequin. The model never produces 3D matrices: it expresses the *semantic phases* of a movement, which it already understands.</p>
-<ul><li><strong>Version keyword:</strong> documents declare nothing; this is <code>posecode 0.2</code>.</li><li><strong>Compatibility:</strong> v0.2 parsers continue to accept the v0.1 easing aliases.</li><li><strong>File extension:</strong> <code>.posecode</code></li><li><strong>Compute model:</strong> generation is pure text (server-cheap); all 3D math runs</li></ul>
-<p>on the client (Three.js). See the project research §6.</p>
+<ul><li><strong>Version keyword:</strong> documents declare nothing; this is <code>posecode 0.2</code>.</li><li><strong>Compatibility:</strong> v0.2 parsers continue to accept the v0.1 easing aliases.</li><li><strong>File extension:</strong> <code>.posecode</code></li><li><strong>Compute model:</strong> generation is pure text (server-cheap); all 3D math runs on the client (Three.js). See the project research §6.</li></ul>
 <hr>
 <h2>1. Grammar</h2>
 <p>Posecode is line- and indentation-oriented. Comments start with <code>#</code> or <code>//</code>.</p>
 <pre class="code-block" data-lang="ebnf"><code>document   = header { directive } ;
 header     = &quot;posecode&quot; kind STRING ;
-kind       = &quot;exercise&quot; | &quot;stretch&quot; | &quot;posture&quot; ;       (* free-form word *)
+kind       = &quot;exercise&quot; | &quot;stretch&quot; | &quot;posture&quot; ;
 directive  = rig | prop | pose | clip | step | repeat ;
-rig        = &quot;rig&quot; WORD ;
-prop       = &quot;prop&quot; WORD ;                              (* chair|wall|bar|box|dip-bars, repeatable *)
-pose       = &quot;pose&quot; &quot;start&quot; &quot;=&quot; WORD ;                  (* neutral|standing|plank|supine|prone|seated *)
+rig        = &quot;rig&quot; &quot;humanoid&quot; ;
+prop       = &quot;prop&quot; (&quot;chair&quot;|&quot;wall&quot;|&quot;bar&quot;|&quot;box&quot;|&quot;dip-bars&quot;) ;
+pose       = &quot;pose&quot; &quot;start&quot; &quot;=&quot; startPose ;
+startPose  = &quot;neutral&quot;|&quot;standing&quot;|&quot;plank&quot;|&quot;supine&quot;|&quot;prone&quot;|&quot;seated&quot; ;
 clip       = &quot;clip&quot; STRING ;                            (* optional mocap clip; renderer may retarget &amp; blend *)
 repeat     = &quot;repeat&quot; NUMBER ;
 step       = &quot;step&quot; STRING DURATION timingMode &quot;:&quot; { child } ;
 timingMode = &quot;flow&quot; | &quot;settle&quot; | &quot;drive&quot; | &quot;snap&quot; | &quot;linear&quot; ;
-child      = jointTarget | groundLock | reach | pin | turn | travel | cue ;
+child      = jointTarget | groundLock | reach | pin | grip | turn | travel | cue ;
 jointTarget= joint &quot;:&quot; action [ NUMBER ] ;
 groundLock = &quot;ground-lock&quot; &quot;:&quot; floorContact { &quot;,&quot; floorContact } ;
 floorContact = &quot;hands&quot; | &quot;forearms&quot; | &quot;feet&quot; | &quot;back&quot;
              | ( &quot;hand&quot; | &quot;elbow&quot; | &quot;foot&quot; ) &quot;_&quot; ( &quot;left&quot; | &quot;right&quot; )
              | ( &quot;left&quot; | &quot;right&quot; ) ( &quot;hand&quot; | &quot;forearm&quot; | &quot;elbow&quot; | &quot;foot&quot; ) ;
 reach      = &quot;reach&quot; &quot;:&quot; effector target ;             (* effector → world target via ROM-constrained IK *)
-pin        = &quot;pin&quot; &quot;:&quot; effector anchor ;               (* move the BODY so effector sits on anchor *)
+pin        = &quot;pin&quot; &quot;:&quot; effector anchor ;               (* move the BODY to one primary contact *)
+grip       = &quot;grip&quot; &quot;:&quot; handEffector gripAnchor ;      (* hand contact on a bar or rails *)
+handEffector = &quot;hands&quot; | &quot;hand_left&quot; | &quot;hand_right&quot; ;
+gripAnchor = &quot;bar&quot; | &quot;bars&quot; ;
 turn       = &quot;turn&quot; &quot;:&quot; NUMBER ;                       (* face this yaw (deg) by phase end *)
 travel     = &quot;travel&quot; &quot;:&quot; NUMBER NUMBER ;              (* move to this x z (metres) by phase end *)
 cue        = &quot;cue&quot; STRING ;
 DURATION   = NUMBER &quot;s&quot; ;                                (* e.g. 2s, 1.5s *)</code></pre>
 <p>A <code>step</code> is one <strong>phase</strong> of the movement. Phases run in sequence; within a phase, all joint targets apply concurrently.</p>
-<p>Ground locks accept the groups <code>hands</code>, <code>forearms</code>, and <code>feet</code>, plus the single-side forms <code>hand_left|hand_right</code>, <code>elbow_left|elbow_right</code>, and <code>foot_left|foot_right</code>. Human-readable <code>left foot</code>, <code>right foot</code>, <code>left hand</code>, and related forms normalize to the canonical side-specific names.</p>
+<p>The header kind, rig, props, start poses, joints, actions, effectors, targets, and timing modes are closed vocabularies. Unknown values are errors; the parser does not accept a plausible-looking word and leave it for the renderer to ignore.</p>
+<p>Ground locks accept the groups <code>hands</code>, <code>forearms</code>, and <code>feet</code>, the axial surface contact <code>back</code>, plus the single-side forms <code>hand_left|hand_right</code>, <code>elbow_left|elbow_right</code>, and <code>foot_left|foot_right</code>. Human-readable <code>left foot</code>, <code>right foot</code>, <code>left hand</code>, and related forms normalize to the canonical side-specific names.</p>
 <p>Timing modes describe how motion crosses the phase boundary:</p>
 <div class="table-wrap"><table><thead><tr><th>Mode</th><th>Use</th></tr></thead><tbody>
 <tr><td><code>flow</code></td><td>Carry velocity smoothly through the pose.</td></tr>
@@ -181,16 +185,19 @@ DURATION   = NUMBER &quot;s&quot; ;                                (* e.g. 2s, 1
 <tr><td><code>flex</code> / <code>extend</code></td><td>X (sagittal)</td><td>bend / straighten</td></tr>
 <tr><td><code>abduct</code> / <code>adduct</code></td><td>Z (frontal)</td><td>away from / toward midline</td></tr>
 <tr><td><code>rotate-in</code> / <code>rotate-out</code></td><td>Y (longitudinal)</td><td>internal / external rotation</td></tr>
+<tr><td><code>twist-left</code> / <code>twist-right</code></td><td>Y (longitudinal)</td><td>unambiguous axial turn for spine, chest, neck, or head</td></tr>
 <tr><td><code>supinate</code> / <code>pronate</code></td><td>Y</td><td>forearm turn</td></tr>
 <tr><td><code>dorsiflex</code> / <code>plantarflex</code></td><td>X</td><td>ankle up / down</td></tr>
 <tr><td><code>hinge</code></td><td>X</td><td>tip the torso forward over the hips (<code>pelvis</code> only)</td></tr>
-<tr><td><code>hold neutral</code></td><td>n/a</td><td>keep at rest</td></tr>
+<tr><td><code>hold neutral</code></td><td>all</td><td>reset every channel on the named joint to rest</td></tr>
 </tbody></table></div>
 <p><code>hinge</code> is a <strong>hip hinge</strong>: applied to the <code>pelvis</code>, it pivots the torso forward over the hip line while the legs stay planted and vertical (the renderer counter-rotates the hips). Use it, not spinal <code>flex</code>, for a flat-back forward bend: deadlift, bent-over row, good-morning, or a bow.</p>
+<p><code>rotate-in</code> / <code>rotate-out</code> describe internal and external rotation only on a shoulder or hip. Use <code>twist-left</code> / <code>twist-right</code> for axial bones; older axial uses of rotate-in/out remain readable during the compatibility window but emit an authoring hint.</p>
+<p>Each authored action changes one Euler channel. Other channels on that joint carry forward from the prior phase. <code>hold neutral</code> is the deliberate exception: it resets all three channels, so it is suitable for an explicit recovery.</p>
 <p><strong>Coordinate convention:</strong> rest pose is standing, arms at sides, facing +Z. The renderer's mannequin is built in this same convention so the parser's resolved Euler angles apply directly.</p>
 <hr>
-<h2>4. Range of Motion (safety)</h2>
-<p>Every angle is <strong>hard-clamped</strong> to a healthy Range of Motion before rendering; a clamp emits a warning (it does not fail the parse). Limits follow the research §5.1 normative tables. Selected ceilings (degrees):</p>
+<h2>4. Configured range-of-motion limits</h2>
+<p>Every authored angle is clamped to the rig's configured per-axis limits before rendering; a clamp emits a warning (it does not fail the parse). Reach IK and contact orientation are constrained against the same per-axis boxes. These are simplified reference limits for visualization, not a medical or whole-movement safety guarantee. Selected ceilings (degrees):</p>
 <div class="table-wrap"><table><thead><tr><th>Joint</th><th>flex</th><th>extend</th><th>abduct</th><th>other</th></tr></thead><tbody>
 <tr><td>shoulder</td><td>180</td><td>60</td><td>180</td><td>rot-in 70 / rot-out 90</td></tr>
 <tr><td>elbow</td><td>154</td><td>10</td><td>n/a</td><td>supinate 92 / pronate 84</td></tr>
@@ -203,28 +210,14 @@ DURATION   = NUMBER &quot;s&quot; ;                                (* e.g. 2s, 1
 <tr><td>spine</td><td>90</td><td>30</td><td>35</td><td>rotate 45</td></tr>
 <tr><td>neck</td><td>50</td><td>60</td><td>45</td><td>rotate 80</td></tr>
 </tbody></table></div>
-<p>&gt;  These are general literature values, not medical advice. Consult a &gt; qualified professional for physiotherapy or exercise prescription.</p>
+<p><strong>Note:</strong> These are general literature values, not medical advice. Consult a qualified professional for physiotherapy or exercise prescription.</p>
+<p>A pelvis hinge counter-rotates the hips in the renderer. The validator therefore also checks the <strong>combined</strong> hinge + carried hip-flexion result and clamps the newly authored channel when their composed local hip angle would exceed 135°.</p>
 <hr>
 <h2>5. Rendering model</h2>
-<ol><li><strong>Forward kinematics</strong>: each phase sets joint angles; the renderer uses</li></ol>
-<p>C1-continuous quaternion splines between keyframes, shaped by the destination phase's timing mode.</p>
-<ol><li><strong>Grounding</strong>: the figure is dropped so its lowest point rests on the floor</li></ol>
-<p>(a bounding-box drop), which grounds standing, plank, and the lying/seated poses alike.</p>
-<ol><li><strong>Ground-lock</strong>: contacts listed in <code>ground-lock</code> (<code>hands</code>, <code>forearms</code>,</li></ol>
-<p><code>feet</code>, or the per-side aliases <code>hand_left|hand_right</code>, <code>elbow_left|elbow_right</code>, <code>foot_left|foot_right</code>) stay planted while the body moves. <code>back</code> holds the pelvis-to-ribcage surface on the floor for supine work such as dead bugs. Unsupported contact names are line-anchored validation errors.</p>
-<ol><li><strong>Reach-IK</strong>: a <code>reach:</code> line drives an effector (`hand_left|hand_right|</li></ol>
-<p>foot_left|foot_right<code>, or the groups </code>hands<code>/</code>feet<code> for both sides) to a world <strong>target</strong> via Cyclic Coordinate Descent (CCD) over the arm/leg chain. A target is a body landmark bone (e.g. </code>ankle_left<code>), the keyword </code>floor<code>, or a prop anchor (</code>bar<code>, </code>seat<code>, </code>wall`). The solve is <strong>ROM-constrained</strong>: each iteration clamps every chain joint into its §4 Range-of-Motion limits (expressed as a per-axis box in the bone's local Euler frame), so a reach toward an unsafe or unreachable target settles on the closest *healthy* pose; solved angles obey the same hard limits as authored ones.</p>
-<ol><li><strong>Props</strong>: <code>prop chair|wall|bar|box|dip-bars</code> adds a scene object at a</li></ol>
-<p>fixed default placement (chair/wall behind, bar overhead, box in front, dip bars either side); its named anchors (<code>seat</code>, <code>wall</code>, <code>bar</code>, <code>box</code>, <code>bars</code>) become reach/pin targets. Props are <strong>solid</strong>: each prop declares blocking faces (the wall's surface, the chair's backrest and seat edge, the box's near face) and a contact pass removes any body overlap: either by translating the whole figure out along the face normal (a wall-sit slides down the wall's *surface*, feet walking forward, instead of the torso hinging through the slab) or by bending the offending limb's hip clear, ROM-clamped like every other solve. Limbs pinned, gripped, or reached to a prop anchor are that phase's declared support and are exempt (a foot standing on the box top is not &quot;inside&quot; the box).</p>
-<ol><li><strong>Pins</strong>: <code>pin: &lt;effector&gt; &lt;anchor&gt;</code> translates the whole figure so the</li></ol>
-<p>effector sits on the anchor (effectors accept the same <code>hands</code>/<code>feet</code> groups as reach: <code>pin: hands bar</code> pins both). Where ground-lock keeps a foot on the floor and reach moves a limb to a target, a <strong>pin moves the body</strong> while the contact stays put, so the figure hangs from a bar, pulls up toward it, rises onto a box, or lowers into a dip as the joints work. Symmetric bar contacts resolve to side-specific anchors automatically (<code>bar.left</code> / <code>bar.right</code>, <code>bars.left</code> / <code>bars.right</code>). Contact post-processing also keeps floor-contacting soles level and gives bar-contacting wrists a stable overhand orientation; existing Posecode syntax remains unchanged.</p>
-<ol><li><strong>Spatial choreography</strong>: <code>turn: &lt;deg&gt;</code> rotates the figure's facing (yaw</li></ol>
-<p>about vertical) and <code>travel: &lt;x&gt; &lt;z&gt;</code> moves it across the floor (world metres from the load spot). Both are <strong>absolute targets carried across phases</strong> (like joint angles) and both return home on the loop wrap, so a box-step traces a square back to start and a pirouette spins a full turn. They layer under grounding (feet still rest on the floor) and power pirouettes, grapevines, traveling combos, and walk cycles. <strong>Standing poses only</strong>: combining with lying/seated bases (whose root is already tilted) is out of scope.</p>
-<ol><li><strong>Looping</strong>: the timeline loops base → phases → base; <code>repeat</code> is the rep</li></ol>
-<p>count surfaced to the UI.</p>
-<p>When a mocap clip is active, the renderer selects the take containing the most actual bone motion (rather than blindly choosing the longest embedded take), retargets and blends it, then restores solved terminal contacts on the visible character. Mocap therefore cannot overwrite a planted sole or pinned grip.</p>
+<ol><li><strong>Forward kinematics</strong>: each phase sets joint angles; the renderer uses C1-continuous quaternion splines between keyframes, shaped by the destination phase's timing mode.</li><li><strong>Grounding</strong>: the figure is dropped so its lowest point rests on the floor (a bounding-box drop), which grounds standing, plank, and the lying/seated poses alike.</li><li><strong>Ground-lock</strong>: contacts listed in <code>ground-lock</code> (<code>hands</code>, <code>forearms</code>, <code>feet</code>, or the per-side aliases <code>hand_left|hand_right</code>, <code>elbow_left|elbow_right</code>, <code>foot_left|foot_right</code>) stay planted while the body moves. <code>back</code> holds the pelvis-to-ribcage surface on the floor for supine work such as dead bugs. Unsupported contact names are line-anchored validation errors.</li><li><strong>Reach-IK</strong>: a <code>reach:</code> line drives an effector (<code>hand_*</code>, <code>fist_*</code>, <code>elbow_*</code>, <code>knee_*</code>, or <code>foot_*</code>, plus their supported groups) to a world <strong>target</strong> via Cyclic Coordinate Descent (CCD) over the arm/leg chain. A target is a body landmark bone (e.g. <code>ankle_left</code>), the keyword <code>floor</code>, or a prop anchor (<code>bar</code>, <code>seat</code>, <code>wall</code>). The solve is <strong>ROM-constrained</strong>: each iteration clamps every chain joint into its §4 configured range-of-motion limits (expressed as a per-axis box in the bone's local Euler frame), so a reach toward an unreachable target settles on the closest pose available within that configured joint-angle box; solved angles obey the same limits as authored ones. The viewer records a post-solve residual for every active reach. A reach target is not reported as reached merely because its syntax parsed: missing, unsupported, and geometrically unreachable reach targets remain explicit diagnostics.</li><li><strong>Props</strong>: <code>prop chair|wall|bar|box|dip-bars</code> adds a scene object at a fixed default placement (chair/wall behind, bar overhead, box in front, dip bars either side); its named anchors (<code>seat</code>, <code>wall</code>, <code>bar</code>, <code>box</code>, <code>bars</code>) become reach, pin, or grip targets. Selected prop surfaces declare sampled blocking faces (the wall's surface, the chair's backrest and seat edge, the box's near face). A bounded contact pass reduces penetration, either by translating the whole figure out along the face normal (a wall-sit slides down the wall's *surface*, feet walking forward, instead of the torso hinging through the slab) or by bending the offending limb's hip clear, ROM-clamped like every other solve. Limbs pinned, gripped, or reached to a prop anchor are that phase's declared support and are exempt (a foot standing on the box top is not &quot;inside&quot; the box).</li><li><strong>Pins</strong>: <code>pin: &lt;effector&gt; &lt;anchor&gt;</code> translates the whole figure so one primary effector sits on the anchor. Where ground-lock preserves an already planted floor support and reach moves a limb to a target, a <strong>pin moves the body</strong>. Typical uses include <code>pin: knee_left floor</code>, <code>pin: foot_right box</code>, and <code>pin: pelvis floor</code>. A phase accepts one pin because each pin translates the same floating root; express additional simultaneous contacts with independent <code>reach</code> constraints. Use <code>grip</code> instead of hand pins for a two-handed bar or rail contact.</li><li><strong>Grips</strong>: <code>grip: hands bar|bars</code> is the dedicated two-hand contact for an overhead bar or dip rails; side-specific <code>hand_left</code> / <code>hand_right</code> forms are also available. A grip resolves independent left/right anchors, uses arm IK for each hand, orients the terminal contact, and closes the fingers. The matching prop must be declared. Use grips, rather than hand pins, for hangs, pull-ups, and dips.</li><li><strong>Spatial choreography</strong>: <code>turn: &lt;deg&gt;</code> rotates the figure's facing (yaw about vertical) and <code>travel: &lt;x&gt; &lt;z&gt;</code> moves it across the floor (world metres from the load spot). Both are <strong>absolute targets carried across phases</strong> (like joint angles) and both return home on the loop wrap, so a box-step traces a square back to start and a pirouette spins a full turn. They layer under grounding (feet still rest on the floor) and power pirouettes, grapevines, traveling combos, and walk cycles. <strong>Standing poses only</strong>: combining with lying/seated bases (whose root is already tilted) is out of scope.</li><li><strong>Looping</strong>: the timeline loops base → phases → base; <code>repeat</code> is the rep count surfaced to the UI.</li></ol>
+<p>When a mocap clip is active, the renderer selects the take containing the most actual bone motion (rather than blindly choosing the longest embedded take), retargets and blends it, then restores solved terminal contacts on the visible character. Mocap therefore cannot overwrite a planted sole or active grip.</p>
 <p><strong>Start poses:</strong> <code>neutral</code>, <code>standing</code>, <code>plank</code>, <code>supine</code> (face-up), <code>prone</code> (face-down), <code>seated</code> (long-sit on the floor).</p>
-<p><strong>IK note:</strong> Three.js's bundled <code>CCDIKSolver</code> targets <code>SkinnedMesh</code>; the Posecode mannequin is rigid capsule segments, so Posecode implements CCD directly over the Object3D bone hierarchy (<code>posecode-render/ik.ts</code>) for both ground-lock and reach. Self-collision (limb-vs-body) and body-vs-prop contact are solved; two-person/ dual-IK and figure-vs-figure collision remain deferred (research §5.2, §6.2).</p>
+<p><strong>IK note:</strong> Three.js's bundled <code>CCDIKSolver</code> targets <code>SkinnedMesh</code>; the Posecode mannequin is rigid capsule segments, so Posecode implements CCD directly over the Object3D bone hierarchy (<code>posecode-render/ik.ts</code>) for both ground-lock and reach. Selected limb-vs-body and body-vs-prop penetrations are reduced with sampled, bounded correction passes; this is not comprehensive collision detection or a physics simulation. Two-person/dual-IK and figure-vs-figure collision remain deferred (research §5.2, §6.2).</p>
 <hr>
 <h2>6. Intermediate Representation (IR)</h2>
 <p><code>parse(source)</code> returns <code>{ ir, warnings, errors }</code>. The IR is renderer-agnostic; angles are in <strong>degrees</strong>.</p>
@@ -239,8 +232,17 @@ DURATION   = NUMBER &quot;s&quot; ;                                (* e.g. 2s, 1
     name: string;
     durationSec: number;
     easing: &quot;flow&quot; | &quot;settle&quot; | &quot;drive&quot; | &quot;snap&quot; | &quot;linear&quot;;
-    targets: { boneId: string; euler: { x: number; y: number; z: number } }[];
+    targets: {
+      boneId: string;
+      euler: { x: number; y: number; z: number };
+      axes?: (&quot;x&quot; | &quot;y&quot; | &quot;z&quot;)[]; // channels explicitly authored this phase
+    }[];
     groundLock: string[];   // [&quot;hands&quot;,&quot;feet&quot;], [&quot;foot_right&quot;], or [&quot;back&quot;]
+    reaches: { effector: string; target: string }[];
+    pins: { effector: string; anchor: string }[];
+    grips: { effector: string; anchor: string }[];
+    turnDeg?: number;
+    travel?: { x: number; z: number };
     cue?: string;
   }[];
 }</code></pre>

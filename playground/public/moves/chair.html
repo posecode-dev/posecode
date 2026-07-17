@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chair pose: How to Do It (Animated 3D Guide) | Posecode</title>
+    <title>Chair pose: Posecode Movement Example | Posecode</title>
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="description" content="How to do the chair pose (yoga): 2 phases targeting the quadriceps, body weight, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
+    <meta name="description" content="Chair pose is an intermediate-level yoga Posecode example with 2 inspectable phases and a link to live 3D playback." />
     <link rel="canonical" href="https://www.posecode.org/moves/chair.html" />
     <meta name="theme-color" content="#0a0d12" />
-    <meta property="og:title" content="Chair pose: How to Do It (Animated 3D Guide) | Posecode" />
-    <meta property="og:description" content="How to do the chair pose (yoga): 2 phases targeting the quadriceps, body weight, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
+    <meta property="og:title" content="Chair pose: Posecode Movement Example | Posecode" />
+    <meta property="og:description" content="Chair pose is an intermediate-level yoga Posecode example with 2 inspectable phases and a link to live 3D playback." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.posecode.org/moves/chair.html" />
     <meta property="og:site_name" content="Posecode" />
@@ -97,7 +97,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 @media(max-width:600px){.wrap{padding:0 18px}}
 </style>
     <link rel="stylesheet" href="/content-theme.css" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to do a Chair pose","description":"How to do the chair pose (yoga): 2 phases targeting the quadriceps, body weight, intermediate level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs.","step":[{"@type":"HowToStep","name":"Sink","text":"Sit the hips back and down, reach the arms overhead"},{"@type":"HowToStep","name":"Rise","text":"Press through the feet to stand, arms float down"}]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Chair pose: a Posecode movement example","description":"Chair pose is an intermediate-level yoga Posecode example with 2 inspectable phases and a link to live 3D playback."}</script>
     <script>
       window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
     </script>
@@ -123,14 +123,17 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <h1>Chair pose</h1>
       <p class="meta-line"><b>Target</b> Quadriceps &nbsp;·&nbsp; <b>Equipment</b> Body weight
         &nbsp;·&nbsp; <b>Level</b> Intermediate &nbsp;·&nbsp; <b>Reps</b> 4</p>
-      <p>Chair pose is a intermediate-level yoga movement targeting the
+      <p>Chair pose is an intermediate-level yoga movement targeting the
         quadriceps, written in <a href="/">Posecode</a>, a small open-source language
-        that LLMs like ChatGPT, Claude, and Gemini can write to describe human movement as text.
-        Every joint angle below is hard-clamped to a safe range of motion.</p>
+        that capable language models can use to describe human movement as text.
+        Authored joint targets and reach-IK solves are constrained to Posecode's configured
+        per-axis bounds. Those bounds constrain the visualization, but they do not certify
+        that a complete movement is safe or clinically correct.
+        This page documents a code example; it is not exercise instruction.</p>
 
       <a class="btn" href="/play/chair">▶ Open Chair pose in the playground →</a>
 
-      <h2>How to do it</h2>
+      <h2>Movement phases</h2>
       <ol class="steps">
 <li>
           <span class="step-name">Sink<span class="step-dur">3s · flow</span></span>
@@ -143,7 +146,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       </ol>
 
       <h2>The .posecode source</h2>
-      <p>This is the exact text an LLM writes to produce the animation above: phases and joint
+      <p>This is the exact text used by the linked playground animation: phases and joint
         angles, not 3D transforms.</p>
       <pre class="code-block"><code>posecode posture &quot;Chair pose&quot;
   rig humanoid
@@ -173,8 +176,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 </code></pre>
 
       <h2>More yoga movements</h2>
-         <div class="chip-list"><a href="/moves/sidebend.html">Standing side bend</a><a href="/moves/cobra.html">Cobra</a><a href="/moves/seated-forward-fold.html">Seated forward fold</a></div>
-    
+         <div class="chip-list"><a href="/moves/sidebend.html">Standing side bend</a><a href="/moves/seated-forward-fold.html">Seated forward fold</a></div>
     </main>
     <footer class="site-footer">
       <div class="wrap">

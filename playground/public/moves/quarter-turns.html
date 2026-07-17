@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Quarter turns: How to Do It (Animated 3D Guide) | Posecode</title>
+    <title>Quarter turns: Posecode Movement Example | Posecode</title>
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="description" content="How to do the quarter turns (locomotion): 4 phases targeting the full body, body weight, beginner level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
+    <meta name="description" content="Quarter turns is a beginner-level locomotion Posecode example with 4 inspectable phases and a link to live 3D playback." />
     <link rel="canonical" href="https://www.posecode.org/moves/quarter-turns.html" />
     <meta name="theme-color" content="#0a0d12" />
-    <meta property="og:title" content="Quarter turns: How to Do It (Animated 3D Guide) | Posecode" />
-    <meta property="og:description" content="How to do the quarter turns (locomotion): 4 phases targeting the full body, body weight, beginner level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
+    <meta property="og:title" content="Quarter turns: Posecode Movement Example | Posecode" />
+    <meta property="og:description" content="Quarter turns is a beginner-level locomotion Posecode example with 4 inspectable phases and a link to live 3D playback." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.posecode.org/moves/quarter-turns.html" />
     <meta property="og:site_name" content="Posecode" />
@@ -97,7 +97,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 @media(max-width:600px){.wrap{padding:0 18px}}
 </style>
     <link rel="stylesheet" href="/content-theme.css" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to do a Quarter turns","description":"How to do the quarter turns (locomotion): 4 phases targeting the full body, body weight, beginner level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs.","step":[{"@type":"HowToStep","name":"Face right","text":"Small dip and pivot a quarter-turn to the right"},{"@type":"HowToStep","name":"Face back","text":"Rise, then pivot another quarter-turn to face the back"},{"@type":"HowToStep","name":"Face left","text":"Dip and pivot again to face the far side"},{"@type":"HowToStep","name":"Face front","text":"Rise and complete the circle, back to front"}]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Quarter turns: a Posecode movement example","description":"Quarter turns is a beginner-level locomotion Posecode example with 4 inspectable phases and a link to live 3D playback."}</script>
     <script>
       window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
     </script>
@@ -125,12 +125,15 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
         &nbsp;·&nbsp; <b>Level</b> Beginner &nbsp;·&nbsp; <b>Reps</b> 3</p>
       <p>Quarter turns is a beginner-level locomotion movement targeting the
         full body, written in <a href="/">Posecode</a>, a small open-source language
-        that LLMs like ChatGPT, Claude, and Gemini can write to describe human movement as text.
-        Every joint angle below is hard-clamped to a safe range of motion.</p>
+        that capable language models can use to describe human movement as text.
+        Authored joint targets and reach-IK solves are constrained to Posecode's configured
+        per-axis bounds. Those bounds constrain the visualization, but they do not certify
+        that a complete movement is safe or clinically correct.
+        This page documents a code example; it is not exercise instruction.</p>
 
       <a class="btn" href="/play/quarter-turns">▶ Open Quarter turns in the playground →</a>
 
-      <h2>How to do it</h2>
+      <h2>Movement phases</h2>
       <ol class="steps">
 <li>
           <span class="step-name">Face right<span class="step-dur">1s · flow</span></span>
@@ -151,7 +154,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       </ol>
 
       <h2>The .posecode source</h2>
-      <p>This is the exact text an LLM writes to produce the animation above: phases and joint
+      <p>This is the exact text used by the linked playground animation: phases and joint
         angles, not 3D transforms.</p>
       <pre class="code-block"><code>posecode posture &quot;Quarter turns&quot;
   rig humanoid
@@ -198,7 +201,6 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 
       <h2>More locomotion movements</h2>
          <div class="chip-list"><a href="/moves/walk-cycle.html">Walk &amp; turn</a></div>
-    
     </main>
     <footer class="site-footer">
       <div class="wrap">

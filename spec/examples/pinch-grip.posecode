@@ -8,7 +8,7 @@ posecode posture "Pinch grip"
     index_right: flex 60
     cue "Bring the thumb and index fingertip together in a pinch"
 
-  step "Release" 1.2s drive:
+  step "Release" 1.2s settle:
     thumb_right: flex 0
     thumb_right: adduct 0
     index_right: flex 0

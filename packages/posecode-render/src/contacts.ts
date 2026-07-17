@@ -2,57 +2,234 @@
 import * as THREE from "three";
 import { eulerRomFor, type PinTarget, type ReachTarget, type GripTarget } from "posecode-parser";
 import type { Mannequin } from "./mannequin.js";
+import { effectorBoneId } from "./reach.js";
 
 const DOWN = new THREE.Vector3(0, -1, 0);
 const DEG = Math.PI / 180;
+const CONTACT_EULER = new THREE.Euler();
+
+export type HandSide = "left" | "right";
+export type HandContactKind = "palm" | "fist";
 
 /**
- * Rotate contacting wrists so the palm face normal points into the floor.
- * Applies to hands pressed to the floor via `reach`/`pin: hands floor` AND via
- * `ground-lock: hands` (a high plank / push-up / mountain-climber): those bear
- * weight flat on the ground and must be palm-down, not left in their raw FK
- * (pronated) orientation.
+ * Actual outward normal of the flattened procedural palm geometry. The palm
+ * ellipsoid is shallow on local Z for both hands (see mannequin.addPalm).
  */
+export const PALM_LOCAL_NORMAL = [0, 0, 1] as const;
+/** Knuckle-bearing direction from wrist to the curled finger bases. */
+export const FIST_LOCAL_NORMAL = [0, -1, 0] as const;
+
+function strictClampToRom(node: THREE.Object3D, boneId: string): boolean {
+  const rom = eulerRomFor(boneId);
+  if (!rom) return false;
+  CONTACT_EULER.setFromQuaternion(node.quaternion, "XYZ");
+  const x = THREE.MathUtils.clamp(CONTACT_EULER.x, rom.x.min * DEG, rom.x.max * DEG);
+  const y = THREE.MathUtils.clamp(CONTACT_EULER.y, rom.y.min * DEG, rom.y.max * DEG);
+  const z = THREE.MathUtils.clamp(CONTACT_EULER.z, rom.z.min * DEG, rom.z.max * DEG);
+  if (
+    Math.abs(x - CONTACT_EULER.x) < 1e-10 &&
+    Math.abs(y - CONTACT_EULER.y) < 1e-10 &&
+    Math.abs(z - CONTACT_EULER.z) < 1e-10
+  ) return false;
+  CONTACT_EULER.set(x, y, z, "XYZ");
+  node.quaternion.setFromEuler(CONTACT_EULER);
+  return true;
+}
+
+/**
+ * Final safety assertion for renderer-authored terminal corrections. It is
+ * intentionally limited to wrists/ankles: timeline hip counter-rotation for a
+ * pelvis hinge may legitimately sit outside a raw isolated hip box, whereas
+ * contact wrist and ankle locals have no such coupled exception. All three
+ * ankle axes are clamped, including the normally locked Y/Z axes.
+ */
+export function enforceContactRom(m: Mannequin): void {
+  let changed = false;
+  for (const side of ["left", "right"] as const) {
+    for (const joint of [`wrist_${side}`, `ankle_${side}`]) {
+      const node = m.bones.get(joint);
+      if (node) changed = strictClampToRom(node, joint) || changed;
+    }
+  }
+  if (changed) m.root.updateMatrixWorld(true);
+}
+
+function alignWristNormal(
+  m: Mannequin,
+  side: HandSide,
+  normal: readonly [number, number, number],
+  weight: number,
+): boolean {
+  const wristId = `wrist_${side}`;
+  const wrist = m.bones.get(wristId);
+  if (!wrist?.parent) return false;
+  const world = wrist.getWorldQuaternion(new THREE.Quaternion());
+  const current = new THREE.Vector3(...normal).applyQuaternion(world).normalize();
+  const correction = new THREE.Quaternion().setFromUnitVectors(current, DOWN);
+  const safeWeight = THREE.MathUtils.clamp(weight, 0, 1);
+  if (safeWeight < 1) {
+    correction.slerp(new THREE.Quaternion(), 1 - safeWeight);
+  }
+  const desiredWorld = correction.multiply(world);
+  const parentWorld = wrist.parent.getWorldQuaternion(new THREE.Quaternion());
+  wrist.quaternion.copy(parentWorld.invert().multiply(desiredWorld));
+  // Contact correction is never allowed to buy contact with a broken wrist.
+  strictClampToRom(wrist, wristId);
+  return true;
+}
+
+function collectFloorHandContacts(
+  reaches: readonly (ReachTarget & { weight?: number })[],
+  pins: readonly PinTarget[],
+  groundLock: readonly string[],
+): Map<HandSide, { kind: HandContactKind; weight: number }> {
+  const contacts = new Map<HandSide, { kind: HandContactKind; weight: number }>();
+  const collect = (effector: string, target: string, weight = 1): void => {
+    if (target !== "floor") return;
+    const fistMatch = /^fist_(left|right)$/.exec(effector);
+    const palmMatch = /^(?:hand|wrist)_(left|right)$/.exec(effector);
+    const isFist = effector === "fists" || Boolean(fistMatch);
+    const isPalm = effector === "hands" || Boolean(palmMatch);
+    if (!isFist && !isPalm) return;
+    const kind: HandContactKind = isFist ? "fist" : "palm";
+    const add = (side: HandSide): void => {
+      const previous = contacts.get(side);
+      // An explicit fist wins over a simultaneous generic hand contact.
+      if (!previous || kind === "fist" || previous.kind !== "fist") {
+        contacts.set(side, {
+          kind,
+          weight: Math.max(previous?.weight ?? 0, weight),
+        });
+      }
+    };
+    if (effector === "hands" || effector === "fists" || fistMatch?.[1] === "left" || palmMatch?.[1] === "left") add("left");
+    if (effector === "hands" || effector === "fists" || fistMatch?.[1] === "right" || palmMatch?.[1] === "right") add("right");
+  };
+  reaches.forEach((r) => collect(r.effector, r.target, r.weight));
+  pins.forEach((p) => collect(p.effector, p.anchor));
+  groundLock.forEach((effector) => collect(effector, "floor"));
+  return contacts;
+}
+
+/**
+ * Orient floor contacts by their real geometry: a palm presents its flattened
+ * +Z face, while a fist presents the wrist→knuckle (-Y) direction. The two are
+ * intentionally distinct, and both corrections are strict wrist-ROM-clamped.
+ */
+export function alignFloorContacts(
+  m: Mannequin,
+  reaches: readonly (ReachTarget & { weight?: number })[],
+  pins: readonly PinTarget[],
+  groundLock: readonly string[] = [],
+): void {
+  const contacts = collectFloorHandContacts(reaches, pins, groundLock);
+  let changed = false;
+  for (const [side, contact] of contacts) {
+    const normal = contact.kind === "fist" ? FIST_LOCAL_NORMAL : PALM_LOCAL_NORMAL;
+    changed = alignWristNormal(m, side, normal, contact.weight) || changed;
+  }
+  if (changed) m.root.updateMatrixWorld(true);
+}
+
+/** Backwards-compatible name retained for eval/embedders; now handles fists too. */
 export function alignFloorPalms(
   m: Mannequin,
   reaches: readonly (ReachTarget & { weight?: number })[],
   pins: readonly PinTarget[],
   groundLock: readonly string[] = [],
 ): void {
-  const sides = new Map<"left" | "right", number>();
-  const collect = (effector: string, target: string, weight = 1) => {
-    if (target !== "floor") return;
-    if (effector === "hands" || effector === "hand_left") {
-      sides.set("left", Math.max(sides.get("left") ?? 0, weight));
-    }
-    if (effector === "hands" || effector === "hand_right") {
-      sides.set("right", Math.max(sides.get("right") ?? 0, weight));
-    }
-  };
-  reaches.forEach((r) => collect(r.effector, r.target, r.weight));
-  pins.forEach((p) => collect(p.effector, p.anchor));
-  if (groundLock.includes("hands") || groundLock.includes("hand_left")) {
-    sides.set("left", 1);
-  }
-  if (groundLock.includes("hands") || groundLock.includes("hand_right")) {
-    sides.set("right", 1);
-  }
+  alignFloorContacts(m, reaches, pins, groundLock);
+}
 
-  for (const [side, weight] of sides) {
-    const wrist = m.bones.get(`wrist_${side}`);
-    if (!wrist?.parent) continue;
-    const world = wrist.getWorldQuaternion(new THREE.Quaternion());
-    const localNormal = side === "left"
-      ? new THREE.Vector3(1, 0, 0)
-      : new THREE.Vector3(-1, 0, 0);
-    const current = localNormal.applyQuaternion(world).normalize();
-    const correction = new THREE.Quaternion().setFromUnitVectors(current, DOWN);
-    if (weight < 1) correction.slerp(new THREE.Quaternion(), 1 - weight);
-    const desiredWorld = correction.multiply(world);
-    const parentWorld = wrist.parent.getWorldQuaternion(new THREE.Quaternion());
-    wrist.quaternion.copy(parentWorld.invert().multiply(desiredWorld));
+/**
+ * Bone-origin target whose corresponding visible contact surface rests on y=0.
+ * Joint effectors (knee/elbow) use their local contact radius instead of the
+ * whole descendant subtree—otherwise a knee target incorrectly measures the
+ * shin/foot and folds the knee upward while still claiming floor contact.
+ */
+export function floorTargetForEffector(
+  m: Mannequin,
+  effectorName: string,
+): THREE.Vector3 | null {
+  const effector = m.bones.get(effectorBoneId(effectorName));
+  if (!effector) return null;
+  const p = effector.getWorldPosition(new THREE.Vector3());
+  if (effectorName === "pelvis") {
+    p.y = pelvisFloorDrop(m);
+    return p;
   }
-  if (sides.size > 0) m.root.updateMatrixWorld(true);
+  if (effectorName.startsWith("knee_")) {
+    // Measure only the two rounded caps meeting at the knee. A subtree would
+    // wrongly include the whole shin/foot, while a fixed proxy radius misses
+    // the vertical extent as the bent limb changes orientation.
+    const side = effectorName.endsWith("_left") ? "left" : "right";
+    p.y = jointSurfaceDrop(
+      m,
+      `knee_${side}`,
+      m.contactSurfaces[`knee_${side}`],
+      Math.max(m.collision.shin, m.collision.thigh),
+    );
+    return p;
+  }
+  if (effectorName.startsWith("elbow_")) {
+    p.y = m.collision.arm;
+    return p;
+  }
+  const box = new THREE.Box3().setFromObject(effector);
+  p.y = Number.isFinite(box.min.y) ? Math.max(0, p.y - box.min.y) : 0;
+  return p;
+}
+
+/** Signed height of an effector's actual contact surface above the floor. */
+export function floorContactHeight(m: Mannequin, effectorName: string): number | null {
+  const effector = m.bones.get(effectorBoneId(effectorName));
+  if (!effector) return null;
+  const originY = effector.getWorldPosition(new THREE.Vector3()).y;
+  if (effectorName.startsWith("elbow_")) return originY - m.collision.arm;
+  if (effectorName.startsWith("knee_")) {
+    const side = effectorName.endsWith("_left") ? "left" : "right";
+    return originY - jointSurfaceDrop(
+      m,
+      `knee_${side}`,
+      m.contactSurfaces[`knee_${side}`],
+      Math.max(m.collision.shin, m.collision.thigh),
+    );
+  }
+  if (effectorName === "pelvis") return originY - pelvisFloorDrop(m);
+  const minY = new THREE.Box3().setFromObject(effector).min.y;
+  return Number.isFinite(minY) ? minY : null;
+}
+
+function jointSurfaceDrop(
+  m: Mannequin,
+  boneId: string,
+  surfaces: readonly THREE.Object3D[],
+  fallback: number,
+): number {
+  const bone = m.bones.get(boneId);
+  if (!bone) return fallback;
+  const originY = bone.getWorldPosition(new THREE.Vector3()).y;
+  let minY = Infinity;
+  for (const surface of surfaces) {
+    const y = new THREE.Box3().setFromObject(surface).min.y;
+    if (Number.isFinite(y)) minY = Math.min(minY, y);
+  }
+  return Number.isFinite(minY) ? Math.max(0.001, originY - minY) : fallback;
+}
+
+/** Current trunk-surface drop below the pelvis origin (translation invariant). */
+function pelvisFloorDrop(m: Mannequin): number {
+  const pelvis = m.bones.get("pelvis");
+  if (!pelvis) return Math.max(0.08, m.collision.torso * 0.85);
+  const originY = pelvis.getWorldPosition(new THREE.Vector3()).y;
+  let minY = Infinity;
+  for (const surface of m.contactSurfaces.pelvis) {
+    const y = new THREE.Box3().setFromObject(surface).min.y;
+    if (Number.isFinite(y)) minY = Math.min(minY, y);
+  }
+  return Number.isFinite(minY)
+    ? Math.max(0.08, originY - minY)
+    : Math.max(0.08, m.collision.torso * 0.85);
 }
 
 const SOLE_LOCAL = new THREE.Vector3(0, -1, 0);
@@ -85,8 +262,12 @@ export function levelPlantedFeet(m: Mannequin, activeGroundLock: readonly string
     // deliberate relevé / calf-raise / demi-plié — leave it on its toes.
     TMP_EULER.setFromQuaternion(ankle.quaternion, "XYZ");
     const authoredX = TMP_EULER.x;
-    const authoredZ = TMP_EULER.z;
-    if (authoredX > PLANTARFLEX_SKIP) continue;
+    if (authoredX > PLANTARFLEX_SKIP) {
+      // Preserve deliberate tiptoe pitch, but still assert the ankle's locked
+      // axial/frontal axes and configured plantarflexion ceiling.
+      changed = strictClampToRom(ankle, `ankle_${side}`) || changed;
+      continue;
+    }
     // Planted-ness weight from the foot mesh bottom height: fully level when the
     // sole is on the floor, fading out as a swing foot lifts past PLANT_FADE.
     const box = new THREE.Box3().setFromObject(ankle);
@@ -101,35 +282,117 @@ export function levelPlantedFeet(m: Mannequin, activeGroundLock: readonly string
     const desiredWorld = correction.multiply(world);
     const parentWorld = ankle.parent.getWorldQuaternion(new THREE.Quaternion());
     const local = parentWorld.invert().multiply(desiredWorld);
-    // Clamp the corrected ankle to its ROM, widened to admit the authored angle
-    // so leveling can never push the joint past a healthy range.
-    const rom = eulerRomFor(`ankle_${side}`);
-    if (rom) {
-      TMP_EULER.setFromQuaternion(local, "XYZ");
-      const cx = THREE.MathUtils.clamp(
-        TMP_EULER.x,
-        Math.min(rom.x.min * DEG, authoredX),
-        Math.max(rom.x.max * DEG, authoredX),
-      );
-      const cz = THREE.MathUtils.clamp(
-        TMP_EULER.z,
-        Math.min(rom.z.min * DEG, authoredZ),
-        Math.max(rom.z.max * DEG, authoredZ),
-      );
-      TMP_EULER.set(cx, TMP_EULER.y, cz, "XYZ");
-      local.setFromEuler(TMP_EULER);
-    }
     ankle.quaternion.copy(local);
+    // Clamp X/Y/Z strictly. In particular, ankle Y/Z are locked axes; leaving
+    // either component from the world-space correction created twisted soles.
+    strictClampToRom(ankle, `ankle_${side}`);
     changed = true;
   }
   if (changed) m.root.updateMatrixWorld(true);
 }
 
 /** Finger curl (radians about the knuckle X axis) that wraps a gripping hand. */
-export const FINGER_CURL = 1.35;
+export const FINGER_CURL = -1.35;
 /** Thumb opposition curl (radians) toward the fingers. */
-export const THUMB_CURL = 0.9;
+export const THUMB_CURL = -0.9;
+/** Sideways thumb opposition kept inside the thumb's adduction ROM. */
+export const THUMB_OPPOSE = 0.5;
+/** Closed-fist finger curl, still inside the 100deg finger-flexion limit. */
+export const FIST_CURL = -1.5;
+export const FIST_THUMB_CURL = -1.15;
+export const FIST_THUMB_OPPOSE = 0.45;
 const FINGERS = ["index", "middle", "ring", "pinky"] as const;
+
+/** True for the parallel-rail anchors belonging to the dip-bars prop. */
+export function isDipBarGrip(anchor: string): boolean {
+  return anchor === "bars" || anchor.startsWith("bars_");
+}
+
+/**
+ * Establish a deterministic dip-bar forearm frame before body translation/IK.
+ * Removing inherited elbow axial twist makes the palm face available for the
+ * downward support contact instead of leaving each hand turned toward a thigh.
+ */
+export function prepareGripFrames(
+  m: Mannequin,
+  grips: readonly { effector: string; anchor: string }[],
+): void {
+  let changed = false;
+  for (const grip of grips) {
+    if (!isDipBarGrip(grip.anchor)) continue;
+    const match = /_(left|right)$/.exec(grip.effector);
+    if (!match) continue;
+    const side = match[1] as HandSide;
+    const elbowId = `elbow_${side}`;
+    const elbow = m.bones.get(elbowId);
+    if (!elbow) continue;
+    CONTACT_EULER.setFromQuaternion(elbow.quaternion, "XYZ");
+    CONTACT_EULER.y = 0;
+    elbow.quaternion.setFromEuler(CONTACT_EULER);
+    strictClampToRom(elbow, elbowId);
+    changed = true;
+  }
+  if (changed) m.root.updateMatrixWorld(true);
+}
+
+/**
+ * Finish the stable dip-bar frame after IK: the flattened palm presses down on
+ * the rail while wrist flexion/extension remains strictly ROM-safe.
+ */
+export function alignGripFrames(
+  m: Mannequin,
+  grips: readonly { effector: string; anchor: string }[],
+): void {
+  let changed = false;
+  for (const grip of grips) {
+    if (!isDipBarGrip(grip.anchor)) continue;
+    const match = /_(left|right)$/.exec(grip.effector);
+    if (!match) continue;
+    changed = alignWristNormal(
+      m,
+      match[1] as HandSide,
+      PALM_LOCAL_NORMAL,
+      1,
+    ) || changed;
+  }
+  if (changed) m.root.updateMatrixWorld(true);
+}
+
+/**
+ * Close semantic fist effectors without overwriting explicitly authored digit
+ * bones. Wrist/contact corrections never touch these locals, so the curl is
+ * preserved while the knuckles are oriented onto a target.
+ */
+export function formFists(
+  m: Mannequin,
+  sides: ReadonlySet<HandSide>,
+  authoredFingers: ReadonlySet<string> = new Set(),
+): void {
+  let changed = false;
+  for (const side of sides) {
+    for (const finger of FINGERS) {
+      const id = `${finger}_${side}`;
+      if (authoredFingers.has(id)) continue;
+      const bone = m.bones.get(id);
+      if (!bone) continue;
+      bone.rotation.set(FIST_CURL, 0, 0);
+      changed = true;
+    }
+    const thumbId = `thumb_${side}`;
+    if (!authoredFingers.has(thumbId)) {
+      const thumb = m.bones.get(thumbId);
+      if (thumb) {
+        thumb.rotation.set(
+          FIST_THUMB_CURL,
+          0,
+          side === "left" ? -FIST_THUMB_OPPOSE : FIST_THUMB_OPPOSE,
+        );
+        changed = true;
+      }
+    }
+  }
+  if (changed) m.root.updateMatrixWorld(true);
+}
 
 /**
  * Curl the fingers of each gripping hand around the bar. Grips are per-side
@@ -152,7 +415,7 @@ export function wrapGrip(m: Mannequin, grips: readonly GripTarget[]): void {
     const thumb = m.bones.get(`thumb_${side}`);
     if (thumb) {
       // Thumb wraps from the opposite side: curl plus a sideways opposition.
-      thumb.rotation.set(THUMB_CURL, 0, side === "left" ? -THUMB_CURL : THUMB_CURL);
+      thumb.rotation.set(THUMB_CURL, 0, side === "left" ? -THUMB_OPPOSE : THUMB_OPPOSE);
       changed = true;
     }
   }
@@ -164,16 +427,18 @@ export function wrapGrip(m: Mannequin, grips: readonly GripTarget[]): void {
  * relaxed hand is not flat: the fingers settle into a soft inward hook (~30°),
  * which reads as a natural cupped hand instead of a stiff splayed palm.
  */
-export const REST_CURL = 0.55;
-/** Slight finger adduction (radians) drawing splayed digits toward the middle
- * finger, so a relaxed hand closes softly rather than fanning like jazz-hands. */
-export const REST_ADDUCT = 0.12;
+export const REST_CURL = -0.55;
+/** Gentle thumb opposition for a relaxed hand, within adduction ROM. */
+export const REST_THUMB_OPPOSE = 0.4;
+/** Finger bones are intentionally single-DOF; their authored rest offsets
+ * provide natural spacing without inventing an out-of-ROM lateral rotation. */
+export const REST_ADDUCT = 0;
 /**
  * Near-flat curl (radians) for a hand pressed onto the floor (plank, push-up,
  * cobra). The palm lies flat with the fingers extended forward; the resting
  * inward hook would instead claw the fingertips into the ground.
  */
-export const FLOOR_CURL = 0.06;
+export const FLOOR_CURL = -0.06;
 
 /**
  * Give idle hands a natural relaxed shape instead of a flat splayed palm.
@@ -219,7 +484,7 @@ export function relaxHands(
       if (thumb) {
         // Planted: thumb lies alongside the flat palm. Free: opposes softly.
         const thumbCurl = planted ? FLOOR_CURL : REST_CURL * 0.6;
-        const thumbOppose = planted ? 0 : REST_CURL;
+        const thumbOppose = planted ? 0 : REST_THUMB_OPPOSE;
         thumb.rotation.set(thumbCurl, 0, side === "left" ? -thumbOppose : thumbOppose);
         changed = true;
       }
@@ -238,16 +503,16 @@ const HIP_EULER = new THREE.Euler();
  * (right leg forward ↔ left arm forward). Adds a swing to each free shoulder
  * proportional to the OPPOSITE hip's sagittal (local X) angle, so any move that
  * animates the hips (walk, march, box-step) gets natural arm swing for free.
- * Skips shoulders the document authors and any gripping side.
+ * Skips shoulders the document authors and any contact-constrained hand side.
  */
 export function swingArms(
   m: Mannequin,
   authoredShoulders: ReadonlySet<string>,
-  gripSides: ReadonlySet<"left" | "right">,
+  protectedSides: ReadonlySet<"left" | "right">,
 ): void {
   let changed = false;
   for (const side of ["left", "right"] as const) {
-    if (gripSides.has(side)) continue;
+    if (protectedSides.has(side)) continue;
     const shoulderId = `shoulder_${side}`;
     if (authoredShoulders.has(shoulderId)) continue;
     const shoulder = m.bones.get(shoulderId);

@@ -7,7 +7,7 @@ posecode exercise "Standing hamstring curl"
     pin: foot_left floor
     cue "Bend the right knee, drawing the heel toward the glute"
 
-  step "Lower" 1.6s drive:
+  step "Lower" 1.6s settle:
     knee_right: flex 0
     pin: foot_left floor
     cue "Lower the foot back to the floor"

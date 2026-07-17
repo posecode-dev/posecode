@@ -7,6 +7,7 @@ import { poseFor } from "../src/poses.js";
 import { buildProps } from "../src/props.js";
 import { applyGroundLock, groundFigure } from "../src/groundlock.js";
 import { levelPlantedFeet, wrapGrip } from "../src/contacts.js";
+import { effectorBoneId, missingReachTarget, solveReachToPoint } from "../src/reach.js";
 import { parse, eulerRomFor } from "posecode-parser";
 
 const DEG = Math.PI / 180;
@@ -36,6 +37,11 @@ describe("mannequin", () => {
     expect(m.effectors.feet).toEqual(["ankle_left", "ankle_right"]);
     expect(m.effectors.foot_right).toEqual(["ankle_right"]);
     expect(m.effectors.back).toEqual(["pelvis", "spine", "chest"]);
+    expect(m.effectors.fist_left).toEqual(["wrist_left"]);
+    expect(m.effectors.fists).toEqual(["wrist_left", "wrist_right"]);
+    expect(m.effectors.knees).toEqual(["knee_left", "knee_right"]);
+    expect(effectorBoneId("fist_right")).toBe("wrist_right");
+    expect(effectorBoneId("knee_left")).toBe("knee_left");
   });
 });
 
@@ -368,6 +374,45 @@ describe("reach-IK", () => {
 
     expect(after).toBeLessThan(0.06);
   });
+
+  it("solves a canonical knee effector through the hip and reports residual", () => {
+    const m = buildMannequin();
+    m.root.updateMatrixWorld(true);
+    const hip = m.bones.get("hip_left")!;
+    const knee = m.bones.get("knee_left")!;
+    const hipPos = hip.getWorldPosition(new THREE.Vector3());
+    const radius = knee.getWorldPosition(new THREE.Vector3()).sub(hipPos);
+    const target = hipPos.clone().add(radius.applyAxisAngle(new THREE.Vector3(1, 0, 0), -0.2));
+    const kneeBefore = knee.quaternion.clone();
+
+    const residual = solveReachToPoint(m, "knee_left", "world", target);
+
+    expect(residual.reason).toBeUndefined();
+    expect(residual.distance).not.toBeNull();
+    expect(residual.distance!).toBeLessThan(0.04);
+    expect(residual.reached).toBe(true);
+    // The endpoint knee does not rotate itself; its hip is the reach chain.
+    expect(knee.quaternion.angleTo(kneeBefore)).toBeLessThan(1e-8);
+    expect(hip.quaternion.angleTo(new THREE.Quaternion())).toBeGreaterThan(0.05);
+  });
+
+  it("retains an unreachable fist residual and an unresolved target diagnostic", () => {
+    const m = buildMannequin();
+    m.root.updateMatrixWorld(true);
+    const far = new THREE.Vector3(5, 5, 5);
+    const residual = solveReachToPoint(m, "fist_right", "far", far);
+    expect(residual.distance).not.toBeNull();
+    expect(residual.distance!).toBeGreaterThan(5);
+    expect(residual.reached).toBe(false);
+
+    expect(missingReachTarget("fist_right", "missing_anchor")).toMatchObject({
+      effector: "fist_right",
+      target: "missing_anchor",
+      distance: null,
+      reached: false,
+      reason: "missing-target",
+    });
+  });
 });
 
 describe("hand rig", () => {
@@ -568,13 +613,11 @@ describe("contact pins", () => {
     '  step "Hang" 1.5s ease-in-out:',
     "    shoulders: flex 175",
     "    elbows: flex 5",
-    "    pin: hand_left bar",
-    "    pin: hand_right bar",
+    "    pin: hands bar",
     '  step "Pull up" 1.2s ease-out:',
     "    shoulders: flex 150",
     "    elbows: flex 130",
-    "    pin: hand_left bar",
-    "    pin: hand_right bar",
+    "    pin: hands bar",
     "  repeat 2",
   ].join("\n");
 
@@ -675,7 +718,7 @@ describe("ROM-constrained reach-IK", () => {
     const { joints, limits, effector } = armChain(m);
     const [shoulder, elbow] = joints;
     // High behind the back (figure faces +Z): reaching it would demand
-    // shoulder extension far past the 60° healthy ceiling.
+    // shoulder extension far past the configured 60° ceiling.
     const target = shoulder!
       .getWorldPosition(new THREE.Vector3())
       .add(new THREE.Vector3(0, 0.3, -0.5));
@@ -709,7 +752,7 @@ describe("ROM-constrained reach-IK", () => {
       free.joints[0]!.quaternion,
       "XYZ",
     );
-    expect(eFree.x).toBeGreaterThan(60 * DEG + 0.05); // past healthy extension
+    expect(eFree.x).toBeGreaterThan(60 * DEG + 0.05); // past configured extension
   });
 
   it("keeps a knee hinge-only: no lateral splay while a foot reaches", () => {
@@ -813,6 +856,10 @@ describe("dip bars prop", () => {
     expect(grip.y).toBeGreaterThan(0.9); // high enough that feet clear the floor
     expect(grip.y).toBeLessThan(1.6); // but well below the pull-up bar
     expect(group.children.length).toBeGreaterThan(0);
+    expect(anchors.get("bars_left")!.x).toBeGreaterThan(0);
+    expect(anchors.get("bars_right")!.x).toBeLessThan(0);
+    expect(anchors.get("bars_left")!.y).toBeCloseTo(grip.y, 6);
+    expect(anchors.get("bars_left")!.distanceTo(anchors.get("bars_right")!)).toBeGreaterThan(0.4);
   });
 
   // Same root-translation logic as the viewer's applyPins (see contact pins).
@@ -1011,9 +1058,11 @@ describe("bar grip (L3.2)", () => {
     const restIndex = m.bones.get("index_left")!.rotation.x;
     const restThumb = m.bones.get("thumb_left")!.rotation.x;
     wrapGrip(m, [{ effector: "hand_left", anchor: "bar_left" }]);
-    expect(m.bones.get("index_left")!.rotation.x).toBeGreaterThan(restIndex + 0.5);
-    expect(m.bones.get("middle_left")!.rotation.x).toBeGreaterThan(0.5);
-    expect(m.bones.get("thumb_left")!.rotation.x).toBeGreaterThan(restThumb + 0.3);
+    // Finger flexion is local -X in the rig/parser ROM convention. The former
+    // positive renderer curl was actually extension (digits bent off the palm).
+    expect(m.bones.get("index_left")!.rotation.x).toBeLessThan(restIndex - 0.5);
+    expect(m.bones.get("middle_left")!.rotation.x).toBeLessThan(-0.5);
+    expect(m.bones.get("thumb_left")!.rotation.x).toBeLessThan(restThumb - 0.3);
     // the un-gripped right hand is untouched
     expect(m.bones.get("index_right")!.rotation.x).toBeCloseTo(0, 5);
   });

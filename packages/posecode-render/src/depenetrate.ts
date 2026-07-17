@@ -1,12 +1,13 @@
 /**
- * Self-collision resolution: stop limbs from passing through the body.
+ * Bounded self-penetration correction for selected limb/body samples.
  *
  * Authored poses are pure per-joint rotations, so nothing prevents a biceps
  * curl from dragging the forearm through the thighs, or a cross-body reach
  * from sweeping the hand through the chest. This pass approximates the body
  * with capsules (torso, head, thighs, shins), samples points along each
  * forearm/hand and each lower leg, and when a sample sits inside an obstacle
- * it rotates the limb's proximal joint (shoulder / hip) just enough to clear.
+ * it rotates the limb's proximal joint (shoulder / hip) toward clearance. It
+ * is not a comprehensive collision detector or physics solver.
  *
  * Principles:
  * - **Minimal**: corrections only remove actual overlap, so intentional
@@ -14,8 +15,8 @@
  *   inside it. A pose with no overlap is untouched.
  * - **Deterministic**: corrections are a pure function of the pose, so looping
  *   animations stay smooth (no frame-to-frame jitter).
- * - **Safe**: each adjusted joint is clamped back into its healthy ROM
- *   (widened to admit the authored angle), the same guarantee reach-IK gives.
+ * - **Bounded**: each adjusted joint is clamped back into its configured ROM
+ *   (widened to admit the authored angle), matching reach-IK's constraint.
  *
  * Runs on the driver skeleton right after FK sampling, before ground-lock, in
  * both the viewer's frame loop and its load-time anchor capture, so ground

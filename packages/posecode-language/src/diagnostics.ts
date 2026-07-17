@@ -33,7 +33,7 @@ export function getDiagnostics(text: string): Diagnostic[] {
     diagnostics.push({
       line: w.line,
       severity: "warning",
-      message: `${joint} ${w.action} ${w.requested}° exceeds range of motion, clamped to ${w.clamped}° (safe ${w.limit.min}–${w.limit.max}°)`,
+      message: `${joint} ${w.action} ${w.requested}° exceeds the configured range, clamped to ${w.clamped}° (${w.limit.min}–${w.limit.max}°)`,
     });
   }
 
@@ -49,6 +49,18 @@ export function getDiagnostics(text: string): Diagnostic[] {
         line: idx + 1,
         severity: "hint",
         message: `"${tok}" is deprecated; use "${LEGACY_MODE_ALIASES[tok]}"`,
+      });
+    }
+
+    const axial = /^\s*(spine|chest|neck|head)\s*:\s*(rotate-in|rotate-out)\b/.exec(
+      lineText,
+    );
+    if (axial) {
+      const replacement = axial[2] === "rotate-in" ? "twist-left" : "twist-right";
+      diagnostics.push({
+        line: idx + 1,
+        severity: "hint",
+        message: `"${axial[2]}" is ambiguous on ${axial[1]}; use "${replacement}"`,
       });
     }
   });

@@ -7,7 +7,7 @@ posecode exercise "Forward lunge"
     knee_right: flex 95
     hip_left: extend 15
     knee_left: flex 80
-    ankle_left: plantarflex 50
+    ankle_left: plantarflex 30
     spine: extend 4
     travel: 0 0.3
     pin: foot_left floor

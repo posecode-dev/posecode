@@ -17,14 +17,14 @@
     />
     <meta
       name="description"
-      content="Try Posecode live: paste text from ChatGPT, Claude, or Gemini and watch it animate a 3D figure. Browse a library of movements across fitness, physiotherapy, yoga, and dance."
+      content="Try Posecode live: paste a valid .posecode document from a capable model and watch it animate a 3D figure. Browse movements across fitness, physiotherapy, yoga, and dance."
     />
     <link rel="canonical" href="https://www.posecode.org/play" />
     <meta name="theme-color" content="#0a0d12" />
     <meta property="og:title" content="Posecode Playground: live editor for movement as text" />
     <meta
       property="og:description"
-      content="Paste a .posecode document and watch a 3D figure animate it, with every joint clamped to a safe range of motion."
+      content="Paste a valid .posecode document and watch a 3D figure animate it, with joint targets constrained to configured reference ranges and unresolved reach targets reported."
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.posecode.org/play" />
@@ -75,6 +75,7 @@
         >
           <span class="lib-btn-kicker">Movement</span>
           <span id="lib-current" class="lib-btn-name"></span>
+          <span id="lib-current-status" class="lib-current-status" hidden>Experimental</span>
           <span class="lib-caret" aria-hidden="true"></span>
         </button>
         <span class="tb-divider" aria-hidden="true"></span>
@@ -203,7 +204,7 @@
             <span class="step-n">1</span>
             <div>
               <b>Copy the prompt.</b> Click <em>Copy LLM prompt</em> (top right). It teaches
-              any model (ChatGPT, Claude, Gemini) to write the Posecode language.
+              a capable model how to write the Posecode language.
             </div>
           </li>
           <li>
@@ -211,15 +212,16 @@
             <div>
               <b>Ask an LLM for a movement.</b> Paste the prompt, then ask for what you want:
               <em>“write a deadlift”</em>, <em>“a hamstring stretch”</em>, <em>“cat-cow”</em>.
-              It replies with a <code>.posecode</code> block.
+              For a representable request, it should reply with only the raw
+              <code>.posecode</code> document.
             </div>
           </li>
           <li>
             <span class="step-n">3</span>
             <div>
-              <b>Paste it here.</b> Drop the <code>.posecode</code> text into the editor on the
-              left and watch it animate. Out-of-range angles are clamped automatically and
-              flagged below the editor.
+              <b>Paste it here.</b> Drop the raw <code>.posecode</code> text into the editor on
+              the left. Valid documents animate; parse errors, range clamps, and unresolved
+              reach targets appear below the editor.
             </div>
           </li>
         </ol>
@@ -248,6 +250,7 @@
           aria-label="Search movements"
           autocomplete="off"
         />
+        <div id="lib-readiness" class="chip-row" role="group" aria-label="Filter by launch readiness"></div>
         <div id="lib-domains" class="chip-row" role="group" aria-label="Filter by practice"></div>
         <div id="lib-levels" class="chip-row" role="group" aria-label="Filter by level"></div>
       </div>

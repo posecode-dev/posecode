@@ -5,7 +5,7 @@ posecode exercise "Bent-over row"
   step "Set the hinge" 1.6s flow:
     pelvis: hinge 70
     knees: flex 20
-    ankles: plantarflex 20
+    ankles: dorsiflex 5
     shoulders: flex 65
     elbows: flex 10
     elbows: pronate 80
@@ -20,7 +20,7 @@ posecode exercise "Bent-over row"
     ground-lock: feet
     cue "Drive the elbows up past the ribs, squeeze the shoulder blades"
 
-  step "Lower" 1s drive:
+  step "Lower" 1s settle:
     shoulders: flex 65
     elbows: flex 10
     elbows: pronate 80
@@ -30,7 +30,7 @@ posecode exercise "Bent-over row"
   step "Stand" 1s settle:
     pelvis: hinge 0
     knees: flex 0
-    ankles: plantarflex 0
+    ankles: dorsiflex 0
     shoulders: flex 0
     elbows: flex 0
     elbows: pronate 0

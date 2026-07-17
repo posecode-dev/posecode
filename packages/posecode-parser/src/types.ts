@@ -27,6 +27,12 @@ export interface EulerDeg {
 export interface JointTarget {
   boneId: string;
   euler: EulerDeg;
+  /**
+   * Euler channels explicitly authored by this target. Renderers merge only
+   * these channels into the carried pose; omitted channels retain their prior
+   * value. Absent on legacy/manually-built IR, where all channels are applied.
+   */
+  axes?: Axis[];
 }
 
 /**

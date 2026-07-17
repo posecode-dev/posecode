@@ -47,62 +47,51 @@ import {
   getHover,
   type CompletionKind,
 } from "posecode-language";
+import {
+  ACTION_NAMES,
+  EFFECTOR_NAMES,
+  GROUND_LOCK_EFFECTOR_NAMES,
+  JOINT_NAMES,
+  MODES,
+  MOVEMENT_KINDS,
+  PROP_TYPES,
+  START_POSE_NAMES,
+} from "posecode-parser";
 
 // --- Syntax highlighting ----------------------------------------------------
 
 const KEYWORDS = new Set([
   "posecode",
   "rig",
+  "prop",
   "pose",
   "start",
+  "clip",
   "step",
   "repeat",
   "ground-lock",
+  "reach",
+  "pin",
+  "grip",
+  "turn",
+  "travel",
   "cue",
   "hold",
 ]);
-const KINDS = new Set(["exercise", "stretch", "posture"]);
-const ACTIONS = new Set([
-  "flex",
-  "extend",
-  "abduct",
-  "adduct",
-  "rotate-in",
-  "rotate-out",
-  "supinate",
-  "pronate",
-  "dorsiflex",
-  "plantarflex",
-]);
+const KINDS = new Set<string>(MOVEMENT_KINDS);
+const ACTIONS = new Set<string>(ACTION_NAMES);
 const ATOMS = new Set([
-  "flow",
-  "settle",
-  "drive",
-  "snap",
-  "linear",
+  ...MODES,
   "ease-in",
   "ease-out",
   "ease-in-out",
-  "neutral",
-  "standing",
-  "plank",
-  "hands",
-  "feet",
+  ...START_POSE_NAMES,
+  ...PROP_TYPES,
+  ...EFFECTOR_NAMES,
+  ...GROUND_LOCK_EFFECTOR_NAMES,
   "humanoid",
 ]);
-const JOINTS = new Set([
-  "shoulders",
-  "elbows",
-  "wrists",
-  "hips",
-  "knees",
-  "ankles",
-  "pelvis",
-  "spine",
-  "chest",
-  "neck",
-  "head",
-]);
+const JOINTS = new Set<string>(JOINT_NAMES);
 
 const posecodeStream = StreamLanguage.define<{ inStep: boolean }>({
   name: "posecode",

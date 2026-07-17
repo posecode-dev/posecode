@@ -7,7 +7,7 @@ posecode exercise "Biceps curl"
     elbows: supinate 80
     cue "Curl up, keep the elbows tucked at your sides"
 
-  step "Lower" 1.4s drive:
+  step "Lower" 1.4s settle:
     elbows: flex 15
     elbows: supinate 80
     cue "Lower under control: don't swing"

@@ -7,7 +7,8 @@ posecode exercise "Crunch"
     knees: flex 90
     ankles: plantarflex 50
     shoulders: flex 45
-    pin: feet floor
+    pin: pelvis floor
+    reach: feet floor
 
   step "Curl up" 1s settle:
     hips: flex 45
@@ -17,10 +18,11 @@ posecode exercise "Crunch"
     spine: flex 30
     chest: flex 20
     neck: flex 15
-    pin: feet floor
+    pin: pelvis floor
+    reach: feet floor
     cue "Curl the shoulders off the floor, ribs toward the hips"
 
-  step "Lower" 1.2s drive:
+  step "Lower" 1.2s settle:
     hips: flex 45
     knees: flex 90
     ankles: plantarflex 50
@@ -28,7 +30,8 @@ posecode exercise "Crunch"
     spine: flex 0
     chest: flex 0
     neck: flex 0
-    pin: feet floor
+    pin: pelvis floor
+    reach: feet floor
     cue "Lower the upper back down with control"
 
   repeat 12

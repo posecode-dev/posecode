@@ -7,7 +7,7 @@
  * the side panel. This mirrors how an LLM-authored doc would be pasted in.
  */
 
-import { parse } from "posecode-parser";
+import { parse, type ParseError, type Warning } from "posecode-parser";
 import { inject } from "@vercel/analytics";
 import type { Viewer } from "posecode-render";
 import {
@@ -20,11 +20,9 @@ import type { PosecodeEditor } from "./editor.js";
 import { ANIMATION_PROGRESS_MESSAGE, PRESETS } from "./presets.js";
 import { SHOWCASE_CLIPS } from "./clips.js";
 
-// The movement shown on first open (no shared link). Jumping jacks plays the
-// Mixamo showcase clip, so the playground greets visitors with polished mocap
-// while every other preset — and the editor once you engage — stays procedural.
-// Falls back to the first library entry if the id is ever removed.
-const DEFAULT_PRESET = PRESETS.find((p) => p.id === "jumping-jacks") ?? PRESETS[0]!;
+// Open on a deterministic, fully procedural movement. Mocap-backed or
+// Experimental presets should never be the product's first impression.
+const DEFAULT_PRESET = PRESETS.find((p) => p.id === "squat") ?? PRESETS[0]!;
 import { renderWarnings } from "./warnings.js";
 import llmPrompt from "../../spec/llm-authoring.md?raw";
 
@@ -65,6 +63,28 @@ let rep = 1;
 // Maps each phase name → the 1-based line range of its `step` block, so the
 // editor can highlight the lines driving the currently-animating phase.
 let phaseRanges = new Map<string, { from: number; to: number }>();
+let lastParseErrors: ParseError[] = [];
+let lastRomWarnings: Warning[] = [];
+let lastContactSignature = "";
+let lastContactRefresh = 0;
+
+/** Merge live IK residuals with source diagnostics without repainting each frame. */
+function refreshContactDiagnostics(force = false): void {
+  if (!viewer) return;
+  const contacts = viewer.getReachResiduals();
+  const signature = contacts
+    .filter((contact) => contact.weight >= 0.98 && !contact.reached)
+    .map((contact) =>
+      `${contact.effector}|${contact.target}|${contact.reason ?? ""}|${
+        contact.distance === null ? "null" : Math.round(contact.distance * 1000)
+      }`,
+    )
+    .sort()
+    .join(";");
+  if (!force && signature === lastContactSignature) return;
+  lastContactSignature = signature;
+  renderWarnings(warnings, lastParseErrors, lastRomWarnings, contacts);
+}
 
 const playLbl = playpause.querySelector<HTMLSpanElement>(".lbl");
 
@@ -88,6 +108,7 @@ function wireViewer(v: Viewer): void {
     // Light up the step block driving this phase (cleared between loops / on reset).
     const range = phaseName === "reset" ? undefined : phaseRanges.get(phaseName);
     editorApi?.highlightPhase(range ? range.from : null, range?.to);
+    refreshContactDiagnostics(true);
   });
   v.onTick((time, duration) => {
     if (!scrubbing) {
@@ -95,6 +116,11 @@ function wireViewer(v: Viewer): void {
       paintScrub();
     }
     clock.textContent = `${time.toFixed(1)}s`;
+    const now = performance.now();
+    if (now - lastContactRefresh >= 200) {
+      lastContactRefresh = now;
+      refreshContactDiagnostics();
+    }
   });
   v.onLoop(() => {
     rep = (rep % repeat) + 1;
@@ -173,8 +199,10 @@ function scheduleRecompile(): void {
 function handleEditorChange(source: string): void {
   const preset = PRESETS.find((p) => p.source === source);
   currentPresetId = preset?.id ?? null;
-  libCurrent.textContent =
-    preset?.label ?? (source.trim() ? "Custom movement" : "New movement");
+  setCurrentPresetLabel(
+    preset,
+    source.trim() ? "Custom movement" : "New movement",
+  );
   history.replaceState(null, "", buildNicePlayPath(source));
   scheduleRecompile();
 }
@@ -196,6 +224,9 @@ function recompile(): void {
     return;
   }
   const { ir, errors, warnings: warns } = parse(source);
+  lastParseErrors = errors;
+  lastRomWarnings = warns;
+  lastContactSignature = "";
   renderWarnings(warnings, errors, warns);
   // Before the renderer finishes loading, we still parse + surface warnings;
   // the viewer-dependent work re-runs once `boot()` calls recompile() again.
@@ -224,8 +255,10 @@ function recompile(): void {
 // closes the panel, so the topbar stays a one-glance control on any screen.
 const libOpenBtn = $<HTMLButtonElement>("lib-open");
 const libCurrent = $<HTMLSpanElement>("lib-current");
+const libCurrentStatus = $<HTMLSpanElement>("lib-current-status");
 const library = $<HTMLElement>("library");
 const libSearch = $<HTMLInputElement>("lib-search");
+const libReadiness = $<HTMLDivElement>("lib-readiness");
 const libDomains = $<HTMLDivElement>("lib-domains");
 const libLevels = $<HTMLDivElement>("lib-levels");
 const libList = $<HTMLDivElement>("lib-list");
@@ -233,8 +266,19 @@ const libCount = $<HTMLSpanElement>("lib-count");
 
 let currentPresetId: string | null = null;
 let libQuery = "";
+let libStatus = "ready"; // "" = all; launch-ready is the default first view
 let libDomain = ""; // "" = all
 let libLevel = ""; // "" = all
+
+function setCurrentPresetLabel(
+  preset: (typeof PRESETS)[number] | undefined,
+  fallback: string,
+): void {
+  libCurrent.textContent = preset?.label ?? fallback;
+  const experimental = preset?.status === "experimental";
+  libCurrentStatus.hidden = !experimental;
+  libCurrentStatus.title = experimental ? ANIMATION_PROGRESS_MESSAGE : "";
+}
 
 /** Render one chip row ("All" + each distinct value) reflecting the selection. */
 function renderChips(
@@ -249,7 +293,9 @@ function renderChips(
     const chip = document.createElement("button");
     chip.type = "button";
     chip.className = "fchip";
-    chip.textContent = value || allLabel;
+    chip.textContent = value
+      ? `${value.charAt(0).toUpperCase()}${value.slice(1)}`
+      : allLabel;
     chip.setAttribute("aria-pressed", String(value === selected));
     chip.addEventListener("click", () => onPick(value));
     host.append(chip);
@@ -257,13 +303,29 @@ function renderChips(
 }
 
 function renderLibraryFilters(): void {
-  // Domains keep catalogue order (curated); levels are a fixed scale.
-  renderChips(libDomains, [...new Set(PRESETS.map((p) => p.domain))], libDomain, "All", (v) => {
+  const statusPresets = PRESETS.filter((p) => !libStatus || p.status === libStatus);
+  const domainValues = [...new Set(statusPresets.map((p) => p.domain))];
+  if (libDomain && !domainValues.includes(libDomain)) libDomain = "";
+  const domainPresets = statusPresets.filter((p) => !libDomain || p.domain === libDomain);
+  const levelOrder = ["Beginner", "Intermediate", "Advanced"];
+  const levelValues = levelOrder.filter((level) =>
+    domainPresets.some((preset) => preset.difficulty === level),
+  );
+  if (libLevel && !levelValues.includes(libLevel)) libLevel = "";
+
+  renderChips(libReadiness, ["ready", "experimental"], libStatus, "All movements", (v) => {
+    libStatus = v;
+    renderLibraryFilters();
+    renderLibraryList();
+  });
+  // Only offer facets that can produce a result under the active readiness
+  // filter. Ready view therefore never exposes experimental-only domains.
+  renderChips(libDomains, domainValues, libDomain, "All", (v) => {
     libDomain = v;
     renderLibraryFilters();
     renderLibraryList();
   });
-  renderChips(libLevels, ["Beginner", "Intermediate", "Advanced"], libLevel, "All levels", (v) => {
+  renderChips(libLevels, levelValues, libLevel, "All levels", (v) => {
     libLevel = v;
     renderLibraryFilters();
     renderLibraryList();
@@ -284,6 +346,7 @@ function libraryMatches(): typeof PRESETS {
     (p) =>
       (!libDomain || p.domain === libDomain) &&
       (!libLevel || p.difficulty === libLevel) &&
+      (!libStatus || p.status === libStatus) &&
       (!q ||
         fold(`${p.label} ${p.target} ${p.domain} ${p.bodyPart} ${p.equipment}`).includes(q)),
   );
@@ -305,6 +368,7 @@ function renderLibraryList(): void {
     reset.addEventListener("click", () => {
       libQuery = "";
       libSearch.value = "";
+      libStatus = "ready";
       libDomain = "";
       libLevel = "";
       renderLibraryFilters();
@@ -340,21 +404,18 @@ function renderLibraryList(): void {
     const label = document.createElement("span");
     label.textContent = p.label;
     name.append(label);
-    if (p.status === "animation-progress") {
+    if (p.status === "experimental") {
       const status = document.createElement("span");
       status.className = "li-status";
-      status.textContent = "Animation in Progress";
+      status.textContent = "Experimental";
       status.title = ANIMATION_PROGRESS_MESSAGE;
-      status.setAttribute(
-        "aria-label",
-        `Animation in Progress: ${ANIMATION_PROGRESS_MESSAGE}`,
-      );
+      status.setAttribute("aria-label", "Experimental preview");
       name.append(status);
     }
     const meta = document.createElement("span");
     meta.className = "li-meta";
-    meta.textContent = p.status === "animation-progress"
-      ? ANIMATION_PROGRESS_MESSAGE
+    meta.textContent = p.status === "experimental"
+      ? `${p.target} · ${p.equipment} · ${p.difficulty} · Not launch-ready`
       : `${p.target} · ${p.equipment} · ${p.difficulty}`;
     item.append(name, meta);
     item.addEventListener("click", () => {
@@ -369,7 +430,7 @@ function loadPreset(id: string): void {
   const preset = PRESETS.find((p) => p.id === id);
   if (!preset) return;
   currentPresetId = preset.id;
-  libCurrent.textContent = preset.label;
+  setCurrentPresetLabel(preset, preset.label);
   editorApi?.setValue(preset.source);
   history.replaceState(null, "", buildNicePlayPath(preset.source));
   recompile();
@@ -389,7 +450,7 @@ renderLibraryList();
 // its text first.
 $<HTMLButtonElement>("new-doc").addEventListener("click", () => {
   currentPresetId = null;
-  libCurrent.textContent = "New movement";
+  setCurrentPresetLabel(undefined, "New movement");
   editorApi?.setValue("");
   history.replaceState(null, "", "/play");
   recompile(); // swaps the status row to the blank-editor hint immediately
@@ -550,13 +611,13 @@ let initialDoc: string;
 if (sharedSource) {
   const preset = PRESETS.find((p) => p.source === sharedSource);
   currentPresetId = preset?.id ?? null;
-  libCurrent.textContent = preset ? preset.label : "↗ Shared link";
+  setCurrentPresetLabel(preset, "↗ Shared link");
   initialDoc = sharedSource;
   intro.hidden = true;
 } else {
   initialDoc = DEFAULT_PRESET.source;
   currentPresetId = DEFAULT_PRESET.id;
-  libCurrent.textContent = DEFAULT_PRESET.label;
+  setCurrentPresetLabel(DEFAULT_PRESET, DEFAULT_PRESET.label);
 }
 
 // Boot the two heavyweights (CodeMirror editor + Three.js renderer) after the

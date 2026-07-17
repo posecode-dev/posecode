@@ -12,7 +12,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
-import { eulerRomFor } from "posecode-parser";
 import type { PosecodeIR, ReachTarget, PinTarget, GripTarget } from "posecode-parser";
 import { buildMannequin, type Mannequin } from "./mannequin.js";
 import { applyGroundLock as applyGroundLockTo, groundFigure as groundFigureOf } from "./groundlock.js";
@@ -22,7 +21,6 @@ import {
   type PhaseSegment,
   type WeightedReachTarget,
 } from "./timeline.js";
-import { solveCCD, type JointLimits } from "./ik.js";
 import { buildProps, type PropScene } from "./props.js";
 import { loadCharacter, type Character } from "./character.js";
 import {
@@ -34,7 +32,30 @@ import {
 } from "./clips.js";
 import { depenetrate } from "./depenetrate.js";
 import { resolvePropContacts, propContactExemptions } from "./propcontact.js";
-import { alignFloorPalms, levelPlantedFeet, wrapGrip, relaxHands, swingArms, aimHead } from "./contacts.js";
+import {
+  alignFloorContacts,
+  alignGripFrames,
+  enforceContactRom,
+  floorContactHeight,
+  floorTargetForEffector,
+  formFists,
+  isDipBarGrip,
+  levelPlantedFeet,
+  prepareGripFrames,
+  wrapGrip,
+  relaxHands,
+  swingArms,
+  aimHead,
+} from "./contacts.js";
+import {
+  REACH_TOLERANCE,
+  effectorBoneId,
+  missingReachTarget,
+  reachChain,
+  solveReachToPoint,
+  type ReachResidual,
+} from "./reach.js";
+import { solveCCD } from "./ik.js";
 
 const DEG = Math.PI / 180;
 
@@ -65,6 +86,8 @@ export interface Viewer {
   /** True while a retargeted mocap clip is driving (or fading over) the pose. */
   get clipActive(): boolean;
   getTimeline(): TimelineInfo | null;
+  /** Diagnostics for every active reach, including missing/unreachable targets. */
+  getReachResiduals(): readonly ReachResidual[];
   /** Precise visible world bounds; intended for audits and deterministic export. */
   getVisibleBounds(): THREE.Box3;
   getMannequin(): any;
@@ -312,6 +335,14 @@ export function createViewer(
   // The last loaded document, kept so the viewer can re-solve base pose and
   // ground anchors when the character (with its own proportions) arrives.
   let lastIR: PosecodeIR | null = null;
+  // Rebuilt on every solved frame. Missing target names and unreachable
+  // effectors remain visible here instead of disappearing behind `continue`.
+  let reachResiduals: ReachResidual[] = [];
+  type ReachResidualTarget =
+    | { kind: "fixed"; point: THREE.Vector3 }
+    | { kind: "floor"; point: THREE.Vector3 }
+    | { kind: "landmark"; boneId: string };
+  let reachResidualTargets: Array<ReachResidualTarget | null> = [];
   let groundTargets = new Map<string, THREE.Vector3>();
   const segmentStartEffectors: Map<string, THREE.Vector3>[] = [];
   // World-space anchor points contributed by scene props (chair seat, bar grip,
@@ -332,6 +363,11 @@ export function createViewer(
   let loopCb: () => void = () => {};
   let lastPhaseName = "";
   let activeSegIndex = 0;
+  // `load()` briefly solves each real phase endpoint to seed any floor pin
+  // introduced by the following phase from the *fully solved* prior pose.
+  // Keep those internal solves out of callbacks, character/mocap state, and
+  // the canvas; they are deterministic anchor preparation, not visible frames.
+  let precomputingAnchors = false;
 
   // Camera easing targets.
   const desiredTarget = new THREE.Vector3(0, 0.9, 0);
@@ -398,79 +434,12 @@ export function createViewer(
     return frameAnchorMap;
   }
 
-  // Friendly DSL effector aliases → the distal bone whose world position is
-  // driven to the reach target.
-  const EFFECTOR_BONE: Record<string, string> = {
-    hand_left: "wrist_left",
-    hand_right: "wrist_right",
-    foot_left: "ankle_left",
-    foot_right: "ankle_right",
-  };
-
-  /**
-   * The rotatable joint chain (proximal → distal) that moves an effector, with
-   * each joint's ROM expressed as local Euler limits for the constrained solve.
-   * A limit box is widened to include the joint's CURRENT (authored FK) angle:
-   * the timeline pose is already ROM-clamped in author terms, but rig mechanics
-   * such as the hip-hinge counter-rotation can place a bone outside its raw box
-   * on purpose: IK must never fight the authored pose, only be prevented from
-   * pushing beyond it.
-   */
-  function reachChain(effectorBone: string): {
-    joints: THREE.Object3D[];
-    limits: (JointLimits | null)[];
-  } {
-    const side = effectorBone.endsWith("_left") ? "left" : "right";
-    const ids = effectorBone.startsWith("wrist")
-      ? [`shoulder_${side}`, `elbow_${side}`]
-      : effectorBone.startsWith("elbow")
-        ? [`shoulder_${side}`]
-        : effectorBone.startsWith("ankle")
-        ? [`hip_${side}`, `knee_${side}`]
-        : [];
-    const joints: THREE.Object3D[] = [];
-    const limits: (JointLimits | null)[] = [];
-    for (const id of ids) {
-      const node = mannequin.bones.get(id);
-      if (!node) continue;
-      joints.push(node);
-      limits.push(jointLimitsFor(id, node));
-    }
-    return { joints, limits };
-  }
-
-  const REACH_EULER = new THREE.Euler();
-
-  /** A bone's ROM as radian Euler limits, widened to admit its current pose. */
-  function jointLimitsFor(boneId: string, node: THREE.Object3D): JointLimits | null {
-    const rom = eulerRomFor(boneId);
-    if (!rom) return null;
-    REACH_EULER.setFromQuaternion(node.quaternion, "XYZ");
-    return {
-      x: widen(rom.x.min * DEG, rom.x.max * DEG, REACH_EULER.x),
-      y: widen(rom.y.min * DEG, rom.y.max * DEG, REACH_EULER.y),
-      z: widen(rom.z.min * DEG, rom.z.max * DEG, REACH_EULER.z),
-    };
-  }
-
-  function widen(min: number, max: number, current: number): [number, number] {
-    return [Math.min(min, current), Math.max(max, current)];
-  }
-
   /** Resolve a reach target name to a world point: floor / prop anchor / landmark. */
   function resolveReachTarget(
     target: string,
-    effector: THREE.Object3D,
+    effectorName: string,
   ): THREE.Vector3 | null {
-    if (target === "floor") {
-      // Rest the effector's MESH on the floor, not its bone origin: the hand
-      // mesh extends below the wrist bone, so a bone target of y=0 would sink
-      // the palm and force the floor safety clamp to lift the whole body.
-      const p = effector.getWorldPosition(new THREE.Vector3());
-      const box = new THREE.Box3().setFromObject(effector);
-      p.y = Number.isFinite(box.min.y) ? Math.max(0, p.y - box.min.y) : 0;
-      return p;
-    }
+    if (target === "floor") return floorTargetForEffector(mannequin, effectorName);
     const anchor = propAnchors.get(target);
     if (anchor) return anchor.clone();
     const bone = mannequin.bones.get(target);
@@ -487,22 +456,61 @@ export function createViewer(
    * joints keep their authored FK pose.
    */
   function applyReaches(reaches: WeightedReachTarget[]): void {
+    reachResiduals = [];
+    reachResidualTargets = [];
     for (const r of reaches) {
-      const effectorBone = EFFECTOR_BONE[r.effector] ?? r.effector;
+      const effectorBone = effectorBoneId(r.effector);
       const effector = mannequin.bones.get(effectorBone);
-      if (!effector) continue;
-      const target = resolveReachTarget(r.target, effector);
-      if (!target) continue;
-      const { joints, limits } = reachChain(effectorBone);
-      if (joints.length === 0) continue;
-      const before = joints.map((joint) => joint.quaternion.clone());
-      solveCCD({ joints, limits, effector, target }, 12);
-      for (let i = 0; i < joints.length; i++) {
-        const solved = joints[i]!.quaternion.clone();
-        joints[i]!.quaternion.slerpQuaternions(before[i]!, solved, r.weight);
+      if (!effector) {
+        reachResiduals.push(
+          solveReachToPoint(mannequin, r.effector, r.target, new THREE.Vector3(), r.weight),
+        );
+        reachResidualTargets.push(null);
+        continue;
       }
-      mannequin.root.updateMatrixWorld(true);
+      const target = resolveReachTarget(r.target, r.effector);
+      if (!target) {
+        reachResiduals.push(missingReachTarget(r.effector, r.target, r.weight));
+        reachResidualTargets.push(null);
+        continue;
+      }
+      reachResiduals.push(
+        solveReachToPoint(mannequin, r.effector, r.target, target, r.weight),
+      );
+      reachResidualTargets.push(
+        r.target === "floor"
+          ? { kind: "floor", point: target.clone() }
+          : mannequin.bones.has(r.target)
+            ? { kind: "landmark", boneId: r.target }
+            : { kind: "fixed", point: target.clone() },
+      );
     }
+  }
+
+  /** Re-measure after later contacts/root grounding so diagnostics are final. */
+  function refreshReachResiduals(): void {
+    reachResiduals = reachResiduals.map((residual, index) => {
+      const targetRef = reachResidualTargets[index];
+      if (!targetRef || residual.distance === null) return residual;
+      const effector = mannequin.bones.get(effectorBoneId(residual.effector));
+      if (!effector) return residual;
+      // Body landmarks and contact surfaces can move during later root/contact
+      // reconciliation. Re-read their final geometry while preserving a floor
+      // contact's solved world-space X/Z anchor.
+      const point = effector.getWorldPosition(new THREE.Vector3());
+      let target: THREE.Vector3 | undefined;
+      if (targetRef.kind === "fixed") {
+        target = targetRef.point;
+      } else if (targetRef.kind === "landmark") {
+        target = mannequin.bones.get(targetRef.boneId)?.getWorldPosition(new THREE.Vector3());
+      } else {
+        const height = floorContactHeight(mannequin, residual.effector);
+        if (height !== null) target = targetRef.point.clone().setY(point.y - height);
+      }
+      if (!target) return residual;
+      const distance = point.distanceTo(target);
+      return { ...residual, distance, reached: distance <= REACH_TOLERANCE };
+    });
   }
 
   /**
@@ -515,10 +523,12 @@ export function createViewer(
    */
   function applyPins(pins: PinTarget[]): void {
     if (pins.length === 0) return;
+    const dipBarPins = pins.filter((pin) => isDipBarGrip(pin.anchor));
+    prepareGripFrames(mannequin, dipBarPins);
     const delta = new THREE.Vector3();
     let n = 0;
     for (const p of pins) {
-      const effectorBone = EFFECTOR_BONE[p.effector] ?? p.effector;
+      const effectorBone = effectorBoneId(p.effector);
       const effector = mannequin.bones.get(effectorBone);
       if (!effector) continue;
       let anchor: THREE.Vector3 | null = null;
@@ -526,14 +536,12 @@ export function createViewer(
         const startPos = segmentStartEffectors[activeSegIndex]?.get(effectorBone);
         if (startPos) {
           anchor = startPos.clone();
-          const isFoot = effectorBone.startsWith("ankle") || effectorBone.startsWith("foot");
-          const drop = isFoot ? (character?.proportions.soleDrop ?? 0.042) : 0;
-          anchor.y = drop;
+          anchor.y = floorTargetForEffector(mannequin, p.effector)?.y ?? 0;
         } else {
-          anchor = resolveReachTarget(p.anchor, effector);
+          anchor = resolveReachTarget(p.anchor, p.effector);
         }
       } else {
-        anchor = resolveReachTarget(p.anchor, effector);
+        anchor = resolveReachTarget(p.anchor, p.effector);
       }
       if (!anchor) continue;
       delta.add(anchor.sub(effector.getWorldPosition(new THREE.Vector3())));
@@ -543,6 +551,7 @@ export function createViewer(
       mannequin.root.position.add(delta.multiplyScalar(1 / n));
       mannequin.root.updateMatrixWorld(true);
     }
+    alignGripFrames(mannequin, dipBarPins);
   }
 
   /**
@@ -555,17 +564,20 @@ export function createViewer(
    */
   function applyGrips(grips: GripTarget[]): void {
     if (grips.length === 0) return;
-    const resolveGrip = (anchor: string, effector: THREE.Object3D): THREE.Vector3 | null =>
-      resolveReachTarget(anchor, effector) ??
-      resolveReachTarget(anchor.replace(/_(left|right)$/, ""), effector);
+    // Dip support begins from a deterministic untwisted forearm frame; doing
+    // this before translation/IK means the later wrist target remains exact.
+    prepareGripFrames(mannequin, grips);
+    const resolveGrip = (anchor: string, effectorName: string): THREE.Vector3 | null =>
+      resolveReachTarget(anchor, effectorName) ??
+      resolveReachTarget(anchor.replace(/_(left|right)$/, ""), effectorName);
     // 1. Body translate (the vertical pull).
     const delta = new THREE.Vector3();
     let n = 0;
     for (const g of grips) {
-      const effectorBone = EFFECTOR_BONE[g.effector] ?? g.effector;
+      const effectorBone = effectorBoneId(g.effector);
       const effector = mannequin.bones.get(effectorBone);
       if (!effector) continue;
-      const target = resolveGrip(g.anchor, effector);
+      const target = resolveGrip(g.anchor, g.effector);
       if (!target) continue;
       delta.add(target.clone().sub(effector.getWorldPosition(new THREE.Vector3())));
       n++;
@@ -576,17 +588,26 @@ export function createViewer(
     }
     // 2. Per-hand arm IK onto each grip point (ROM-clamped via reachChain).
     for (const g of grips) {
-      const effectorBone = EFFECTOR_BONE[g.effector] ?? g.effector;
+      const effectorBone = effectorBoneId(g.effector);
       const effector = mannequin.bones.get(effectorBone);
       if (!effector) continue;
-      const target = resolveGrip(g.anchor, effector);
+      const target = resolveGrip(g.anchor, g.effector);
       if (!target) continue;
-      const { joints, limits } = reachChain(effectorBone);
+      const { joints, limits } = reachChain(mannequin, g.effector);
       if (joints.length === 0) continue;
+      if (isDipBarGrip(g.anchor)) {
+        // Keep forearm twist stable while CCD positions the hand. Otherwise
+        // equally-valid axial solutions flip palms between/away from the rails.
+        for (let i = 0; i < joints.length; i++) {
+          if (!joints[i]!.name.startsWith("elbow_")) continue;
+          const limit = limits[i];
+          if (limit) limits[i] = { ...limit, y: [0, 0] };
+        }
+      }
       solveCCD({ joints, limits, effector, target }, 12);
     }
-    // 3. Finger wrap. Wrist orientation remains inherited until the semantic
-    // contact-frame solver can account for this character's calibrated axes.
+    // 3. Stable contact frame followed by an anatomically signed finger wrap.
+    alignGripFrames(mannequin, grips);
     wrapGrip(mannequin, grips);
   }
 
@@ -599,12 +620,12 @@ export function createViewer(
     if (authoredHead) return;
     const pts: THREE.Vector3[] = [];
     const collect = (effectorName: string, anchorName: string): void => {
-      const bone = EFFECTOR_BONE[effectorName] ?? effectorName;
+      const bone = effectorBoneId(effectorName);
       const eff = mannequin.bones.get(bone);
       if (!eff) return;
       const t =
-        resolveReachTarget(anchorName, eff) ??
-        resolveReachTarget(anchorName.replace(/_(left|right)$/, ""), eff);
+        resolveReachTarget(anchorName, effectorName) ??
+        resolveReachTarget(anchorName.replace(/_(left|right)$/, ""), effectorName);
       if (t) pts.push(t);
     };
     for (const g of info.grips) collect(g.effector, g.anchor);
@@ -671,7 +692,7 @@ export function createViewer(
       }
       // Life layer rides on wall-clock time (not timeline time) so the figure
       // keeps breathing and blinking while paused or scrubbing.
-      applyLife(performance.now() / 1000);
+      if (!precomputingAnchors) applyLife(performance.now() / 1000);
       // Recompute root contact from the grounded base each frame (no drift).
       mannequin.root.position.copy(baseRootPos);
       mannequin.root.quaternion.copy(baseRootQuat);
@@ -687,6 +708,32 @@ export function createViewer(
       mannequin.root.position.x += info.rootOffset.x;
       mannequin.root.position.z += info.rootOffset.z;
       mannequin.root.updateMatrixWorld(true);
+      // A semantic fist is geometry as well as an endpoint name. Close any
+      // unauthored digits before floor target/bounds resolution; authored curl
+      // remains untouched and survives the later wrist contact correction.
+      const fistSides = fistSidesOf(info.reaches, info.pins, info.groundLock);
+      const activeGripSides = gripSidesOf(info.grips);
+      const constrainedHandSides = contactHandSidesOf(
+        info.reaches,
+        info.pins,
+        info.grips,
+        info.groundLock,
+      );
+      const palmFloorSides = floorHandSidesOf(info.reaches, info.pins, info.groundLock);
+      formFists(mannequin, fistSides, authoredFingers);
+      // Finger surface shape is part of a floor target too. Flatten palms (and
+      // relax free hands) before measuring their subtree bounds; fist/grip
+      // sides are protected from this pass.
+      relaxHands(
+        mannequin,
+        unionHandSides(activeGripSides, fistSides),
+        authoredFingers,
+        palmFloorSides,
+      );
+      // Establish the intended palm/knuckle surface BEFORE any floor target is
+      // measured. The post-IK pass below restores the same frame after parent
+      // joints move, keeping contact-surface height consistent at both ends.
+      alignFloorContacts(mannequin, info.reaches, info.pins, info.groundLock);
       // Self-collision: nudge limbs out of the body BEFORE contact solving so
       // ground-lock and pins see the corrected pose (same order as load()).
       depenetrate(mannequin);
@@ -710,22 +757,35 @@ export function createViewer(
       // bug. Ground-lock and pins have already fixed the root placement that
       // floor/landmark targets resolve against.
       applyReaches(info.reaches);
-      alignFloorPalms(mannequin, info.reaches, info.pins, info.groundLock);
+      alignFloorContacts(mannequin, info.reaches, info.pins, info.groundLock);
       // Plantigrade correction: keep planted soles flat to the floor so grounded
       // lower-body poses (squat, lunge, deadlift) don't balance on the toes.
       // Runs before the floor clamp so the leveled sole is what rests on y=0.
       levelPlantedFeet(mannequin, info.groundLock);
       // L4.2 aliveness: contralateral arm swing during locomotion (free arms only).
-      swingArms(mannequin, authoredShoulders, gripSidesOf(info.grips));
-      // L4.1 aliveness: relax idle hands into a natural curl (grips still wrap).
-      relaxHands(
-        mannequin,
-        gripSidesOf(info.grips),
-        authoredFingers,
-        floorHandSidesOf(info.reaches, info.pins, info.groundLock),
-      );
+      swingArms(mannequin, authoredShoulders, constrainedHandSides);
       // L4.3 aliveness: turn the head toward the active contact (bar / floor reach).
       applyLookAt(info);
+      // Final renderer-authored contact mutations stay inside strict terminal
+      // ROM (notably wrist and every ankle axis, including locked ankle Y/Z).
+      enforceContactRom(mannequin);
+      // A floor reach can change a limb after floating-root ground-lock has
+      // placed the existing supports. Reconcile once more in constraint order:
+      // replant the root support, then re-solve the independent limbs. Without
+      // this bounded refinement, the global floor safety clamp could rescue a
+      // reached knee/hand by lifting the declared planted foot several cm.
+      if (info.groundLock.length > 0 && info.reaches.length > 0) {
+        for (let refinement = 0; refinement < 3; refinement++) {
+          applyGroundLockTo(
+            mannequin,
+            info.groundLock,
+            frameAnchors(info.rootYaw, info.rootOffset),
+          );
+          applyReaches(info.reaches);
+          alignFloorContacts(mannequin, info.reaches, info.pins, info.groundLock);
+          enforceContactRom(mannequin);
+        }
+      }
       // Safety net: reconcile the fully-solved pose with the floor.
       //
       // A ground-locked phase asserts its effectors (feet, and for a plank the
@@ -751,11 +811,13 @@ export function createViewer(
         mannequin.root.position.y -= box.min.y;
         mannequin.root.updateMatrixWorld(true);
       }
-      if (info.phaseName !== lastPhaseName) {
+      refreshReachResiduals();
+      if (!precomputingAnchors && info.phaseName !== lastPhaseName) {
         lastPhaseName = info.phaseName;
         phaseCb({ phaseName: info.phaseName, ...(info.cue ? { cue: info.cue } : {}) });
       }
     }
+    if (precomputingAnchors) return;
     // Mirror the fully-solved driver pose onto the skinned character.
     character?.sync(mannequin);
     // Mocap layer: ease the crossfade weight, then blend the retargeted clip
@@ -822,6 +884,29 @@ export function createViewer(
       timeline = buildTimeline(ir);
       time = 0;
       lastPhaseName = "";
+      reachResiduals = [];
+      reachResidualTargets = [];
+      authoredFingers = new Set(timeline.bonesUsed.filter(isFingerId));
+      authoredShoulders = new Set(timeline.bonesUsed.filter((id) => id.startsWith("shoulder_")));
+      authoredHead = timeline.bonesUsed.some((id) => id === "head" || id === "neck");
+      const initialPhase = ir.phases[0];
+      const initialFistSides = fistSidesOf(
+        initialPhase?.reaches ?? [],
+        initialPhase?.pins ?? [],
+        initialPhase?.groundLock ?? [],
+      );
+      const initialGripSides = gripSidesOf(initialPhase?.grips ?? []);
+      const initialConstrainedHandSides = contactHandSidesOf(
+        initialPhase?.reaches ?? [],
+        initialPhase?.pins ?? [],
+        initialPhase?.grips ?? [],
+        initialPhase?.groundLock ?? [],
+      );
+      const initialPalmFloorSides = floorHandSidesOf(
+        initialPhase?.reaches ?? [],
+        initialPhase?.pins ?? [],
+        initialPhase?.groundLock ?? [],
+      );
       // Scene props: tear down any previous set, build the declared ones, and
       // expose their anchors to reach-IK.
       if (propScene) {
@@ -841,23 +926,28 @@ export function createViewer(
       applyBaseRoot();
       timeline.sample(0, mannequin.bones);
       mannequin.root.updateMatrixWorld(true);
+      formFists(mannequin, initialFistSides, authoredFingers);
+      relaxHands(
+        mannequin,
+        unionHandSides(initialGripSides, initialFistSides),
+        authoredFingers,
+        initialPalmFloorSides,
+      );
+      alignFloorContacts(
+        mannequin,
+        initialPhase?.reaches ?? [],
+        initialPhase?.pins ?? [],
+        initialPhase?.groundLock ?? [],
+      );
       depenetrate(mannequin);
       groundFigureOf(mannequin);
       if (propScene) {
         resolvePropContacts(mannequin, propScene.colliders, contactExemptionsOf(ir.phases[0] ?? {}));
       }
       levelPlantedFeet(mannequin, ir.phases[0]?.groundLock ?? []);
-      authoredFingers = new Set(timeline.bonesUsed.filter(isFingerId));
-      authoredShoulders = new Set(timeline.bonesUsed.filter((id) => id.startsWith("shoulder_")));
-      authoredHead = timeline.bonesUsed.some((id) => id === "head" || id === "neck");
-      swingArms(mannequin, authoredShoulders, gripSidesOf(ir.phases[0]?.grips ?? []));
-      relaxHands(
-        mannequin,
-        gripSidesOf(ir.phases[0]?.grips ?? []),
-        authoredFingers,
-        floorHandSidesOf(ir.phases[0]?.reaches ?? [], ir.phases[0]?.pins ?? [], ir.phases[0]?.groundLock ?? []),
-      );
+      swingArms(mannequin, authoredShoulders, initialConstrainedHandSides);
       applyLookAt({ grips: ir.phases[0]?.grips ?? [], reaches: ir.phases[0]?.reaches ?? [] });
+      enforceContactRom(mannequin);
       captureGroundTargets();
       baseRootPos.copy(mannequin.root.position);
       baseRootQuat.copy(mannequin.root.quaternion);
@@ -872,8 +962,8 @@ export function createViewer(
           for (const bone of mannequin.bones.values()) bone.quaternion.identity();
           const info = timeline.sample(seg.start, mannequin.bones);
           
-          const wasPinned = (id: string) => prevPins.some(p => (EFFECTOR_BONE[p.effector] ?? p.effector) === id && p.anchor === "floor");
-          const isPinned = (id: string) => info.pins.some(p => (EFFECTOR_BONE[p.effector] ?? p.effector) === id && p.anchor === "floor");
+          const wasPinned = (id: string) => prevPins.some(p => effectorBoneId(p.effector) === id && p.anchor === "floor");
+          const isPinned = (id: string) => info.pins.some(p => effectorBoneId(p.effector) === id && p.anchor === "floor");
 
           mannequin.root.position.copy(baseRootPos);
           mannequin.root.quaternion.copy(baseRootQuat);
@@ -904,16 +994,76 @@ export function createViewer(
           prevPins = info.pins;
         }
 
+        // The raw FK pass above provides deterministic first-phase anchors,
+        // but a pin introduced later must inherit the contact position from
+        // the preceding phase *after* ground-lock, reach IK, ROM enforcement,
+        // and floor reconciliation. Otherwise a ground-lock→pin handoff snaps
+        // the whole body to the next phase's unsolved FK location (the original
+        // superhero knee planted abruptly; bridge lowers jumped by ~60 cm).
+        let previousSolvedEffectors: Map<string, THREE.Vector3> | null = null;
+        const activeFloorPinTargets = new Map<string, THREE.Vector3>();
+        precomputingAnchors = true;
+        try {
+          for (let i = 0; i < timeline.segments.length; i++) {
+            const seg = timeline.segments[i]!;
+            const currentPins = new Set(
+              (ir.phases[i]?.pins ?? [])
+                .filter((pin) => pin.anchor === "floor")
+                .map((pin) => effectorBoneId(pin.effector)),
+            );
+            for (const id of [...activeFloorPinTargets.keys()]) {
+              if (!currentPins.has(id)) activeFloorPinTargets.delete(id);
+            }
+            for (const id of currentPins) {
+              let anchor = activeFloorPinTargets.get(id);
+              if (!anchor) {
+                anchor = previousSolvedEffectors?.get(id)?.clone()
+                  ?? segmentStartEffectors[i]?.get(id)?.clone();
+                if (anchor) activeFloorPinTargets.set(id, anchor);
+              }
+              if (anchor) segmentStartEffectors[i]?.set(id, anchor.clone());
+            }
+
+            // Stay inside the segment because sample(duration) wraps to zero.
+            time = Math.max(seg.start, seg.end - 1e-5);
+            frame();
+            previousSolvedEffectors = new Map();
+            for (const ids of Object.values(mannequin.effectors)) {
+              for (const id of ids) {
+                const node = mannequin.bones.get(id);
+                if (node) previousSolvedEffectors.set(id, node.getWorldPosition(new THREE.Vector3()));
+              }
+            }
+          }
+        } finally {
+          precomputingAnchors = false;
+          time = 0;
+        }
+
         // Restore initial pose
         for (const bone of mannequin.bones.values()) bone.quaternion.identity();
         applyBaseRoot();
         timeline.sample(0, mannequin.bones);
+        formFists(mannequin, initialFistSides, authoredFingers);
+        relaxHands(
+          mannequin,
+          unionHandSides(initialGripSides, initialFistSides),
+          authoredFingers,
+          initialPalmFloorSides,
+        );
+        alignFloorContacts(
+          mannequin,
+          initialPhase?.reaches ?? [],
+          initialPhase?.pins ?? [],
+          initialPhase?.groundLock ?? [],
+        );
         mannequin.root.position.copy(baseRootPos);
         mannequin.root.quaternion.copy(baseRootQuat);
         mannequin.root.updateMatrixWorld(true);
         depenetrate(mannequin);
         groundFigureOf(mannequin);
         levelPlantedFeet(mannequin, ir.phases[0]?.groundLock ?? []);
+        enforceContactRom(mannequin);
       }
 
       requestClip(ir);
@@ -963,6 +1113,9 @@ export function createViewer(
         repeat: timeline.repeat,
         segments: timeline.segments,
       };
+    },
+    getReachResiduals() {
+      return reachResiduals.map((residual) => ({ ...residual }));
     },
     getVisibleBounds() {
       return character?.getBounds() ?? new THREE.Box3().setFromObject(mannequin.root);
@@ -1052,6 +1205,10 @@ function contactBoneIds(info: {
     if (effector === "feet" || effector === "foot_right") ids.add("ankle_right");
     if (effector === "hands" || effector === "hand_left") ids.add("wrist_left");
     if (effector === "hands" || effector === "hand_right") ids.add("wrist_right");
+    if (effector === "fists" || effector === "fist_left") ids.add("wrist_left");
+    if (effector === "fists" || effector === "fist_right") ids.add("wrist_right");
+    if (effector === "knees" || effector === "knee_left") ids.add("knee_left");
+    if (effector === "knees" || effector === "knee_right") ids.add("knee_right");
     if (effector === "forearms") {
       ids.add("elbow_left");
       ids.add("elbow_right");
@@ -1094,6 +1251,50 @@ function gripSidesOf(grips: readonly { effector: string }[]): Set<"left" | "righ
     if (g.effector.endsWith("_right") || g.effector === "hands") sides.add("right");
   }
   return sides;
+}
+
+/** Every hand side whose arm participates in an active contact constraint. */
+function contactHandSidesOf(
+  reaches: readonly { effector: string }[],
+  pins: readonly { effector: string }[],
+  grips: readonly { effector: string }[],
+  groundLock: readonly string[] = [],
+): Set<"left" | "right"> {
+  const sides = gripSidesOf(grips);
+  const add = (effector: string): void => {
+    if (/^(?:hand|fist|elbow)_left$/.test(effector)
+      || effector === "hands" || effector === "fists" || effector === "forearms") sides.add("left");
+    if (/^(?:hand|fist|elbow)_right$/.test(effector)
+      || effector === "hands" || effector === "fists" || effector === "forearms") sides.add("right");
+  };
+  reaches.forEach((contact) => add(contact.effector));
+  pins.forEach((contact) => add(contact.effector));
+  groundLock.forEach(add);
+  return sides;
+}
+
+/** Hand sides whose semantic endpoint is a closed fist (at any target). */
+function fistSidesOf(
+  reaches: readonly { effector: string }[],
+  pins: readonly { effector: string }[],
+  groundLock: readonly string[] = [],
+): Set<"left" | "right"> {
+  const sides = new Set<"left" | "right">();
+  const add = (effector: string): void => {
+    if (effector === "fists" || effector === "fist_left") sides.add("left");
+    if (effector === "fists" || effector === "fist_right") sides.add("right");
+  };
+  reaches.forEach((reach) => add(reach.effector));
+  pins.forEach((pin) => add(pin.effector));
+  groundLock.forEach(add);
+  return sides;
+}
+
+function unionHandSides(
+  a: ReadonlySet<"left" | "right">,
+  b: ReadonlySet<"left" | "right">,
+): Set<"left" | "right"> {
+  return new Set([...a, ...b]);
 }
 
 /**
@@ -1147,6 +1348,16 @@ export { applyGroundLock, groundFigure } from "./groundlock.js";
 export type { Mannequin, Proportions, CollisionRadii } from "./mannequin.js";
 export { buildTimeline } from "./timeline.js";
 export { solveCCD, type IkChain, type JointLimits } from "./ik.js";
+export {
+  EFFECTOR_BONE,
+  REACH_TOLERANCE,
+  effectorBoneId,
+  reachChain,
+  solveReachToPoint,
+  missingReachTarget,
+  type ReachResidual,
+  type ReachResidualReason,
+} from "./reach.js";
 export { buildProps, type PropScene, type FaceCollider, type BlockedPart } from "./props.js";
 export { resolvePropContacts, propContactExemptions, type PropContactExemptions } from "./propcontact.js";
 export { loadCharacter, rigCharacter, type Character } from "./character.js";
@@ -1158,5 +1369,19 @@ export {
   type ClipSource,
 } from "./clips.js";
 export { depenetrate } from "./depenetrate.js";
-export { alignFloorPalms, levelPlantedFeet } from "./contacts.js";
+export {
+  PALM_LOCAL_NORMAL,
+  FIST_LOCAL_NORMAL,
+  alignFloorContacts,
+  alignFloorPalms,
+  prepareGripFrames,
+  alignGripFrames,
+  isDipBarGrip,
+  floorTargetForEffector,
+  floorContactHeight,
+  enforceContactRom,
+  formFists,
+  levelPlantedFeet,
+  wrapGrip,
+} from "./contacts.js";
 export type { PhaseSegment } from "./timeline.js";

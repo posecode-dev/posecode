@@ -7,15 +7,13 @@ posecode posture "Plank hold"
     elbows: flex 90
     elbows: pronate 80
     ground-lock: forearms, feet
-    reach: hands floor
-    cue "Lower onto the forearms, elbows directly under the shoulders"
+    cue "Plant the forearms with the elbows directly under the shoulders"
 
   step "Hold" 3s linear:
     shoulders: flex 90
     elbows: flex 90
     elbows: pronate 80
     ground-lock: forearms, feet
-    reach: hands floor
     cue "Brace the core: one straight line from head to heels"
 
   repeat 3

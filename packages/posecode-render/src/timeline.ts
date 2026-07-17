@@ -8,12 +8,21 @@
  */
 
 import * as THREE from "three";
-import type { PosecodeIR, ReachTarget, PinTarget, GripTarget, TimingMode } from "posecode-parser";
+import type {
+  Axis,
+  PosecodeIR,
+  ReachTarget,
+  PinTarget,
+  GripTarget,
+  TimingMode,
+} from "posecode-parser";
 import { poseFor, type PoseSpec } from "./poses.js";
 
 const DEG = Math.PI / 180;
 
 type EulerDegTuple = [number, number, number];
+const AXIS_INDEX: Record<Axis, 0 | 1 | 2> = { x: 0, y: 1, z: 2 };
+const ALL_AXES: Axis[] = ["x", "y", "z"];
 
 interface Keyframe {
   time: number;
@@ -228,7 +237,11 @@ export function buildTimeline(ir: PosecodeIR): BuiltTimeline {
   let t = 0;
   for (const phase of ir.phases) {
     for (const target of phase.targets) {
-      curr.set(target.boneId, [target.euler.x, target.euler.y, target.euler.z]);
+      const next = [...(curr.get(target.boneId) ?? [0, 0, 0])] as EulerDegTuple;
+      for (const axis of target.axes ?? ALL_AXES) {
+        next[AXIS_INDEX[axis]] = target.euler[axis];
+      }
+      curr.set(target.boneId, next);
     }
     if (phase.turnDeg !== undefined) currYaw = phase.turnDeg;
     if (phase.travel) currPos = { x: phase.travel.x, z: phase.travel.z };
@@ -404,7 +417,10 @@ function snapshot(curr: Map<string, EulerDegTuple>): Map<string, EulerDegTuple> 
   if (pelvisX !== 0) {
     for (const hip of ["hip_left", "hip_right"]) {
       const [hx, hy, hz] = curr.get(hip) ?? [0, 0, 0];
-      out.set(hip, [hx - pelvisX, hy, hz]);
+      // Parser-produced IR already enforces this coupled limit. Clamp here too
+      // because PosecodeIR is public and hosts may construct legacy/manual IR
+      // without running the parser first.
+      out.set(hip, [THREE.MathUtils.clamp(hx - pelvisX, -135, 20), hy, hz]);
     }
   }
   return out;

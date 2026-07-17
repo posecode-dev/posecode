@@ -71,14 +71,23 @@ export function renderMarkdown(md) {
   while (i < lines.length) {
     const line = lines[i];
 
-    if (/^```/.test(line)) {
+    // Fences may be indented under a list item in normal CommonMark. Render
+    // them as a standalone block (this renderer deliberately keeps list HTML
+    // simple), but strip the shared indentation from the code body so the
+    // generated public guide does not collapse the example into inline text.
+    const fence = /^\s*```(.*)$/.exec(line);
+    if (fence) {
       flushPara();
       flushList();
-      const lang = line.slice(3).trim();
+      const indent = line.length - line.trimStart().length;
+      const lang = fence[1].trim();
       const code = [];
       i++;
-      while (i < lines.length && !/^```/.test(lines[i])) {
-        code.push(lines[i]);
+      while (i < lines.length && !/^\s*```/.test(lines[i])) {
+        const bodyLine = lines[i];
+        code.push(indent > 0 && bodyLine.startsWith(" ".repeat(indent))
+          ? bodyLine.slice(indent)
+          : bodyLine);
         i++;
       }
       out.push(
@@ -129,6 +138,15 @@ export function renderMarkdown(md) {
         list = { type, items: [] };
       }
       list.items.push((ol ?? ul)[1]);
+      i++;
+      continue;
+    }
+    // Markdown commonly wraps a list item onto a two-space-indented line.
+    // Keep that prose in the same <li>; previously every wrapped line closed
+    // the list and became a detached paragraph, mangling the generated docs.
+    if (list && /^\s{2,}\S/.test(line)) {
+      const last = list.items.length - 1;
+      list.items[last] = `${list.items[last]} ${line.trim()}`;
       i++;
       continue;
     }

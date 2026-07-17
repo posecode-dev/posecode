@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Crunch: How to Do It (Animated 3D Guide) | Posecode</title>
+    <title>Crunch: Posecode Movement Example | Posecode</title>
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="description" content="How to do the crunch (fitness): 3 phases targeting the abdominals, body weight, beginner level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
+    <meta name="description" content="Crunch is a beginner-level fitness Posecode example with 3 inspectable phases and a link to live 3D playback." />
     <link rel="canonical" href="https://www.posecode.org/moves/crunch.html" />
     <meta name="theme-color" content="#0a0d12" />
-    <meta property="og:title" content="Crunch: How to Do It (Animated 3D Guide) | Posecode" />
-    <meta property="og:description" content="How to do the crunch (fitness): 3 phases targeting the abdominals, body weight, beginner level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
+    <meta property="og:title" content="Crunch: Posecode Movement Example | Posecode" />
+    <meta property="og:description" content="Crunch is a beginner-level fitness Posecode example with 3 inspectable phases and a link to live 3D playback." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.posecode.org/moves/crunch.html" />
     <meta property="og:site_name" content="Posecode" />
@@ -97,7 +97,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 @media(max-width:600px){.wrap{padding:0 18px}}
 </style>
     <link rel="stylesheet" href="/content-theme.css" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to do a Crunch","description":"How to do the crunch (fitness): 3 phases targeting the abdominals, body weight, beginner level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs.","step":[{"@type":"HowToStep","name":"Set up","text":"Set up"},{"@type":"HowToStep","name":"Curl up","text":"Curl the shoulders off the floor, ribs toward the hips"},{"@type":"HowToStep","name":"Lower","text":"Lower the upper back down with control"}]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Crunch: a Posecode movement example","description":"Crunch is a beginner-level fitness Posecode example with 3 inspectable phases and a link to live 3D playback."}</script>
     <script>
       window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
     </script>
@@ -125,12 +125,15 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
         &nbsp;·&nbsp; <b>Level</b> Beginner &nbsp;·&nbsp; <b>Reps</b> 12</p>
       <p>Crunch is a beginner-level fitness movement targeting the
         abdominals, written in <a href="/">Posecode</a>, a small open-source language
-        that LLMs like ChatGPT, Claude, and Gemini can write to describe human movement as text.
-        Every joint angle below is hard-clamped to a safe range of motion.</p>
+        that capable language models can use to describe human movement as text.
+        Authored joint targets and reach-IK solves are constrained to Posecode's configured
+        per-axis bounds. Those bounds constrain the visualization, but they do not certify
+        that a complete movement is safe or clinically correct.
+        This page documents a code example; it is not exercise instruction.</p>
 
       <a class="btn" href="/play/crunch">▶ Open Crunch in the playground →</a>
 
-      <h2>How to do it</h2>
+      <h2>Movement phases</h2>
       <ol class="steps">
 <li>
           <span class="step-name">Set up<span class="step-dur">0.5s · flow</span></span>
@@ -141,13 +144,13 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
           <span class="step-cue">Curl the shoulders off the floor, ribs toward the hips</span>
         </li>
 <li>
-          <span class="step-name">Lower<span class="step-dur">1.2s · drive</span></span>
+          <span class="step-name">Lower<span class="step-dur">1.2s · settle</span></span>
           <span class="step-cue">Lower the upper back down with control</span>
         </li>
       </ol>
 
       <h2>The .posecode source</h2>
-      <p>This is the exact text an LLM writes to produce the animation above: phases and joint
+      <p>This is the exact text used by the linked playground animation: phases and joint
         angles, not 3D transforms.</p>
       <pre class="code-block"><code>posecode exercise &quot;Crunch&quot;
   rig humanoid
@@ -158,7 +161,8 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     knees: flex 90
     ankles: plantarflex 50
     shoulders: flex 45
-    pin: feet floor
+    pin: pelvis floor
+    reach: feet floor
 
   step &quot;Curl up&quot; 1s settle:
     hips: flex 45
@@ -168,10 +172,11 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     spine: flex 30
     chest: flex 20
     neck: flex 15
-    pin: feet floor
+    pin: pelvis floor
+    reach: feet floor
     cue &quot;Curl the shoulders off the floor, ribs toward the hips&quot;
 
-  step &quot;Lower&quot; 1.2s drive:
+  step &quot;Lower&quot; 1.2s settle:
     hips: flex 45
     knees: flex 90
     ankles: plantarflex 50
@@ -179,15 +184,15 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     spine: flex 0
     chest: flex 0
     neck: flex 0
-    pin: feet floor
+    pin: pelvis floor
+    reach: feet floor
     cue &quot;Lower the upper back down with control&quot;
 
   repeat 12
 </code></pre>
 
       <h2>More fitness movements</h2>
-         <div class="chip-list"><a href="/moves/squat.html">Body-weight squat</a><a href="/moves/deadlift.html">Deadlift (hip hinge)</a><a href="/moves/plank-hold.html">Plank hold</a><a href="/moves/mountain-climber.html">Mountain climber</a><a href="/moves/bicycle-crunch.html">Bicycle crunch</a><a href="/moves/supine-leg-raise.html">Lying leg raise</a></div>
-    
+         <div class="chip-list"><a href="/moves/squat.html">Body-weight squat</a><a href="/moves/deadlift.html">Deadlift (hip hinge)</a><a href="/moves/plank-hold.html">Plank hold</a><a href="/moves/supine-leg-raise.html">Lying leg raise</a><a href="/moves/forward-lunge.html">Forward lunge</a><a href="/moves/calf-raise.html">Single-leg calf raise</a></div>
     </main>
     <footer class="site-footer">
       <div class="wrap">

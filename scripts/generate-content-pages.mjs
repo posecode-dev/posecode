@@ -7,19 +7,18 @@
  *   - playground/public/llm-guide.html    the LLM authoring guide, rendered
  *   - playground/public/sitemap.xml       regenerated to include all of the above
  *
- * These are plain HTML files copied through as-is by Vite (public/), so this
- * script is *not* wired into `npm run build`: run it manually after adding
- * or editing spec/examples/*.posecode, and commit the output. That keeps the
- * production build command (which Vercel runs) simple and low-risk.
+ * These are plain HTML files copied through as-is by Vite (public/). The
+ * playground's prebuild hook runs this generator so production cannot
+ * publish stale movement counts, language docs, or safety wording.
  *
  * Usage: node scripts/generate-content-pages.mjs
  */
-import { createServer } from "vite";
 import { mkdir, writeFile, readFile, rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { pageShell, esc } from "./lib/shell.mjs";
 import { renderMarkdown } from "./lib/md.mjs";
+import { loadPlaygroundPresets } from "../playground/scripts/load-presets.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, "..");
@@ -62,17 +61,8 @@ function slugTitle(label) {
 }
 
 async function main() {
-  const server = await createServer({
-    root: playgroundRoot,
-    appType: "custom",
-    server: { middlewareMode: true, hmr: false, ws: false },
-  });
-  let PRESETS;
-  try {
-    ({ PRESETS } = await server.ssrLoadModule("/src/presets.ts"));
-  } finally {
-    await server.close();
-  }
+  const PRESETS = await loadPlaygroundPresets(playgroundRoot);
+  const readyPresets = PRESETS.filter((preset) => preset.status === "ready");
 
   await rm(movesDir, { recursive: true, force: true });
   await mkdir(movesDir, { recursive: true });
@@ -87,11 +77,12 @@ async function main() {
 
   // --- Per-movement pages ---------------------------------------------------
   const byDomain = new Map();
-  for (const p of PRESETS) {
+  for (const p of readyPresets) {
     const steps = parseSteps(p.source);
     const repeat = parseRepeat(p.source);
     const name = slugTitle(p.label);
     const url = `/moves/${p.id}.html`;
+    const levelArticle = /^[aeiou]/i.test(p.difficulty) ? "an" : "a";
 
     const stepsHtml = steps
       .map(
@@ -102,24 +93,19 @@ async function main() {
       )
       .join("\n");
 
-    const related = PRESETS.filter((o) => o.domain === p.domain && o.id !== p.id).slice(0, 6);
+    const related = readyPresets.filter((o) => o.domain === p.domain && o.id !== p.id).slice(0, 6);
     const relatedHtml = related.length
       ? `<h2>More ${esc(p.domain.toLowerCase())} movements</h2>
          <div class="chip-list">${related.map((o) => `<a href="/moves/${o.id}.html">${esc(o.label)}</a>`).join("")}</div>`
       : "";
 
-    const description = `How to do the ${name.toLowerCase()} (${p.domain.toLowerCase()}): ${steps.length} phases targeting the ${p.target.toLowerCase()}, ${p.equipment.toLowerCase()}, ${p.difficulty.toLowerCase()} level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs.`;
+    const description = `${name} is ${levelArticle} ${p.difficulty.toLowerCase()}-level ${p.domain.toLowerCase()} Posecode example with ${steps.length} inspectable phases and a link to live 3D playback.`;
 
     const jsonLd = {
       "@context": "https://schema.org",
-      "@type": "HowTo",
-      name: `How to do a ${name}`,
+      "@type": "TechArticle",
+      headline: `${name}: a Posecode movement example`,
       description,
-      step: steps.map((s) => ({
-        "@type": "HowToStep",
-        name: s.name,
-        text: s.cue || s.name,
-      })),
     };
 
     const bodyHtml = `
@@ -127,28 +113,31 @@ async function main() {
       <h1>${esc(name)}</h1>
       <p class="meta-line"><b>Target</b> ${esc(p.target)} &nbsp;·&nbsp; <b>Equipment</b> ${esc(p.equipment)}
         &nbsp;·&nbsp; <b>Level</b> ${esc(p.difficulty)} &nbsp;·&nbsp; <b>Reps</b> ${repeat}</p>
-      <p>${esc(name)} is a ${esc(p.difficulty.toLowerCase())}-level ${esc(p.domain.toLowerCase())} movement targeting the
+      <p>${esc(name)} is ${levelArticle} ${esc(p.difficulty.toLowerCase())}-level ${esc(p.domain.toLowerCase())} movement targeting the
         ${esc(p.target.toLowerCase())}, written in <a href="/">Posecode</a>, a small open-source language
-        that LLMs like ChatGPT, Claude, and Gemini can write to describe human movement as text.
-        Every joint angle below is hard-clamped to a safe range of motion.</p>
+        that capable language models can use to describe human movement as text.
+        Authored joint targets and reach-IK solves are constrained to Posecode's configured
+        per-axis bounds. Those bounds constrain the visualization, but they do not certify
+        that a complete movement is safe or clinically correct.
+        This page documents a code example; it is not exercise instruction.</p>
 
       <a class="btn" href="/play/${p.id}">▶ Open ${esc(name)} in the playground →</a>
 
-      <h2>How to do it</h2>
+      <h2>Movement phases</h2>
       <ol class="steps">
 ${stepsHtml}
       </ol>
 
       <h2>The .posecode source</h2>
-      <p>This is the exact text an LLM writes to produce the animation above: phases and joint
+      <p>This is the exact text used by the linked playground animation: phases and joint
         angles, not 3D transforms.</p>
       <pre class="code-block"><code>${esc(p.source)}</code></pre>
 
       ${relatedHtml}
-    `;
+    `.trimEnd();
 
     const html = pageShell({
-      title: `${name}: How to Do It (Animated 3D Guide) | Posecode`,
+      title: `${name}: Posecode Movement Example | Posecode`,
       description,
       canonicalPath: url,
       jsonLd,
@@ -182,17 +171,17 @@ ${stepsHtml}
     .join("\n");
 
   const indexHtml = pageShell({
-    title: "Movement Library: 70+ Animated 3D Exercises, Stretches & Dance | Posecode",
+    title: `${readyPresets.length} Launch-Ready Posecode Movement Examples | Posecode`,
     description:
-      "Browse every Posecode example movement: fitness, physiotherapy, yoga, dance, martial arts, and sign language, each with an animated 3D guide and the .posecode source an LLM wrote.",
+      `Browse ${readyPresets.length} launch-ready Posecode movement examples across fitness, physiotherapy, yoga, dance, and martial arts, each with inspectable source and a link to live 3D playback.`,
     canonicalPath: "/moves/",
     bodyHtml: `
       <p class="eyebrow">Movement library</p>
-      <h1>${PRESETS.length} movements, written as text</h1>
-      <p>Every example in the Posecode library, grouped by practice. Each page shows the phases,
-        coaching cues, and the exact <code>.posecode</code> source, plus a live 3D playback.
-        Prefer to search and filter interactively? Use the
-        <a href="/play">playground's movement library</a> instead.</p>
+      <h1>${readyPresets.length} launch-ready movements, written as text</h1>
+      <p>Launch-ready examples grouped by practice. Each page shows the phases, cues, and exact
+        <code>.posecode</code> source, with a link that opens live 3D playback. Experimental
+        previews are deliberately excluded from these static pages; opt into them from the
+        <a href="/play">playground's movement library</a>.</p>
       ${groupsHtml}
     `,
   });
@@ -203,7 +192,7 @@ ${stepsHtml}
   const specHtml = pageShell({
     title: "Posecode Language Specification: The .posecode Kinematic Motion DSL",
     description:
-      "The full Posecode v0.2 grammar, timing modes, joints, actions, and range-of-motion tables: a small text language LLMs write to describe human movement as an animated 3D figure.",
+      "The full Posecode v0.2 grammar, timing modes, joints, actions, and configured range-of-motion tables for a text language capable LLMs can use to describe human movement.",
     canonicalPath: "/spec.html",
     bodyHtml: `<p class="eyebrow">Reference</p>\n${renderMarkdown(specMd)}`,
   });
@@ -213,7 +202,7 @@ ${stepsHtml}
   const guideHtml = pageShell({
     title: "How to Teach an LLM to Write Posecode: The Authoring Guide",
     description:
-      "The system prompt that teaches ChatGPT, Claude, or Gemini to author valid .posecode documents: syntax, joints, phases, and worked examples.",
+      "An authoring guide for capable language models: syntax, joints, phases, and worked examples for producing raw .posecode documents that the playground can validate.",
     canonicalPath: "/llm-guide.html",
     bodyHtml: `<p class="eyebrow">For LLMs</p>\n${renderMarkdown(guideMd)}`,
   });
@@ -233,7 +222,7 @@ ${sitemapUrls
   await writeFile(resolve(publicDir, "sitemap.xml"), sitemap, "utf8");
 
   console.log(
-    `Generated ${PRESETS.length} movement pages, 1 library index, 2 doc pages, and a ${sitemapUrls.length}-url sitemap.`,
+    `Generated ${readyPresets.length} launch-ready movement pages, 1 library index, 2 doc pages, and a ${sitemapUrls.length}-url sitemap.`,
   );
 }
 

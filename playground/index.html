@@ -8,7 +8,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <meta
       name="description"
-      content="Posecode is an open-source text-to-motion language for LLMs. Describe exercises, physiotherapy, yoga, or dance in plain text and watch an anatomically safe 3D figure animate in your browser."
+      content="Posecode is an open-source text-to-motion language for LLMs. Describe single-person movement as validated, inspectable text and animate it as a 3D figure in your browser."
     />
     <meta
       name="keywords"
@@ -19,7 +19,7 @@
     <meta property="og:title" content="Posecode: human movement, written as text" />
     <meta
       property="og:description"
-      content="A Mermaid-style language for kinematic motion. LLMs write it; the browser renders an animated, anatomically safe 3D figure."
+      content="A Mermaid-style language for kinematic motion. Capable LLMs can write it; the browser validates and renders an inspectable animated 3D figure."
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.posecode.org/" />
@@ -31,7 +31,7 @@
     <meta name="twitter:title" content="Posecode: human movement, written as text" />
     <meta
       name="twitter:description"
-      content="A Mermaid-style language for kinematic motion. LLMs write it; the browser renders an animated, anatomically safe 3D figure."
+      content="A Mermaid-style language for kinematic motion. Capable LLMs can write it; the browser validates and renders an inspectable animated 3D figure."
     />
     <meta name="twitter:image" content="https://www.posecode.org/og.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -75,9 +75,9 @@
             "url": "https://www.posecode.org/",
             "applicationCategory": "DeveloperApplication",
             "operatingSystem": "Any (web browser)",
-            "description": "Posecode is a tiny language LLMs can write to describe human movement: exercises, stretches, physiotherapy, yoga, and dance. The browser renders it as an animated 3D figure, with every joint clamped to a safe range of motion.",
+            "description": "Posecode is a small language capable LLMs can use to describe single-person movement. The browser validates a closed vocabulary, constrains joint targets to configured ranges, and renders an inspectable animated 3D figure.",
             "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-            "license": "https://opensource.org/license/mit",
+            "license": "https://www.apache.org/licenses/LICENSE-2.0",
             "sameAs": ["https://github.com/posecode-dev/posecode"],
             "keywords": "text to motion, LLM, kinematic motion, 3D animation, exercise, physiotherapy, open source"
           },
@@ -90,7 +90,7 @@
                 "name": "What is Posecode?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Posecode is an open-source text-to-motion language. You describe a human movement in plain text (phases, joint angles, timing) and the browser renders it as an animated 3D figure. It is designed so LLMs like ChatGPT, Claude, and Gemini can write it reliably."
+                  "text": "Posecode is an open-source text-to-motion language. You describe single-person movement as phases, joint targets, timing, and contacts; the browser validates the document and renders it as an animated 3D figure."
                 }
               },
               {
@@ -98,15 +98,15 @@
                 "name": "How do I generate an exercise animation with an LLM?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Copy the Posecode LLM prompt from posecode.org, paste it into any chat model, and ask for a movement such as a deadlift or a hamstring stretch. Paste the model's .posecode reply into the playground and it animates instantly."
+                  "text": "Copy the authoring guide into a capable chat model and ask for a representable movement such as a hip hinge or hamstring stretch. For a representable request, the model should return raw .posecode text. Paste it into the playground: valid documents animate, while parse errors, range clamps, and unresolved reach targets appear as diagnostics."
                 }
               },
               {
                 "@type": "Question",
-                "name": "Is the movement anatomically safe?",
+                "name": "Does Posecode guarantee a movement is safe?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Every joint angle is hard-clamped to a clinical range of motion, so even a hallucinated angle cannot produce an impossible pose. Range-of-motion values are general literature data, not medical advice."
+                  "text": "No. Posecode constrains authored and IK-generated joint targets to configured reference ranges and reports unresolved reach targets. A simplified rig cannot certify that a whole movement is safe, accurate, or appropriate for a person. It is not medical advice."
                 }
               },
               {
@@ -114,7 +114,7 @@
                 "name": "Is Posecode free to use?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Yes. Posecode is Apache-2.0-licensed and open source: the parser, 3D renderer, share codec, MCP server, and VS Code extension are all free, and rendering runs client-side with no GPU required."
+                  "text": "Yes. Posecode is Apache-2.0-licensed and open source: the parser, 3D renderer, share codec, MCP server, and VS Code extension are all free, and rendering runs locally in a WebGL-capable browser without server-side motion generation."
                 }
               }
             ]
@@ -151,7 +151,7 @@
           Write the move.<br /><span class="hl">Watch it happen.</span>
         </h1>
         <p class="subhead">
-          Turn readable instructions into precise 3D movement. Build exercises,
+          Turn readable instructions into structured, inspectable 3D motion. Build exercises,
           stretches, dance phrases, and rehab routines, then edit every beat live in
           the browser.
         </p>
@@ -161,30 +161,32 @@
             <span class="lbl">Copy LLM prompt</span>
           </button>
         </div>
-        <p class="hero-meta">
-          65+ moves included &nbsp;·&nbsp; 60&nbsp;fps &nbsp;·&nbsp; open source &nbsp;·&nbsp; runs on-device
+        <p id="catalog-meta" class="hero-meta">
+          48 launch-ready moves &nbsp;·&nbsp; 25 experimental previews &nbsp;·&nbsp; validated text &nbsp;·&nbsp; open source
         </p>
       </div>
 
-      <div class="hero-stage reveal" aria-label="Live 3D preview of a Posecode movement">
+      <div class="hero-stage reveal" aria-label="Live 3D preview with a contact-phase source excerpt">
         <div class="studio">
           <div class="studio-bar" aria-hidden="true">
             <span class="dots"></span>
-            <span class="studio-title">jumping-jacks.posecode</span>
+            <span class="studio-title">superhero-landing.posecode</span>
             <span class="studio-live"><i></i>live</span>
           </div>
           <canvas id="hero-canvas"></canvas>
-          <div class="studio-hud"><span id="hero-phase">Out</span></div>
+          <div class="studio-hud"><span id="hero-phase">Drop into the landing</span></div>
         </div>
 
-        <!-- Overlapping code chip: the text that produces the motion -->
-        <pre class="code-chip" aria-hidden="true"><span class="t-kw">posecode</span> <span class="t-kind">exercise</span> <span class="t-str">"Jumping jacks"</span>
+        <!-- Overlapping code chip: an excerpt from the contact phase on screen -->
+        <pre class="code-chip" aria-hidden="true"># contact-phase excerpt
+<span class="t-kw">posecode</span> <span class="t-kind">posture</span> <span class="t-str">"Superhero Three-Point Landing"</span>
   <span class="t-kw">pose</span> start <span class="t-punct">=</span> <span class="t-atom">standing</span>
 
-  <span class="t-kw">step</span> <span class="t-str">"Out"</span> <span class="t-num">0.5s</span> <span class="t-atom">settle</span><span class="t-punct">:</span>
-    <span class="t-joint">shoulders</span><span class="t-punct">:</span> <span class="t-act">abduct</span> <span class="t-num">160</span>
-    <span class="t-joint">hips</span><span class="t-punct">:</span> <span class="t-act">abduct</span> <span class="t-num">30</span>
-    <span class="t-kw">ground-lock</span><span class="t-punct">:</span> <span class="t-atom">feet</span></pre>
+  <span class="t-kw">step</span> <span class="t-str">"Make three-point contact"</span> <span class="t-num">0.3s</span> <span class="t-atom">settle</span><span class="t-punct">:</span>
+    <span class="t-kw">pin</span><span class="t-punct">:</span> <span class="t-atom">knee_left floor</span>
+    <span class="t-kw">reach</span><span class="t-punct">:</span> <span class="t-atom">foot_right floor</span>
+    <span class="t-kw">reach</span><span class="t-punct">:</span> <span class="t-atom">fist_left floor</span>
+    <span class="t-kw">cue</span> <span class="t-str">"Set all three contacts"</span></pre>
       </div>
     </section>
 
@@ -195,23 +197,23 @@
         <h3>Semantic, not matrices</h3>
         <p>
           Models write phases and joint angles, like <code>knees: flex 95</code>,
-          instead of 3D transforms. It's the biomechanics an LLM already knows, given a syntax.
+          instead of 3D transforms. The closed syntax makes the intended anatomy inspectable.
         </p>
       </article>
       <article class="prop reveal">
         <div class="prop-mark">⛨</div>
-        <h3>Anatomically safe</h3>
+        <h3>Range-aware &amp; testable</h3>
         <p>
-          Every angle is hard-clamped to a clinical range of motion. A hallucinated
-          “knee flex 200°” can't produce an impossible joint: it's pinned to 144°.
+          Joint targets are constrained to configured reference ranges, while reach
+          residuals expose a fist, foot, or knee that remains short of its target.
         </p>
       </article>
       <article class="prop reveal">
         <div class="prop-mark">◴</div>
         <h3>Cheap &amp; client-side</h3>
         <p>
-          Generation is a fraction of a cent of text. Rendering is forward kinematics in
-          Three.js: 60fps on a phone, no diffusion model, no GPU farm.
+          Generation is compact text. Rendering is forward kinematics and constrained IK
+          in Three.js on the user's device, with no server-side diffusion pipeline.
         </p>
       </article>
     </section>
@@ -223,7 +225,7 @@
         <h2>One language, many practices</h2>
         <p class="section-sub">
           A taste of the library, from physiotherapy and posture to yoga, dance, and
-          sign language. Every movement opens in the playground, editable and
+          martial arts. Every movement opens in the playground, editable and
           shareable.
         </p>
       </header>
@@ -239,18 +241,18 @@
       <ol class="how-steps">
         <li class="reveal">
           <span class="how-n">1</span>
-          <h3>An LLM writes <code>.posecode</code></h3>
-          <p>Paste the Posecode prompt into any model and ask for a movement. It replies with a small, readable document.</p>
+          <h3>A capable model writes <code>.posecode</code></h3>
+          <p>Give the Posecode authoring guide to a capable model and ask for a representable movement. For a supported request, its raw <code>.posecode</code> output remains editable and reviewable.</p>
         </li>
         <li class="reveal">
           <span class="how-n">2</span>
           <h3>The parser validates &amp; clamps</h3>
-          <p>A pure-TypeScript parser turns the text into a typed IR and pins every angle to its safe range of motion.</p>
+          <p>A TypeScript parser enforces the closed vocabulary, joint/action compatibility, contacts, and configured range limits.</p>
         </li>
         <li class="reveal">
           <span class="how-n">3</span>
           <h3>Three.js renders it</h3>
-          <p>Forward kinematics plus ground-lock IK animate a low-poly figure live in the browser, at 60fps.</p>
+          <p>Forward kinematics plus constrained contact IK animate a low-poly figure live in the browser.</p>
         </li>
       </ol>
     </section>
@@ -268,8 +270,8 @@
         </a>
         <div class="dev-card reveal">
           <h3>MCP server</h3>
-          <p>Let any agent validate a movement and get back a render link, natively.</p>
-          <code class="dev-code">npx tsx posecode-mcp</code>
+          <p>Let a model in an MCP client validate a movement and get back a render link.</p>
+          <code class="dev-code">npx -y posecode-mcp</code>
         </div>
         <div class="dev-card reveal">
           <h3>VS Code extension</h3>
@@ -292,27 +294,28 @@
         <div class="faq-item reveal">
           <dt>What is Posecode?</dt>
           <dd>
-            Posecode is an open-source text-to-motion language. You describe a human
-            movement in plain text (phases, joint angles, timing) and the browser renders
-            it as an animated 3D figure. It is designed so LLMs like ChatGPT, Claude, and
-            Gemini can write it reliably.
+            Posecode is an open-source text-to-motion language. You describe single-person
+            movement as phases, joint targets, timing, and contacts; the browser validates
+            the document and renders it as an animated 3D figure.
           </dd>
         </div>
         <div class="faq-item reveal">
           <dt>How do I generate an exercise animation with an LLM?</dt>
           <dd>
-            Copy the LLM prompt above, paste it into any chat model, and ask for a
-            movement such as <em>“write a deadlift”</em> or <em>“a hamstring stretch”</em>.
-            Paste the model's <code>.posecode</code> reply into the playground and it
-            animates instantly.
+            Copy the authoring guide into a capable chat model and ask for a representable
+            movement such as a hip hinge or hamstring stretch. For a representable request,
+            the model should return raw <code>.posecode</code> text. Paste it into the
+            playground: valid documents animate, while parse errors, range clamps, and
+            unresolved reach targets appear as diagnostics.
           </dd>
         </div>
         <div class="faq-item reveal">
-          <dt>Is the movement anatomically safe?</dt>
+          <dt>Does Posecode guarantee a movement is safe?</dt>
           <dd>
-            Every joint angle is hard-clamped to a clinical range of motion, so even a
-            hallucinated angle cannot produce an impossible pose. Range-of-motion values
-            are general literature data, not medical advice.
+            No. Posecode constrains authored and IK-generated joint targets to configured
+            reference ranges and reports unresolved reach targets. A simplified rig cannot
+            certify that a whole movement is safe, accurate, or appropriate for a person.
+            It is not medical advice.
           </dd>
         </div>
         <div class="faq-item reveal">
@@ -320,7 +323,7 @@
           <dd>
             Yes. Posecode is Apache-2.0-licensed and open source: the parser, 3D renderer, share
             codec, MCP server, and VS Code extension are all free, and rendering runs
-            client-side with no GPU required.
+            locally in a WebGL-capable browser without server-side motion generation.
           </dd>
         </div>
       </dl>

@@ -8,7 +8,7 @@ posecode exercise "Single-leg calf raise"
     pin: foot_right floor
     cue "Balance on the right foot and rise onto the ball of the foot"
 
-  step "Lower" 1.3s drive:
+  step "Lower" 1.3s settle:
     ankle_right: plantarflex 0
     knee_left: flex 60
     pin: foot_right floor

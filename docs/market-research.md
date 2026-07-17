@@ -8,18 +8,18 @@
 ## 1. The thesis
 
 Posecode is **"Mermaid for human movement."** A person describes a movement in
-words; an LLM writes a short `.posecode` document; the browser parses it, clamps it
-to a safe range of motion, and renders an animated 3D mannequin, producing a
+words; an LLM writes a short `.posecode` document; the browser validates it,
+constrains joint targets to configured ranges, and renders an animated 3D mannequin, producing a
 **shareable URL**. The loop is:
 
 > **ask an LLM for a movement → it renders → share the link.**
 
 This is structurally different from video. A `.posecode` doc is **editable text**:
 an LLM can generate it, a human can tweak one angle, a clinician can fork it, and
-it diffs in version control. Diffusion/video models hallucinate anatomy and can't
-be safely constrained; Posecode's ROM clamp is a *correctness* feature, not a filter.
-Text is also how LLMs natively "think" about structure, so authoring is reliable
-and improves as models improve.
+it diffs in version control. Posecode exposes the authored anatomy and constraints
+for inspection instead of hiding them in a generated trajectory. Range constraints
+are one correctness layer, not a certification of the complete movement. Text also
+gives LLMs a structured target that can be parsed, evaluated, and revised.
 
 ### Why it can spread
 
@@ -30,8 +30,9 @@ and improves as models improve.
 - **Agent-native.** The [`posecode-mcp`](../packages/posecode-mcp) server lets Claude/
   ChatGPT author, validate, and return a render link *inside the chat*: the
   movement appears where the user already is.
-- **Safe to trust.** Clinical ROM limits mean shared links can't depict unsafe
-  joint angles: important for the health-adjacent buyers below.
+- **Inspectable constraints.** Configured ROM limits prevent impossible authored
+  joint rotations, while contact residuals and movement checks expose failures.
+  Health-adjacent uses still require qualified review.
 
 ## 2. How we scored the domains
 
@@ -67,14 +68,14 @@ on the roadmap.
 
 - **Customer:** physios, chiros, athletic trainers, and their patients running
   home-exercise programs; post-op ROM protocols.
-- **Aha use case:** a clinician types a prescription and hands the patient a link
-  that *shows* the exercise, with a built-in safe-range guarantee.
+- **Aha use case:** a clinician authors or reviews a movement and hands the patient
+  a link that *shows* it, with explicit joint targets and validation diagnostics.
 - **Viral loop:** clinician → patient link sharing is high-frequency and trusted;
   patients forward to family; clinics build reusable libraries.
 - **Ships:** `heel-raises`, `standing-hamstring-curl`, `hip-abduction`,
   `good-morning` (back-health hinge), plus existing `neck-rotation`,
   `shoulder-stretch`.
-- **Engine-fit:** ★★★★☆, the ROM clamp is a clinical feature; bands/balls and
+- **Engine-fit:** ★★★★☆, range constraints support review; bands/balls and
   lying poses are future (see roadmap).
 
 ### 3c. Desk & workplace wellness

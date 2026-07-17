@@ -6,7 +6,7 @@ posecode exercise "Jab-cross"
     shoulder_left: flex 85
     elbow_left: flex 15
     elbow_left: pronate 80
-    spine: rotate-out 10
+    spine: twist-right 10
     fingers: flex 80
     ground-lock: feet
     cue "Snap the lead (left) hand straight out, rotating slightly into it"
@@ -15,7 +15,7 @@ posecode exercise "Jab-cross"
     shoulder_left: flex 0
     elbow_left: flex 90
     elbow_left: pronate 0
-    spine: rotate-out 0
+    spine: twist-right 0
     fingers: flex 80
     ground-lock: feet
     cue "Bring the hand back to guard"
@@ -24,7 +24,7 @@ posecode exercise "Jab-cross"
     shoulder_right: flex 90
     elbow_right: flex 10
     elbow_right: pronate 80
-    spine: rotate-in 35
+    spine: twist-left 35
     fingers: flex 80
     ground-lock: feet
     cue "Drive the rear (right) hand across, rotating the trunk"
@@ -33,7 +33,7 @@ posecode exercise "Jab-cross"
     shoulder_right: flex 0
     elbow_right: flex 90
     elbow_right: pronate 0
-    spine: rotate-in 0
+    spine: twist-left 0
     fingers: flex 80
     ground-lock: feet
     cue "Return to guard, hands high"

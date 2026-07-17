@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Spine rotation: How to Do It (Animated 3D Guide) | Posecode</title>
+    <title>Spine rotation: Posecode Movement Example | Posecode</title>
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="description" content="How to do the spine rotation (education): 3 phases targeting the obliques, body weight, beginner level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
+    <meta name="description" content="Spine rotation is a beginner-level education Posecode example with 3 inspectable phases and a link to live 3D playback." />
     <link rel="canonical" href="https://www.posecode.org/moves/spine-rotation.html" />
     <meta name="theme-color" content="#0a0d12" />
-    <meta property="og:title" content="Spine rotation: How to Do It (Animated 3D Guide) | Posecode" />
-    <meta property="og:description" content="How to do the spine rotation (education): 3 phases targeting the obliques, body weight, beginner level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs." />
+    <meta property="og:title" content="Spine rotation: Posecode Movement Example | Posecode" />
+    <meta property="og:description" content="Spine rotation is a beginner-level education Posecode example with 3 inspectable phases and a link to live 3D playback." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.posecode.org/moves/spine-rotation.html" />
     <meta property="og:site_name" content="Posecode" />
@@ -97,7 +97,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 @media(max-width:600px){.wrap{padding:0 18px}}
 </style>
     <link rel="stylesheet" href="/content-theme.css" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"HowTo","name":"How to do a Spine rotation","description":"How to do the spine rotation (education): 3 phases targeting the obliques, body weight, beginner level. Animated 3D guide generated from Posecode, a text-to-motion language for LLMs.","step":[{"@type":"HowToStep","name":"Rotate right","text":"Rotate the trunk to the right: transverse-plane spinal rotation"},{"@type":"HowToStep","name":"Rotate left","text":"Pass through center and rotate to the left"},{"@type":"HowToStep","name":"Center","text":"Return to a neutral facing"}]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Spine rotation: a Posecode movement example","description":"Spine rotation is a beginner-level education Posecode example with 3 inspectable phases and a link to live 3D playback."}</script>
     <script>
       window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
     </script>
@@ -125,12 +125,15 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
         &nbsp;·&nbsp; <b>Level</b> Beginner &nbsp;·&nbsp; <b>Reps</b> 3</p>
       <p>Spine rotation is a beginner-level education movement targeting the
         obliques, written in <a href="/">Posecode</a>, a small open-source language
-        that LLMs like ChatGPT, Claude, and Gemini can write to describe human movement as text.
-        Every joint angle below is hard-clamped to a safe range of motion.</p>
+        that capable language models can use to describe human movement as text.
+        Authored joint targets and reach-IK solves are constrained to Posecode's configured
+        per-axis bounds. Those bounds constrain the visualization, but they do not certify
+        that a complete movement is safe or clinically correct.
+        This page documents a code example; it is not exercise instruction.</p>
 
       <a class="btn" href="/play/spine-rotation">▶ Open Spine rotation in the playground →</a>
 
-      <h2>How to do it</h2>
+      <h2>Movement phases</h2>
       <ol class="steps">
 <li>
           <span class="step-name">Rotate right<span class="step-dur">2.5s · flow</span></span>
@@ -147,24 +150,24 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       </ol>
 
       <h2>The .posecode source</h2>
-      <p>This is the exact text an LLM writes to produce the animation above: phases and joint
+      <p>This is the exact text used by the linked playground animation: phases and joint
         angles, not 3D transforms.</p>
       <pre class="code-block"><code>posecode stretch &quot;Spine rotation (ROM demo)&quot;
   rig humanoid
   pose start = standing
 
   step &quot;Rotate right&quot; 2.5s flow:
-    spine: rotate-out 45
+    spine: twist-right 45
     ground-lock: feet
     cue &quot;Rotate the trunk to the right: transverse-plane spinal rotation&quot;
 
   step &quot;Rotate left&quot; 2.5s flow:
-    spine: rotate-in 45
+    spine: twist-left 45
     ground-lock: feet
     cue &quot;Pass through center and rotate to the left&quot;
 
   step &quot;Center&quot; 2s settle:
-    spine: rotate-in 0
+    spine: twist-left 0
     ground-lock: feet
     cue &quot;Return to a neutral facing&quot;
 
@@ -172,8 +175,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 </code></pre>
 
       <h2>More education movements</h2>
-         <div class="chip-list"><a href="/moves/shoulder-abduction.html">Shoulder abduction (ROM)</a><a href="/moves/hip-flexion.html">Hip flexion (ROM)</a><a href="/moves/knee-flexion.html">Knee flexion (ROM)</a><a href="/moves/elbow-forearm.html">Elbow flexion &amp; forearm rotation</a></div>
-    
+         <div class="chip-list"><a href="/moves/hip-flexion.html">Hip flexion (ROM)</a></div>
     </main>
     <footer class="site-footer">
       <div class="wrap">

@@ -2,23 +2,43 @@ posecode posture "Hand wave"
   rig humanoid
   pose start = standing
 
-  step "Raise" 0.8s settle:
-    shoulder_right: flex 150
-    elbow_right: flex 20
+  step "Raise" 0.9s settle:
+    shoulder_right: flex 70
+    shoulder_right: abduct 35
+    elbow_right: flex 95
+    elbow_right: pronate 0
+    wrist_right: abduct 15
     fingers_right: flex 0
-    cue "Raise the hand up high, palm open"
+    ground-lock: feet
+    cue "Bring the open right hand beside the face, palm forward"
 
-  step "Wave out" 0.6s flow:
-    fingers_right: flex 30
-    cue "Tip the fingers out..."
+  step "Wave out" 0.45s flow:
+    wrist_right: abduct 20
+    ground-lock: feet
+    cue "Tilt the hand outward from the wrist"
 
-  step "Wave in" 0.6s flow:
-    fingers_right: flex 0
-    cue "...and back again: a friendly wave"
+  step "Wave in" 0.45s flow:
+    wrist_right: adduct 25
+    ground-lock: feet
+    cue "Tilt the hand inward without moving the elbow"
 
-  step "Lower" 0.8s drive:
+  step "Wave out again" 0.45s flow:
+    wrist_right: abduct 20
+    ground-lock: feet
+    cue "Wave outward once more"
+
+  step "Center the hand" 0.35s settle:
+    wrist_right: abduct 0
+    ground-lock: feet
+    cue "Return the wrist to neutral"
+
+  step "Lower" 0.8s settle:
     shoulder_right: flex 0
+    shoulder_right: abduct 0
     elbow_right: flex 0
+    elbow_right: pronate 80
+    wrist_right: abduct 0
+    ground-lock: feet
     cue "Lower the arm back to your side"
 
   repeat 3

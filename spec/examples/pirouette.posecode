@@ -8,7 +8,8 @@ posecode exercise "Pirouette"
     ankles: dorsiflex 12
     shoulders: flex 40
     elbows: flex 35
-    ground-lock: feet
+    ground-lock: foot_left
+    reach: foot_right floor
     cue "Plié to load the turn, arms rounded low in first"
 
   step "Spot & spin" 1.4s flow:

@@ -4,19 +4,27 @@ posecode stretch "Touch your toes"
 
   step "Fold" 2.5s flow:
     pelvis: hinge 95
+    hips: flex 35
     knees: flex 20
-    ankles: plantarflex 20
+    ankles: dorsiflex 5
+    spine: flex 40
     neck: flex 15
+    shoulders: flex 80
+    fingers: flex 80
     reach: hand_left ankle_left
     reach: hand_right ankle_right
     ground-lock: feet
-    cue "Hinge from the hips, bend the knees, and reach your hands down toward your ankles"
+    cue "Fold through the hips and spine, soften the knees, and reach both hands to the ankles"
 
   step "Rise" 2s settle:
     pelvis: hinge 0
+    hips: flex 0
     knees: flex 0
-    ankles: plantarflex 0
+    ankles: dorsiflex 0
+    spine: flex 0
     neck: flex 0
+    shoulders: flex 0
+    fingers: flex 0
     ground-lock: feet
     cue "Stack the spine back up to standing tall"
 

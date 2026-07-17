@@ -10,9 +10,12 @@ import {
   POSES,
   EFFECTORS,
   REACH_EFFECTORS,
+  PIN_EFFECTORS,
+  GRIP_EFFECTORS,
   MODES,
   JOINT_NAMES,
   ACTION_NAMES,
+  actionsForJoint,
   TOP_KEYWORDS,
   CHILD_KEYWORDS,
   KEYWORD_DOCS,
@@ -39,6 +42,8 @@ type Context =
   | "easing"
   | "effector"
   | "reach-effector"
+  | "pin-effector"
+  | "grip-effector"
   | "action"
   | "joint"
   | "top"
@@ -48,15 +53,17 @@ function contextFor(prefix: string, line: number): Context {
   if (line === 0) {
     return /^\s*posecode\s+[\w-]*$/.test(prefix) ? "kind" : "none";
   }
-  if (/^\s*pose\s+start\s*=\s*[\w-]*$/.test(prefix)) return "pose";
-  if (/^\s*step\s+"[^"]*"\s+[0-9.]+s\s+[\w-]*$/.test(prefix)) return "easing";
-  if (/^\s*ground-lock\s*:\s*[\w,\s-]*$/.test(prefix)) return "effector";
-  if (/^\s*(reach|pin|grip)\s*:\s*[\w-]*$/.test(prefix)) return "reach-effector";
-  if (/^\s*[\w-]+\s*:\s*[\w-]*$/.test(prefix)) return "action";
+  const indent = prefix.length - prefix.trimStart().length;
+  if (indent === 2 && /^\s*pose\s+start\s*=\s*[\w-]*$/.test(prefix)) return "pose";
+  if (indent === 2 && /^\s*step\s+"[^"]*"\s+[0-9.]+s\s+[\w-]*$/.test(prefix)) return "easing";
+  if (indent >= 4 && /^\s*ground-lock\s*:\s*[\w,\s-]*$/.test(prefix)) return "effector";
+  if (indent >= 4 && /^\s*reach\s*:\s*[\w-]*$/.test(prefix)) return "reach-effector";
+  if (indent >= 4 && /^\s*pin\s*:\s*[\w-]*$/.test(prefix)) return "pin-effector";
+  if (indent >= 4 && /^\s*grip\s*:\s*[\w-]*$/.test(prefix)) return "grip-effector";
+  if (indent >= 4 && /^\s*[\w-]+\s*:\s*[\w-]*$/.test(prefix)) return "action";
 
   if (/^\s*[\w-]*$/.test(prefix)) {
-    const indent = prefix.length - prefix.trimStart().length;
-    return indent >= 2 ? "joint" : "top";
+    return indent >= 4 ? "joint" : indent >= 2 ? "top" : "none";
   }
   return "none";
 }
@@ -85,8 +92,16 @@ export function getCompletions(
       return EFFECTORS.map((e) => item(e, "effector"));
     case "reach-effector":
       return REACH_EFFECTORS.map((e) => item(e, "effector"));
+    case "pin-effector":
+      return PIN_EFFECTORS.map((e) => item(e, "effector"));
+    case "grip-effector":
+      return GRIP_EFFECTORS.map((e) => item(e, "effector"));
     case "action":
-      return [...ACTION_NAMES, "hold"].map((a) => item(a, "action"));
+      {
+        const joint = /^\s*([\w-]+)\s*:/.exec(prefix)?.[1];
+        const actions = joint ? actionsForJoint(joint) : ACTION_NAMES;
+        return [...actions, "hold"].map((a) => item(a, "action"));
+      }
     case "joint":
       return [
         ...JOINT_NAMES.map((j) => item(j, "joint")),

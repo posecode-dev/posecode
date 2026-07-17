@@ -18,16 +18,16 @@ posecode exercise "Pull-up"
     cue "Hang from the bar, arms long, shoulders active"
 
   step "Pull up" 1.2s settle:
-    shoulders: flex 105
-    elbows: flex 130
+    shoulders: flex 90
+    elbows: flex 125
     elbows: pronate 80
     spine: extend 15
     chest: extend 10
-    neck: extend 20
+    neck: extend 25
     grip: hands bar
     cue "Pull the chest toward the bar, driving the elbows down"
 
-  step "Lower" 1.4s drive:
+  step "Lower" 1.4s settle:
     shoulders: flex 175
     elbows: flex 5
     elbows: pronate 80
@@ -37,7 +37,7 @@ posecode exercise "Pull-up"
     grip: hands bar
     cue "Lower under control back to a full hang"
 
-  step "Release" 0.8s drive:
+  step "Release" 0.8s settle:
     shoulders: flex 0
     elbows: flex 0
     elbows: pronate 0

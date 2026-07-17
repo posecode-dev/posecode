@@ -28,7 +28,7 @@ posecode exercise "Hanging knee raise"
     grip: hand_right bar
     cue "Draw both knees up toward the chest"
 
-  step "Lower" 1.4s drive:
+  step "Lower" 1.4s settle:
     hips: flex 0
     knees: flex 0
     shoulders: flex 175
@@ -38,7 +38,7 @@ posecode exercise "Hanging knee raise"
     grip: hand_right bar
     cue "Lower the legs under control, staying in a steady hang"
 
-  step "Release" 0.8s drive:
+  step "Release" 0.8s settle:
     shoulders: flex 0
     elbows: flex 0
     elbows: pronate 0
