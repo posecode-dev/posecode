@@ -996,9 +996,7 @@ code {
   }
 
   .code-chip {
-    right: -4px;
-    bottom: -26px;
-    font-size: 9.5px;
+    display: none;
   }
 
   .proof {
