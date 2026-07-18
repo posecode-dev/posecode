@@ -1,10 +1,10 @@
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { parse } from "./packages/posecode-parser/dist/index.js";
+import { parse } from "../../packages/posecode-parser/dist/index.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const repoRoot = here;
+const repoRoot = resolve(here, "../..");
 
 const originalDeadlift = readFileSync(resolve(repoRoot, "spec/examples/deadlift.posecode"), "utf-8");
 

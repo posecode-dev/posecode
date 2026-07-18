@@ -29,7 +29,7 @@
   <a href="https://www.npmjs.com/package/posecode-parser">
     <img src="https://img.shields.io/npm/v/posecode-parser.svg?color=emerald" alt="npm version" />
   </a>
-  <a href="https://github.com/posecode-dev/posecode/blob/main/LICENSING.md">
+  <a href="https://github.com/posecode-dev/posecode/blob/main/docs/legal/LICENSING.md">
     <img src="https://img.shields.io/badge/license-Apache--2.0%20%2B%20AGPL--3.0-blue.svg" alt="Apache 2.0 and AGPL 3.0 licenses" />
   </a>
   <a href="https://github.com/posecode-dev/posecode/tree/main/packages/posecode-mcp">
@@ -627,7 +627,7 @@ See:
 
 ## Character assets
 
-The hosted playground currently uses an Adobe Mixamo character and one showcase animation under the applicable Adobe terms. These binary assets are not covered by Posecode's software licenses. See [third-party notices](THIRD_PARTY_NOTICES.md).
+The hosted playground currently uses an Adobe Mixamo character and one showcase animation under the applicable Adobe terms. These binary assets are not covered by Posecode's software licenses. See [third-party notices](docs/legal/THIRD_PARTY_NOTICES.md).
 
 The renderer also includes a zero-asset procedural figure and accepts compatible humanoid GLB characters through `characterUrl`.
 
@@ -644,7 +644,7 @@ Posecode is open source with a clear standard and product boundary:
 
 Organizations that need to use an AGPL component in a closed-source product may contact [hello@posecode.org](mailto:hello@posecode.org?subject=Posecode%20commercial%20license) about a separate commercial agreement.
 
-Earlier grants are unchanged. MIT revisions remain MIT, and the 0.2.2 npm packages remain Apache-2.0. See [LICENSING.md](LICENSING.md), [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md), and [TRADEMARK.md](TRADEMARK.md).
+Earlier grants are unchanged. MIT revisions remain MIT, and the 0.2.2 npm packages remain Apache-2.0. See [licensing](docs/legal/LICENSING.md), [commercial licensing](docs/legal/COMMERCIAL-LICENSE.md), and [trademark policy](docs/legal/TRADEMARK.md).
 
 ---
 

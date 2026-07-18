@@ -48,4 +48,4 @@ rendering is plain forward kinematics.
 
 ## License
 
-AGPL-3.0-only. A separate commercial license is available for closed-source product use; see [commercial licensing](https://github.com/posecode-dev/posecode/blob/main/COMMERCIAL-LICENSE.md).
+AGPL-3.0-only. A separate commercial license is available for closed-source product use; see [commercial licensing](https://github.com/posecode-dev/posecode/blob/main/docs/legal/COMMERCIAL-LICENSE.md).
