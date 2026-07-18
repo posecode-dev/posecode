@@ -3,6 +3,7 @@ import {
   FEATURED_LIBRARY_MOVEMENT_ID,
   prioritizeFeaturedMovement,
 } from "../src/library-order.js";
+import { PRESETS } from "../src/presets.js";
 
 describe("movement library ordering", () => {
   it("promotes Jumping jacks ahead of otherwise stable results", () => {
@@ -28,5 +29,15 @@ describe("movement library ordering", () => {
     const movements = [{ id: "squat" }, { id: "deadlift" }];
 
     expect(prioritizeFeaturedMovement(movements)).toEqual(movements);
+  });
+
+  it("places the ready Dance category immediately after Performance", () => {
+    const readyDomains = [
+      ...new Set(PRESETS.filter((preset) => preset.status === "ready").map((preset) => preset.domain)),
+    ];
+    const performanceIndex = readyDomains.indexOf("Performance");
+
+    expect(performanceIndex).toBeGreaterThanOrEqual(0);
+    expect(readyDomains[performanceIndex + 1]).toBe("Dance");
   });
 });
