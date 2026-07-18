@@ -6,7 +6,7 @@ import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const repoRoot = here;
+const repoRoot = resolve(here, "../..");
 
 function chromiumPath() {
   if (process.env.POSECODE_CHROMIUM) return process.env.POSECODE_CHROMIUM;

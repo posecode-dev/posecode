@@ -157,7 +157,7 @@ export function pageShell({ title, description, canonicalPath, jsonLd, bodyHtml,
         qualified professional for physiotherapy or exercise prescription.</p>
         <p>
           <a href="/">Posecode</a>, open source under Apache-2.0 and AGPL-3.0 &nbsp;·&nbsp;
-          <a href="https://github.com/posecode-dev/posecode/blob/main/LICENSING.md" target="_blank" rel="noopener">Licensing</a> &nbsp;·&nbsp;
+          <a href="https://github.com/posecode-dev/posecode/blob/main/docs/legal/LICENSING.md" target="_blank" rel="noopener">Licensing</a> &nbsp;·&nbsp;
           <a href="mailto:hello@posecode.org?subject=Posecode%20Feedback">Feedback</a> &nbsp;·&nbsp;
           <a href="https://github.com/posecode-dev/posecode/issues" target="_blank" rel="noopener">GitHub Issues</a>
         </p>

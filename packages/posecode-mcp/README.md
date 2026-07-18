@@ -64,4 +64,4 @@ itself; 3D math runs in the user's browser when the link is opened.
 
 ## License
 
-AGPL-3.0-only. A [separate commercial license](https://github.com/posecode-dev/posecode/blob/main/COMMERCIAL-LICENSE.md) is available for closed-source product use.
+AGPL-3.0-only. A [separate commercial license](https://github.com/posecode-dev/posecode/blob/main/docs/legal/COMMERCIAL-LICENSE.md) is available for closed-source product use.

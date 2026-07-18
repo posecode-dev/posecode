@@ -29,7 +29,7 @@ const PAUSE = "❚❚";
 
 /** Where the "open in playground" link points; overridable per element. */
 const DEFAULT_PLAYGROUND = "https://posecode.org/play";
-const LICENSING_URL = "https://github.com/posecode-dev/posecode/blob/main/LICENSING.md";
+const LICENSING_URL = "https://github.com/posecode-dev/posecode/blob/main/docs/legal/LICENSING.md";
 
 export interface PosecodeReadyDetail {
   version: string;
