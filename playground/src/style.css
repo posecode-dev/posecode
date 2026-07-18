@@ -1471,8 +1471,7 @@ select:hover {
     justify-content: center;
   }
   #share {
-    grid-column: 1 / 3;
-    grid-row: 2;
+    display: none;
   }
   #feedback {
     grid-column: 3;
