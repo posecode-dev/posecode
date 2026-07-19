@@ -4,7 +4,7 @@ posecode exercise "Deadlift"
 
   step "Lower" 1.8s flow:
     pelvis: hinge 75
-    knees: flex 25
+    knees: flex 14
     ankles: plantarflex 0
     shoulders: flex 70
     elbows: pronate 80

@@ -115,26 +115,26 @@ describe("clip-wide constraint diagnostics", () => {
   const fixtures = loadFixtures(examplesDir);
   const source = (name: string) => fixtures.find((fixture) => fixture.movement === name)!.source;
 
-  it("samples between phase endpoints and reports the deadlift/demi-plié heel lifts", () => {
+  it("keeps the deadlift heels planted through the hinge and still flags the demi-plié lift", () => {
     const deadlift = probeMovement(source("deadlift"));
     const plie = probeMovement(source("demi-plie"));
 
     expect(deadlift.diagnostics.sampleCount).toBeGreaterThan(deadlift.phases.length);
-    expect(deadlift.diagnostics.feet.left.maxHeelHeightMeters).toBeGreaterThan(0.03);
-    expect(deadlift.diagnostics.warnings).toContainEqual(expect.objectContaining({
-      id: "clip-heel-height:foot_left",
-      phaseName: "Lower",
-      kind: "heel-height",
-    }));
-    expect(deadlift.diagnostics.warnings).toContainEqual(expect.objectContaining({
-      id: "clip-grounding-rom-conflict:foot_left",
-      phaseName: "Lower",
-      kind: "grounding-rom-conflict",
-    }));
-    expect(plie.diagnostics.feet.left.maxHeelHeightMeters).toBeGreaterThan(0.04);
+    // The hip hinge keeps soft knees (18°) inside the ankle's dorsiflexion ROM
+    // (20°), so both soles stay flat on the floor across the whole clip.
+    expect(deadlift.diagnostics.feet.left.maxHeelHeightMeters).toBeLessThan(0.005);
+    expect(deadlift.diagnostics.warnings).toHaveLength(0);
+
+    // The demi-plié still drives the ankle past its dorsiflexion ROM, so it
+    // remains the exemplar of a reported heel-lift / grounding conflict.
+    expect(plie.diagnostics.feet.left.maxHeelHeightMeters).toBeGreaterThan(0.02);
     expect(plie.diagnostics.warnings).toEqual(expect.arrayContaining([
       expect.objectContaining({ id: "clip-heel-height:foot_left", phaseName: "Plié" }),
-      expect.objectContaining({ id: "clip-sole-angle:foot_left", phaseName: "Plié" }),
+      expect.objectContaining({
+        id: "clip-grounding-rom-conflict:foot_left",
+        phaseName: "Plié",
+        kind: "grounding-rom-conflict",
+      }),
     ]));
   });
 
@@ -154,7 +154,7 @@ describe("clip-wide constraint diagnostics", () => {
   });
 
   it("keeps strict diagnostics visible but non-gating in EvalReport and CLI text", () => {
-    const report = runEval([{ movement: "deadlift", source: source("deadlift") }]);
+    const report = runEval([{ movement: "demi-plie", source: source("demi-plie") }]);
     const movement = report.movements[0]!;
     const text = renderReport(report);
 
