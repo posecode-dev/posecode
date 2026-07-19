@@ -81,6 +81,7 @@ const docSchema = z.object({
   name: z.string().min(1),
   rig: z.enum(RIG_NAMES),
   startPose: z.enum(START_POSE_NAMES).optional(),
+  startPoseOverrides: z.array(jointTargetSchema),
   props: z.array(z.enum(PROP_TYPES)),
   repeat: z.number().int().positive(),
   steps: z.array(stepSchema).min(1, "a Posecode document requires at least one step"),
@@ -101,6 +102,9 @@ export function validateAst(ast: AstDoc): ParseError[] {
 }
 
 function lineForIssue(ast: AstDoc, path: PropertyKey[]): number {
+  if (path[0] === "startPoseOverrides" && typeof path[1] === "number") {
+    return ast.startPoseOverrides[path[1]]?.line ?? 1;
+  }
   // path like ["steps", 0, "easing"] → that step's source line.
   if (path[0] === "steps" && typeof path[1] === "number") {
     return ast.steps[path[1]]?.line ?? 1;

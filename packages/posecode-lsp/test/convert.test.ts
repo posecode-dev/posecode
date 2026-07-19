@@ -40,6 +40,15 @@ describe("toCompletions", () => {
     );
     expect(items[0]?.kind).toBe(CompletionItemKind.Function);
   });
+
+  it("returns joint completions inside a scoped start-pose override", () => {
+    const text = 'posecode posture "x"\n  pose start = standing:\n    ';
+    const items = toCompletions(text, 2, 4);
+    expect(items.map((item) => item.label)).toEqual(
+      expect.arrayContaining(["shoulders", "elbow_left", "hips"]),
+    );
+    expect(items.map((item) => item.label)).not.toContain("ground-lock");
+  });
 });
 
 describe("toHover", () => {

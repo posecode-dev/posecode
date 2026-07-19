@@ -10,6 +10,7 @@ import {
   floorTargetForEffector,
   formFists,
   levelPlantedFeet,
+  measureFootContact,
   prepareGripFrames,
   relaxHands,
   swingArms,
@@ -75,6 +76,25 @@ describe("levelPlantedFeet", () => {
     levelPlantedFeet(m, ["foot_left"]);
     expect(m.bones.get("ankle_left")!.quaternion.angleTo(leftBefore)).toBeGreaterThan(1e-3);
     expect(m.bones.get("ankle_right")!.quaternion.angleTo(rightBefore)).toBeLessThan(1e-6);
+  });
+
+  it("reports visible heel/toe height and sole angle, not ankle-bone height", () => {
+    const m = buildMannequin();
+    groundFigure(m);
+    const flat = measureFootContact(m, "left")!;
+    expect(flat.heelHeight).toBeCloseTo(0, 5);
+    expect(flat.toeHeight).toBeCloseTo(0, 5);
+    expect(flat.soleAngleDeg).toBeCloseTo(0, 5);
+
+    m.bones.get("knee_left")!.rotation.x = 25 * DEG;
+    m.root.updateMatrixWorld(true);
+    groundFigure(m);
+    levelPlantedFeet(m, ["foot_left"]);
+    groundFigure(m);
+    const limited = measureFootContact(m, "left")!;
+    expect(Math.min(limited.heelHeight, limited.toeHeight)).toBeLessThan(0.02);
+    expect(limited.heelHeight).toBeGreaterThan(0.02);
+    expect(limited.soleAngleDeg).toBeGreaterThan(5);
   });
 });
 

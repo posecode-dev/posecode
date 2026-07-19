@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import * as THREE from "three";
 import { buildMannequin } from "../src/mannequin.js";
-import { depenetrate } from "../src/depenetrate.js";
+import { depenetrate, measureSelfCollisions } from "../src/depenetrate.js";
 
 const DEG = Math.PI / 180;
 
@@ -47,6 +47,22 @@ describe("self-collision de-penetration", () => {
     // Elbow flexion is untouched: only the shoulder re-aims the arm.
     const elbow = new THREE.Euler().setFromQuaternion(m.bones.get("elbow_left")!.quaternion, "XYZ");
     expect(elbow.x).toBeCloseTo(-25 * DEG, 5);
+  });
+
+  it("exposes stable named residuals before and after correction", () => {
+    const m = buildMannequin();
+    m.bones.get("shoulder_left")!.rotation.set(0, 0, -80 * DEG);
+    m.bones.get("elbow_left")!.rotation.set(-25 * DEG, 0, 0);
+    m.root.updateMatrixWorld(true);
+    const before = measureSelfCollisions(m).find((item) =>
+      item.id === "self-collision:arm_left:body",
+    )!;
+
+    depenetrate(m);
+    const after = measureSelfCollisions(m).find((item) => item.id === before.id)!;
+    expect(before.depth).toBeGreaterThan(0);
+    expect(after.depth).toBeLessThan(before.depth);
+    expect(after.kind).toBe("arm-body");
   });
 
   it("leaves a clean pose untouched", () => {

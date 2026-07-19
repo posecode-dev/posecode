@@ -26,6 +26,10 @@ export interface Mannequin {
   collision: CollisionRadii;
   /** Visible meshes that form semantic local support surfaces. */
   contactSurfaces: {
+    /** Thin sole mesh used for heel/toe grounding diagnostics. */
+    foot_left: THREE.Object3D[];
+    /** Thin sole mesh used for heel/toe grounding diagnostics. */
+    foot_right: THREE.Object3D[];
     /** Trunk/mat surface used by `pin: pelvis floor`. */
     pelvis: THREE.Object3D[];
     /** Rounded thigh/shin caps that meet at each supporting knee. */
@@ -249,8 +253,8 @@ export function buildMannequin(material?: THREE.Material, proportions?: Proporti
   addHead(bones.get("head")!, mats, proportions?.headLength);
   addPalm(bones.get("wrist_left")!, mats.skin);
   addPalm(bones.get("wrist_right")!, mats.skin);
-  addShoe(bones.get("ankle_left")!, mats, proportions?.soleDrop);
-  addShoe(bones.get("ankle_right")!, mats, proportions?.soleDrop);
+  const leftSole = addShoe(bones.get("ankle_left")!, mats, proportions?.soleDrop);
+  const rightSole = addShoe(bones.get("ankle_right")!, mats, proportions?.soleDrop);
 
   // A pelvis floor pin represents the trunk's mat contact, whose thickness
   // changes with orientation (supine/prone) and spinal pose. A fixed proxy
@@ -293,6 +297,8 @@ export function buildMannequin(material?: THREE.Material, proportions?: Proporti
     },
     collision: proportions?.collision ?? DEFAULT_COLLISION,
     contactSurfaces: {
+      foot_left: [leftSole],
+      foot_right: [rightSole],
       pelvis: pelvisSurface,
       knee_left: jointCaps.get("knee_left") ?? [],
       knee_right: jointCaps.get("knee_right") ?? [],
@@ -443,10 +449,11 @@ function addPalm(wrist: THREE.Object3D, mat: THREE.Material): void {
  * ankle joint: characters carry their ankle higher above the floor, and the
  * bounding-box grounding must plant THEIR sole, not the default one.
  */
-function addShoe(ankle: THREE.Object3D, mats: FigureMaterials, soleDrop?: number): void {
+function addShoe(ankle: THREE.Object3D, mats: FigureMaterials, soleDrop?: number): THREE.Mesh {
   const dy = soleDrop !== undefined ? -(soleDrop - DEFAULT_SOLE_DROP) : 0;
   addEllipsoid(ankle, 0.05, [0.75, 0.55, 1.9], [0, -0.012 + dy, 0.05], mats.shoes);
   const sole = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.012, 0.185), mats.face);
   sole.position.set(0, -0.036 + dy, 0.05);
   ankle.add(sole);
+  return sole;
 }

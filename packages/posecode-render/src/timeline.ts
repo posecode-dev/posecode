@@ -208,10 +208,42 @@ function blendReaches(
 }
 
 export function buildTimeline(ir: PosecodeIR): BuiltTimeline {
-  const basePose = poseFor(ir.startPose);
+  const namedBasePose = poseFor(ir.startPose);
   const baseJoints = new Map<string, EulerDegTuple>(
-    Object.entries(basePose.joints ?? {}),
+    Object.entries(namedBasePose.joints ?? {}).map(([boneId, euler]) => [boneId, [...euler]]),
   );
+  // A custom start pose is a sparse overlay on a named built-in pose. Merge
+  // only authored channels, exactly like phase targets, so (for example) a
+  // standing elbow-flex override preserves the built-in relaxed forearm roll.
+  // This composed map seeds both the t=0 anchor and the structural loop reset.
+  for (const target of ir.startPoseOverrides ?? []) {
+    const next = [...(baseJoints.get(target.boneId) ?? [0, 0, 0])] as EulerDegTuple;
+    for (const axis of target.axes ?? ALL_AXES) {
+      next[AXIS_INDEX[axis]] = target.euler[axis];
+    }
+    baseJoints.set(target.boneId, next);
+  }
+  // Expose the same composed pose that sampling uses. Consumers use basePose
+  // to initialize/ground the root, and must not observe a stale named preset
+  // while sample(0) applies a different customized joint map.
+  const sampledBaseJoints = snapshot(baseJoints);
+  const basePose: PoseSpec = {
+    ...(namedBasePose.root
+      ? {
+          root: {
+            ...(namedBasePose.root.position
+              ? { position: [...namedBasePose.root.position] as [number, number, number] }
+              : {}),
+            ...(namedBasePose.root.rotationDeg
+              ? { rotationDeg: [...namedBasePose.root.rotationDeg] as [number, number, number] }
+              : {}),
+          },
+        }
+      : {}),
+    joints: Object.fromEntries(
+      [...sampledBaseJoints].map(([boneId, euler]) => [boneId, [...euler] as EulerDegTuple]),
+    ),
+  };
 
   // Accumulating current joint angles (degrees).
   const curr = new Map<string, EulerDegTuple>(baseJoints);

@@ -4,6 +4,11 @@ Paste the prompt below into ChatGPT, Claude, or any capable model. Then ask for
 a movement ("write a squat", "show a hamstring stretch") and paste the reply
 into the Posecode playground.
 
+This is the task-oriented, pasteable authoring guide. The
+[published Posecode Protocol Specification](https://posecode.org/spec.html) is the normative language and IR
+contract. This guide stays self-contained so a model does not need to follow a
+link, but the specification wins if the two ever disagree.
+
 ---
 
 You write **Posecode**, a small text language that describes one person's
@@ -28,6 +33,9 @@ posecode <kind> "<Name>"          # kind = exercise | stretch | posture
   rig humanoid
   prop <type>                  # optional: chair | wall | bar | box | dip-bars (repeatable)
   pose start = <pose>          # neutral | standing | first-position | plank | supine | prone | seated
+  # Or append `:` and indent sparse joint overrides beneath it:
+  pose start = <pose>:
+    <joint>: <action> <degrees>
   step "<Phase name>" <Ns> <mode>:     # mode = flow | settle | drive | snap | linear
     <joint>: <action> <degrees>
     reach: <effector> <target> # limb IK to a landmark, floor, or declared prop anchor
@@ -36,9 +44,35 @@ posecode <kind> "<Name>"          # kind = exercise | stretch | posture
     ground-lock: <contacts>    # planted supports; groups/back or side-specific names
     turn: <degrees>            # optional: face this yaw by phase end (standing only)
     travel: <x> <z>            # optional: move to this x z (metres) by phase end
-    cue "<short coaching cue>"
+    cue "<short coaching cue>" # display-only text; never changes the motion
   repeat <count>
 ```
+
+## Contact mechanisms
+
+| Directive | What moves | Use it for |
+| --- | --- | --- |
+| `ground-lock` | The solver preserves an existing floor support while the body moves. | A foot, hand, forearm, or the back is already planted. |
+| `reach` | A limb endpoint moves toward a target through IK; the body root does not translate. | An additional floor, body-landmark, or declared-prop contact. |
+| `pin` | The whole body translates around one primary fixed anchor. | A knee on the floor, a foot on a box, or another single body-moving support. |
+| `grip` | The body translates, each arm solves to a bar/rail, and the fingers close. | One- or two-hand support on a declared `bar` or `dip-bars` prop. |
+
+Use only one of the root-solving families (`ground-lock`, `pin`, or `grip`) in
+a step. Add compatible secondary contacts with `reach`. For example,
+`ground-lock: foot_right` plus `reach: knee_left floor` is valid; adding
+`pin: knee_left floor` to that same step is a conflict and the parser rejects
+it.
+
+`cue` is display-only coaching text. It may appear next to the current phase in
+a viewer, but it does not change joint targets, contacts, timing, validation,
+or solver behavior. Never rely on a cue to create motion.
+
+Use a start-pose override block only when none of the built-ins is the exact
+opening shape. Its joint targets are ROM-clamped and layered sparsely over the
+built-in pose; they do not consume time or create a phase. Omitted channels keep
+the built-in value, and the composed pose is restored when the animation loops.
+Do not put contacts, cues, turn, or travel inside a start-pose block.
+Write exactly one `pose start` declaration; duplicate declarations are errors.
 
 ## Joints
 

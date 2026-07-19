@@ -106,6 +106,89 @@ describe("getCompletions", () => {
     expect(onLine("  pose start = ", 15)).toContain("standing");
   });
 
+  it("offers only joint targets inside a scoped start-pose override", () => {
+    const text = [
+      'posecode posture "Custom"',
+      "  pose start = standing:",
+      "    ",
+    ].join("\n");
+    const labels = getCompletions(text, 2, 4).map((item) => item.label);
+    expect(labels).toEqual(expect.arrayContaining(["shoulders", "elbow_left", "hips"]));
+    expect(labels).not.toEqual(expect.arrayContaining(["cue", "ground-lock", "reach"]));
+  });
+
+  it("offers joint-specific actions inside a scoped start-pose override", () => {
+    const text = [
+      'posecode posture "Custom"',
+      "  pose start = standing:",
+      "    knees: ",
+    ].join("\n");
+    const labels = getCompletions(text, 2, 11).map((item) => item.label);
+    expect(labels).toEqual(expect.arrayContaining(["flex", "extend", "hold"]));
+    expect(labels).not.toContain("abduct");
+  });
+
+  it("uses the actual scoped-header indentation for start-pose completions", () => {
+    const jointText = [
+      'posecode posture "Compact custom"',
+      " pose start = standing:",
+      "  ",
+    ].join("\n");
+    const joints = getCompletions(jointText, 2, 2).map((item) => item.label);
+    expect(joints).toEqual(expect.arrayContaining(["shoulders", "elbow_left", "hips"]));
+    expect(joints).not.toContain("ground-lock");
+
+    const actionText = [
+      'posecode posture "Compact custom"',
+      " pose start = standing:",
+      "  knees: ",
+    ].join("\n");
+    const actions = getCompletions(actionText, 2, 9).map((item) => item.label);
+    expect(actions).toEqual(expect.arrayContaining(["flex", "extend", "hold"]));
+    expect(actions).not.toContain("abduct");
+  });
+
+  it("does not scan through a later block into an earlier start-pose block", () => {
+    const text = [
+      'posecode posture "Two scopes"',
+      " pose start = standing:",
+      "  shoulders: flex 20",
+      ' step "Move" 1s linear:',
+      "  ",
+    ].join("\n");
+    const labels = getCompletions(text, 4, 2).map((item) => item.label);
+    expect(labels).toEqual(expect.arrayContaining(["knees", "ground-lock", "cue"]));
+  });
+
+  it("does not complete document directives when they are nested inside a step", () => {
+    const nestedPose = [
+      'posecode posture "Nested"',
+      ' step "Outer" 1s linear:',
+      "  pose start = ",
+    ].join("\n");
+    expect(getCompletions(nestedPose, 2, 15).map((item) => item.label)).not.toContain("standing");
+
+    const nestedStep = [
+      'posecode posture "Nested"',
+      ' step "Outer" 1s linear:',
+      '  step "Inner" 1s ',
+    ].join("\n");
+    expect(getCompletions(nestedStep, 2, 19).map((item) => item.label)).not.toContain("flow");
+  });
+
+  it("reports ROM clamps in scoped start-pose overrides", () => {
+    const text = [
+      'posecode posture "Custom"',
+      "  pose start = standing:",
+      "    knees: flex 200",
+      '  step "Hold" 1s linear:',
+      "    spine: hold neutral",
+    ].join("\n");
+    expect(getDiagnostics(text)).toContainEqual(
+      expect.objectContaining({ line: 3, severity: "warning", message: expect.stringContaining("144") }),
+    );
+  });
+
   it("suggests effectors after `ground-lock: `", () => {
     expect(onLine("    ground-lock: ", 17)).toEqual(
       expect.arrayContaining([

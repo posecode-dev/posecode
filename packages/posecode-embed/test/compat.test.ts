@@ -28,6 +28,6 @@ describe("embed compatibility contract", () => {
       readFileSync(resolve(import.meta.dirname, "../package.json"), "utf8"),
     ) as { version: string };
     expect(version).toBe(pkg.version);
-    expect(languageVersion).toBe("0.2");
+    expect(languageVersion).toBe("0.3");
   });
 });

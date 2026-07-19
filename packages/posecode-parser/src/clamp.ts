@@ -54,6 +54,30 @@ export function resolve(ast: AstDoc): ResolveResult {
   const errors: ParseError[] = [];
   const declaredAnchors = anchorsForProps(ast.props);
   const semanticState = initialSemanticState(ast.startPose);
+  const startOverrideStep: AstStep = {
+    name: "start pose",
+    durationSec: 0,
+    easing: "linear",
+    targets: ast.startPoseOverrides,
+    groundLock: [],
+    reaches: [],
+    pins: [],
+    grips: [],
+    line: ast.startPoseOverrides[0]?.line ?? 1,
+  };
+  const startOverridePhase = resolveStep(
+    startOverrideStep,
+    declaredAnchors,
+    warnings,
+    errors,
+  );
+  enforceHipHingeLimit(
+    startOverrideStep,
+    startOverridePhase,
+    semanticState,
+    warnings,
+  );
+  applyPhaseToState(semanticState, startOverridePhase);
   const phases: Phase[] = [];
 
   // Resolve in document order so cross-joint mechanics can be checked against
@@ -72,6 +96,9 @@ export function resolve(ast: AstDoc): ResolveResult {
     name: ast.name,
     rig: ast.rig,
     ...(ast.startPose ? { startPose: ast.startPose } : {}),
+    ...(startOverridePhase.targets.length > 0
+      ? { startPoseOverrides: startOverridePhase.targets }
+      : {}),
     props: ast.props,
     ...(ast.clip ? { clip: ast.clip } : {}),
     repeat: ast.repeat,

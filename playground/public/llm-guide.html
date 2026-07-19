@@ -121,6 +121,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <p class="eyebrow">For LLMs</p>
 <h1>Authoring <code>.posecode</code> with an LLM</h1>
 <p>Paste the prompt below into ChatGPT, Claude, or any capable model. Then ask for a movement (&quot;write a squat&quot;, &quot;show a hamstring stretch&quot;) and paste the reply into the Posecode playground.</p>
+<p>This is the task-oriented, pasteable authoring guide. The <a href="https://posecode.org/spec.html" target="_blank" rel="noopener">published Posecode Protocol Specification</a> is the normative language and IR contract. This guide stays self-contained so a model does not need to follow a link, but the specification wins if the two ever disagree.</p>
 <hr>
 <p>You write <strong>Posecode</strong>, a small text language that describes one person's movement so a 3D figure can animate it.</p>
 <p>When the request is representable, output ONLY the raw <code>.posecode</code> document: no Markdown fence and no prose. Before writing it, privately lock down the movement intent: lead side, moving side, every support/contact, the key pose at each phase boundary, and whether each phase accelerates, flows, or settles. Never let a cue claim a contact, direction, or body side that the commands do not encode.</p>
@@ -130,6 +131,9 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
   rig humanoid
   prop &lt;type&gt;                  # optional: chair | wall | bar | box | dip-bars (repeatable)
   pose start = &lt;pose&gt;          # neutral | standing | first-position | plank | supine | prone | seated
+  # Or append `:` and indent sparse joint overrides beneath it:
+  pose start = &lt;pose&gt;:
+    &lt;joint&gt;: &lt;action&gt; &lt;degrees&gt;
   step &quot;&lt;Phase name&gt;&quot; &lt;Ns&gt; &lt;mode&gt;:     # mode = flow | settle | drive | snap | linear
     &lt;joint&gt;: &lt;action&gt; &lt;degrees&gt;
     reach: &lt;effector&gt; &lt;target&gt; # limb IK to a landmark, floor, or declared prop anchor
@@ -138,8 +142,18 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     ground-lock: &lt;contacts&gt;    # planted supports; groups/back or side-specific names
     turn: &lt;degrees&gt;            # optional: face this yaw by phase end (standing only)
     travel: &lt;x&gt; &lt;z&gt;            # optional: move to this x z (metres) by phase end
-    cue &quot;&lt;short coaching cue&gt;&quot;
+    cue &quot;&lt;short coaching cue&gt;&quot; # display-only text; never changes the motion
   repeat &lt;count&gt;</code></pre>
+<h2>Contact mechanisms</h2>
+<div class="table-wrap"><table><thead><tr><th>Directive</th><th>What moves</th><th>Use it for</th></tr></thead><tbody>
+<tr><td><code>ground-lock</code></td><td>The solver preserves an existing floor support while the body moves.</td><td>A foot, hand, forearm, or the back is already planted.</td></tr>
+<tr><td><code>reach</code></td><td>A limb endpoint moves toward a target through IK; the body root does not translate.</td><td>An additional floor, body-landmark, or declared-prop contact.</td></tr>
+<tr><td><code>pin</code></td><td>The whole body translates around one primary fixed anchor.</td><td>A knee on the floor, a foot on a box, or another single body-moving support.</td></tr>
+<tr><td><code>grip</code></td><td>The body translates, each arm solves to a bar/rail, and the fingers close.</td><td>One- or two-hand support on a declared <code>bar</code> or <code>dip-bars</code> prop.</td></tr>
+</tbody></table></div>
+<p>Use only one of the root-solving families (<code>ground-lock</code>, <code>pin</code>, or <code>grip</code>) in a step. Add compatible secondary contacts with <code>reach</code>. For example, <code>ground-lock: foot_right</code> plus <code>reach: knee_left floor</code> is valid; adding <code>pin: knee_left floor</code> to that same step is a conflict and the parser rejects it.</p>
+<p><code>cue</code> is display-only coaching text. It may appear next to the current phase in a viewer, but it does not change joint targets, contacts, timing, validation, or solver behavior. Never rely on a cue to create motion.</p>
+<p>Use a start-pose override block only when none of the built-ins is the exact opening shape. Its joint targets are ROM-clamped and layered sparsely over the built-in pose; they do not consume time or create a phase. Omitted channels keep the built-in value, and the composed pose is restored when the animation loops. Do not put contacts, cues, turn, or travel inside a start-pose block. Write exactly one <code>pose start</code> declaration; duplicate declarations are errors.</p>
 <h2>Joints</h2>
 <p><code>neck head spine chest pelvis</code> and (singular or plural) <code>shoulders elbows forearms wrists hips knees ankles</code>. <code>forearms</code> is an anatomical alias for the two elbow bones when authoring palm roll. Plural names move both sides symmetrically; use <code>elbow_left</code> etc. for one side. Fingers: <code>fingers</code> (or <code>fingers_left</code> / <code>fingers_right</code>), and individually <code>thumb_* index_* middle_* ring_* pinky_*</code>.</p>
 <h2>Actions (degrees are absolute targets)</h2>

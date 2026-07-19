@@ -6,11 +6,11 @@
     <title>Posecode Language Specification: The .posecode Kinematic Motion DSL</title>
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="description" content="The full Posecode v0.2 grammar, timing modes, joints, actions, and configured range-of-motion tables for a text language capable LLMs can use to describe human movement." />
+    <meta name="description" content="The full Posecode v0.3 grammar, timing modes, joints, actions, and configured range-of-motion tables for a text language capable LLMs can use to describe human movement." />
     <link rel="canonical" href="https://www.posecode.org/spec.html" />
     <meta name="theme-color" content="#0a0d12" />
     <meta property="og:title" content="Posecode Language Specification: The .posecode Kinematic Motion DSL" />
-    <meta property="og:description" content="The full Posecode v0.2 grammar, timing modes, joints, actions, and configured range-of-motion tables for a text language capable LLMs can use to describe human movement." />
+    <meta property="og:description" content="The full Posecode v0.3 grammar, timing modes, joints, actions, and configured range-of-motion tables for a text language capable LLMs can use to describe human movement." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.posecode.org/spec.html" />
     <meta property="og:site_name" content="Posecode" />
@@ -119,10 +119,11 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     </header>
     <main class="wrap">
       <p class="eyebrow">Reference</p>
-<h1>Posecode Protocol Specification v0.2</h1>
+<h1>Posecode Protocol Specification v0.3</h1>
 <p>Posecode is a small text language for describing a single person's <strong>kinematic movement</strong> so it can be rendered as an animated 3D figure in a web browser.</p>
+<p>This document is the <strong>normative language and IR contract</strong>. The <a href="https://posecode.org/llm-guide.html" target="_blank" rel="noopener">LLM authoring guide</a> is task-oriented and pasteable; it is intentionally self-contained, but it must not define syntax or behavior that differs from this specification.</p>
 <p>It is to human movement what Mermaid is to diagrams: an LLM (or a human) writes a compact, readable document; a client-side parser + renderer turns it into a moving mannequin. The model never produces 3D matrices: it expresses the *semantic phases* of a movement, which it already understands.</p>
-<ul><li><strong>Version keyword:</strong> documents declare nothing; this is <code>posecode 0.2</code>.</li><li><strong>Compatibility:</strong> v0.2 parsers continue to accept the v0.1 easing aliases.</li><li><strong>File extension:</strong> <code>.posecode</code></li><li><strong>Compute model:</strong> generation is pure text (server-cheap); all 3D math runs on the client (Three.js). See the project research §6.</li></ul>
+<ul><li><strong>Version keyword:</strong> documents declare nothing; this is <code>posecode 0.3</code>.</li><li><strong>Compatibility:</strong> v0.3 parsers continue to accept v0.2 documents and the v0.1 easing aliases.</li><li><strong>File extension:</strong> <code>.posecode</code></li><li><strong>Compute model:</strong> generation is pure text (server-cheap); all 3D math runs on the client (Three.js). See the project research §6.</li></ul>
 <hr>
 <h2>1. Grammar</h2>
 <p>Posecode is line- and indentation-oriented. Comments start with <code>#</code> or <code>//</code>.</p>
@@ -132,7 +133,8 @@ kind       = &quot;exercise&quot; | &quot;stretch&quot; | &quot;posture&quot; ;
 directive  = rig | prop | pose | clip | step | repeat ;
 rig        = &quot;rig&quot; &quot;humanoid&quot; ;
 prop       = &quot;prop&quot; (&quot;chair&quot;|&quot;wall&quot;|&quot;bar&quot;|&quot;box&quot;|&quot;dip-bars&quot;) ;
-pose       = &quot;pose&quot; &quot;start&quot; &quot;=&quot; startPose ;
+pose       = &quot;pose&quot; &quot;start&quot; &quot;=&quot; startPose [ &quot;:&quot; { startOverride } ] ;
+startOverride = jointTarget ;                         (* indented; sparse overlay, not a phase *)
 startPose  = &quot;neutral&quot;|&quot;standing&quot;|&quot;first-position&quot;|&quot;plank&quot;|&quot;supine&quot;|&quot;prone&quot;|&quot;seated&quot; ;
 clip       = &quot;clip&quot; STRING ;                            (* optional mocap clip; renderer may retarget &amp; blend *)
 repeat     = &quot;repeat&quot; NUMBER ;
@@ -151,11 +153,26 @@ handEffector = &quot;hands&quot; | &quot;hand_left&quot; | &quot;hand_right&quot
 gripAnchor = &quot;bar&quot; | &quot;bars&quot; ;
 turn       = &quot;turn&quot; &quot;:&quot; NUMBER ;                       (* face this yaw (deg) by phase end *)
 travel     = &quot;travel&quot; &quot;:&quot; NUMBER NUMBER ;              (* move to this x z (metres) by phase end *)
-cue        = &quot;cue&quot; STRING ;
+cue        = &quot;cue&quot; STRING ;                              (* display-only coaching text *)
 DURATION   = NUMBER &quot;s&quot; ;                                (* e.g. 2s, 1.5s *)</code></pre>
 <p>A <code>step</code> is one <strong>phase</strong> of the movement. Phases run in sequence; within a phase, all joint targets apply concurrently.</p>
+<p>A built-in start pose can be customized with an indented override block:</p>
+<pre class="code-block" data-lang="posecode"><code>  pose start = standing:
+    shoulders: flex 20
+    elbow_left: flex 35</code></pre>
+<p>The existing one-line form remains valid. Start-pose targets use the same joint/action vocabulary, channel mirroring, compatibility checks, and ROM clamping as phase targets, but they do not create a phase or consume time. They sparsely overlay the selected built-in pose: omitted channels keep the built-in value, while <code>hold neutral</code> resets all three channels on that joint. The composed start pose is the deterministic animation start and loop-reset pose. Contacts, root travel/turn, cues, and other step-only directives are not valid inside this block.</p>
+<p>A document may contain at most one <code>pose start</code> declaration. A second declaration is an error rather than a replacement, so an earlier scoped block cannot be bypassed before its joint/action vocabulary is validated.</p>
 <p>The header kind, rig, props, start poses, joints, actions, effectors, targets, and timing modes are closed vocabularies. Unknown values are errors; the parser does not accept a plausible-looking word and leave it for the renderer to ignore.</p>
 <p>Contact target vocabularies are capability-specific. <code>reach</code> accepts <code>floor</code>, a rig body landmark, or an anchor from a declared prop. <code>pin</code> accepts only fixed world anchors (<code>floor</code> or a declared prop anchor), because translating the root cannot pin one body landmark to another landmark that moves with that same root. <code>grip</code> accepts only anchors supplied by a declared <code>bar</code> or <code>dip-bars</code> prop. Grouped <code>grip: hands ...</code> uses the bare <code>bar</code> / <code>bars</code> anchor and expands to separate left/right anchors; an explicitly sided grip anchor is valid only with the matching single-hand effector.</p>
+<h3>Contact mechanisms</h3>
+<div class="table-wrap"><table><thead><tr><th>Directive</th><th>What the solver does</th><th>Use it when</th></tr></thead><tbody>
+<tr><td><code>ground-lock</code></td><td>Preserves an existing floor support while the rest of the body moves.</td><td>A foot, hand, forearm, or the back is already planted.</td></tr>
+<tr><td><code>reach</code></td><td>Moves a limb endpoint toward a target through ROM-constrained IK; it does not translate the body root.</td><td>An additional hand, fist, elbow, knee, or foot must meet a floor, landmark, or prop target.</td></tr>
+<tr><td><code>pin</code></td><td>Translates the whole body so one primary effector stays on a fixed anchor.</td><td>One contact should carry or reposition the body, such as a knee on the floor or foot on a box.</td></tr>
+<tr><td><code>grip</code></td><td>Translates the body, solves each gripping arm to a bar or rail, and closes the fingers.</td><td>One or both hands support the body on a declared <code>bar</code> or <code>dip-bars</code> prop.</td></tr>
+</tbody></table></div>
+<p><code>ground-lock</code>, <code>pin</code>, and <code>grip</code> are mutually exclusive root-solving families within one phase. Choose one primary support family, then express compatible additional contacts with independent <code>reach</code> constraints. The parser rejects conflicting combinations instead of silently choosing a solver order.</p>
+<p><code>cue</code> is display-only coaching metadata. The parser stores it in the IR and a viewer may show it alongside the current phase, but it does not alter joint targets, contacts, timing, range validation, or rendering solves. A cue should describe only motion that the phase's executable directives actually encode.</p>
 <p>Ground locks accept the groups <code>hands</code>, <code>forearms</code>, and <code>feet</code>, the axial surface contact <code>back</code>, plus the single-side forms <code>hand_left|hand_right</code>, <code>elbow_left|elbow_right</code>, and <code>foot_left|foot_right</code>. Human-readable <code>left foot</code>, <code>right foot</code>, <code>left hand</code>, and related forms normalize to the canonical side-specific names.</p>
 <p>Timing modes describe how motion crosses the phase boundary:</p>
 <div class="table-wrap"><table><thead><tr><th>Mode</th><th>Use</th></tr></thead><tbody>
@@ -219,17 +236,22 @@ DURATION   = NUMBER &quot;s&quot; ;                                (* e.g. 2s, 1
 <h2>5. Rendering model</h2>
 <ol><li><strong>Forward kinematics</strong>: each phase sets joint angles; the renderer uses C1-continuous quaternion splines between keyframes, shaped by the destination phase's timing mode.</li><li><strong>Grounding</strong>: the figure is dropped so its lowest point rests on the floor (a bounding-box drop), which grounds standing, plank, and the lying/seated poses alike.</li><li><strong>Ground-lock</strong>: contacts listed in <code>ground-lock</code> (<code>hands</code>, <code>forearms</code>, <code>feet</code>, or the per-side aliases <code>hand_left|hand_right</code>, <code>elbow_left|elbow_right</code>, <code>foot_left|foot_right</code>) stay planted while the body moves. <code>back</code> holds the pelvis-to-ribcage surface on the floor for supine work such as dead bugs. Unsupported contact names are line-anchored validation errors.</li><li><strong>Reach-IK</strong>: a <code>reach:</code> line drives an effector (<code>hand_*</code>, <code>fist_*</code>, <code>elbow_*</code>, <code>knee_*</code>, or <code>foot_*</code>, plus their supported groups) to a world <strong>target</strong> via Cyclic Coordinate Descent (CCD) over the arm/leg chain. A target is a body landmark bone (e.g. <code>ankle_left</code>), the keyword <code>floor</code>, or a prop anchor (<code>bar</code>, <code>seat</code>, <code>wall</code>). The solve is <strong>ROM-constrained</strong>: each iteration clamps every chain joint into its §4 configured range-of-motion limits (expressed as a per-axis box in the bone's local Euler frame), so a reach toward an unreachable target settles on the closest pose available within that configured joint-angle box; solved angles obey the same limits as authored ones. The viewer records a post-solve residual for every active reach. A reach target is not reported as reached merely because its syntax parsed: missing, unsupported, and geometrically unreachable reach targets remain explicit diagnostics. A palm or fist declared against the floor also presents its matching contact surface to the floor. For a palm, the solver may redistribute incompatible authored roll into a legal forearm/wrist frame; the explicit floor contact takes priority, and every adjusted joint remains inside the same configured ROM.</li><li><strong>Props</strong>: <code>prop chair|wall|bar|box|dip-bars</code> adds a scene object at a fixed default placement (chair/wall behind, bar overhead, box in front, dip bars either side); its named anchors (<code>seat</code>, <code>wall</code>, <code>bar</code>, <code>box</code>, <code>bars</code>) become reach, pin, or grip targets. Selected prop surfaces declare sampled blocking faces (the wall's surface, the chair's backrest and seat edge, the box's near face). A bounded contact pass reduces penetration, either by translating the whole figure out along the face normal (a wall-sit slides down the wall's *surface*, feet walking forward, instead of the torso hinging through the slab) or by bending the offending limb's hip clear, ROM-clamped like every other solve. Limbs pinned, gripped, or reached to a prop anchor are that phase's declared support and are exempt (a foot standing on the box top is not &quot;inside&quot; the box).</li><li><strong>Pins</strong>: <code>pin: &lt;effector&gt; &lt;anchor&gt;</code> translates the whole figure so one primary effector sits on the anchor. Where ground-lock preserves an already planted floor support and reach moves a limb to a target, a <strong>pin moves the body</strong>. Typical uses include <code>pin: knee_left floor</code>, <code>pin: foot_right box</code>, and <code>pin: pelvis floor</code>. A phase accepts one pin because each pin translates the same floating root; express additional simultaneous contacts with independent <code>reach</code> constraints. Use <code>grip</code> instead of hand pins for a two-handed bar or rail contact.</li><li><strong>Grips</strong>: <code>grip: hands bar|bars</code> is the dedicated two-hand contact for an overhead bar or dip rails; side-specific <code>hand_left</code> / <code>hand_right</code> forms are also available. A grip resolves independent left/right anchors, uses arm IK for each hand, orients the terminal contact, and closes the fingers. The matching prop must be declared. Use grips, rather than hand pins, for hangs, pull-ups, and dips.</li><li><strong>Spatial choreography</strong>: <code>turn: &lt;deg&gt;</code> rotates the figure's facing (yaw about vertical) and <code>travel: &lt;x&gt; &lt;z&gt;</code> moves it across the floor (world metres from the load spot). Both are <strong>absolute targets carried across phases</strong> (like joint angles) and both return home on the loop wrap, so a box-step traces a square back to start and a pirouette spins a full turn. They layer under grounding (feet still rest on the floor) and power pirouettes, grapevines, traveling combos, and walk cycles. <strong>Standing poses only</strong>: combining with lying/seated bases (whose root is already tilted) is out of scope.</li><li><strong>Looping</strong>: the timeline loops base → phases → base; <code>repeat</code> is the rep count surfaced to the UI.</li></ol>
 <p>When a mocap clip is active, the renderer selects the take containing the most actual bone motion (rather than blindly choosing the longest embedded take), retargets and blends it, then restores solved terminal contacts on the visible character. Mocap therefore cannot overwrite a planted sole or active grip.</p>
-<p><strong>Start poses:</strong> <code>neutral</code>, <code>standing</code>, <code>first-position</code> (ballet turnout), <code>plank</code>, <code>supine</code> (face-up), <code>prone</code> (face-down), <code>seated</code> (long-sit on the floor).</p>
+<p><strong>Start poses:</strong> <code>neutral</code>, <code>standing</code>, <code>first-position</code> (ballet turnout), <code>plank</code>, <code>supine</code> (face-up), <code>prone</code> (face-down), <code>seated</code> (long-sit on the floor). Append <code>:</code> and indented joint targets to define a custom start pose as a sparse overlay on any of these built-ins.</p>
 <p><strong>IK note:</strong> Three.js's bundled <code>CCDIKSolver</code> targets <code>SkinnedMesh</code>; the Posecode mannequin is rigid capsule segments, so Posecode implements CCD directly over the Object3D bone hierarchy (<code>posecode-render/ik.ts</code>) for both ground-lock and reach. Selected limb-vs-body and body-vs-prop penetrations are reduced with sampled, bounded correction passes; this is not comprehensive collision detection or a physics simulation. Two-person/dual-IK and figure-vs-figure collision remain deferred (research §5.2, §6.2).</p>
 <hr>
 <h2>6. Intermediate Representation (IR)</h2>
 <p><code>parse(source)</code> returns <code>{ ir, warnings, errors }</code>. The IR is renderer-agnostic; angles are in <strong>degrees</strong>.</p>
 <pre class="code-block" data-lang="ts"><code>interface PosecodeIR {
-  version: string;          // &quot;0.2&quot;
+  version: string;          // &quot;0.3&quot;
   kind: string;             // &quot;exercise&quot; | &quot;stretch&quot; | &quot;posture&quot;
   name: string;
   rig: string;              // &quot;humanoid&quot;
   startPose?: string;       // &quot;plank&quot; | &quot;standing&quot; | ...
+  startPoseOverrides?: {    // sparse, ROM-clamped overlay on startPose
+    boneId: string;
+    euler: { x: number; y: number; z: number };
+    axes?: (&quot;x&quot; | &quot;y&quot; | &quot;z&quot;)[];
+  }[];
   repeat: number;
   phases: {
     name: string;

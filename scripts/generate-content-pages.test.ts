@@ -21,4 +21,21 @@ describe("generated content pages", () => {
       `<pre class="code-block"><code>${esc(source)}</code></pre>`,
     );
   });
+
+  it("publishes the canonical authoring contract and cue semantics", () => {
+    const spec = readFileSync(resolve(root, "playground/public/spec.html"), "utf8");
+    const guide = readFileSync(resolve(root, "playground/public/llm-guide.html"), "utf8");
+    const movement = readFileSync(
+      resolve(root, "playground/public/moves/superhero-landing.html"),
+      "utf8",
+    );
+
+    expect(spec).toContain("normative language and IR contract");
+    expect(guide).toContain("normative language and IR contract");
+    expect(spec).toContain("display-only coaching metadata");
+    expect(guide).toContain("display-only coaching text");
+    expect(spec).toContain("pose start = standing:");
+    expect(guide).toContain("pose start = &lt;pose&gt;:");
+    expect(movement).toContain("Phase cues are display-only coaching text");
+  });
 });

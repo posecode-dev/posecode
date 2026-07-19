@@ -124,6 +124,8 @@ async function main() {
       <a class="btn" href="/play/${p.id}">▶ Open ${esc(name)} in the playground →</a>
 
       <h2>Movement phases</h2>
+      <p>Phase cues are display-only coaching text. The executable joint and
+        contact directives in the source below determine the animation.</p>
       <ol class="steps">
 ${stepsHtml}
       </ol>
@@ -192,7 +194,7 @@ ${stepsHtml}
   const specHtml = pageShell({
     title: "Posecode Language Specification: The .posecode Kinematic Motion DSL",
     description:
-      "The full Posecode v0.2 grammar, timing modes, joints, actions, and configured range-of-motion tables for a text language capable LLMs can use to describe human movement.",
+      "The full Posecode v0.3 grammar, timing modes, joints, actions, and configured range-of-motion tables for a text language capable LLMs can use to describe human movement.",
     canonicalPath: "/spec.html",
     bodyHtml: `<p class="eyebrow">Reference</p>\n${renderMarkdown(specMd)}`,
   });

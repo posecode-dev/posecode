@@ -46,26 +46,82 @@ type Context =
   | "grip-effector"
   | "action"
   | "joint"
+  | "start-joint"
   | "top"
   | "none";
 
-function contextFor(prefix: string, line: number): Context {
+interface EnclosingBlock {
+  kind: "start-pose" | "step";
+  indent: number;
+}
+
+function contextFor(
+  prefix: string,
+  line: number,
+  enclosingBlock: EnclosingBlock | null,
+  documentIndent: number | null,
+): Context {
   if (line === 0) {
     return /^\s*posecode\s+[\w-]*$/.test(prefix) ? "kind" : "none";
   }
   const indent = prefix.length - prefix.trimStart().length;
-  if (indent === 2 && /^\s*pose\s+start\s*=\s*[\w-]*$/.test(prefix)) return "pose";
-  if (indent === 2 && /^\s*step\s+"[^"]*"\s+[0-9.]+s\s+[\w-]*$/.test(prefix)) return "easing";
-  if (indent >= 4 && /^\s*ground-lock\s*:\s*[\w,\s-]*$/.test(prefix)) return "effector";
-  if (indent >= 4 && /^\s*reach\s*:\s*[\w-]*$/.test(prefix)) return "reach-effector";
-  if (indent >= 4 && /^\s*pin\s*:\s*[\w-]*$/.test(prefix)) return "pin-effector";
-  if (indent >= 4 && /^\s*grip\s*:\s*[\w-]*$/.test(prefix)) return "grip-effector";
-  if (indent >= 4 && /^\s*[\w-]+\s*:\s*[\w-]*$/.test(prefix)) return "action";
-
+  const atDocumentIndent =
+    enclosingBlock === null && indent > 0 && (documentIndent === null || indent === documentIndent);
+  if (atDocumentIndent && /^\s*pose\s+start\s*=\s*[\w-]*$/.test(prefix)) return "pose";
+  if (atDocumentIndent && /^\s*step\s+"[^"]*"\s+[0-9.]+s\s+[\w-]*$/.test(prefix)) return "easing";
+  const isActualChild = enclosingBlock !== null && indent > enclosingBlock.indent;
+  if (isActualChild && enclosingBlock.kind === "start-pose") {
+    if (/^\s*[\w-]+\s*:\s*[\w-]*$/.test(prefix)) return "action";
+    return /^\s*[\w-]*$/.test(prefix) ? "start-joint" : "none";
+  }
+  const isStepChild = isActualChild && enclosingBlock.kind === "step";
+  const isConventionalChild = indent >= 4;
+  if ((isStepChild || isConventionalChild) && /^\s*ground-lock\s*:\s*[\w,\s-]*$/.test(prefix)) return "effector";
+  if ((isStepChild || isConventionalChild) && /^\s*reach\s*:\s*[\w-]*$/.test(prefix)) return "reach-effector";
+  if ((isStepChild || isConventionalChild) && /^\s*pin\s*:\s*[\w-]*$/.test(prefix)) return "pin-effector";
+  if ((isStepChild || isConventionalChild) && /^\s*grip\s*:\s*[\w-]*$/.test(prefix)) return "grip-effector";
+  if ((isStepChild || isConventionalChild) && /^\s*[\w-]+\s*:\s*[\w-]*$/.test(prefix)) return "action";
   if (/^\s*[\w-]*$/.test(prefix)) {
-    return indent >= 4 ? "joint" : indent >= 2 ? "top" : "none";
+    return isStepChild || isConventionalChild ? "joint" : indent > 0 ? "top" : "none";
   }
   return "none";
+}
+
+/** Find the closest less-indented scoped header that owns the cursor line. */
+function enclosingBlockAt(
+  lines: readonly string[],
+  line: number,
+  currentIndent: number,
+): EnclosingBlock | null {
+  for (let i = line - 1; i >= 0; i--) {
+    const candidate = lines[i]!;
+    const trimmed = candidate.trim();
+    if (trimmed === "" || trimmed.startsWith("#") || trimmed.startsWith("//")) continue;
+    const indent = candidate.length - candidate.trimStart().length;
+    if (indent >= currentIndent) continue;
+    if (/^pose\s+start\s*=\s*[\w-]+\s*:\s*(?:#.*|\/\/.*)?$/.test(trimmed)) {
+      return { kind: "start-pose", indent };
+    }
+    if (/^step\s+"[^"]*"\s+[0-9.]+s\s+[\w-]+\s*:\s*(?:#.*|\/\/.*)?$/.test(trimmed)) {
+      return { kind: "step", indent };
+    }
+    // Any other less-indented line is a structural boundary: do not scan
+    // through a later directive and accidentally re-enter an older block.
+    return null;
+  }
+  return null;
+}
+
+/** Indentation established by the first document directive before the cursor. */
+function documentIndentBefore(lines: readonly string[], line: number): number | null {
+  for (let i = 1; i < line; i++) {
+    const candidate = lines[i]!;
+    const trimmed = candidate.trim();
+    if (trimmed === "" || trimmed.startsWith("#") || trimmed.startsWith("//")) continue;
+    if (!/^(?:rig|prop|pose|clip|step|repeat)\b/.test(trimmed)) continue;
+    return candidate.length - candidate.trimStart().length;
+  }
+  return null;
 }
 
 function item(label: string, kind: CompletionKind): CompletionItem {
@@ -80,8 +136,11 @@ export function getCompletions(
 ): CompletionItem[] {
   const lineText = text.split(/\r?\n/)[line] ?? "";
   const prefix = lineText.slice(0, character);
+  const lines = text.split(/\r?\n/);
+  const indent = prefix.length - prefix.trimStart().length;
+  const enclosingBlock = enclosingBlockAt(lines, line, indent);
 
-  switch (contextFor(prefix, line)) {
+  switch (contextFor(prefix, line, enclosingBlock, documentIndentBefore(lines, line))) {
     case "kind":
       return KINDS.map((k) => item(k, "kind"));
     case "pose":
@@ -107,6 +166,8 @@ export function getCompletions(
         ...JOINT_NAMES.map((j) => item(j, "joint")),
         ...CHILD_KEYWORDS.map((k) => item(k, "keyword")),
       ];
+    case "start-joint":
+      return JOINT_NAMES.map((j) => item(j, "joint"));
     case "top":
       return TOP_KEYWORDS.map((k) => item(k, "keyword"));
     default:

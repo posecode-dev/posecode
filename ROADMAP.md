@@ -18,7 +18,7 @@ domain needs, so contributions land where they unlock the most.
 | **Fitness / strength** | Body-weight and free-form movement coaching |  Core today (squat, curl, raise). Barbell/dumbbell/machine work needs props + grip. |
 | **Functional / elderly care** | Sit-to-stand, balance, gentle ROM, fall-prevention drills |  Partial: sit-to-stand works; reaching/balance need reach-IK + props. |
 | **Sports technique** | Golf swing, tennis serve, throwing, kicking |  Partial: needs trunk rotation fidelity, weight shift, and implements (club/racket/ball). |
-| **Dance / choreography** | Notating sequences, port de bras, phrases that turn & travel |  Phrases, port de bras, pirouettes, and traveling combos (box-step, grapevine, chassé) work via `turn`/`travel`; partner work is future. |
+| **Dance / choreography** | Notating sequences, port de bras, phrases that turn & travel |  `turn` / `travel` and several experimental examples exist. Ballet terminology, technique fidelity, spotting, and floor-pattern readability still need expert review; partner work is future. |
 | **Martial arts** | Stances, strikes, basic forms |  Stances/strikes partly work; contact and weapons are future. |
 | **Sign language / gesture** | Finger-spelling, signs, expressive gesture |  Partial: single-DOF finger curls render visibly (fist, pinch, wave, rough finger-spelling); exact sign language needs multi-joint fingers + wrist orientation. |
 
@@ -65,6 +65,33 @@ These are the unlocks, roughly in order of leverage:
 7. **Two-person + collision**: partner stretches, assisted rehab, contact sports
    (still deferred in the spec).
 
+## Feedback-driven implementation order (July 2026)
+
+This sequence turns the first external-user review into small, testable slices. It
+starts with correctness and observability, then builds one shared motion-export
+foundation before adding formats. The detailed dance/UAT list remains in
+[issue #91](https://github.com/posecode-dev/posecode/issues/91), glTF in
+[issue #90](https://github.com/posecode-dev/posecode/issues/90), and BVH in
+[issue #63](https://github.com/posecode-dev/posecode/issues/63).
+
+| Order | Slice | Completion evidence |
+| --- | --- | --- |
+| 0 | **Clarify the language contract.** Keep the public spec canonical, distinguish it from the LLM guide, define `ground-lock` / `reach` / `pin` / `grip`, and state that cues are display-only. | Implemented in the feedback branch with documentation-contract, playground, and renderer regression tests. |
+| 1 | **Make current solver failures visible.** Add heel/toe height, sole-angle, foot-drift, and residual-collision diagnostics over whole clips. Reproduce the deadlift, demi-plié, and arms-lowering reports as fixtures. | **Implemented in the feedback branch.** Live viewer warnings and 12Hz clip diagnostics now name the grounding/ROM conflict or residual collision; strict known failures remain non-gating until their solver fixes land. |
+| 2 | **Add small authoring controls.** Support a built-in start pose plus sparse joint overrides; improve floor origin, facing, and metre-scale markers. | **Implemented in the feedback branch.** Parser, LSP, share-link, loop-reset, floor-guide, travel/reset-path, accessibility, and responsive UI tests cover the new behavior. |
+| 3 | **Separate shape from motion limits.** Introduce explicit, named ROM profiles and contact-aware ankle limits. Do not infer movement limits from a `male` / `female` label; body proportions, rig topology, and an individual's mobility are separate inputs. | General and expert-reviewed dance profiles produce deterministic clamp diagnostics; old documents retain today's default. |
+| 4 | **Run expert dance UAT.** Mark unreviewed ballet examples experimental; record the school/convention and reviewer; then fix demi-plié, rise terminology, pirouette/spotting, and chassé mechanics. | Each promoted example has a reviewer/reference and pose/contact/orientation regression checks. |
+| 5 | **Extract a solved-motion sampler.** Move the final post-grounding, post-IK, post-collision pose sampling out of the viewer so evaluation and exporters consume identical transforms. | Configurable-FPS samples round-trip through the viewer with matching root and local joint transforms. |
+| 6 | **Ship glTF/GLB export.** First export one compatible skinned rig plus one baked animation clip; then add multiple clips on the same rig and minimal editable materials. | Three.js `GLTFLoader` round-trip plus a Godot smoke test; no retargeting required for the first version. |
+| 7 | **Ship BVH export from the same sampler.** Specify hierarchy, axes, units, Euler order, frame time, and end sites before serializing. | `BVHLoader` round-trip plus documented Blender import/export validation. |
+| 8 | **Broaden the pipeline.** Add configurable rig adapters/retargeting, then a visual authoring layer and optional natural-language front end. Explore Labanotation only as a bounded translator with an explicit unsupported-feature report. | Additional rigs pass adapter fixtures; non-code edits remain deterministic and export the same motion as text-authored documents. |
+
+Natural-language animation is best treated as an input surface, not the competing
+core. Posecode's role is the deterministic, inspectable, editable constraint and
+interchange layer underneath a prompt UI, visual editor, cache, or generated clip.
+The comparison should be measured on repeatability, targeted edits, contact
+correctness, diagnostics, and export—not only first-draft generation speed.
+
 ## Prop / equipment library (future)
 
 Each prop is a small scene object + an anchor type; movements then reference it
@@ -86,7 +113,16 @@ Each prop is a small scene object + an anchor type; movements then reference it
 
 ## Current limitations (honest)
 
-- One figure only; partner work and collision are still deferred.
+- One figure only; partner work and inter-person collision are still deferred.
+- The character adapter currently expects a Mixamo-compatible bone set. Body
+  proportions can vary, but arbitrary naming/topology and distributing motion
+  across extra spine or shoulder bones are not supported yet.
+- Range-of-motion uses one general profile. It is not individualized by body,
+  training background, task, or weight-bearing context.
+- Self-collision is a bounded corrective pass over selected body pairs, not a
+  comprehensive physics system. It exposes residuals for those sampled pairs,
+  but does not detect every possible body-body collision.
+- There is no glTF/GLB or BVH motion export yet.
 - A **starter** prop set (chair / wall / bar / box / dip bars): no bench,
   rings, bands, or loaded implements yet, and props sit at fixed default
   placements.

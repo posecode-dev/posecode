@@ -1,12 +1,13 @@
 /** Render source validation plus live contact-solve diagnostics. */
 import type { ParseError, Warning } from "posecode-parser";
-import type { ReachResidual } from "posecode-render";
+import type { ConstraintDiagnostic, ReachResidual } from "posecode-render";
 
 export function renderWarnings(
   el: HTMLElement,
   errors: ParseError[],
   warnings: Warning[],
   contacts: readonly ReachResidual[] = [],
+  constraints: readonly ConstraintDiagnostic[] = [],
 ): void {
   const rows: string[] = [];
 
@@ -42,6 +43,29 @@ export function renderWarnings(
         )} remains ${Math.round(contact.distance * 100)} cm away</div>`,
       );
     }
+  }
+
+  const romConflictFeet = new Set(
+    constraints
+      .filter((diagnostic) => !diagnostic.pass && diagnostic.kind === "grounding-rom-conflict")
+      .map((diagnostic) => diagnostic.id.split(":").at(-1)),
+  );
+  for (const diagnostic of constraints) {
+    if (diagnostic.pass) continue;
+    // The specific ROM-conflict row explains the same lifted heel more
+    // usefully than a second generic height row.
+    if (
+      diagnostic.kind === "heel-height"
+      && [...romConflictFeet].some((foot) => foot && diagnostic.id.includes(`:${foot}:`))
+    ) continue;
+    const label = diagnostic.kind === "self-collision"
+      ? "residual collision"
+      : diagnostic.kind === "grounding-rom-conflict"
+        ? "grounding vs ROM"
+        : "constraint";
+    rows.push(
+      `<div class="row warn">⚠ ${label} · ${escape(diagnostic.detail)}</div>`,
+    );
   }
 
   el.innerHTML = rows.join("");

@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, it, expect } from "vitest";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
@@ -64,6 +66,17 @@ describe("Posecode MCP server", () => {
     return client;
   }
 
+  it("advertises the package version during initialization", async () => {
+    const pkg = JSON.parse(
+      readFileSync(resolve(import.meta.dirname, "../package.json"), "utf8"),
+    ) as { version: string };
+    const client = await connect();
+    expect(client.getServerVersion()).toMatchObject({
+      name: "posecode",
+      version: pkg.version,
+    });
+  });
+
   it("exposes validate, render, and authoring-guide tools", async () => {
     const client = await connect();
     const { tools } = await client.listTools();
@@ -117,5 +130,7 @@ describe("Posecode MCP server", () => {
     const text = (res.content as { type: string; text: string }[])[0]!.text;
     expect(text).toContain("Posecode");
     expect(text.toLowerCase()).toContain("grammar");
+    expect(text).toContain("pose start = <pose>:");
+    expect(text).toContain("restored when the animation loops");
   });
 });

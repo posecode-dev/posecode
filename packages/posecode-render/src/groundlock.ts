@@ -82,8 +82,13 @@ function rotateRootAboutPivot(m: Mannequin, pivot: THREE.Vector3, angle: number)
   m.root.updateMatrixWorld(true);
 }
 
-/** A foot whose mesh bottom is within this height counts as planted. */
-const PLANTED_MAX_Y = 0.05;
+/** A foot whose visible surface is within this height counts as planted. */
+export const GROUND_LOCK_PLANTED_MAX_Y = 0.05;
+
+/** Shared swing-foot predicate for ground-lock and its diagnostics. */
+export function isGroundLockFootPlanted(surfaceMinY: number): boolean {
+  return Number.isFinite(surfaceMinY) && surfaceMinY <= GROUND_LOCK_PLANTED_MAX_Y;
+}
 
 /**
  * Apply ground-lock for the phase's active effector groups (see module doc).
@@ -238,7 +243,7 @@ function plantFeetHorizontally(
     const node = m.bones.get(id);
     if (!anchor || !node) continue;
     const box = new THREE.Box3().setFromObject(node);
-    if (!Number.isFinite(box.min.y) || box.min.y > PLANTED_MAX_Y) continue; // swing foot
+    if (!isGroundLockFootPlanted(box.min.y)) continue; // swing foot
     node.getWorldPosition(p);
     dx += anchor.x - p.x;
     dz += anchor.z - p.z;

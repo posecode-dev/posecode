@@ -36,13 +36,26 @@ if (errors.length === 0 && ir) {
 }
 ```
 
+Append `:` to a built-in start pose to customize it with sparse, ROM-clamped
+joint targets. The composed pose is used both at load and when the animation
+loops:
+
+```posecode
+  pose start = standing:
+    shoulders: flex 20
+    elbow_left: flex 35
+```
+
+A document may contain only one `pose start` declaration; duplicates are
+reported as errors rather than replacing an earlier built-in pose or block.
+
 ## Validate a movement library
 
-Version 0.2 includes a zero-config validator for local files and directories:
+The parser includes a zero-config validator for local files and directories:
 
 ```bash
-npx posecode-parser@0.2.0 validate ./movements
-npx posecode-parser@0.2.0 validate --strict ./movements
+npx posecode-parser@latest validate ./movements
+npx posecode-parser@latest validate --strict ./movements
 ```
 
 The command recurses through directories, prints file-and-line diagnostics, and

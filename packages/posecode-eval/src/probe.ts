@@ -37,6 +37,9 @@ import {
   floorContactHeight,
   floorTargetForEffector,
   formFists,
+  relaxHands,
+  swingArms,
+  aimHead,
   groundFigure,
   isDipBarGrip,
   levelPlantedFeet,
@@ -50,6 +53,11 @@ import {
   type Character,
   type Proportions,
 } from "posecode-render";
+import {
+  DEFAULT_DIAGNOSTIC_SAMPLE_RATE_HZ,
+  createClipDiagnosticsCollector,
+  type ClipDiagnostics,
+} from "./diagnostics.js";
 
 export type Vec3 = readonly [x: number, y: number, z: number];
 export type Quat = readonly [x: number, y: number, z: number, w: number];
@@ -119,6 +127,13 @@ export interface ProbeResult {
   propTypes: readonly string[];
   /** Flattened contact residuals for scorecards/consumers that do not walk phases. */
   contactResiduals: readonly ContactResidual[];
+  /** Constraint residuals aggregated over regularly sampled solved clip frames. */
+  diagnostics: ClipDiagnostics;
+}
+
+export interface ProbeOptions {
+  /** Sampling rate for clip-wide grounding/collision diagnostics. Defaults to 12Hz. */
+  diagnosticSampleRateHz?: number;
 }
 
 const DEG = Math.PI / 180;
@@ -156,15 +171,85 @@ function fistSidesOf(
   return sides;
 }
 
+function gripSidesOf(grips: readonly { effector: string }[]): Set<"left" | "right"> {
+  const sides = new Set<"left" | "right">();
+  for (const grip of grips) {
+    if (grip.effector.endsWith("_left") || grip.effector === "hands") sides.add("left");
+    if (grip.effector.endsWith("_right") || grip.effector === "hands") sides.add("right");
+  }
+  return sides;
+}
+
+function contactHandSidesOf(
+  reaches: readonly { effector: string }[],
+  pins: readonly { effector: string }[],
+  grips: readonly { effector: string }[],
+  groundLock: readonly string[],
+): Set<"left" | "right"> {
+  const sides = gripSidesOf(grips);
+  const add = (effector: string): void => {
+    if (/^(?:hand|fist|elbow)_left$/.test(effector)
+      || effector === "hands" || effector === "fists" || effector === "forearms") sides.add("left");
+    if (/^(?:hand|fist|elbow)_right$/.test(effector)
+      || effector === "hands" || effector === "fists" || effector === "forearms") sides.add("right");
+  };
+  reaches.forEach((contact) => add(contact.effector));
+  pins.forEach((contact) => add(contact.effector));
+  groundLock.forEach(add);
+  return sides;
+}
+
+function floorHandSidesOf(
+  reaches: readonly { effector: string; target: string }[],
+  pins: readonly { effector: string; anchor: string }[],
+  groundLock: readonly string[],
+): Set<"left" | "right"> {
+  const sides = new Set<"left" | "right">();
+  const add = (effector: string): void => {
+    if (effector === "hands" || effector === "hand_left") sides.add("left");
+    if (effector === "hands" || effector === "hand_right") sides.add("right");
+  };
+  reaches.filter((reach) => reach.target === "floor").forEach((reach) => add(reach.effector));
+  pins.filter((pin) => pin.anchor === "floor").forEach((pin) => add(pin.effector));
+  groundLock.forEach(add);
+  return sides;
+}
+
+function unionHandSides(
+  a: ReadonlySet<"left" | "right">,
+  b: ReadonlySet<"left" | "right">,
+): Set<"left" | "right"> {
+  return new Set([...a, ...b]);
+}
+
 /** Probe a movement: FK + root solving at each phase end, viewer-faithful. */
 export function probeMovement(
   source: string,
   proportions?: Proportions,
   character?: Character,
+  options: ProbeOptions = {},
 ): ProbeResult {
   const { ir, errors, warnings } = parse(source);
+  const requestedDiagnosticSampleRate = options.diagnosticSampleRateHz;
+  const diagnosticSampleRateHz = Math.max(
+    1,
+    Math.min(
+      120,
+      requestedDiagnosticSampleRate !== undefined && Number.isFinite(requestedDiagnosticSampleRate)
+        ? requestedDiagnosticSampleRate
+        : DEFAULT_DIAGNOSTIC_SAMPLE_RATE_HZ,
+    ),
+  );
   if (!ir || errors.length > 0) {
-    return { ok: false, errors, warnings, phases: [], propTypes: [], contactResiduals: [] };
+    return {
+      ok: false,
+      errors,
+      warnings,
+      phases: [],
+      propTypes: [],
+      contactResiduals: [],
+      diagnostics: createClipDiagnosticsCollector(diagnosticSampleRateHz).finish(),
+    };
   }
 
   const m = buildMannequin(undefined, proportions);
@@ -173,6 +258,8 @@ export function probeMovement(
   const authoredFingers = new Set(tl.bonesUsed.filter((id) =>
     /^(thumb|index|middle|ring|pinky)_(left|right)$/.test(id),
   ));
+  const authoredShoulders = new Set(tl.bonesUsed.filter((id) => id.startsWith("shoulder_")));
+  const authoredHead = tl.bonesUsed.some((id) => id === "head" || id === "neck");
 
   // Mirror Viewer.load(): reset bones, apply the base-pose root, pose at t=0,
   // then drop the figure onto the floor and remember the grounded base root.
@@ -183,14 +270,29 @@ export function probeMovement(
   m.root.rotation.set(rx * DEG, ry * DEG, rz * DEG);
   tl.sample(0, m.bones);
   m.root.updateMatrixWorld(true);
-  formFists(
+  const initialPhase = ir.phases[0];
+  const initialFistSides = fistSidesOf(
+    initialPhase?.reaches ?? [],
+    initialPhase?.pins ?? [],
+    initialPhase?.groundLock ?? [],
+  );
+  const initialGripSides = gripSidesOf(initialPhase?.grips ?? []);
+  const initialConstrainedHandSides = contactHandSidesOf(
+    initialPhase?.reaches ?? [],
+    initialPhase?.pins ?? [],
+    initialPhase?.grips ?? [],
+    initialPhase?.groundLock ?? [],
+  );
+  formFists(m, initialFistSides, authoredFingers);
+  relaxHands(
     m,
-    fistSidesOf(
-      ir.phases[0]?.reaches ?? [],
-      ir.phases[0]?.pins ?? [],
-      ir.phases[0]?.groundLock ?? [],
-    ),
+    unionHandSides(initialGripSides, initialFistSides),
     authoredFingers,
+    floorHandSidesOf(
+      initialPhase?.reaches ?? [],
+      initialPhase?.pins ?? [],
+      initialPhase?.groundLock ?? [],
+    ),
   );
   alignFloorContacts(
     m,
@@ -205,6 +307,9 @@ export function probeMovement(
     ...(ir.phases[0]?.grips ?? []),
     ...(ir.phases[0]?.reaches ?? []).map((r) => ({ effector: r.effector, anchor: r.target })),
   ]));
+  levelPlantedFeet(m, initialPhase?.groundLock ?? []);
+  swingArms(m, authoredShoulders, initialConstrainedHandSides);
+  enforceContactRom(m);
   const baseRootPos = m.root.position.clone();
   const baseRootQuat = m.root.quaternion.clone();
 
@@ -295,6 +400,25 @@ export function probeMovement(
       };
     }
     return null;
+  };
+
+  const applyLookAt = (info: {
+    grips: readonly GripTarget[];
+    reaches: readonly ReachTarget[];
+  }): void => {
+    if (authoredHead) return;
+    const points: THREE.Vector3[] = [];
+    const collect = (effector: string, target: string): void => {
+      const resolved = resolveTarget(target, effector)
+        ?? resolveTarget(target.replace(/_(left|right)$/, ""), effector);
+      if (resolved) points.push(resolved.point);
+    };
+    info.grips.forEach((grip) => collect(grip.effector, grip.anchor));
+    info.reaches.forEach((reach) => collect(reach.effector, reach.target));
+    if (points.length === 0) return;
+    const focus = new THREE.Vector3();
+    points.forEach((point) => focus.add(point));
+    aimHead(m, focus.multiplyScalar(1 / points.length));
   };
 
   const unsupported = (
@@ -688,6 +812,107 @@ export function probeMovement(
     };
   });
 
+  // Endpoint probes above power semantic movement checks. Separately sample
+  // the solved clip between endpoints so a heel lift or collision that appears
+  // only mid-transition cannot hide behind two valid terminal poses.
+  const diagnosticsCollector = createClipDiagnosticsCollector(diagnosticSampleRateHz);
+  for (let phaseIndex = 0; phaseIndex < tl.segments.length; phaseIndex++) {
+    const seg = tl.segments[phaseIndex]!;
+    const steps = Math.max(1, Math.ceil((seg.end - seg.start) * diagnosticSampleRateHz));
+    const firstStep = phaseIndex === 0 ? 0 : 1;
+    for (let step = firstStep; step <= steps; step++) {
+      const fraction = step / steps;
+      const rawTime = seg.start + (seg.end - seg.start) * fraction;
+      const sampleTime = Math.min(rawTime, seg.end - EPS);
+      for (const bone of m.bones.values()) bone.quaternion.identity();
+      const info = tl.sample(sampleTime, m.bones);
+      m.root.position.copy(baseRootPos);
+      m.root.quaternion.copy(baseRootQuat);
+      if (info.rootYaw !== 0) {
+        yawQ.setFromAxisAngle(WORLD_Y, info.rootYaw);
+        m.root.quaternion.premultiply(yawQ);
+      }
+      m.root.position.x += info.rootOffset.x;
+      m.root.position.z += info.rootOffset.z;
+      m.root.updateMatrixWorld(true);
+      const fistSides = fistSidesOf(info.reaches, info.pins, info.groundLock);
+      const gripSides = gripSidesOf(info.grips);
+      const constrainedHandSides = contactHandSidesOf(
+        info.reaches,
+        info.pins,
+        info.grips,
+        info.groundLock,
+      );
+      formFists(m, fistSides, authoredFingers);
+      relaxHands(
+        m,
+        unionHandSides(gripSides, fistSides),
+        authoredFingers,
+        floorHandSidesOf(info.reaches, info.pins, info.groundLock),
+      );
+      alignFloorContacts(m, info.reaches, info.pins, info.groundLock);
+      depenetrate(m);
+
+      const anchors = new Map<string, THREE.Vector3>();
+      for (const [id, captured] of groundTargets) {
+        const point = captured.clone();
+        if (info.rootYaw !== 0) {
+          point.sub(baseRootPos).applyAxisAngle(WORLD_Y, info.rootYaw).add(baseRootPos);
+        }
+        point.x += info.rootOffset.x;
+        point.z += info.rootOffset.z;
+        anchors.set(id, point);
+      }
+      applyGroundLock(m, info.groundLock, anchors);
+      applyPins(info.pins, phaseIndex);
+      applyGrips(info.grips);
+
+      const prePush = m.root.position.clone();
+      resolvePropContacts(m, propScene.colliders, propContactExemptions([
+        ...info.pins,
+        ...info.grips,
+        ...info.reaches.map((reach) => ({ effector: reach.effector, anchor: reach.target })),
+      ]));
+      const propPush: Vec3 = [
+        m.root.position.x - prePush.x,
+        0,
+        m.root.position.z - prePush.z,
+      ];
+      applyReaches(info.reaches);
+      alignFloorContacts(m, info.reaches, info.pins, info.groundLock);
+      levelPlantedFeet(m, info.groundLock);
+      swingArms(m, authoredShoulders, constrainedHandSides);
+      applyLookAt(info);
+      enforceContactRom(m);
+      if (info.groundLock.length > 0 && info.reaches.length > 0) {
+        for (let refinement = 0; refinement < 3; refinement++) {
+          applyGroundLock(m, info.groundLock, anchors);
+          applyReaches(info.reaches);
+          alignFloorContacts(m, info.reaches, info.pins, info.groundLock);
+          enforceContactRom(m);
+        }
+      }
+      m.root.updateMatrixWorld(true);
+      const box = new THREE.Box3().setFromObject(m.root);
+      const floorBound = info.grips.length === 0
+        && !info.pins.some((pin) => pin.anchor !== "floor");
+      if (box.min.y < 0 || (floorBound && box.min.y > 0)) {
+        m.root.position.y -= box.min.y;
+        m.root.updateMatrixWorld(true);
+      }
+      diagnosticsCollector.record(m, {
+        timeSec: sampleTime,
+        phaseName: seg.name,
+        groundLock: info.groundLock,
+        pins: info.pins,
+        rootOffset: [info.rootOffset.x, 0, info.rootOffset.z],
+        rootYaw: info.rootYaw,
+        propPush,
+      });
+    }
+  }
+  const diagnostics = diagnosticsCollector.finish();
+
   return {
     ok: true,
     errors,
@@ -695,6 +920,7 @@ export function probeMovement(
     phases,
     propTypes: [...ir.props],
     contactResiduals: phases.flatMap((phase) => [...phase.contactResiduals]),
+    diagnostics,
   };
 }
 

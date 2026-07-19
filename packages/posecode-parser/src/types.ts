@@ -8,7 +8,7 @@
  */
 
 /** Version of the parsed Posecode language/IR contract. */
-export const POSECODE_VERSION = "0.2";
+export const POSECODE_VERSION = "0.3";
 
 export type Axis = "x" | "y" | "z";
 
@@ -92,6 +92,7 @@ export interface Phase {
    * end of this phase, absolute, carried forward. Powers travel / locomotion.
    */
   travel?: { x: number; z: number };
+  /** Display-only coaching text; never changes validation or motion solving. */
   cue?: string;
 }
 
@@ -103,6 +104,8 @@ export interface PosecodeIR {
   name: string;
   rig: string;
   startPose?: string;
+  /** Sparse, ROM-clamped joint channels layered over the built-in start pose. */
+  startPoseOverrides?: JointTarget[];
   /** Scene props declared with `prop <type>`, e.g. ["chair", "bar"]. */
   props: string[];
   /**

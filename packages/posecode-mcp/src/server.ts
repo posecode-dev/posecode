@@ -20,9 +20,12 @@ export interface PosecodeServerOptions {
   baseUrl?: string;
 }
 
+/** Package/server identity kept in sync by `version-packages`. */
+export const POSECODE_MCP_VERSION = "0.3.0";
+
 export function createPosecodeServer(opts: PosecodeServerOptions = {}): McpServer {
   const baseUrl = opts.baseUrl ?? DEFAULT_BASE_URL;
-  const server = new McpServer({ name: "posecode", version: "0.2.0" });
+  const server = new McpServer({ name: "posecode", version: POSECODE_MCP_VERSION });
 
   const sourceSchema = {
     source: z.string().describe("The full .posecode document text"),
