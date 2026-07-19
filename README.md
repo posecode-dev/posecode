@@ -658,15 +658,15 @@ Feedback and contributions are welcome.
 ---
 
 
-> **OpenAI Build Week 2026:** Posecode existed before the hackathon. During Build Week, the project is being meaningfully extended with a GPT-5.6-powered biomechanical Physics Critic and an end-to-end Codex-built agent workflow. The sections below clearly distinguish previous work from new hackathon work.
+> **OpenAI Build Week 2026:** Posecode existed before the hackathon. During Build Week, the project was extended using **Codex** — running on **GPT-5.6** — as the primary engineering tool for a real batch of shipped work: motion/grounding quality, language contract diagnostics, licensing restructuring, release automation, and product-facing pages. The sections below distinguish previous work from Build Week work using actual commit history, not a roadmap.
 
 ---
 
 ## OpenAI Build Week Extension
 
-### What existed before July 13, 2026
+### What existed before Build Week
 
-Before OpenAI Build Week, Posecode already included:
+Before Build Week, Posecode already included:
 
 - the core `.posecode` domain-specific language,
 - a parser and intermediate motion representation,
@@ -683,205 +683,56 @@ This original version was developed primarily with **Claude** as an AI-assisted 
 
 That prior work provides the foundation for the project, but it is not presented as the new hackathon contribution.
 
-### What is being added during Build Week
+### What was added during Build Week
 
-During the July 13–21 Build Week submission period, Posecode is being meaningfully extended with:
+Every item below is a merged, dated pull request built with Codex (GPT-5.6) — see [Build Week Evidence](#build-week-evidence) for direct links.
 
-1. **GPT-5.6 Physics Critic**
-2. **Biomechanical fidelity scorecard**
-3. **Natural-language-to-motion agent workflow**
-4. **Interactive generation and critique experience**
-5. **Codex-built tests, tooling, and renderer improvements**
-
-The new workflow allows a user to describe a movement in ordinary language, generate structured Posecode, validate it deterministically, and receive a detailed GPT-5.6 critique explaining biomechanical or spatial problems.
+1. **Motion and grounding overhaul** — ROM-constrained reach IK, semantic palm/fist/sole/knee/pelvis contact surfaces, multi-contact refinement, stable support handoffs, and XBot-aware grounding ([#76](https://github.com/posecode-dev/posecode/pull/76)).
+2. **Language contract and diagnostics** — Posecode language/IR v0.3 custom start-pose blocks with ROM-checked overrides, live and clip-wide grounding/self-collision diagnostics, and an accessible metric floor guide ([#92](https://github.com/posecode-dev/posecode/pull/92)).
+3. **Licensing restructure** — split the monorepo into an Apache-2.0 standard layer (spec, parser, share, language, LSP, VS Code) and an AGPL-3.0 product layer (render, embed, MCP, eval, playground), with a commercial-license path ([#84](https://github.com/posecode-dev/posecode/pull/84)).
+4. **Release automation** — Changesets-driven npm publishing via GitHub OIDC, MCP Registry publishing, and CI validation of package versions, entry points, and tarball contents ([#66](https://github.com/posecode-dev/posecode/pull/66)).
+5. **Third-party integration readiness** — Posecode 0.2 timing vocabulary (`drive`/`settle`/`flow`/`snap`), a parser validation CLI, and embed compatibility metadata ([#62](https://github.com/posecode-dev/posecode/pull/62)).
+6. **Ground-lock correctness** — parser-owned validation for per-side foot/hand/elbow ground locks and back-contact support for supine movements, replacing silent acceptance of invalid contacts ([#61](https://github.com/posecode-dev/posecode/pull/61), [#64](https://github.com/posecode-dev/posecode/pull/64)).
+7. **LLM-first landing page and product page** — redesigned the landing page around a prompt → Posecode → live 3D story, and added a `/for-products` page documenting the web component, parser, renderer, and MCP server for integrators ([#82](https://github.com/posecode-dev/posecode/pull/82), [#74](https://github.com/posecode-dev/posecode/pull/74)).
+8. **Mobile and search fixes** — mobile toolbar/viewer layout, natural hand orientation, and Google Search indexing corrections ([#78](https://github.com/posecode-dev/posecode/pull/78), [#65](https://github.com/posecode-dev/posecode/pull/65)).
 
 ### Build Week feature status
 
-- [ ] GPT-5.6 movement generation
-- [ ] GPT-5.6 Physics Critic
-- [ ] Structured fidelity-score response
-- [ ] Critique panel in the playground
-- [ ] Generate → validate → critique → revise loop
-- [ ] MCP tools for critique and revision
-- [ ] Automated tests for the new workflow
-- [ ] Demo-ready example movements
-- [ ] Build Week commit links added below
+- [x] Motion/grounding quality overhaul shipped ([#76](https://github.com/posecode-dev/posecode/pull/76))
+- [x] Language contract + diagnostics shipped ([#92](https://github.com/posecode-dev/posecode/pull/92))
+- [x] Licensing restructure shipped ([#84](https://github.com/posecode-dev/posecode/pull/84))
+- [x] Release automation shipped ([#66](https://github.com/posecode-dev/posecode/pull/66))
+- [x] Ground-lock correctness shipped ([#61](https://github.com/posecode-dev/posecode/pull/61), [#64](https://github.com/posecode-dev/posecode/pull/64))
+- [x] Landing/product pages shipped ([#82](https://github.com/posecode-dev/posecode/pull/82), [#74](https://github.com/posecode-dev/posecode/pull/74))
 - [ ] Codex session ID added below
-
----
-
-## The Build Week Feature: Physics Critic
-
-A movement can be syntactically valid while still being awkward, unstable, unsafe, or physically implausible.
-
-For example:
-
-```posecode
-step "Twist" 1s:
-  hips: rotate 0
-  spine: rotate 90
-  feet: lock
-```
-
-A parser may understand this program, but the movement may create an unrealistic torso rotation while the hips and feet remain locked.
-
-The new **Physics Critic** sends the structured movement, parser warnings, joint states, and geometric measurements to GPT-5.6.
-
-GPT-5.6 then returns a structured critique such as:
-
-```json
-{
-  "score": 42,
-  "summary": "The movement is syntactically valid but biomechanically implausible.",
-  "issues": [
-    {
-      "severity": "high",
-      "category": "spinal_rotation",
-      "message": "Torso rotation is excessive while the pelvis and feet remain fixed.",
-      "suggestion": "Reduce spinal rotation or allow the pelvis and feet to rotate."
-    }
-  ]
-}
-```
-
-The critic does not replace deterministic safety checks. It adds a semantic reasoning layer on top of the real Posecode parser and kinematic engine.
-
----
-
-## Fidelity Scorecard
-
-The Build Week scorecard combines deterministic measurements with GPT-5.6 analysis.
-
-It can evaluate:
-
-- joint range-of-motion compliance,
-- balance and support,
-- movement continuity,
-- left-right consistency,
-- torso and pelvis coordination,
-- foot-ground contact,
-- reachability,
-- abrupt transitions,
-- and overall biomechanical plausibility.
-
-Conceptually, the total score is:
-
-$$
-F = \sum_{i=1}^{n} w_i s_i
-$$
-
-where:
-
-- \(s_i\) is the score for one fidelity dimension,
-- \(w_i\) is that dimension's weight,
-- and \(\sum_{i=1}^{n} w_i = 1\).
-
-The purpose of the score is not to provide medical advice. It gives developers and AI agents a transparent signal for comparing, debugging, and improving generated movement.
 
 ---
 
 ## How GPT-5.6 Is Used
 
-GPT-5.6 is used as a spatial and biomechanical reasoning layer.
+During Build Week, Codex sessions ran on **GPT-5.6** (GPT-5.6 Terra), which is the model that powers Codex for this event. GPT-5.6 is the reasoning engine behind every Build Week change listed above: reading the existing monorepo, proposing the ROM-constrained IK and contact-surface design in [#76](https://github.com/posecode-dev/posecode/pull/76), designing the language/IR v0.3 diagnostics in [#92](https://github.com/posecode-dev/posecode/pull/92), and drafting the licensing boundary in [#84](https://github.com/posecode-dev/posecode/pull/84).
 
-It supports two Build Week workflows.
-
-### 1. Natural language to Posecode
-
-A user can enter:
-
-> Perform a controlled forward lunge, keep the torso upright, pause at the bottom, and return to standing.
-
-GPT-5.6 translates that request into a structured `.posecode` program with:
-
-- participating joints,
-- semantic joint actions,
-- approximate angles,
-- movement phases,
-- timings,
-- cues,
-- and grounding constraints.
-
-The output is not sent directly to the renderer.
-
-It must pass through the deterministic Posecode pipeline:
-
-```text
-Natural-language request
-        ↓
-GPT-5.6 generation
-        ↓
-Posecode parser
-        ↓
-ROM validation
-        ↓
-Forward and inverse kinematics
-        ↓
-Geometric fidelity checks
-        ↓
-WebGL renderer
-```
-
-### 2. Physics Critic
-
-After parsing and evaluating the movement, GPT-5.6 receives structured information about:
-
-- the original user request,
-- generated Posecode,
-- parser warnings,
-- clamped joint values,
-- movement phases,
-- support points,
-- kinematic measurements,
-- and failed fidelity invariants.
-
-GPT-5.6 uses this information to explain:
-
-- what is wrong,
-- why it matters,
-- how severe it is,
-- and how the movement could be corrected.
-
-This creates an iterative agent loop:
-
-```text
-Generate → Parse → Validate → Critique → Revise → Render
-```
+A GPT-5.6-powered natural-language-to-Posecode generation feature (describe a movement in plain English, get a validated `.posecode` document back) is a natural next step given the existing [`posecode_authoring_guide` MCP tool](packages/posecode-mcp/README.md), but it is **not yet built** — it is not claimed as shipped functionality here.
 
 ---
 
 ## How Codex Is Used
 
-Codex is the primary engineering tool used for the new Build Week extension.
+Codex is the primary engineering tool used for the Build Week extension.
 
-During the hackathon period, Codex is used to help:
+During the hackathon period, Codex was used to:
 
-- inspect and understand the existing monorepo,
-- design the Physics Critic architecture,
-- implement GPT-5.6 API integration,
-- define structured generation and critique schemas,
-- build new MCP tools,
-- create the fidelity-score pipeline,
-- add playground UI components,
-- implement movement revision workflows,
-- debug coordinate and skeletal transformation issues,
-- write unit and integration tests,
-- create evaluation fixtures,
-- improve error handling,
-- and document the new system.
+- inspect and understand the existing monorepo before each change,
+- design and implement the ROM-constrained reach IK and contact-surface system ([#76](https://github.com/posecode-dev/posecode/pull/76)),
+- design and implement the language/IR v0.3 diagnostics and floor guide ([#92](https://github.com/posecode-dev/posecode/pull/92)),
+- restructure package licensing across the monorepo ([#84](https://github.com/posecode-dev/posecode/pull/84)),
+- build the Changesets/OIDC npm and MCP Registry release pipeline ([#66](https://github.com/posecode-dev/posecode/pull/66)),
+- fix ground-lock validation and silent-acceptance bugs ([#61](https://github.com/posecode-dev/posecode/pull/61), [#64](https://github.com/posecode-dev/posecode/pull/64)),
+- redesign the landing page and add the product integration page ([#82](https://github.com/posecode-dev/posecode/pull/82), [#74](https://github.com/posecode-dev/posecode/pull/74)),
+- write unit, integration, and evaluation-harness tests for each change,
+- and fix mobile UI and search-indexing regressions.
 
-Codex accelerates implementation, but the project remains human-directed.
-
-The following decisions are reviewed and selected manually:
-
-- DSL semantics,
-- system architecture,
-- prompt design,
-- scoring dimensions,
-- biomechanical constraints,
-- validation policy,
-- user experience,
-- and acceptance or rejection of generated code.
+Codex accelerates implementation, but the project remains human-directed. The following decisions were reviewed and selected manually: DSL semantics, system architecture, licensing boundaries, biomechanical constraints, validation policy, user experience, and acceptance or rejection of generated code.
 
 ### Codex development workflow
 
@@ -892,46 +743,51 @@ The Build Week workflow follows this process:
 3. Request one or more possible approaches.
 4. Review the trade-offs and choose the architecture.
 5. Use Codex to implement the selected approach.
-6. Run type checking, tests, and fidelity evaluations.
+6. Run type checking, tests, and biomechanical evaluations (`npm run eval`).
 7. Inspect failures manually.
 8. Refine the implementation with additional Codex sessions.
 9. Review the final changes before committing.
 
 ### Codex session
 
-
 ```text
-Codex /feedback session ID: TODO
+Codex /feedback session ID: TODO — run /feedback in the Codex thread where the majority
+of this Build Week work was built, then paste the resulting Session ID here.
 ```
 
 ---
 
 ## Build Week Evidence
 
-The repository history will distinguish pre-existing functionality from work completed during the hackathon.
+All Build Week work is public, dated, and directly linked below — no placeholders.
 
-### Build Week commits
+### Build Week pull requests
 
-Add the relevant dated commits here:
-
-- [`TODO`](https://github.com/posecode-dev/posecode/commit/TODO) — GPT-5.6 integration
-- [`TODO`](https://github.com/posecode-dev/posecode/commit/TODO) — Physics Critic implementation
-- [`TODO`](https://github.com/posecode-dev/posecode/commit/TODO) — Fidelity scorecard
-- [`TODO`](https://github.com/posecode-dev/posecode/commit/TODO) — Playground generation interface
-- [`TODO`](https://github.com/posecode-dev/posecode/commit/TODO) — MCP agent workflow
-- [`TODO`](https://github.com/posecode-dev/posecode/commit/TODO) — Tests and documentation
+| PR | Merged | What it did |
+| --- | --- | --- |
+| [#62](https://github.com/posecode-dev/posecode/pull/62) | 2026-07-15 | Posecode 0.2 timing vocabulary, validation CLI, embed compatibility |
+| [#61](https://github.com/posecode-dev/posecode/pull/61) | 2026-07-15 | Per-side ground-lock validation |
+| [#65](https://github.com/posecode-dev/posecode/pull/65) | 2026-07-16 | Google Search indexing fix |
+| [#66](https://github.com/posecode-dev/posecode/pull/66) | 2026-07-16 | npm + MCP Registry release automation |
+| [#64](https://github.com/posecode-dev/posecode/pull/64) | 2026-07-16 | Back ground-lock for supine movements |
+| [#74](https://github.com/posecode-dev/posecode/pull/74) | 2026-07-16 | `/for-products` integration page |
+| [#76](https://github.com/posecode-dev/posecode/pull/76) | 2026-07-17 | Motion/grounding overhaul: ROM-constrained reach IK, contact surfaces |
+| [#78](https://github.com/posecode-dev/posecode/pull/78) | 2026-07-17 | Mobile viewer sizing and natural hand orientation |
+| [#82](https://github.com/posecode-dev/posecode/pull/82) | 2026-07-17 | LLM-first landing page redesign |
+| [#84](https://github.com/posecode-dev/posecode/pull/84) | 2026-07-17 | Apache-2.0 / AGPL-3.0 licensing restructure |
+| [#92](https://github.com/posecode-dev/posecode/pull/92) | 2026-07-19 | Language/IR v0.3, grounding/self-collision diagnostics, floor guide |
 
 ### Build Week comparison
 
 | Before Build Week | Added during Build Week |
 | --- | --- |
-| Core Posecode DSL | GPT-5.6 natural-language generation |
-| Parser and ROM clamping | GPT-5.6 Physics Critic |
-| Basic WebGL renderer | Generation and critique interface |
-| Existing movement examples | New adversarial fidelity examples |
-| MCP server foundation | Generate, critique, and revise MCP tools |
-| Deterministic checks | Combined deterministic and semantic scorecard |
-| Existing tests | New GPT-5.6 workflow and evaluation tests |
+| Core Posecode DSL | Language/IR v0.3 custom start-pose blocks |
+| Basic ROM clamping | Grounding, self-collision, and floor-guide diagnostics |
+| Working IK/grounding | ROM-constrained reach IK with semantic contact surfaces |
+| Single license file | Apache-2.0 / AGPL-3.0 layered licensing with commercial path |
+| Manual publishing | Automated npm + MCP Registry release pipeline |
+| Editorial landing page | LLM-first landing page + `/for-products` integration page |
+| Existing tests | New diagnostics, IK, and licensing regression tests |
 
 ---
 
