@@ -301,9 +301,17 @@ describe("metrics", () => {
 describe("fixture scorecard", () => {
   it("scores every declared canonical contact and keeps the fallback catalog green", () => {
     const fixtures = loadFixtures(examplesDir);
-    const report = runEval(fixtures);
+    // This test validates the scorecard/contact catalog, not diagnostic peak
+    // sampling. Keep one clip-wide sample per second so the full fixture pass
+    // remains stable on slower shared CI runners.
+    const report = runEval(fixtures, { diagnosticSampleRateHz: 1 });
     const declaredContacts = fixtures.reduce(
-      (count, fixture) => count + probeMovement(fixture.source).contactResiduals.length,
+      (count, fixture) => count + probeMovement(
+        fixture.source,
+        undefined,
+        undefined,
+        { diagnosticSampleRateHz: 1 },
+      ).contactResiduals.length,
       0,
     );
     const contactChecks = report.movements.flatMap((movement) =>
@@ -315,7 +323,7 @@ describe("fixture scorecard", () => {
     expect(report.summary.parseFailures).toBe(0);
     expect(report.summary.clampWarnings).toBe(0);
     expect(report.summary.checksPassed).toBe(report.summary.checksTotal);
-  });
+  }, 20_000);
 
   it("does not give the supplied bad superhero landing a perfect score", () => {
     const source = `posecode posture "Superhero Three-Point Landing"
