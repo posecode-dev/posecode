@@ -1,15 +1,21 @@
-# Posecode Protocol Specification v0.2
+# Posecode Protocol Specification v0.3
 
 Posecode is a small text language for describing a single person's **kinematic
 movement** so it can be rendered as an animated 3D figure in a web browser.
+
+This document is the **normative language and IR contract**. The
+[LLM authoring guide](https://posecode.org/llm-guide.html) is task-oriented and
+pasteable; it is intentionally self-contained, but it must not define syntax or
+behavior that differs from this specification.
 
 It is to human movement what Mermaid is to diagrams: an LLM (or a human) writes
 a compact, readable document; a client-side parser + renderer turns it into a
 moving mannequin. The model never produces 3D matrices: it expresses the
 *semantic phases* of a movement, which it already understands.
 
-- **Version keyword:** documents declare nothing; this is `posecode 0.2`.
-- **Compatibility:** v0.2 parsers continue to accept the v0.1 easing aliases.
+- **Version keyword:** documents declare nothing; this is `posecode 0.3`.
+- **Compatibility:** v0.3 parsers continue to accept v0.2 documents and the
+  v0.1 easing aliases.
 - **File extension:** `.posecode`
 - **Compute model:** generation is pure text (server-cheap); all 3D math runs
   on the client (Three.js). See the project research §6.
@@ -27,7 +33,8 @@ kind       = "exercise" | "stretch" | "posture" ;
 directive  = rig | prop | pose | clip | step | repeat ;
 rig        = "rig" "humanoid" ;
 prop       = "prop" ("chair"|"wall"|"bar"|"box"|"dip-bars") ;
-pose       = "pose" "start" "=" startPose ;
+pose       = "pose" "start" "=" startPose [ ":" { startOverride } ] ;
+startOverride = jointTarget ;                         (* indented; sparse overlay, not a phase *)
 startPose  = "neutral"|"standing"|"first-position"|"plank"|"supine"|"prone"|"seated" ;
 clip       = "clip" STRING ;                            (* optional mocap clip; renderer may retarget & blend *)
 repeat     = "repeat" NUMBER ;
@@ -46,12 +53,33 @@ handEffector = "hands" | "hand_left" | "hand_right" ;
 gripAnchor = "bar" | "bars" ;
 turn       = "turn" ":" NUMBER ;                       (* face this yaw (deg) by phase end *)
 travel     = "travel" ":" NUMBER NUMBER ;              (* move to this x z (metres) by phase end *)
-cue        = "cue" STRING ;
+cue        = "cue" STRING ;                              (* display-only coaching text *)
 DURATION   = NUMBER "s" ;                                (* e.g. 2s, 1.5s *)
 ```
 
 A `step` is one **phase** of the movement. Phases run in sequence; within a
 phase, all joint targets apply concurrently.
+
+A built-in start pose can be customized with an indented override block:
+
+```posecode
+  pose start = standing:
+    shoulders: flex 20
+    elbow_left: flex 35
+```
+
+The existing one-line form remains valid. Start-pose targets use the same
+joint/action vocabulary, channel mirroring, compatibility checks, and ROM
+clamping as phase targets, but they do not create a phase or consume time.
+They sparsely overlay the selected built-in pose: omitted channels keep the
+built-in value, while `hold neutral` resets all three channels on that joint.
+The composed start pose is the deterministic animation start and loop-reset
+pose. Contacts, root travel/turn, cues, and other step-only directives are not
+valid inside this block.
+
+A document may contain at most one `pose start` declaration. A second
+declaration is an error rather than a replacement, so an earlier scoped block
+cannot be bypassed before its joint/action vocabulary is validated.
 
 The header kind, rig, props, start poses, joints, actions, effectors, targets,
 and timing modes are closed vocabularies. Unknown values are errors; the parser
@@ -65,6 +93,25 @@ cannot pin one body landmark to another landmark that moves with that same root.
 Grouped `grip: hands ...` uses the bare `bar` / `bars` anchor and expands to
 separate left/right anchors; an explicitly sided grip anchor is valid only with
 the matching single-hand effector.
+
+### Contact mechanisms
+
+| Directive | What the solver does | Use it when |
+| --- | --- | --- |
+| `ground-lock` | Preserves an existing floor support while the rest of the body moves. | A foot, hand, forearm, or the back is already planted. |
+| `reach` | Moves a limb endpoint toward a target through ROM-constrained IK; it does not translate the body root. | An additional hand, fist, elbow, knee, or foot must meet a floor, landmark, or prop target. |
+| `pin` | Translates the whole body so one primary effector stays on a fixed anchor. | One contact should carry or reposition the body, such as a knee on the floor or foot on a box. |
+| `grip` | Translates the body, solves each gripping arm to a bar or rail, and closes the fingers. | One or both hands support the body on a declared `bar` or `dip-bars` prop. |
+
+`ground-lock`, `pin`, and `grip` are mutually exclusive root-solving families
+within one phase. Choose one primary support family, then express compatible
+additional contacts with independent `reach` constraints. The parser rejects
+conflicting combinations instead of silently choosing a solver order.
+
+`cue` is display-only coaching metadata. The parser stores it in the IR and a
+viewer may show it alongside the current phase, but it does not alter joint
+targets, contacts, timing, range validation, or rendering solves. A cue should
+describe only motion that the phase's executable directives actually encode.
 
 Ground locks accept the groups `hands`, `forearms`, and `feet`, the axial
 surface contact `back`, plus the single-side forms `hand_left|hand_right`,
@@ -260,7 +307,8 @@ character. Mocap therefore cannot overwrite a planted sole or active grip.
 
 **Start poses:** `neutral`, `standing`, `first-position` (ballet turnout),
 `plank`, `supine` (face-up), `prone` (face-down), `seated` (long-sit on the
-floor).
+floor). Append `:` and indented joint targets to define a custom start pose as
+a sparse overlay on any of these built-ins.
 
 **IK note:** Three.js's bundled `CCDIKSolver` targets `SkinnedMesh`; the Posecode
 mannequin is rigid capsule segments, so Posecode implements CCD directly over the
@@ -279,11 +327,16 @@ angles are in **degrees**.
 
 ```ts
 interface PosecodeIR {
-  version: string;          // "0.2"
+  version: string;          // "0.3"
   kind: string;             // "exercise" | "stretch" | "posture"
   name: string;
   rig: string;              // "humanoid"
   startPose?: string;       // "plank" | "standing" | ...
+  startPoseOverrides?: {    // sparse, ROM-clamped overlay on startPose
+    boneId: string;
+    euler: { x: number; y: number; z: number };
+    axes?: ("x" | "y" | "z")[];
+  }[];
   repeat: number;
   phases: {
     name: string;

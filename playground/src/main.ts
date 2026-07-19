@@ -9,7 +9,7 @@
 
 import { parse, type ParseError, type Warning } from "posecode-parser";
 import { inject } from "@vercel/analytics";
-import type { Viewer } from "posecode-render";
+import type { ConstraintDiagnostic, Viewer } from "posecode-render";
 import {
   buildNicePlayPath,
   buildNiceShareHash,
@@ -48,6 +48,9 @@ const loop = $<HTMLInputElement>("loop");
 const speed = $<HTMLSelectElement>("speed");
 const phaseEl = $<HTMLDivElement>("phase");
 const cueEl = $<HTMLDivElement>("cue");
+const floorGuideKey = $<HTMLDivElement>("floor-guide-key");
+const floorGuideTravel = $<HTMLSpanElement>("floor-guide-travel");
+const floorGuideReset = $<HTMLSpanElement>("floor-guide-reset");
 const copyBtn = $<HTMLButtonElement>("copy-prompt");
 const shareBtn = $<HTMLButtonElement>("share");
 const tabEditor = $<HTMLButtonElement>("tab-editor");
@@ -68,23 +71,40 @@ let lastParseErrors: ParseError[] = [];
 let lastRomWarnings: Warning[] = [];
 let lastContactSignature = "";
 let lastContactRefresh = 0;
+let scrubDiagnosticsRefresh = 0;
 
-/** Merge live IK residuals with source diagnostics without repainting each frame. */
+/** Merge live solver residuals with source diagnostics without repainting each frame. */
 function refreshContactDiagnostics(force = false): void {
   if (!viewer) return;
   const contacts = viewer.getReachResiduals();
-  const signature = contacts
+  const constraints = viewer.getConstraintDiagnostics();
+  const contactSignature = contacts
     .filter((contact) => contact.weight >= 0.98 && !contact.reached)
     .map((contact) =>
       `${contact.effector}|${contact.target}|${contact.reason ?? ""}|${
         contact.distance === null ? "null" : Math.round(contact.distance * 1000)
       }`,
     )
-    .sort()
-    .join(";");
+    .sort();
+  const constraintSignature = constraints
+    .filter((diagnostic) => !diagnostic.pass)
+    .map((diagnostic: ConstraintDiagnostic) =>
+      `${diagnostic.id}|${Math.round(diagnostic.value * (diagnostic.unit === "m" ? 1000 : 10))}`,
+    )
+    .sort();
+  const signature = [...contactSignature, ...constraintSignature].join(";");
   if (!force && signature === lastContactSignature) return;
   lastContactSignature = signature;
-  renderWarnings(warnings, lastParseErrors, lastRomWarnings, contacts);
+  renderWarnings(warnings, lastParseErrors, lastRomWarnings, contacts, constraints);
+}
+
+/** Read the seeked pose after the viewer's continuously scheduled frame solves it. */
+function scheduleScrubDiagnosticsRefresh(): void {
+  cancelAnimationFrame(scrubDiagnosticsRefresh);
+  scrubDiagnosticsRefresh = requestAnimationFrame(() => {
+    scrubDiagnosticsRefresh = 0;
+    refreshContactDiagnostics(true);
+  });
 }
 
 const playLbl = playpause.querySelector<HTMLSpanElement>(".lbl");
@@ -131,6 +151,21 @@ function wireViewer(v: Viewer): void {
 
 function updateReps(): void {
   reps.textContent = repeat > 1 ? `rep ${rep} / ${repeat}` : "";
+}
+
+/** Keep the compact 2D key in sync with the movement-specific 3D floor guide. */
+function updateFloorGuideKey(): void {
+  const info = viewer?.getFloorGuideInfo();
+  floorGuideKey.hidden = !info?.visible;
+  floorGuideTravel.hidden = !info?.hasTravel;
+  floorGuideReset.hidden = !info?.hasLoopReset;
+  const describedFeatures = ["load origin", "current facing", "one metre scale"];
+  if (info?.hasTravel) describedFeatures.push("authored travel path");
+  if (info?.hasLoopReset) describedFeatures.push("dashed loop reset");
+  floorGuideKey.setAttribute(
+    "aria-label",
+    `Floor guide: ${describedFeatures.join(", ")}`,
+  );
 }
 
 function buildRibbonAndMarkers(): void {
@@ -254,6 +289,7 @@ function recompile(): void {
   // the viewer-dependent work re-runs once `boot()` calls recompile() again.
   if (ir && viewer) {
     viewer.load(ir);
+    updateFloorGuideKey();
     viewer.setLoop(loop.checked);
     viewer.play();
     setPlaying(true);
@@ -501,6 +537,7 @@ scrub.addEventListener("input", () => {
   scrubbing = true;
   paintScrub();
   viewer.seek((Number(scrub.value) / 1000) * viewer.duration);
+  scheduleScrubDiagnosticsRefresh();
 });
 scrub.addEventListener("change", () => {
   scrubbing = false;

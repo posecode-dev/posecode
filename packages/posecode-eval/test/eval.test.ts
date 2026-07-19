@@ -2,9 +2,11 @@ import { describe, it, expect } from "vitest";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import type { Proportions } from "posecode-render";
+import { loadXbotCharacter } from "../src/xbot.js";
 import {
   loadFixtures,
   probeMovement,
+  renderReport,
   runEval,
   torsoPitchDeg,
   kneeFlexionDeg,
@@ -109,6 +111,109 @@ describe("probe", () => {
   });
 });
 
+describe("clip-wide constraint diagnostics", () => {
+  const fixtures = loadFixtures(examplesDir);
+  const source = (name: string) => fixtures.find((fixture) => fixture.movement === name)!.source;
+
+  it("keeps the deadlift heels planted through the hinge and still flags the demi-plié lift", () => {
+    const deadlift = probeMovement(source("deadlift"));
+    const plie = probeMovement(source("demi-plie"));
+
+    expect(deadlift.diagnostics.sampleCount).toBeGreaterThan(deadlift.phases.length);
+    // The hip hinge keeps soft knees (18°) inside the ankle's dorsiflexion ROM
+    // (20°), so both soles stay flat on the floor across the whole clip.
+    expect(deadlift.diagnostics.feet.left.maxHeelHeightMeters).toBeLessThan(0.005);
+    expect(deadlift.diagnostics.warnings).toHaveLength(0);
+
+    // The demi-plié still drives the ankle past its dorsiflexion ROM, so it
+    // remains the exemplar of a reported heel-lift / grounding conflict.
+    expect(plie.diagnostics.feet.left.maxHeelHeightMeters).toBeGreaterThan(0.02);
+    expect(plie.diagnostics.warnings).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "clip-heel-height:foot_left", phaseName: "Plié" }),
+      expect.objectContaining({
+        id: "clip-grounding-rom-conflict:foot_left",
+        phaseName: "Plié",
+        kind: "grounding-rom-conflict",
+      }),
+    ]));
+  });
+
+  it("detects the residual arm collision while touch-toes lowers its arms", () => {
+    const result = probeMovement(source("touch-toes"));
+    const collision = result.diagnostics.warnings.find((warning) =>
+      warning.id === "self-collision:arm_left:body",
+    );
+
+    expect(collision).toEqual(expect.objectContaining({
+      kind: "self-collision",
+      phaseName: "Rise",
+    }));
+    expect(collision!.value).toBeGreaterThan(0.08);
+    expect(collision!.timeSec).toBeGreaterThan(2.5);
+    expect(collision!.timeSec).toBeLessThan(4.5);
+  });
+
+  it("keeps strict diagnostics visible but non-gating in EvalReport and CLI text", () => {
+    const report = runEval([{ movement: "demi-plie", source: source("demi-plie") }]);
+    const movement = report.movements[0]!;
+    const text = renderReport(report);
+
+    expect(movement.passed).toBe(movement.total);
+    expect(movement.diagnostics.warnings.length).toBeGreaterThan(0);
+    expect(report.summary.constraintWarnings).toBe(movement.diagnostics.warnings.length);
+    expect(text).toContain("⚠ clip-heel-height:foot_left");
+    expect(text).toContain("constraint warnings");
+  });
+
+  it("accepts a bounded diagnostic sampling rate", () => {
+    const low = probeMovement(source("deadlift"), undefined, undefined, {
+      diagnosticSampleRateHz: 4,
+    });
+    const high = probeMovement(source("deadlift"), undefined, undefined, {
+      diagnosticSampleRateHz: 24,
+    });
+    expect(low.diagnostics.sampleRateHz).toBe(4);
+    expect(high.diagnostics.sampleRateHz).toBe(24);
+    expect(high.diagnostics.sampleCount).toBeGreaterThan(low.diagnostics.sampleCount);
+  });
+
+  it("anchors intentional rises at the toe while retaining real planted drift", () => {
+    for (const movement of ["heel-raises", "releve"]) {
+      const result = probeMovement(source(movement));
+      expect(result.diagnostics.warnings.some((warning) =>
+        warning.kind === "foot-drift",
+      )).toBe(false);
+      expect(result.diagnostics.feet.left.maxTiptoeDriftMeters).toBeGreaterThan(0);
+    }
+
+    const translated = probeMovement(source("jumping-jacks"));
+    expect(translated.diagnostics.warnings).toContainEqual(expect.objectContaining({
+      id: "clip-foot-drift:foot_left",
+      kind: "foot-drift",
+      phaseName: "Out",
+    }));
+    expect(translated.diagnostics.feet.left.maxPlantigradeDriftMeters).toBeGreaterThan(0.4);
+  });
+
+  it("keeps XBot heel raises and relevé below the toe-anchor drift warning", async () => {
+    const xbot = await loadXbotCharacter(new URL(
+      "../../../playground/public/models/xbot.glb",
+      import.meta.url,
+    ));
+    try {
+      for (const movement of ["heel-raises", "releve"]) {
+        const result = probeMovement(source(movement), xbot.proportions, xbot);
+        expect(result.diagnostics.warnings.some((warning) =>
+          warning.kind === "foot-drift",
+        )).toBe(false);
+        expect(result.diagnostics.feet.left.maxTiptoeDriftMeters).toBeLessThan(0.04);
+      }
+    } finally {
+      xbot.dispose();
+    }
+  });
+});
+
 describe("metrics", () => {
   const hinged = probeMovement(
     ['posecode exercise "t"', "  rig humanoid", '  step "go" 1s linear:', "    pelvis: hinge 70"].join("\n"),
@@ -196,9 +301,17 @@ describe("metrics", () => {
 describe("fixture scorecard", () => {
   it("scores every declared canonical contact and keeps the fallback catalog green", () => {
     const fixtures = loadFixtures(examplesDir);
-    const report = runEval(fixtures);
+    // This test validates the scorecard/contact catalog, not diagnostic peak
+    // sampling. Keep one clip-wide sample per second so the full fixture pass
+    // remains stable on slower shared CI runners.
+    const report = runEval(fixtures, { diagnosticSampleRateHz: 1 });
     const declaredContacts = fixtures.reduce(
-      (count, fixture) => count + probeMovement(fixture.source).contactResiduals.length,
+      (count, fixture) => count + probeMovement(
+        fixture.source,
+        undefined,
+        undefined,
+        { diagnosticSampleRateHz: 1 },
+      ).contactResiduals.length,
       0,
     );
     const contactChecks = report.movements.flatMap((movement) =>
@@ -210,7 +323,7 @@ describe("fixture scorecard", () => {
     expect(report.summary.parseFailures).toBe(0);
     expect(report.summary.clampWarnings).toBe(0);
     expect(report.summary.checksPassed).toBe(report.summary.checksTotal);
-  });
+  }, 20_000);
 
   it("does not give the supplied bad superhero landing a perfect score", () => {
     const source = `posecode posture "Superhero Three-Point Landing"

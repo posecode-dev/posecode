@@ -82,6 +82,20 @@ describe("indentation grammar", () => {
     expect(result.ir).toBeNull();
     expect(result.errors[0]?.message).toMatch(/one indentation level/i);
   });
+
+  it("requires scoped start-pose overrides to be indented consistently", () => {
+    const result = parse([
+      'posecode posture "Indent"',
+      "  rig humanoid",
+      "  pose start = standing:",
+      "    shoulders: flex 20",
+      "      elbows: flex 30",
+      '  step "Hold" 1s linear:',
+      "    spine: hold neutral",
+    ].join("\n"));
+    expect(result.ir).toBeNull();
+    expect(result.errors[0]?.message).toMatch(/start-pose overrides.*one indentation level/i);
+  });
 });
 
 describe("joint/action compatibility", () => {

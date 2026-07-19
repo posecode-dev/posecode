@@ -103,6 +103,147 @@ describe("parse", () => {
     expect(ir!.kind).toBe("posture");
   });
 
+  it("layers scoped, sparse overrides over a built-in start pose", () => {
+    const result = parse([
+      'posecode posture "Custom opening"',
+      "  rig humanoid",
+      "  pose start = standing:",
+      "    shoulders: flex 20",
+      "    elbow_left: pronate 35",
+      '  step "Hold" 1s linear:',
+      "    spine: hold neutral",
+    ].join("\n"));
+
+    expect(result.errors).toEqual([]);
+    expect(result.warnings).toEqual([]);
+    expect(result.ir?.startPose).toBe("standing");
+    expect(result.ir?.startPoseOverrides).toEqual([
+      { boneId: "shoulder_left", euler: { x: -20, y: 0, z: 0 }, axes: ["x"] },
+      { boneId: "shoulder_right", euler: { x: -20, y: 0, z: 0 }, axes: ["x"] },
+      { boneId: "elbow_left", euler: { x: 0, y: -35, z: 0 }, axes: ["y"] },
+    ]);
+  });
+
+  it("ROM-clamps start-pose overrides with their source line", () => {
+    const result = parse([
+      'posecode posture "Custom opening"',
+      "  rig humanoid",
+      "  pose start = standing:",
+      "    knees: flex 200",
+      '  step "Hold" 1s linear:',
+      "    spine: hold neutral",
+    ].join("\n"));
+
+    expect(result.errors).toEqual([]);
+    expect(result.warnings).toHaveLength(2);
+    expect(result.warnings[0]).toMatchObject({
+      line: 4,
+      phase: "start pose",
+      requested: 200,
+      clamped: 144,
+    });
+    expect(result.ir?.startPoseOverrides?.[0]?.euler.x).toBe(144);
+  });
+
+  it("rejects step-only directives inside a start-pose block", () => {
+    const result = parse([
+      'posecode posture "Invalid opening"',
+      "  rig humanoid",
+      "  pose start = standing:",
+      "    ground-lock: feet",
+      '  step "Hold" 1s linear:',
+      "    spine: hold neutral",
+    ].join("\n"));
+
+    expect(result.ir).toBeNull();
+    expect(result.errors).toEqual([
+      expect.objectContaining({ line: 4, message: expect.stringContaining("<joint>") }),
+    ]);
+  });
+
+  it.each([
+    ["moon: flex 20", /unknown joint.*moon/i],
+    ["knees: teleport 20", /unknown action.*teleport/i],
+  ])("validates the closed joint/action vocabulary in start overrides: %s", (override, message) => {
+    const result = parse([
+      'posecode posture "Invalid override"',
+      "  rig humanoid",
+      "  pose start = standing:",
+      `    ${override}`,
+      '  step "Hold" 1s linear:',
+      "    spine: hold neutral",
+    ].join("\n"));
+    expect(result.ir).toBeNull();
+    expect(result.errors).toContainEqual(
+      expect.objectContaining({ line: 4, message: expect.stringMatching(message) }),
+    );
+  });
+
+  it("rejects duplicate pose declarations in either scoped ordering", () => {
+    const blockThenOneLine = parse([
+      'posecode posture "Duplicate custom"',
+      "  rig humanoid",
+      "  pose start = standing:",
+      "    shoulders: flex 20",
+      "  pose start = prone",
+      '  step "Hold" 1s linear:',
+      "    spine: hold neutral",
+    ].join("\n"));
+    expect(blockThenOneLine.ir).toBeNull();
+    expect(blockThenOneLine.errors).toEqual([
+      expect.objectContaining({ line: 5, message: expect.stringMatching(/duplicate.*pose start/i) }),
+    ]);
+
+    const oneLineThenBlock = parse([
+      'posecode posture "Duplicate built-in"',
+      "  rig humanoid",
+      "  pose start = prone",
+      "  pose start = standing:",
+      "    shoulder_left: flex 25",
+      '  step "Hold" 1s linear:',
+      "    spine: hold neutral",
+    ].join("\n"));
+    expect(oneLineThenBlock.ir).toBeNull();
+    expect(oneLineThenBlock.errors).toEqual([
+      expect.objectContaining({ line: 4, message: expect.stringMatching(/duplicate.*pose start/i) }),
+    ]);
+  });
+
+  it.each([
+    ["moon: flex 20"],
+    ["knees: teleport 20"],
+  ])("cannot hide an invalid earlier override behind a second pose: %s", (override) => {
+    const result = parse([
+      'posecode posture "No superseding"',
+      "  rig humanoid",
+      "  pose start = standing:",
+      `    ${override}`,
+      "  pose start = prone",
+      '  step "Hold" 1s linear:',
+      "    spine: hold neutral",
+    ].join("\n"));
+    expect(result.ir).toBeNull();
+    expect(result.errors).toContainEqual(
+      expect.objectContaining({ line: 5, message: expect.stringMatching(/duplicate.*pose start/i) }),
+    );
+  });
+
+  it("suppresses child cascades after an unknown scoped pose header", () => {
+    const result = parse([
+      'posecode posture "Bad scoped pose"',
+      "  rig humanoid",
+      "  pose start = crouching:",
+      "    shoulders: flex 20",
+      "    elbows: flex 30",
+      '  step "Hold" 1s linear:',
+      "    spine: hold neutral",
+    ].join("\n"));
+    expect(result.ir).toBeNull();
+    expect(result.errors).toEqual([
+      expect.objectContaining({ line: 3, message: expect.stringMatching(/unknown start pose/i) }),
+    ]);
+  });
+
   it("reports a structured error for an unknown joint", () => {
     const src = [
       'posecode exercise "Typo"',

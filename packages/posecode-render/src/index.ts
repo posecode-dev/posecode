@@ -21,6 +21,14 @@ import {
   type PhaseSegment,
   type WeightedReachTarget,
 } from "./timeline.js";
+import {
+  buildFloorGuideData,
+  createFloorGuide,
+  syncFloorGuideToSolvedRoot,
+  type FloorGuideData,
+  type FloorGuideInfo,
+  type FloorGuideScene,
+} from "./floor-guide.js";
 import { buildProps, type PropScene } from "./props.js";
 import { loadCharacter, type Character } from "./character.js";
 import {
@@ -31,6 +39,10 @@ import {
   type ClipSource,
 } from "./clips.js";
 import { depenetrate } from "./depenetrate.js";
+import {
+  measureConstraintDiagnostics,
+  type ConstraintDiagnostic,
+} from "./diagnostics.js";
 import { resolvePropContacts, propContactExemptions } from "./propcontact.js";
 import {
   alignFloorContacts,
@@ -58,11 +70,14 @@ import {
 import { solveCCD } from "./ik.js";
 
 const DEG = Math.PI / 180;
+/** Live diagnostics match the playground warning refresh cadence (~5Hz). */
+const CONSTRAINT_DIAGNOSTIC_INTERVAL_MS = 200;
 
 export interface ViewerPhaseInfo {
   /** Zero-based real phase index, or -1 while blending through loop reset. */
   phaseIndex: number;
   phaseName: string;
+  /** Display-only coaching text from the phase; it never drives the animation. */
   cue?: string;
 }
 
@@ -88,8 +103,12 @@ export interface Viewer {
   /** True while a retargeted mocap clip is driving (or fading over) the pose. */
   get clipActive(): boolean;
   getTimeline(): TimelineInfo | null;
+  /** Floor scale/orientation and authored root-path metadata for the loaded clip. */
+  getFloorGuideInfo(): FloorGuideInfo | null;
   /** Diagnostics for every active reach, including missing/unreachable targets. */
   getReachResiduals(): readonly ReachResidual[];
+  /** Procedural-driver grounding/collision outcomes, before optional skin/mocap reconciliation. */
+  getConstraintDiagnostics(): readonly ConstraintDiagnostic[];
   /** Precise visible world bounds; intended for audits and deterministic export. */
   getVisibleBounds(): THREE.Box3;
   getMannequin(): any;
@@ -110,6 +129,11 @@ export interface Viewer {
 export interface ViewerOptions {
   /** Slowly orbit the camera when idle. Defaults to true. */
   autoRotate?: boolean;
+  /**
+   * Show the metric floor, load origin, live facing arrow, and authored travel
+   * path. Defaults to true; set false for a completely clean embed.
+   */
+  floorGuide?: boolean;
   /**
    * URL of a rigged human character GLB (Mixamo bone naming) to render instead
    * of the procedural figure. Loaded asynchronously; until it resolves — and if
@@ -210,12 +234,6 @@ export function createViewer(
   ground.rotation.x = -Math.PI / 2;
   ground.receiveShadow = true;
   scene.add(ground);
-
-  const grid = new THREE.GridHelper(12, 24, 0x2b323d, 0x1b2027);
-  (grid.material as THREE.Material).transparent = true;
-  (grid.material as THREE.Material).opacity = 0.5;
-  grid.position.y = 0.001;
-  scene.add(grid);
 
   let mannequin: Mannequin = buildMannequin();
   enableShadows(mannequin.root);
@@ -327,6 +345,9 @@ export function createViewer(
   }
 
   let timeline: BuiltTimeline | null = null;
+  const floorGuideEnabled = opts.floorGuide ?? true;
+  let floorGuideData: FloorGuideData | null = null;
+  let floorGuide: FloorGuideScene | null = null;
   // Finger bones the loaded document explicitly poses (make-a-fist, finger-spell,
   // hand-wave): the L4.1 resting-hand curl leaves these alone.
   let authoredFingers = new Set<string>();
@@ -340,6 +361,9 @@ export function createViewer(
   // Rebuilt on every solved frame. Missing target names and unreachable
   // effectors remain visible here instead of disappearing behind `continue`.
   let reachResiduals: ReachResidual[] = [];
+  let constraintDiagnostics: ConstraintDiagnostic[] = [];
+  let constraintDiagnosticsDirty = true;
+  let lastConstraintDiagnosticsAt = -Infinity;
   type ReachResidualTarget =
     | { kind: "fixed"; point: THREE.Vector3 }
     | { kind: "floor"; point: THREE.Vector3 }
@@ -370,6 +394,23 @@ export function createViewer(
   // Keep those internal solves out of callbacks, character/mocap state, and
   // the canvas; they are deterministic anchor preparation, not visible frames.
   let precomputingAnchors = false;
+
+  function refreshConstraintDiagnostics(
+    info: ReturnType<NonNullable<typeof timeline>["sample"]>,
+  ): void {
+    if (precomputingAnchors) return;
+    const now = performance.now();
+    if (!constraintDiagnosticsDirty) {
+      if (!playing || now - lastConstraintDiagnosticsAt < CONSTRAINT_DIAGNOSTIC_INTERVAL_MS) return;
+    }
+    constraintDiagnostics = measureConstraintDiagnostics(
+      mannequin,
+      info.groundLock,
+      info.pins,
+    );
+    constraintDiagnosticsDirty = false;
+    lastConstraintDiagnosticsAt = now;
+  }
 
   // Camera easing targets.
   const desiredTarget = new THREE.Vector3(0, 0.9, 0);
@@ -806,6 +847,18 @@ export function createViewer(
         mannequin.root.updateMatrixWorld(true);
       }
       refreshReachResiduals();
+      refreshConstraintDiagnostics(info);
+      // Root/contact solvers can translate X/Z beyond the authored travel
+      // offset (pins, grips, and solid-prop correction). Keep the live floor
+      // marker on the final rendered root rather than the pre-solve target.
+      if (!precomputingAnchors && floorGuide) {
+        syncFloorGuideToSolvedRoot(
+          floorGuide,
+          mannequin.root.position,
+          baseRootPos,
+          info.rootYaw,
+        );
+      }
       if (!precomputingAnchors && info.phaseIndex !== lastPhaseIndex) {
         lastPhaseIndex = info.phaseIndex;
         phaseCb({
@@ -867,6 +920,7 @@ export function createViewer(
         } else {
           time = timeline.duration;
           playing = false;
+          constraintDiagnosticsDirty = true;
         }
       }
       tickCb(time, timeline.duration);
@@ -880,9 +934,22 @@ export function createViewer(
     load(ir: PosecodeIR) {
       lastIR = ir;
       timeline = buildTimeline(ir);
+      floorGuideData = buildFloorGuideData(ir, timeline);
+      if (floorGuide) {
+        scene.remove(floorGuide.group);
+        floorGuide.dispose();
+        floorGuide = null;
+      }
+      if (floorGuideEnabled) {
+        floorGuide = createFloorGuide(floorGuideData);
+        scene.add(floorGuide.group);
+      }
       time = 0;
       lastPhaseIndex = -2;
       reachResiduals = [];
+      constraintDiagnostics = [];
+      constraintDiagnosticsDirty = true;
+      lastConstraintDiagnosticsAt = -Infinity;
       reachResidualTargets = [];
       authoredFingers = new Set(timeline.bonesUsed.filter(isFingerId));
       authoredShoulders = new Set(timeline.bonesUsed.filter((id) => id.startsWith("shoulder_")));
@@ -949,6 +1016,8 @@ export function createViewer(
       captureGroundTargets();
       baseRootPos.copy(mannequin.root.position);
       baseRootQuat.copy(mannequin.root.quaternion);
+      floorGuide?.setOrigin(baseRootPos.x, baseRootPos.z);
+      floorGuide?.updateRoot({ x: 0, z: 0 }, 0);
 
       // Precompute world positions of all effectors at start of each segment
       segmentStartEffectors.length = 0;
@@ -1063,25 +1132,33 @@ export function createViewer(
         levelPlantedFeet(mannequin, ir.phases[0]?.groundLock ?? []);
         enforceContactRom(mannequin);
       }
+      // Anchor precomputation samples every phase endpoint; restore the visual
+      // root marker alongside the figure before the first visible frame.
+      floorGuide?.updateRoot({ x: 0, z: 0 }, 0);
 
       requestClip(ir);
       frameCamera();
     },
     play() {
       playing = true;
+      constraintDiagnosticsDirty = true;
       lastT = performance.now();
     },
     pause() {
       playing = false;
+      constraintDiagnosticsDirty = true;
     },
     toggle() {
       playing = !playing;
+      constraintDiagnosticsDirty = true;
       lastT = performance.now();
       return playing;
     },
     seek(seconds: number) {
       if (!timeline) return;
       time = THREE.MathUtils.clamp(seconds, 0, timeline.duration);
+      constraintDiagnostics = [];
+      constraintDiagnosticsDirty = true;
     },
     setSpeed(multiplier: number) {
       speed = Math.max(0.1, multiplier);
@@ -1112,8 +1189,24 @@ export function createViewer(
         segments: timeline.segments,
       };
     },
+    getFloorGuideInfo() {
+      if (!floorGuideData) return null;
+      return floorGuide
+        ? floorGuide.getInfo(true)
+        : {
+            visible: false,
+            gridStepMetres: floorGuideData.gridStepMetres,
+            scaleBarMetres: floorGuideData.scaleBarMetres,
+            hasTravel: floorGuideData.hasTravel,
+            hasLoopReset: floorGuideData.hasLoopReset,
+            waypoints: floorGuideData.waypoints.map((point) => ({ ...point })),
+          };
+    },
     getReachResiduals() {
       return reachResiduals.map((residual) => ({ ...residual }));
+    },
+    getConstraintDiagnostics() {
+      return constraintDiagnostics.map((diagnostic) => ({ ...diagnostic }));
     },
     getVisibleBounds() {
       return character?.getBounds() ?? new THREE.Box3().setFromObject(mannequin.root);
@@ -1142,6 +1235,7 @@ export function createViewer(
       controls.dispose();
       clipLayer?.dispose();
       character?.dispose();
+      floorGuide?.dispose();
       renderer.dispose();
     },
   };
@@ -1342,9 +1436,25 @@ function disposeTree(root: THREE.Object3D): void {
 }
 
 export { buildMannequin } from "./mannequin.js";
-export { applyGroundLock, groundFigure } from "./groundlock.js";
+export {
+  applyGroundLock,
+  groundFigure,
+  GROUND_LOCK_PLANTED_MAX_Y,
+  isGroundLockFootPlanted,
+} from "./groundlock.js";
 export type { Mannequin, Proportions, CollisionRadii } from "./mannequin.js";
 export { buildTimeline } from "./timeline.js";
+export {
+  FLOOR_GRID_STEP_METRES,
+  FLOOR_SCALE_BAR_METRES,
+  buildFloorGuideData,
+  createFloorGuide,
+  syncFloorGuideToSolvedRoot,
+  type FloorGuideData,
+  type FloorGuideInfo,
+  type FloorGuidePoint,
+  type FloorGuideScene,
+} from "./floor-guide.js";
 export { solveCCD, type IkChain, type JointLimits } from "./ik.js";
 export {
   EFFECTOR_BONE,
@@ -1366,10 +1476,26 @@ export {
   type ClipLayer,
   type ClipSource,
 } from "./clips.js";
-export { depenetrate } from "./depenetrate.js";
+export {
+  depenetrate,
+  measureSelfCollisions,
+  type SelfCollisionKind,
+  type SelfCollisionResidual,
+} from "./depenetrate.js";
+export {
+  FOOT_CONTACT_HEIGHT_MAX,
+  PLANTIGRADE_SOLE_ANGLE_MAX,
+  SELF_COLLISION_DEPTH_MAX,
+  measureConstraintDiagnostics,
+  type ConstraintDiagnostic,
+  type ConstraintDiagnosticKind,
+  type DiagnosticPin,
+} from "./diagnostics.js";
 export {
   PALM_LOCAL_NORMAL,
   FIST_LOCAL_NORMAL,
+  PLANT_FADE,
+  PLANTARFLEX_SKIP,
   alignFloorContacts,
   alignFloorPalms,
   prepareGripFrames,
@@ -1377,9 +1503,15 @@ export {
   isDipBarGrip,
   floorTargetForEffector,
   floorContactHeight,
+  measureFootContact,
   enforceContactRom,
   formFists,
   levelPlantedFeet,
+  relaxHands,
+  swingArms,
+  aimHead,
   wrapGrip,
+  type BodySide,
+  type FootContactMeasurement,
 } from "./contacts.js";
 export type { PhaseSegment } from "./timeline.js";

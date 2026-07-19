@@ -67,6 +67,8 @@ export interface AstDoc {
   name: string;
   rig: string;
   startPose?: string;
+  /** Sparse joint targets layered over the selected built-in start pose. */
+  startPoseOverrides: AstJointTarget[];
   props: string[];
   /** Optional mocap clip name (`clip "<name>"`), resolved to an asset by hosts. */
   clip?: string;
@@ -134,25 +136,28 @@ export function parseToAst(source: string): ParseAstResult {
     kind: ht[1].value,
     name: ht[2].value,
     rig: "humanoid",
+    startPoseOverrides: [],
     props: [],
     repeat: 1,
     steps: [],
   };
 
   let current: AstStep | null = null;
-  let invalidStepIndent: number | null = null;
+  let invalidBlockIndent: number | null = null;
   let topLevelIndent: number | null = null;
   let currentStepIndent: number | null = null;
   let currentChildIndent: number | null = null;
+  let startPoseBlockIndent: number | null = null;
+  let startPoseChildIndent: number | null = null;
 
   for (let i = 1; i < lines.length; i++) {
     const ln = lines[i]!;
-    // A malformed step header already explains why the phase cannot be parsed.
-    // Ignore its indented children so authors get one actionable diagnostic
-    // instead of a cascade of misleading "outside of a step" errors.
-    if (invalidStepIndent !== null) {
-      if (ln.indent > invalidStepIndent) continue;
-      invalidStepIndent = null;
+    // A malformed scoped header already explains why its children cannot be
+    // parsed. Ignore them so authors get one actionable diagnostic instead of
+    // a cascade of misleading "outside of a step" errors.
+    if (invalidBlockIndent !== null) {
+      if (ln.indent > invalidBlockIndent) continue;
+      invalidBlockIndent = null;
     }
     const head = word(ln.tokens[0]);
     const t = ln.tokens;
@@ -168,7 +173,9 @@ export function parseToAst(source: string): ParseAstResult {
         current = null;
         currentStepIndent = null;
         currentChildIndent = null;
-        if (head === "step") invalidStepIndent = ln.indent;
+        startPoseBlockIndent = null;
+        startPoseChildIndent = null;
+        if (head === "step") invalidBlockIndent = ln.indent;
         continue;
       }
       if (topLevelIndent === null) topLevelIndent = ln.indent;
@@ -177,27 +184,44 @@ export function parseToAst(source: string): ParseAstResult {
         current = null;
         currentStepIndent = null;
         currentChildIndent = null;
-        if (head === "step") invalidStepIndent = ln.indent;
+        startPoseBlockIndent = null;
+        startPoseChildIndent = null;
+        if (head === "step") invalidBlockIndent = ln.indent;
         continue;
       }
+      // Any recognized document directive closes the preceding scoped start-
+      // pose block. A `pose ...:` case below opens a fresh block explicitly.
+      startPoseBlockIndent = null;
+      startPoseChildIndent = null;
       if (head !== "step") {
         current = null;
         currentStepIndent = null;
         currentChildIndent = null;
       }
     } else {
-      if (!current || currentStepIndent === null) {
+      if (current && currentStepIndent !== null) {
+        if (ln.indent <= currentStepIndent) {
+          errors.push({ line: ln.line, message: "step children must be indented beneath their `step` header" });
+          continue;
+        }
+        if (currentChildIndent === null) currentChildIndent = ln.indent;
+        if (ln.indent !== currentChildIndent) {
+          errors.push({ line: ln.line, message: `step children must use one indentation level (${currentChildIndent} spaces)` });
+          continue;
+        }
+      } else if (startPoseBlockIndent !== null) {
+        if (ln.indent <= startPoseBlockIndent) {
+          errors.push({ line: ln.line, message: "start-pose overrides must be indented beneath their `pose start` header" });
+          continue;
+        }
+        if (startPoseChildIndent === null) startPoseChildIndent = ln.indent;
+        if (ln.indent !== startPoseChildIndent) {
+          errors.push({ line: ln.line, message: `start-pose overrides must use one indentation level (${startPoseChildIndent} spaces)` });
+          continue;
+        }
+      } else {
         const err = parseStepChild(ln, null);
         if (err) errors.push(err);
-        continue;
-      }
-      if (ln.indent <= currentStepIndent) {
-        errors.push({ line: ln.line, message: "step children must be indented beneath their `step` header" });
-        continue;
-      }
-      if (currentChildIndent === null) currentChildIndent = ln.indent;
-      if (ln.indent !== currentChildIndent) {
-        errors.push({ line: ln.line, message: `step children must use one indentation level (${currentChildIndent} spaces)` });
         continue;
       }
     }
@@ -238,19 +262,36 @@ export function parseToAst(source: string): ParseAstResult {
         break;
       }
       case "pose": {
-        // `pose start = <name>`
+        // `pose start = <name>` keeps the compact legacy form. A trailing
+        // colon opens a scoped list of sparse joint overrides:
+        // `pose start = standing:` followed by `<joint>: <action> <degrees>`.
         const name = word(t[3]);
-        if (t.length === 4 && word(t[1]) === "start" && t[2]?.type === "eq" && name) {
+        const block = t.length === 5 && t[4]?.type === "colon";
+        if ((t.length === 4 || block) && word(t[1]) === "start" && t[2]?.type === "eq" && name) {
           if (!isStartPoseName(name)) {
             errors.push({
               line: ln.line,
               message: `unknown start pose "${name}"; expected one of ${START_POSE_NAMES.join(", ")}`,
             });
+            if (block) invalidBlockIndent = ln.indent;
+            break;
+          }
+          if (doc.startPose !== undefined) {
+            errors.push({
+              line: ln.line,
+              message: "duplicate `pose start` declaration; a document may define exactly one start pose",
+            });
+            if (block) invalidBlockIndent = ln.indent;
             break;
           }
           doc.startPose = name;
+          if (block) {
+            startPoseBlockIndent = ln.indent;
+            startPoseChildIndent = null;
+          }
         } else {
-          errors.push({ line: ln.line, message: "expected `pose start = <name>`" });
+          errors.push({ line: ln.line, message: "expected `pose start = <name>` or `pose start = <name>:`" });
+          if (t.at(-1)?.type === "colon") invalidBlockIndent = ln.indent;
         }
         break;
       }
@@ -286,7 +327,7 @@ export function parseToAst(source: string): ParseAstResult {
           current = null;
           currentStepIndent = null;
           currentChildIndent = null;
-          invalidStepIndent = ln.indent;
+          invalidBlockIndent = ln.indent;
           break;
         }
         current = {
@@ -306,14 +347,24 @@ export function parseToAst(source: string): ParseAstResult {
         break;
       }
       default: {
-        // A step-child line (joint target, cue, or ground-lock).
-        const err = parseStepChild(ln, current);
+        // A scoped start-pose override is deliberately limited to joint
+        // targets, so it cannot be mistaken for motion or a phase constraint.
+        const err = startPoseBlockIndent !== null
+          ? parseStartPoseOverride(ln, doc)
+          : parseStepChild(ln, current);
         if (err) errors.push(err);
       }
     }
   }
 
   return { ast: doc, errors };
+}
+
+function parseStartPoseOverride(ln: Line, doc: AstDoc): ParseError | null {
+  const parsed = parseJointTarget(ln);
+  if (parsed.error) return parsed.error;
+  doc.startPoseOverrides.push(parsed.target!);
+  return null;
 }
 
 function parseDuration(value: string): number {
@@ -439,29 +490,53 @@ function parseStepChild(ln: Line, current: AstStep | null): ParseError | null {
   if (!current) {
     return { line: ln.line, message: "joint target outside of a step" };
   }
+  const parsed = parseJointTarget(ln);
+  if (parsed.error) return parsed.error;
+  current.targets.push(parsed.target!);
+  return null;
+}
+
+function parseJointTarget(
+  ln: Line,
+): { target: AstJointTarget | null; error: ParseError | null } {
+  const t = ln.tokens;
+  const head = word(t[0]);
   if (head === null || t[1]?.type !== "colon" || t[2]?.type !== "word") {
-    return { line: ln.line, message: "expected `<joint>: <action> <degrees>`" };
+    return {
+      target: null,
+      error: { line: ln.line, message: "expected `<joint>: <action> <degrees>`" },
+    };
   }
   const action = t[2].value;
   if (action === "hold") {
     if (t.length !== 4 || word(t[3]) !== "neutral") {
       return {
-        line: ln.line,
-        message: "expected `<joint>: hold neutral` (no trailing angle)",
+        target: null,
+        error: {
+          line: ln.line,
+          message: "expected `<joint>: hold neutral` (no trailing angle)",
+        },
       };
     }
-    current.targets.push({ joint: head, action, degrees: null, line: ln.line });
-    return null;
+    return {
+      target: { joint: head, action, degrees: null, line: ln.line },
+      error: null,
+    };
   }
   const degTok = t[3];
   if (t.length !== 4 || degTok?.type !== "num") {
-    return { line: ln.line, message: "expected `<joint>: <action> <degrees>`" };
+    return {
+      target: null,
+      error: { line: ln.line, message: "expected `<joint>: <action> <degrees>`" },
+    };
   }
-  current.targets.push({
-    joint: head,
-    action,
-    degrees: Number(degTok.value),
-    line: ln.line,
-  });
-  return null;
+  return {
+    target: {
+      joint: head,
+      action,
+      degrees: Number(degTok.value),
+      line: ln.line,
+    },
+    error: null,
+  };
 }

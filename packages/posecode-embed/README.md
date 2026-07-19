@@ -9,7 +9,7 @@ the movement as an animated 3D figure, right where a share link would have gone.
 ## Quick start (CDN, no build step)
 
 ```html
-<script src="https://unpkg.com/posecode-embed@0.2.0/dist/posecode-embed.js"></script>
+<script src="https://unpkg.com/posecode-embed@latest/dist/posecode-embed.js"></script>
 
 <!-- 1. From a share token (what a posecode.org permalink carries) -->
 <posecode-player doc="cG9zZWNvZGUgZXhlcmNpc2Ug…"></posecode-player>
@@ -35,9 +35,9 @@ posecode exercise "Lateral raise"
 The script auto-registers the element and boots each player when it scrolls into
 view. That's it.
 
-Pin a package version in production, as above, so a deployment always uses a
-known parser/render pair. A `src` URL can be relative or absolute; cross-origin
-movement files must be served with CORS permission.
+Replace `@latest` with an exact package version in production so a deployment
+always uses a known parser/render pair. A `src` URL can be relative or absolute;
+cross-origin movement files must be served with CORS permission.
 
 ## With a bundler
 
@@ -116,7 +116,7 @@ console.log(Posecode.version, Posecode.languageVersion, result.errors);
 For a movement library in CI, run:
 
 ```bash
-npx posecode-parser@0.2.0 validate --strict ./movements
+npx posecode-parser@latest validate --strict ./movements
 ```
 
 AGPL-3.0-only, part of [Posecode](https://github.com/posecode-dev/posecode). A [separate commercial license](https://github.com/posecode-dev/posecode/blob/main/docs/legal/COMMERCIAL-LICENSE.md) is available for closed-source product use.

@@ -49,6 +49,7 @@ posecode <kind> "<Name>"          # kind = exercise | stretch | posture
   rig humanoid
   prop <type>                  # optional: chair | wall | bar | box | dip-bars
   pose start = <pose>          # neutral | standing | first-position | plank | supine | prone | seated
+  # Or use \`pose start = <pose>:\` with indented, sparse joint overrides.
   step "<Phase>" <Ns> <mode>:  # mode = flow | settle | drive | snap | linear
     <joint>: <action> <degrees>
     ground-lock: <contacts>    # repeat feet/hands/forearms/back or side-specific supports
@@ -67,6 +68,9 @@ abduct/adduct, rotate-in/rotate-out (shoulder/hip), twist-left/twist-right
 neutral, and hinge (pelvis only). With upright arms at the sides,
 \`forearms: pronate 80\` faces the palms inward toward the thighs.
 At zero degrees, \`pronate 0\` and \`supinate 0\` are the same absolute target.
+To customize the opening shape, append \`:\` to \`pose start = <pose>\` and
+indent joint targets beneath it. These ROM-clamped targets sparsely overlay the
+built-in pose, consume no time, and become the deterministic loop-reset pose.
 Use only joint/action pairs and declared prop anchors accepted by the validator.
 Author the gross pose before reach; a parsed reach is not proof of contact.
 Keep cues, sides, and declared contacts consistent through every phase. Floor

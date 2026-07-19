@@ -66,6 +66,18 @@ interface Hit {
   push: THREE.Vector3;
 }
 
+export type SelfCollisionKind = "arm-body" | "lower-leg-other-leg";
+
+/** Residual overlap remaining after the bounded self-collision pass. */
+export interface SelfCollisionResidual {
+  /** Stable diagnostic identity suitable for UI warnings and evaluation output. */
+  id: string;
+  kind: SelfCollisionKind;
+  side: "left" | "right";
+  /** Deepest sampled overlap in metres; 0 means no sampled penetration. */
+  depth: number;
+}
+
 /** Deepest penetration of sample point p (radius r) against the obstacles. */
 function deepestHit(p: THREE.Vector3, r: number, obstacles: Capsule[], best: Hit | null): Hit | null {
   for (const cap of obstacles) {
@@ -231,4 +243,76 @@ export function depenetrate(m: Mannequin): void {
       applied += step;
     }
   }
+}
+
+/**
+ * Re-measure the exact capsule/sample pairs handled by `depenetrate`. This is a
+ * residual diagnostic, not a claim of comprehensive physics: a positive depth
+ * means the bounded pass left (or a later contact solve reintroduced) overlap.
+ */
+export function measureSelfCollisions(m: Mannequin): SelfCollisionResidual[] {
+  const R = m.collision;
+  m.root.updateMatrixWorld(true);
+
+  const samples = (aId: string, bId: string, tipOverhang: number): THREE.Vector3[] => {
+    const a = wp(m, aId);
+    const b = wp(m, bId);
+    const dir = b.clone().sub(a);
+    const points = [0.15, 0.45, 0.75, 1.0].map((t) => a.clone().addScaledVector(dir, t));
+    if (tipOverhang > 0) points.push(b.clone().addScaledVector(dir.clone().normalize(), tipOverhang));
+    return points;
+  };
+  const obstacles = (): { torsoHead: Capsule[]; leg: Record<"left" | "right", Capsule[]> } => {
+    const pelvis = wp(m, "pelvis");
+    const neck = wp(m, "neck");
+    const head = wp(m, "head");
+    const torso: Capsule = {
+      a: pelvis.clone().addScaledVector(neck.clone().sub(pelvis).normalize(), -0.08),
+      b: neck,
+      r: R.torso,
+    };
+    const headCap: Capsule = {
+      a: head.clone().addScaledVector(head.clone().sub(neck).normalize(), 0.05),
+      b: head,
+      r: R.head,
+    };
+    const leg = (side: "left" | "right"): Capsule[] => [
+      { a: wp(m, `hip_${side}`), b: wp(m, `knee_${side}`), r: R.thigh },
+      { a: wp(m, `knee_${side}`), b: wp(m, `ankle_${side}`), r: R.shin },
+    ];
+    return { torsoHead: [torso, headCap], leg: { left: leg("left"), right: leg("right") } };
+  };
+
+  const residuals: SelfCollisionResidual[] = [];
+  for (const side of ["left", "right"] as const) {
+    const current = obstacles();
+    let armHit: Hit | null = null;
+    for (const point of samples(`elbow_${side}`, `wrist_${side}`, 0.09)) {
+      armHit = deepestHit(
+        point,
+        R.arm,
+        [...current.torsoHead, ...current.leg.left, ...current.leg.right],
+        armHit,
+      );
+    }
+    residuals.push({
+      id: `self-collision:arm_${side}:body`,
+      kind: "arm-body",
+      side,
+      depth: armHit?.depth ?? 0,
+    });
+
+    const other = side === "left" ? "right" : "left";
+    let legHit: Hit | null = null;
+    for (const point of samples(`knee_${side}`, `ankle_${side}`, 0.06)) {
+      legHit = deepestHit(point, R.shin, current.leg[other], legHit);
+    }
+    residuals.push({
+      id: `self-collision:lower_leg_${side}:leg_${other}`,
+      kind: "lower-leg-other-leg",
+      side,
+      depth: legHit?.depth ?? 0,
+    });
+  }
+  return residuals;
 }

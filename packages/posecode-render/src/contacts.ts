@@ -13,7 +13,8 @@ const PALM_DOWN_TARGET_DOT = Math.cos(45 * DEG);
 const HAND_FLOOR_OUTSET = 0.04;
 const CONTACT_EULER = new THREE.Euler();
 
-export type HandSide = "left" | "right";
+export type BodySide = "left" | "right";
+export type HandSide = BodySide;
 export type HandContactKind = "palm" | "fist";
 
 /**
@@ -366,6 +367,83 @@ export function floorContactHeight(m: Mannequin, effectorName: string): number |
   if (effectorName === "pelvis") return originY - pelvisFloorDrop(m);
   const minY = new THREE.Box3().setFromObject(effector).min.y;
   return Number.isFinite(minY) ? minY : null;
+}
+
+export interface FootContactMeasurement {
+  side: BodySide;
+  /** Lowest heel-edge point of the visible sole above the world floor (metres). */
+  heelHeight: number;
+  /** Lowest toe-edge point of the visible sole above the world floor (metres). */
+  toeHeight: number;
+  /** World-space centre of the sampled sole footprint. */
+  center: readonly [x: number, y: number, z: number];
+  /** World-space midpoint of the heel edge. */
+  heelCenter: readonly [x: number, y: number, z: number];
+  /** World-space midpoint of the toe/ball edge used as a tiptoe contact anchor. */
+  toeCenter: readonly [x: number, y: number, z: number];
+  /** Angle between the visible sole normal and world-up; 0 means flat. */
+  soleAngleDeg: number;
+  /** Current local ankle plantarflexion (+X) in degrees. */
+  plantarflexDeg: number;
+  /** True when the local ankle has reached its configured dorsiflexion bound. */
+  atDorsiflexionLimit: boolean;
+  /** False when explicit plantarflexion opts the foot into intentional tiptoe contact. */
+  plantigrade: boolean;
+}
+
+/**
+ * Measure the real procedural sole at its heel and toe edges. Unlike ankle-bone
+ * height, these samples distinguish a flat planted foot from a foot balanced on
+ * its ball while the ankle origin remains close to the floor.
+ */
+export function measureFootContact(
+  m: Mannequin,
+  side: BodySide,
+): FootContactMeasurement | null {
+  const ankle = m.bones.get(`ankle_${side}`);
+  const sole = m.contactSurfaces[`foot_${side}`]?.[0] as THREE.Mesh | undefined;
+  const geometry = sole?.geometry;
+  if (!ankle || !sole || !geometry) return null;
+  if (!geometry.boundingBox) geometry.computeBoundingBox();
+  const bounds = geometry.boundingBox;
+  if (!bounds) return null;
+
+  m.root.updateMatrixWorld(true);
+  const points = (z: number): THREE.Vector3[] => [bounds.min.x, bounds.max.x].map((x) =>
+    sole.localToWorld(new THREE.Vector3(x, bounds.min.y, z)),
+  );
+  const heel = points(bounds.min.z);
+  const toe = points(bounds.max.z);
+  const midpoint = (edge: readonly THREE.Vector3[]): THREE.Vector3 =>
+    edge.reduce((sum, point) => sum.add(point), new THREE.Vector3())
+      .multiplyScalar(1 / edge.length);
+  const heelCenter = midpoint(heel);
+  const toeCenter = midpoint(toe);
+  const footprint = [...heel, ...toe];
+  const center = new THREE.Vector3();
+  for (const point of footprint) center.add(point);
+  center.multiplyScalar(1 / footprint.length);
+
+  const world = sole.getWorldQuaternion(new THREE.Quaternion());
+  const normal = new THREE.Vector3(0, 1, 0).applyQuaternion(world).normalize();
+  const soleAngleDeg = Math.acos(THREE.MathUtils.clamp(normal.dot(new THREE.Vector3(0, 1, 0)), -1, 1)) / DEG;
+  TMP_EULER.setFromQuaternion(ankle.quaternion, "XYZ");
+  const plantarflexDeg = TMP_EULER.x / DEG;
+  const ankleRom = eulerRomFor(`ankle_${side}`);
+  return {
+    side,
+    heelHeight: Math.min(...heel.map((point) => point.y)),
+    toeHeight: Math.min(...toe.map((point) => point.y)),
+    center: [center.x, center.y, center.z],
+    heelCenter: [heelCenter.x, heelCenter.y, heelCenter.z],
+    toeCenter: [toeCenter.x, toeCenter.y, toeCenter.z],
+    soleAngleDeg,
+    plantarflexDeg,
+    atDorsiflexionLimit: ankleRom
+      ? Math.abs(TMP_EULER.x - ankleRom.x.min * DEG) <= 0.25 * DEG
+      : false,
+    plantigrade: TMP_EULER.x <= PLANTARFLEX_SKIP + 1e-6,
+  };
 }
 
 function jointSurfaceDrop(

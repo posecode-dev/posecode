@@ -5,11 +5,28 @@ export type {
   ContactKind,
   ContactResidual,
   ContactStatus,
+  ProbeOptions,
   ProbeResult,
   PhasePose,
   Quat,
   Vec3,
 } from "./probe.js";
+export {
+  DEFAULT_DIAGNOSTIC_SAMPLE_RATE_HZ,
+  PLANTED_FOOT_DRIFT_MAX,
+  TIPTOE_FOOT_DRIFT_MAX,
+  createClipDiagnosticsCollector,
+} from "./diagnostics.js";
+export type {
+  ClipDiagnostics,
+  ClipDiagnosticsCollector,
+  ClipDiagnosticWarning,
+  ClipDiagnosticWarningKind,
+  DiagnosticFrame,
+  DiagnosticLocation,
+  FootClipDiagnostics,
+  SelfCollisionClipDiagnostics,
+} from "./diagnostics.js";
 export {
   angleBetweenDeg,
   balanceOverflow,

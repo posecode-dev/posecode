@@ -26,6 +26,9 @@ import { createViewer } from "posecode-render";
 const canvas = document.querySelector("canvas")!;
 const viewer = createViewer(canvas, {
   autoRotate: false,
+  // Metric grid, load origin, live +Z facing arrow, and authored travel path.
+  // Enabled by default; disable it for a clean presentation-only embed.
+  floorGuide: true,
   // Optional: realistic skinned character (Mixamo bone naming). Omit for the
   // zero-asset procedural figure.
   characterUrl: "https://posecode.org/models/xbot.glb",
@@ -41,7 +44,24 @@ if (ir) {
 viewer.onPhase(({ phaseName, cue }) => {
   console.log(phaseName, cue);
 });
+
+const floor = viewer.getFloorGuideInfo();
+console.log(floor?.gridStepMetres, floor?.hasTravel, floor?.waypoints);
+
+const solverWarnings = viewer
+  .getConstraintDiagnostics()
+  .filter((diagnostic) => !diagnostic.pass);
+console.log(solverWarnings);
 ```
+
+`cue` is optional display-only coaching text. It never changes the pose,
+timing, range checks, contacts, or collision solving.
+
+Constraint diagnostics name visible heel/toe contact errors, sole tilt,
+grounding-versus-ankle-ROM conflicts, and residual overlaps from the renderer's
+bounded self-collision pairs. They measure the post-solver procedural driver,
+before optional skinned-character or mocap surface reconciliation, and report
+outcomes without changing the authored motion.
 
 No GPU, no diffusion model: generation is a fraction of a cent of text, and
 rendering is plain forward kinematics.

@@ -30,6 +30,19 @@ describe("posecode-share codec", () => {
     expect(decodePosecode(encodePosecode(unicode))).toBe(unicode);
   });
 
+  it("round-trips a scoped custom start pose verbatim", () => {
+    const source = [
+      'posecode posture "Custom opening"',
+      "  rig humanoid",
+      "  pose start = standing:",
+      "    shoulder_left: flex 25",
+      '  step "Hold" 1s linear:',
+      "    spine: hold neutral",
+    ].join("\n");
+    expect(decodePosecode(encodePosecode(source))).toBe(source);
+    expect(readShareHash(buildShareHash(source))).toBe(source);
+  });
+
   it("produces a URL-safe token (no +, /, =, or whitespace)", () => {
     const token = encodePosecode(SAMPLE);
     expect(token).toMatch(/^[A-Za-z0-9_-]+$/);

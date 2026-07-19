@@ -91,6 +91,15 @@
           <span class="ico-help" aria-hidden="true"></span><span class="lbl">How to use</span>
         </button>
         <a
+          id="spec-link"
+          href="/spec.html"
+          class="btn ghost"
+          aria-label="Open the Posecode language specification"
+          title="Open the normative Posecode language specification"
+        >
+          <span class="ico-spec" aria-hidden="true"></span><span class="lbl">Spec</span>
+        </a>
+        <a
           id="feedback"
           href="https://github.com/posecode-dev/posecode/issues/new"
           class="btn ghost"
@@ -158,9 +167,27 @@
 
         <div class="hud">
           <div id="phase" class="phase"></div>
-          <div id="cue" class="cue"></div>
+          <div id="cue" class="cue" aria-label="Display-only coaching cue"></div>
         </div>
         <div id="reps" class="reps"></div>
+
+        <div
+          id="floor-guide-key"
+          class="floor-guide-key"
+          role="img"
+          aria-label="Floor guide: load origin, current facing, and one metre scale"
+          hidden
+        >
+          <span><i class="floor-key-origin" aria-hidden="true"></i>origin</span>
+          <span><i class="floor-key-facing" aria-hidden="true">↑</i>facing</span>
+          <span><i class="floor-key-scale" aria-hidden="true"></i>1 m</span>
+          <span id="floor-guide-travel" hidden
+            ><i class="floor-key-travel" aria-hidden="true"></i>travel</span
+          >
+          <span id="floor-guide-reset" hidden
+            ><i class="floor-key-reset" aria-hidden="true"></i>loop reset</span
+          >
+        </div>
 
         <div id="ribbon" class="ribbon"></div>
 
@@ -225,6 +252,22 @@
             </div>
           </li>
         </ol>
+
+        <section class="authoring-reference" aria-labelledby="authoring-reference-title">
+          <h3 id="authoring-reference-title">Authoring reference</h3>
+          <p>
+            The <a href="/spec.html">language specification</a> is the normative
+            Posecode contract. The <a href="/llm-guide.html">LLM guide</a> is a
+            self-contained authoring aid built from that contract.
+          </p>
+          <p>
+            <code>ground-lock</code> preserves an existing floor support;
+            <code>reach</code> moves a limb; <code>pin</code> moves the whole body
+            around one anchor; and <code>grip</code> solves hands onto a bar or
+            rails. A <code>cue</code> is display-only coaching text and never
+            changes the animation.
+          </p>
+        </section>
 
         <div class="prompt-block">
           <div class="prompt-head">
