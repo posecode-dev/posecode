@@ -11,7 +11,7 @@ import {
   ProposedFeatures,
   TextDocumentSyncKind,
   type InitializeResult,
-} from "vscode-languageserver/node.js";
+} from "vscode-languageserver/node";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { toDiagnostics, toCompletions, toHover } from "./convert.js";
 

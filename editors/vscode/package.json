@@ -34,7 +34,7 @@
     "build": "npm run compile && npm run bundle-server"
   },
   "dependencies": {
-    "vscode-languageclient": "^9.0.1"
+    "vscode-languageclient": "^10.1.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
