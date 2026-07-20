@@ -1,5 +1,14 @@
 # posecode-mcp
 
+## 0.4.1
+
+### Patch Changes
+
+- 8ae27ad: Bump zod to ^4.4.3. Update the language-server tooling (vscode-languageserver / vscode-languageclient) to ^10.1.0 and adjust the LSP entrypoint import to the package's v10 subpath export.
+- Updated dependencies [8ae27ad]
+  - posecode-parser@0.4.1
+  - posecode-share@0.4.1
+
 ## 0.4.0
 
 ### Patch Changes
