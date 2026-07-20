@@ -4,7 +4,7 @@ import { parse, POSECODE_VERSION } from "posecode-parser";
 import type { ParseResult } from "posecode-parser";
 
 /** Version of the posecode-embed package/bundle. */
-export const version = "0.3.0";
+export const version = "0.4.0";
 
 /** Version of the Posecode language understood by this bundle. */
 export const languageVersion = POSECODE_VERSION;

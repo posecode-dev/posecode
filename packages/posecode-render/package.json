@@ -1,6 +1,6 @@
 {
   "name": "posecode-render",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Render a Posecode IR as an animated 3D human figure (skinned character or procedural mannequin) with Three.js.",
   "license": "AGPL-3.0-only",
   "type": "module",
