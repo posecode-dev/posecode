@@ -20,9 +20,9 @@
     "@lezer/highlight": "^1.2.1",
     "@vercel/analytics": "^2.0.1",
     "posecode-language": "0.2.2",
-    "posecode-parser": "0.4.0",
-    "posecode-render": "0.4.0",
-    "posecode-share": "0.4.0",
+    "posecode-parser": "0.4.1",
+    "posecode-render": "0.4.1",
+    "posecode-share": "0.4.1",
     "three": "^0.171.0"
   },
   "devDependencies": {

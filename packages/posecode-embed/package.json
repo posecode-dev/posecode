@@ -1,6 +1,6 @@
 {
   "name": "posecode-embed",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Embed a live 3D Posecode movement anywhere with one <script> tag — the <posecode-player> web component.",
   "license": "AGPL-3.0-only",
   "type": "module",
@@ -38,9 +38,9 @@
     "three.js"
   ],
   "dependencies": {
-    "posecode-parser": "0.4.0",
-    "posecode-render": "0.4.0",
-    "posecode-share": "0.4.0"
+    "posecode-parser": "0.4.1",
+    "posecode-render": "0.4.1",
+    "posecode-share": "0.4.1"
   },
   "devDependencies": {
     "esbuild": "^0.28.1"
