@@ -11,8 +11,8 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "posecode-parser": "0.3.0",
-    "posecode-render": "0.3.0",
+    "posecode-parser": "0.4.1",
+    "posecode-render": "0.4.1",
     "three": "^0.171.0"
   },
   "devDependencies": {

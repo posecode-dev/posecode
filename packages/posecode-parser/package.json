@@ -1,6 +1,6 @@
 {
   "name": "posecode-parser",
-  "version": "0.3.0",
+  "version": "0.4.1",
   "description": "Parse the .posecode kinematic motion DSL into a validated, ROM-clamped intermediate representation.",
   "license": "Apache-2.0",
   "type": "module",
@@ -17,10 +17,10 @@
     "posecode-parser": "dist/cli.js"
   },
   "dependencies": {
-    "zod": "^3.24.1"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@types/node": "^22.10.2"
+    "@types/node": "^26.1.1"
   },
   "repository": {
     "type": "git",

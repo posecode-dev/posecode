@@ -1,5 +1,30 @@
 # posecode-mcp
 
+## 0.4.1
+
+### Patch Changes
+
+- 8ae27ad: Bump zod to ^4.4.3. Update the language-server tooling (vscode-languageserver / vscode-languageclient) to ^10.1.0 and adjust the LSP entrypoint import to the package's v10 subpath export.
+- Updated dependencies [8ae27ad]
+  - posecode-parser@0.4.1
+  - posecode-share@0.4.1
+
+## 0.4.0
+
+### Patch Changes
+
+- 645f0aa: Add scoped, ROM-checked custom start-pose overrides with deterministic loop resets, Posecode language/IR v0.3 metadata, and updated authoring guidance.
+
+  Expose solved-frame grounding and residual self-collision diagnostics, plus a metric floor guide with facing, authored travel, and loop-reset paths.
+
+  Keep the renderer peer range compatible with the parser's new start-pose IR.
+
+  Keep the MCP initialization identity synchronized with its published package version.
+
+- Updated dependencies [645f0aa]
+  - posecode-parser@0.4.0
+  - posecode-share@0.4.0
+
 ## 0.3.0
 
 ### Minor Changes
