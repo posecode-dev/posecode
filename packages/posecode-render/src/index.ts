@@ -348,6 +348,13 @@ export function createViewer(
   const floorGuideEnabled = opts.floorGuide ?? true;
   let floorGuideData: FloorGuideData | null = null;
   let floorGuide: FloorGuideScene | null = null;
+  // True for a GAIT clip: it authors root travel AND alternates its floor
+  // foot-pins between both feet (box-step, grapevine, chassé, walk). There a
+  // floor foot-pin is a STANCE foot — the body travels to its authored waypoint
+  // while the leg reaches back to keep the foot planted. A same-foot travel pin
+  // (a forward lunge's weight-shift) or a vertical support (pull-up bar, box)
+  // still translates the whole body onto its anchor.
+  let clipIsGait = false;
   // Finger bones the loaded document explicitly poses (make-a-fist, finger-spell,
   // hand-wave): the L4.1 resting-hand curl leaves these alone.
   let authoredFingers = new Set<string>();
@@ -570,6 +577,9 @@ export function createViewer(
     prepareGripFrames(mannequin, dipBarPins);
     const delta = new THREE.Vector3();
     let n = 0;
+    // Stance-foot plants solved by leg IK after the body reaches its waypoint,
+    // rather than by translating the body onto the anchor (which cancels travel).
+    const stancePlants: { effector: string; anchor: THREE.Vector3 }[] = [];
     for (const p of pins) {
       const effectorBone = effectorBoneId(p.effector);
       const effector = mannequin.bones.get(effectorBone);
@@ -587,12 +597,22 @@ export function createViewer(
         anchor = resolveReachTarget(p.anchor, p.effector);
       }
       if (!anchor) continue;
+      if (clipIsGait && p.anchor === "floor" && effectorBone.startsWith("ankle_")) {
+        stancePlants.push({ effector: p.effector, anchor });
+        continue;
+      }
       delta.add(anchor.sub(effector.getWorldPosition(new THREE.Vector3())));
       n++;
     }
     if (n > 0) {
       mannequin.root.position.add(delta.multiplyScalar(1 / n));
       mannequin.root.updateMatrixWorld(true);
+    }
+    // Keep each stance foot on its plant while the travelled root stays put: the
+    // leg reaches back to the fixed floor anchor, so the figure steps across the
+    // floor instead of marching in place.
+    for (const plant of stancePlants) {
+      solveReachToPoint(mannequin, plant.effector, "floor", plant.anchor, 1);
     }
     alignGripFrames(mannequin, dipBarPins);
   }
@@ -935,6 +955,17 @@ export function createViewer(
       lastIR = ir;
       timeline = buildTimeline(ir);
       floorGuideData = buildFloorGuideData(ir, timeline);
+      const pinnedFootSides = new Set<string>();
+      for (const phase of ir.phases) {
+        for (const pin of phase.pins ?? []) {
+          if (pin.anchor !== "floor") continue;
+          const bone = effectorBoneId(pin.effector);
+          if (bone.startsWith("ankle_")) {
+            pinnedFootSides.add(bone.endsWith("_left") ? "left" : "right");
+          }
+        }
+      }
+      clipIsGait = floorGuideData.hasTravel && pinnedFootSides.size >= 2;
       if (floorGuide) {
         scene.remove(floorGuide.group);
         floorGuide.dispose();
