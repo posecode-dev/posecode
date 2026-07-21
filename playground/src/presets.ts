@@ -216,7 +216,7 @@ export const PRESETS: Preset[] = [
   { id: "pinch-grip", label: "Pinch grip", domain: "Hand therapy", bodyPart: "Hands", target: "Forearms", equipment: "Body weight", difficulty: "Beginner", status: "experimental", source: pinchGrip },
   { id: "finger-spell", label: "Finger-spelling (approx.)", domain: "Sign language", bodyPart: "Hands", target: "Forearms", equipment: "Body weight", difficulty: "Beginner", status: "experimental", source: fingerSpell },
   { id: "hand-wave", label: "Hand wave", domain: "Sign language", bodyPart: "Hands", target: "Forearms", equipment: "Body weight", difficulty: "Beginner", status: "experimental", source: handWave },
-  { id: "pirouette", label: "Pirouette (full turn)", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Intermediate", status: "ready", source: pirouette },
+  { id: "pirouette", label: "Pirouette (full turn)", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Intermediate", status: "experimental", source: pirouette },
   { id: "box-step", label: "Box step (travels)", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: boxStep },
   { id: "grapevine", label: "Grapevine (travels)", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: grapevine },
   { id: "waltz-box", label: "Waltz box step", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: waltzBox },

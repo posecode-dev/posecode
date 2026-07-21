@@ -49,6 +49,15 @@ export interface MovementChecks {
 /** Maximum positional error for a declared reach/pin/grip contact. */
 export const CONTACT_ERROR_MAX = REACH_TOLERANCE;
 
+/**
+ * Foot-to-floor contact tolerance while the clip travels. A stance foot's
+ * contact point legitimately shifts a few centimetres as the body passes over
+ * it and rolls toward push-off (the ankle-only leg chain cannot pivot onto the
+ * toe to hold the ball of the foot exactly). Static contacts keep the strict
+ * CONTACT_ERROR_MAX; only planted/landing feet in a locomotion clip relax.
+ */
+export const LOCOMOTION_FOOT_CONTACT_MAX = 0.06;
+
 /** Find a phase by name; throws a failing outcome path if missing. */
 function phase(result: ProbeResult, name: string): PhasePose | null {
   return result.phases.find((p) => p.name === name) ?? null;
@@ -131,6 +140,13 @@ export function genericChecks(result: ProbeResult): CheckOutcome[] {
         : "no movement phases to evaluate",
     },
   ];
+  // A clip that authors root travel is locomotion: its planted/landing feet
+  // push off and roll, so foot-to-floor contacts use the looser locomotion
+  // tolerance instead of the strict static-contact bar.
+  const clipTravels = result.phases.some(
+    (p) => Math.hypot(p.rootOffset[0], p.rootOffset[2]) > 0.02,
+  );
+
   for (const p of result.phases) {
     // The one universal contact invariant: nothing sinks through the floor.
     // (A stricter "declared effector is planted" check isn't portable across
@@ -168,10 +184,14 @@ export function genericChecks(result: ProbeResult): CheckOutcome[] {
         });
         return;
       }
+      const footFloorContact =
+        contact.target === "floor" && contact.effectorBone.startsWith("ankle_");
+      const tolerance =
+        clipTravels && footFloorContact ? LOCOMOTION_FOOT_CONTACT_MAX : CONTACT_ERROR_MAX;
       out.push({
         id: `contact-position:${suffix}`,
-        pass: contact.error <= CONTACT_ERROR_MAX,
-        detail: `${contact.error.toFixed(3)}m residual (want ≤ ${CONTACT_ERROR_MAX.toFixed(3)}m)`,
+        pass: contact.error <= tolerance,
+        detail: `${contact.error.toFixed(3)}m residual (want ≤ ${tolerance.toFixed(3)}m)`,
       });
     });
 

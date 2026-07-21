@@ -1,4 +1,5 @@
 /** Clip-wide aggregation of renderer constraint diagnostics. */
+import * as THREE from "three";
 import {
   measureFootContact,
   measureSelfCollisions,
@@ -18,6 +19,27 @@ export const DEFAULT_DIAGNOSTIC_SAMPLE_RATE_HZ = 12;
 export const PLANTED_FOOT_DRIFT_MAX = 0.03;
 /** Small proxy/solver allowance while a raised heel pivots on its toe edge. */
 export const TIPTOE_FOOT_DRIFT_MAX = 0.04;
+/**
+ * A flat sole is only *expected* when the shin is near-vertical. Beyond this the
+ * foot rests on its ball with the shin laid down (plank, mountain-climber,
+ * knee-drive), so a steep sole and a lifted heel are the correct pose — not a
+ * grounding artifact. Real flat-foot poses (squat/deadlift/landing/steps) keep
+ * the shin well under this, so their genuine heel-lift stays flagged.
+ */
+export const FLAT_SOLE_SHIN_MAX_DEG = 55;
+
+/** Angle (degrees) of the shin (ankle→knee) away from world-up. */
+function shinFromVerticalDeg(m: Mannequin, side: "left" | "right"): number | null {
+  const knee = m.bones.get(`knee_${side}`);
+  const ankle = m.bones.get(`ankle_${side}`);
+  if (!knee || !ankle) return null;
+  const shin = knee
+    .getWorldPosition(new THREE.Vector3())
+    .sub(ankle.getWorldPosition(new THREE.Vector3()));
+  const length = shin.length();
+  if (length < 1e-6) return null;
+  return (Math.acos(THREE.MathUtils.clamp(shin.y / length, -1, 1)) * 180) / Math.PI;
+}
 
 export interface DiagnosticLocation {
   timeSec: number;
@@ -198,7 +220,15 @@ export function createClipDiagnosticsCollector(sampleRateHz: number): ClipDiagno
         state.worstToeAbs = Math.abs(foot.toeHeight);
         state.worstToe = location;
       }
-      if (foot.plantigrade) {
+      // Flat-sole grounding checks only apply when a flat foot is expected: the
+      // ankle is not plantarflexed AND the shin stands near-vertical. A foot on
+      // its ball with the shin laid down (plank, knee-drive) legitimately shows
+      // a steep sole and lifted heel, so measuring it as a failed flat plant
+      // fabricates warnings.
+      const shinDeg = shinFromVerticalDeg(m, side);
+      const expectedFlat =
+        foot.plantigrade && (shinDeg === null || shinDeg <= FLAT_SOLE_SHIN_MAX_DEG);
+      if (expectedFlat) {
         state.plantigradeSamples++;
         state.minHeelHeightMeters = Math.min(state.minHeelHeightMeters ?? Infinity, foot.heelHeight);
         state.maxHeelHeightMeters = Math.max(state.maxHeelHeightMeters ?? -Infinity, foot.heelHeight);

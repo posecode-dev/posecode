@@ -8,7 +8,7 @@ posecode stretch "Waltz box step"
     ankle_right: plantarflex 18
     shoulders: abduct 55
     elbows: flex 20
-    travel: 0 0.32
+    travel: 0 0.2
     pin: foot_left floor
     cue "Step forward onto the right foot and begin the waltz rise"
 
@@ -19,7 +19,7 @@ posecode stretch "Waltz box step"
     hip_left: abduct 22
     knee_left: flex 16
     ankles: plantarflex 22
-    travel: -0.32 0.32
+    travel: -0.2 0.2
     pin: foot_right floor
     cue "Step left to the side and continue rising through count two"
 
@@ -27,7 +27,7 @@ posecode stretch "Waltz box step"
     hip_left: abduct 0
     knee_left: flex 0
     ankles: plantarflex 0
-    travel: -0.32 0.32
+    travel: -0.2 0.2
     ground-lock: feet
     cue "Close the right foot to the left and lower softly through count three"
 
@@ -35,7 +35,7 @@ posecode stretch "Waltz box step"
     hip_left: extend 18
     knee_left: flex 24
     ankle_left: plantarflex 18
-    travel: -0.32 0
+    travel: -0.2 0
     pin: foot_right floor
     cue "Step back onto the left foot and begin the second rise"
 

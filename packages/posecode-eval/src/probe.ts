@@ -254,6 +254,26 @@ export function probeMovement(
 
   const m = buildMannequin(undefined, proportions);
   const tl = buildTimeline(ir);
+  // Gait clip: authors root travel AND alternates its floor foot-pins between
+  // both feet. There a floor foot-pin is a stance foot (body travels, leg
+  // reaches back to the plant) rather than a vertical support / weight-shift
+  // that translates the whole body onto its anchor. Mirrors Viewer.load().
+  const clipHasTravel = ir.phases.some(
+    (phase) =>
+      phase.travel !== undefined &&
+      (Math.abs(phase.travel.x) > EPS || Math.abs(phase.travel.z) > EPS),
+  );
+  const pinnedFootSides = new Set<string>();
+  for (const phase of ir.phases) {
+    for (const pin of phase.pins) {
+      if (pin.anchor !== "floor") continue;
+      const bone = effectorBoneId(pin.effector);
+      if (bone.startsWith("ankle_")) {
+        pinnedFootSides.add(bone.endsWith("_left") ? "left" : "right");
+      }
+    }
+  }
+  const clipIsGait = clipHasTravel && pinnedFootSides.size >= 2;
   const propScene = buildProps(ir.props);
   const authoredFingers = new Set(tl.bonesUsed.filter((id) =>
     /^(thumb|index|middle|ring|pinky)_(left|right)$/.test(id),
@@ -435,6 +455,7 @@ export function probeMovement(
     prepareGripFrames(m, dipBarPins);
     const contacts: PendingContact[] = [];
     const solvable: Array<{ contact: PendingContact; effector: THREE.Object3D; point: THREE.Vector3 }> = [];
+    const stancePlants: Array<{ effector: string; point: THREE.Vector3 }> = [];
     for (const pin of pins) {
       const effectorBone = getEffectorId(pin.effector);
       const effector = m.bones.get(effectorBone);
@@ -465,7 +486,14 @@ export function probeMovement(
         targetRef: resolved.ref,
       };
       contacts.push(contact);
-      solvable.push({ contact, effector, point: resolved.point });
+      // In a locomotion clip a planted foot is a stance foot: solve it by leg IK
+      // after the body has travelled, not by translating the body onto the
+      // anchor (which would cancel the authored travel). Mirrors Viewer.frame().
+      if (clipIsGait && pin.anchor === "floor" && effectorBone.startsWith("ankle_")) {
+        stancePlants.push({ effector: pin.effector, point: resolved.point });
+      } else {
+        solvable.push({ contact, effector, point: resolved.point });
+      }
     }
     if (solvable.length > 0) {
       const delta = new THREE.Vector3();
@@ -474,6 +502,9 @@ export function probeMovement(
       }
       m.root.position.add(delta.multiplyScalar(1 / solvable.length));
       m.root.updateMatrixWorld(true);
+    }
+    for (const plant of stancePlants) {
+      solveReachToPoint(m, plant.effector, "floor", plant.point, 1);
     }
     alignGripFrames(m, dipBarPins);
     return contacts;
