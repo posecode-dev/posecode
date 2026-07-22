@@ -551,6 +551,36 @@ calibrated rig.
   (e.g. `reach: hand_left floor`) export the authored pose rather than the
   solved one. See [issue #63](https://github.com/posecode-dev/posecode/issues/63).
 
+### Exporting motion (glTF / GLB)
+
+For web animation pipelines, `posecode-render` can export the rig **and** a
+baked animation clip as a glTF/GLB asset. In the playground, use **Download
+glTF**; programmatically:
+
+```ts
+import { parse } from "posecode-parser";
+import { exportGLTF } from "posecode-render";
+
+const { ir } = parse(source);
+const glb = await exportGLTF(ir!);            // GLB ArrayBuffer (default)
+const gltf = await exportGLTF(ir!, { binary: false }); // glTF JSON object
+```
+
+The result loads with Three.js [`GLTFLoader`](https://threejs.org/docs/#GLTFLoader.load),
+and the clip plays on the included rig:
+
+```ts
+const gltf = await new GLTFLoader().loadAsync(url);
+const mixer = new THREE.AnimationMixer(gltf.scene);
+mixer.clipAction(gltf.animations[0]).play();
+```
+
+- Joint nodes are named by Posecode bone id; the animated root is `posecode_root`.
+- **Limitations:** exports the procedural mannequin rig, not a humanoid/Mixamo
+  skeleton, so there is **no retargeting** onto external rigs yet, and (as with
+  BVH) it bakes the authored motion, not the contact/IK-solved motion. See
+  [issue #90](https://github.com/posecode-dev/posecode/issues/90).
+
 ---
 
 ## How Posecode Stays Honest

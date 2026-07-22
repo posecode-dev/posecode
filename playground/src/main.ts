@@ -54,6 +54,7 @@ const floorGuideReset = $<HTMLSpanElement>("floor-guide-reset");
 const copyBtn = $<HTMLButtonElement>("copy-prompt");
 const shareBtn = $<HTMLButtonElement>("share");
 const downloadBvhBtn = $<HTMLButtonElement>("download-bvh");
+const downloadGltfBtn = $<HTMLButtonElement>("download-gltf");
 const tabEditor = $<HTMLButtonElement>("tab-editor");
 const tabViewer = $<HTMLButtonElement>("tab-viewer");
 
@@ -684,6 +685,36 @@ async function downloadBvh(): Promise<void> {
   }
 }
 downloadBvhBtn.addEventListener("click", downloadBvh);
+
+// --- glTF / GLB export ---
+// Bake the current movement into a GLB (rig + animation clip) and download it.
+async function downloadGltf(): Promise<void> {
+  if (!editorApi) return;
+  const source = editorApi.getValue();
+  const { ir, errors } = parse(source);
+  if (!ir || errors.length > 0) {
+    flash(downloadGltfBtn, "Fix errors first", "error");
+    return;
+  }
+  flash(downloadGltfBtn, "Exporting…", "pending", 0);
+  try {
+    const { exportGLTF } = await import("posecode-render");
+    const glb = (await exportGLTF(ir, { binary: true })) as ArrayBuffer;
+    const blob = new Blob([glb], { type: "model/gltf-binary" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${slugifyName(ir.name)}.glb`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    flash(downloadGltfBtn, "Downloaded ✓", "success");
+  } catch {
+    flash(downloadGltfBtn, "Export failed", "error");
+  }
+}
+downloadGltfBtn.addEventListener("click", downloadGltf);
 
 // --- Slide-over panels (how-to, movement library) sharing one scrim ---
 const howto = $<HTMLElement>("howto");
