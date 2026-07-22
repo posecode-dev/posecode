@@ -409,6 +409,24 @@ npm run build
 
 ---
 
+### Editor support
+
+A VS Code extension provides syntax highlighting, ROM diagnostics, and
+completion for `.posecode` files — see
+[`editors/vscode`](editors/vscode/README.md). Until it is published, you can
+get basic highlighting immediately by associating `.posecode` files with
+Markdown:
+
+```json
+"files.associations": {
+  "*.posecode": "markdown"
+}
+```
+
+See the [editor guide](editors/vscode/README.md#file-association-before-the-extension-is-installed)
+for VS Code, Cursor, Sublime Text, and Neovim instructions.
+
+---
 
 ## MCP Server
 
