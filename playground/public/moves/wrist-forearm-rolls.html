@@ -3,16 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chest opener: Posecode Movement Example | Posecode</title>
+    <title>Wrist &amp; forearm rolls: Posecode Movement Example | Posecode</title>
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="description" content="Chest opener is a beginner-level desk &amp; posture Posecode example with 2 inspectable phases and a link to live 3D playback." />
-    <link rel="canonical" href="https://www.posecode.org/moves/chest-opener.html" />
+    <meta name="description" content="Wrist &amp; forearm rolls is a beginner-level desk &amp; posture Posecode example with 4 inspectable phases and a link to live 3D playback." />
+    <link rel="canonical" href="https://www.posecode.org/moves/wrist-forearm-rolls.html" />
     <meta name="theme-color" content="#0a0d12" />
-    <meta property="og:title" content="Chest opener: Posecode Movement Example | Posecode" />
-    <meta property="og:description" content="Chest opener is a beginner-level desk &amp; posture Posecode example with 2 inspectable phases and a link to live 3D playback." />
+    <meta property="og:title" content="Wrist &amp; forearm rolls: Posecode Movement Example | Posecode" />
+    <meta property="og:description" content="Wrist &amp; forearm rolls is a beginner-level desk &amp; posture Posecode example with 4 inspectable phases and a link to live 3D playback." />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://www.posecode.org/moves/chest-opener.html" />
+    <meta property="og:url" content="https://www.posecode.org/moves/wrist-forearm-rolls.html" />
     <meta property="og:site_name" content="Posecode" />
     <meta property="og:image" content="https://www.posecode.org/og.png" />
     <meta name="twitter:image" content="https://www.posecode.org/og.png" />
@@ -97,7 +97,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 @media(max-width:600px){.wrap{padding:0 18px}}
 </style>
     <link rel="stylesheet" href="/content-theme.css" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Chest opener: a Posecode movement example","description":"Chest opener is a beginner-level desk & posture Posecode example with 2 inspectable phases and a link to live 3D playback."}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Wrist & forearm rolls: a Posecode movement example","description":"Wrist & forearm rolls is a beginner-level desk & posture Posecode example with 4 inspectable phases and a link to live 3D playback."}</script>
     <script>
       window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
     </script>
@@ -119,60 +119,82 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     </header>
     <main class="wrap">
       
-      <p class="eyebrow">Desk &amp; posture · Chest</p>
-      <h1>Chest opener</h1>
-      <p class="meta-line"><b>Target</b> Pectorals &nbsp;·&nbsp; <b>Equipment</b> Body weight
+      <p class="eyebrow">Desk &amp; posture · Forearms</p>
+      <h1>Wrist &amp; forearm rolls</h1>
+      <p class="meta-line"><b>Target</b> Forearm flexors &nbsp;·&nbsp; <b>Equipment</b> Body weight
         &nbsp;·&nbsp; <b>Level</b> Beginner &nbsp;·&nbsp; <b>Reps</b> 4</p>
-      <p>Chest opener is a beginner-level desk &amp; posture movement targeting the
-        pectorals, written in <a href="/">Posecode</a>, a small open-source language
+      <p>Wrist &amp; forearm rolls is a beginner-level desk &amp; posture movement targeting the
+        forearm flexors, written in <a href="/">Posecode</a>, a small open-source language
         that capable language models can use to describe human movement as text.
         Authored joint targets and reach-IK solves are constrained to Posecode's configured
         per-axis bounds. Those bounds constrain the visualization, but they do not certify
         that a complete movement is safe or clinically correct.
         This page documents a code example; it is not exercise instruction.</p>
 
-      <a class="btn" href="/play/chest-opener">▶ Open Chest opener in the playground →</a>
+      <a class="btn" href="/play/wrist-forearm-rolls">▶ Open Wrist &amp; forearm rolls in the playground →</a>
 
       <h2>Movement phases</h2>
       <p>Phase cues are display-only coaching text. The executable joint and
         contact directives in the source below determine the animation.</p>
       <ol class="steps">
 <li>
-          <span class="step-name">Open<span class="step-dur">3s · flow</span></span>
-          <span class="step-cue">Reach the arms back and lift the chest: open the front line</span>
+          <span class="step-name">Arms out, palms down<span class="step-dur">1.6s · flow</span></span>
+          <span class="step-cue">Extend the arms forward at shoulder height with the palms facing down</span>
         </li>
 <li>
-          <span class="step-name">Release<span class="step-dur">2.5s · settle</span></span>
-          <span class="step-cue">Return to neutral, ribs stacked over the hips</span>
+          <span class="step-name">Curl the wrists down<span class="step-dur">1.4s · flow</span></span>
+          <span class="step-cue">Roll the knuckles down and under, bending at the wrists</span>
+        </li>
+<li>
+          <span class="step-name">Turn palms up, lift wrists<span class="step-dur">1.8s · flow</span></span>
+          <span class="step-cue">Rotate the forearms so the palms face up, then lift the wrists</span>
+        </li>
+<li>
+          <span class="step-name">Reset<span class="step-dur">1.4s · settle</span></span>
+          <span class="step-cue">Lower the arms and shake out the hands</span>
         </li>
       </ol>
 
       <h2>The .posecode source</h2>
       <p>This is the exact text used by the linked playground animation: phases and joint
         angles, not 3D transforms.</p>
-      <pre class="code-block"><code>posecode stretch &quot;Chest opener&quot;
+      <pre class="code-block"><code>posecode stretch &quot;Standing wrist &amp; forearm rolls&quot;
   rig humanoid
   pose start = standing
 
-  step &quot;Open&quot; 3s flow:
-    shoulders: extend 40
-    chest: extend 18
-    spine: extend 12
+  step &quot;Arms out, palms down&quot; 1.6s flow:
+    shoulders: flex 70
+    elbows: flex 15
+    forearms: pronate 80
+    wrists: flex 0
     ground-lock: feet
-    cue &quot;Reach the arms back and lift the chest: open the front line&quot;
+    cue &quot;Extend the arms forward at shoulder height with the palms facing down&quot;
 
-  step &quot;Release&quot; 2.5s settle:
-    shoulders: extend 0
-    chest: flex 0
-    spine: flex 0
+  step &quot;Curl the wrists down&quot; 1.4s flow:
+    wrists: flex 60
+    forearms: pronate 80
     ground-lock: feet
-    cue &quot;Return to neutral, ribs stacked over the hips&quot;
+    cue &quot;Roll the knuckles down and under, bending at the wrists&quot;
+
+  step &quot;Turn palms up, lift wrists&quot; 1.8s flow:
+    forearms: supinate 80
+    wrists: extend 55
+    ground-lock: feet
+    cue &quot;Rotate the forearms so the palms face up, then lift the wrists&quot;
+
+  step &quot;Reset&quot; 1.4s settle:
+    shoulders: flex 0
+    elbows: flex 0
+    forearms: supinate 0
+    wrists: extend 0
+    ground-lock: feet
+    cue &quot;Lower the arms and shake out the hands&quot;
 
   repeat 4
 </code></pre>
 
       <h2>More desk &amp; posture movements</h2>
-         <div class="chip-list"><a href="/moves/posture.html">Desk posture reset</a><a href="/moves/twist.html">Standing spinal twist</a><a href="/moves/neck-side-stretch.html">Neck side stretch</a><a href="/moves/seated-torso-twist.html">Seated torso twist</a><a href="/moves/shoulder-blade-retraction.html">Shoulder blade retractions</a><a href="/moves/wrist-forearm-rolls.html">Wrist &amp; forearm rolls</a></div>
+         <div class="chip-list"><a href="/moves/chest-opener.html">Chest opener</a><a href="/moves/posture.html">Desk posture reset</a><a href="/moves/twist.html">Standing spinal twist</a><a href="/moves/neck-side-stretch.html">Neck side stretch</a><a href="/moves/seated-torso-twist.html">Seated torso twist</a><a href="/moves/shoulder-blade-retraction.html">Shoulder blade retractions</a></div>
     </main>
     <footer class="site-footer">
       <div class="wrap">
