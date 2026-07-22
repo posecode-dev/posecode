@@ -291,6 +291,7 @@ function recompile(): void {
     viewer.load(ir);
     updateFloorGuideKey();
     viewer.setLoop(loop.checked);
+    viewer.setSpeed(Number(speed.value));
     viewer.play();
     setPlaying(true);
     const tl = viewer.getTimeline();
@@ -543,7 +544,31 @@ scrub.addEventListener("change", () => {
   scrubbing = false;
 });
 loop.addEventListener("change", () => viewer?.setLoop(loop.checked));
-speed.addEventListener("change", () => viewer?.setSpeed(Number(speed.value)));
+
+// Playback speed persists across reloads so an author who prefers slow-motion
+// scrubbing does not have to re-select it every visit.
+const SPEED_STORAGE_KEY = "posecode.playbackSpeed";
+function restoreSpeed() {
+  try {
+    const saved = localStorage.getItem(SPEED_STORAGE_KEY);
+    // Only honour a saved value the current <select> actually offers, so a
+    // dropped option can never leave the control on a phantom value.
+    if (saved && [...speed.options].some((o) => o.value === saved)) {
+      speed.value = saved;
+    }
+  } catch {
+    // localStorage may be unavailable (private mode, disabled cookies).
+  }
+}
+restoreSpeed();
+speed.addEventListener("change", () => {
+  viewer?.setSpeed(Number(speed.value));
+  try {
+    localStorage.setItem(SPEED_STORAGE_KEY, speed.value);
+  } catch {
+    // Non-fatal: persistence is a convenience, not a requirement.
+  }
+});
 
 // --- Button label feedback ---
 // Swap a button's label (the inner `.lbl` span when present, else the button
