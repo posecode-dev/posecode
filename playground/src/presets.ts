@@ -127,11 +127,11 @@ export interface Preset {
 // follows as the flagship "communicate the movement in your head" demo.
 export const PRESETS: Preset[] = [
   { id: "squat", label: "Body-weight squat", domain: "Fitness", bodyPart: "Upper legs", target: "Quadriceps", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: squat },
-  { id: "superhero-landing", label: "Superhero three-point landing", domain: "Performance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Advanced", status: "experimental", source: superheroLanding },
+  { id: "superhero-landing", label: "Superhero three-point landing", domain: "Performance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Advanced", status: "ready", source: superheroLanding },
   { id: "dance-phrase", label: "Dance phrase (8-count)", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Intermediate", status: "experimental", source: dancePhrase },
   // Keep one ready Dance entry here so first-seen domain grouping places Dance
   // immediately after Performance even when experimental previews are hidden.
-  { id: "demi-plie", label: "Demi-plié", domain: "Dance", bodyPart: "Upper legs", target: "Quadriceps", equipment: "Body weight", difficulty: "Beginner", status: "experimental", source: demiPlie },
+  { id: "demi-plie", label: "Demi-plié", domain: "Dance", bodyPart: "Upper legs", target: "Quadriceps", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: demiPlie },
   { id: "deadlift", label: "Deadlift (hip hinge)", domain: "Fitness", bodyPart: "Back", target: "Hamstrings & glutes", equipment: "Body weight", difficulty: "Intermediate", status: "ready", source: deadlift },
   { id: "shoulder-abduction", label: "Shoulder abduction (ROM)", domain: "Education", bodyPart: "Shoulders", target: "Deltoids", equipment: "Body weight", difficulty: "Beginner", status: "experimental", source: shoulderAbduction },
   { id: "front-kick", label: "Front kick", domain: "Martial arts", bodyPart: "Upper legs", target: "Hip flexors", equipment: "Body weight", difficulty: "Intermediate", status: "ready", source: frontKick },
@@ -145,14 +145,14 @@ export const PRESETS: Preset[] = [
   { id: "bicycle-crunch", label: "Bicycle crunch", domain: "Fitness", bodyPart: "Core", target: "Obliques", equipment: "Body weight", difficulty: "Intermediate", status: "experimental", source: bicycleCrunch },
   { id: "supine-leg-raise", label: "Lying leg raise", domain: "Fitness", bodyPart: "Core", target: "Abdominals", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: supineLegRaise },
   { id: "superman", label: "Superman", domain: "Fitness", bodyPart: "Back", target: "Spinal erectors", equipment: "Body weight", difficulty: "Beginner", status: "experimental", source: superman },
-  { id: "forward-lunge", label: "Forward lunge", domain: "Fitness", bodyPart: "Upper legs", target: "Quadriceps", equipment: "Body weight", difficulty: "Intermediate", status: "experimental", source: forwardLunge },
-  { id: "calf-raise", label: "Single-leg calf raise", domain: "Fitness", bodyPart: "Lower legs", target: "Calves", equipment: "Body weight", difficulty: "Intermediate", status: "experimental", source: calfRaise },
-  { id: "jumping-jacks", label: "Jumping jacks", domain: "Warm-up", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", status: "experimental", source: jumpingJacks },
-  { id: "box-step-taps", label: "Box step taps", domain: "Warm-up", bodyPart: "Upper legs", target: "Hip flexors", equipment: "Box", difficulty: "Beginner", status: "experimental", source: boxStepTaps },
+  { id: "forward-lunge", label: "Forward lunge", domain: "Fitness", bodyPart: "Upper legs", target: "Quadriceps", equipment: "Body weight", difficulty: "Intermediate", status: "ready", source: forwardLunge },
+  { id: "calf-raise", label: "Single-leg calf raise", domain: "Fitness", bodyPart: "Lower legs", target: "Calves", equipment: "Body weight", difficulty: "Intermediate", status: "ready", source: calfRaise },
+  { id: "jumping-jacks", label: "Jumping jacks", domain: "Warm-up", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: jumpingJacks },
+  { id: "box-step-taps", label: "Box step taps", domain: "Warm-up", bodyPart: "Upper legs", target: "Hip flexors", equipment: "Box", difficulty: "Beginner", status: "ready", source: boxStepTaps },
   { id: "pull-up", label: "Pull-up", domain: "Fitness", bodyPart: "Back", target: "Lats", equipment: "Bar", difficulty: "Advanced", status: "experimental", source: pullUp },
-  { id: "step-up", label: "Step-up (box)", domain: "Functional", bodyPart: "Upper legs", target: "Quadriceps", equipment: "Box", difficulty: "Intermediate", status: "experimental", source: stepUp },
+  { id: "step-up", label: "Step-up (box)", domain: "Functional", bodyPart: "Upper legs", target: "Quadriceps", equipment: "Box", difficulty: "Intermediate", status: "ready", source: stepUp },
   { id: "triceps-dips", label: "Triceps dips (bars)", domain: "Fitness", bodyPart: "Upper arms", target: "Triceps", equipment: "Bars", difficulty: "Intermediate", status: "experimental", source: tricepsDips },
-  { id: "quad-stretch", label: "Standing quad stretch", domain: "Mobility", bodyPart: "Upper legs", target: "Quadriceps", equipment: "Body weight", difficulty: "Beginner", status: "experimental", source: quadStretch },
+  { id: "quad-stretch", label: "Standing quad stretch", domain: "Mobility", bodyPart: "Upper legs", target: "Quadriceps", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: quadStretch },
 
   // --- Education / anatomy: single-joint ROM demos ---
   { id: "hip-flexion", label: "Hip flexion (ROM)", domain: "Education", bodyPart: "Upper legs", target: "Hip flexors", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: hipFlexion },
@@ -176,7 +176,7 @@ export const PRESETS: Preset[] = [
 
   // --- Sports / martial arts / warm-up ---
   { id: "jab-cross", label: "Jab-cross", domain: "Martial arts", bodyPart: "Full body", target: "Shoulders", equipment: "Body weight", difficulty: "Intermediate", status: "ready", source: jabCross },
-  { id: "horse-stance", label: "Horse stance", domain: "Martial arts", bodyPart: "Upper legs", target: "Quadriceps", equipment: "Body weight", difficulty: "Intermediate", status: "experimental", source: horseStance },
+  { id: "horse-stance", label: "Horse stance", domain: "Martial arts", bodyPart: "Upper legs", target: "Quadriceps", equipment: "Body weight", difficulty: "Intermediate", status: "ready", source: horseStance },
   { id: "bow", label: "Standing bow (hinge)", domain: "Martial arts", bodyPart: "Back", target: "Hamstrings", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: bow },
   { id: "arm-circles", label: "Arm circles", domain: "Warm-up", bodyPart: "Shoulders", target: "Deltoids", equipment: "Body weight", difficulty: "Beginner", status: "experimental", source: armCircles },
   { id: "high-knee-march", label: "High-knee march", domain: "Warm-up", bodyPart: "Full body", target: "Hip flexors", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: highKneeMarch },
@@ -217,10 +217,10 @@ export const PRESETS: Preset[] = [
   { id: "finger-spell", label: "Finger-spelling (approx.)", domain: "Sign language", bodyPart: "Hands", target: "Forearms", equipment: "Body weight", difficulty: "Beginner", status: "experimental", source: fingerSpell },
   { id: "hand-wave", label: "Hand wave", domain: "Sign language", bodyPart: "Hands", target: "Forearms", equipment: "Body weight", difficulty: "Beginner", status: "experimental", source: handWave },
   { id: "pirouette", label: "Pirouette (full turn)", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Intermediate", status: "experimental", source: pirouette },
-  { id: "box-step", label: "Box step (travels)", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", status: "experimental", source: boxStep },
-  { id: "grapevine", label: "Grapevine (travels)", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", status: "experimental", source: grapevine },
-  { id: "waltz-box", label: "Waltz box step", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", status: "experimental", source: waltzBox },
-  { id: "chasse", label: "Chassé (travels)", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Intermediate", status: "experimental", source: chasse },
-  { id: "walk-cycle", label: "Walk & turn", domain: "Locomotion", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", status: "experimental", source: walkCycle },
+  { id: "box-step", label: "Box step (travels)", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: boxStep },
+  { id: "grapevine", label: "Grapevine (travels)", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: grapevine },
+  { id: "waltz-box", label: "Waltz box step", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: waltzBox },
+  { id: "chasse", label: "Chassé (travels)", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Intermediate", status: "ready", source: chasse },
+  { id: "walk-cycle", label: "Walk & turn", domain: "Locomotion", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: walkCycle },
   { id: "quarter-turns", label: "Quarter turns", domain: "Locomotion", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: quarterTurns },
 ];
