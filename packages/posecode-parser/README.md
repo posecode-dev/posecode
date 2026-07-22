@@ -23,7 +23,7 @@ const { ir, warnings, errors } = parse(`
     rig humanoid
     pose start = standing
 
-    step "Descend" 1.6s ease-in-out:
+    step "Descend" 1.6s settle:
       hips: flex 80
       knees: flex 95
       ground-lock: feet

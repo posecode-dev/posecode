@@ -29,13 +29,15 @@ prop       = "prop" WORD ;                              (* chair|wall|bar|box|di
 pose       = "pose" "start" "=" WORD ;                  (* neutral|standing|plank|supine|prone|seated *)
 clip       = "clip" STRING ;                            (* optional mocap clip; renderer may retarget & blend *)
 repeat     = "repeat" NUMBER ;
-step       = "step" STRING DURATION easing ":" { child } ;
-easing     = "linear" | "ease-in" | "ease-out" | "ease-in-out" ;
-child      = jointTarget | groundLock | reach | pin | turn | travel | cue ;
+step       = "step" STRING DURATION mode ":" { child } ;
+mode       = "flow" | "settle" | "drive" | "snap" | "linear" ;
+                                                        (* legacy: ease-in→drive, ease-out/ease-in-out→settle *)
+child      = jointTarget | groundLock | reach | pin | grip | turn | travel | cue ;
 jointTarget= joint ":" action [ NUMBER ] ;
 groundLock = "ground-lock" ":" effector { "," effector } ;
 reach      = "reach" ":" effector target ;             (* effector → world target via ROM-constrained IK *)
 pin        = "pin" ":" effector anchor ;               (* move the BODY so effector sits on anchor *)
+grip       = "grip" ":" effector anchor ;              (* hold a bar/rail: per-hand IK + finger wrap *)
 turn       = "turn" ":" NUMBER ;                       (* face this yaw (deg) by phase end *)
 travel     = "travel" ":" NUMBER NUMBER ;              (* move to this x z (metres) by phase end *)
 cue        = "cue" STRING ;
@@ -196,13 +198,20 @@ interface PosecodeIR {
   name: string;
   rig: string;              // "humanoid"
   startPose?: string;       // "plank" | "standing" | ...
+  props: string[];          // ["chair","bar"] — scene props declared with `prop`
+  clip?: string;            // optional mocap clip name declared with `clip`
   repeat: number;
   phases: {
     name: string;
     durationSec: number;
-    easing: "linear" | "ease-in" | "ease-out" | "ease-in-out";
+    easing: "flow" | "settle" | "drive" | "snap" | "linear"; // field kept named `easing`
     targets: { boneId: string; euler: { x: number; y: number; z: number } }[];
     groundLock: string[];   // ["hands","feet"]
+    reaches: { effector: string; target: string }[];  // reach-IK goals
+    pins: { effector: string; anchor: string }[];     // body-translation contacts
+    grips: { effector: string; anchor: string }[];    // bar grips (arm IK + finger wrap)
+    turnDeg?: number;       // absolute root yaw at phase end (standing only)
+    travel?: { x: number; z: number };                // absolute root X/Z at phase end
     cue?: string;
   }[];
 }

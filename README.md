@@ -197,7 +197,7 @@ A `.posecode` file describes movement as timed phases with targeted joint action
 
 | 1. Write `.posecode` | 2. Render the movement |
 | :--- | :--- |
-| **`posecode`** `exercise "Body-weight squat"`<br />**`rig`** `humanoid`<br />**`pose`** `start = standing`<br /><br />**`step`** `"Descend" 1.6s ease-in-out`:<br />&nbsp;&nbsp;`hips: flex 80`<br />&nbsp;&nbsp;`knees: flex 95`<br />&nbsp;&nbsp;`ankles: dorsiflex 14`<br />&nbsp;&nbsp;`ground-lock: feet`<br />&nbsp;&nbsp;`cue "Sit the hips back"`<br /><br />**`step`** `"Drive up" 1.2s ease-out`:<br />&nbsp;&nbsp;`hips: flex 0`<br />&nbsp;&nbsp;`knees: flex 0`<br />&nbsp;&nbsp;`ankles: dorsiflex 0`<br />&nbsp;&nbsp;`ground-lock: feet`<br /><br />**`repeat`** `8` | <img src="docs/media/squat.gif" width="340" alt="Squat animation" /> |
+| **`posecode`** `exercise "Body-weight squat"`<br />**`rig`** `humanoid`<br />**`pose`** `start = standing`<br /><br />**`step`** `"Descend" 1.6s settle`:<br />&nbsp;&nbsp;`hips: flex 80`<br />&nbsp;&nbsp;`knees: flex 95`<br />&nbsp;&nbsp;`ankles: dorsiflex 14`<br />&nbsp;&nbsp;`ground-lock: feet`<br />&nbsp;&nbsp;`cue "Sit the hips back"`<br /><br />**`step`** `"Drive up" 1.2s drive`:<br />&nbsp;&nbsp;`hips: flex 0`<br />&nbsp;&nbsp;`knees: flex 0`<br />&nbsp;&nbsp;`ankles: dorsiflex 0`<br />&nbsp;&nbsp;`ground-lock: feet`<br /><br />**`repeat`** `8` | <img src="docs/media/squat.gif" width="340" alt="Squat animation" /> |
 
 ---
 
@@ -420,7 +420,7 @@ exercise "Lateral raise"
 rig humanoid
 pose start = standing
 
-step "Raise" 1.4s ease-in-out:
+step "Raise" 1.4s settle:
   shoulders: abduct 90
 `;
 

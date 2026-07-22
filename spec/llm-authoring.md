@@ -17,15 +17,32 @@ posecode <kind> "<Name>"          # kind = exercise | stretch | posture
   rig humanoid
   prop <type>                  # optional: chair | wall | bar | box | dip-bars (repeatable)
   pose start = <pose>          # neutral | standing | plank | supine | prone | seated
-  step "<Phase name>" <Ns> <easing>:   # easing = linear | ease-in | ease-out | ease-in-out
+  step "<Phase name>" <Ns> <mode>:     # mode = flow | settle | drive | snap | linear
     <joint>: <action> <degrees>
     reach: <effector> <target> # optional: drive a hand/foot to a target via IK
+    grip: <effector> <anchor>  # optional: hold a bar/rail (per-hand IK + finger wrap)
     ground-lock: <effectors>   # hands and/or feet pinned to the floor this phase
     turn: <degrees>            # optional: face this yaw by phase end (standing only)
     travel: <x> <z>            # optional: move to this x z (metres) by phase end
     cue "<short coaching cue>"
   repeat <count>
 ```
+
+## Timing modes
+
+Each `step` arrives at its pose with one timing mode. The renderer flows motion
+through interior keyframes with a spherical spline, so pick the mode by how the
+phase should *arrive*:
+
+- `flow`: carry momentum through the pose without stopping (continuous motion,
+  reversals, mid-phrase beats). The default for anything that keeps moving.
+- `settle`: decelerate into a rest or hold (arrivals, the top of a rep, an end).
+- `drive`: accelerate out of a rest (a push-off, the concentric "up" of a rep).
+- `snap`: fast, decisive arrival (a strike, a stamp, a sharp accent).
+- `linear`: constant speed (rare; robotic — avoid for a moving phase).
+
+Legacy `ease-in / ease-out / ease-in-out` still parse but are deprecated; use the
+modes above.
 
 ## Joints
 
@@ -64,14 +81,14 @@ posecode exercise "Body-weight squat"
   rig humanoid
   pose start = standing
 
-  step "Descend" 1.6s ease-in-out:
+  step "Descend" 1.6s settle:
     hips: flex 80
     knees: flex 95
     ankles: dorsiflex 14
     ground-lock: feet
     cue "Sit the hips back, chest proud, knees track over the toes"
 
-  step "Drive up" 1.2s ease-out:
+  step "Drive up" 1.2s drive:
     hips: flex 0
     knees: flex 0
     ankles: dorsiflex 0
@@ -91,14 +108,14 @@ posecode exercise "Deadlift"
   rig humanoid
   pose start = standing
 
-  step "Lower" 1.8s ease-in-out:
+  step "Lower" 1.8s flow:
     pelvis: hinge 95
     knees: flex 25
     shoulders: flex 90
     ground-lock: feet
     cue "Hips back, flat back: let the arms hang to the bar"
 
-  step "Lift" 1.4s ease-out:
+  step "Lift" 1.4s settle:
     pelvis: hinge 0
     knees: flex 0
     shoulders: flex 0
@@ -120,7 +137,7 @@ posecode exercise "Deadlift"
   let `reach` finish the hand placement. Example, touch your toes:
 
   ```posecode
-  step "Fold" 2.5s ease-in-out:
+  step "Fold" 2.5s settle:
     pelvis: hinge 95
     knees: flex 12
     reach: hand_left ankle_left
@@ -155,8 +172,8 @@ The same grammar covers many fields. A few patterns that read well:
   leg stays planted.
 - **Desk / posture**: slow `stretch` documents with `ground-lock: feet`;
   contrast a "collapsed" phase with a "tall" reset.
-- **Sports / martial arts**: short, snappy phases (0.3–0.6s) with `ease-out`
-  on the strike; chamber → extend → re-chamber → return.
+- **Sports / martial arts**: short, snappy phases (0.3–0.6s) with `snap`
+  on the strike; chamber (`drive`) → extend (`snap`) → re-chamber → return.
 
 ### Dance / choreography
 

@@ -34,8 +34,8 @@ Output ONLY a \`.posecode\` document in a code block, no prose.
 \`\`\`
 posecode <kind> "<Name>"          # kind = exercise | stretch | posture
   rig humanoid
-  pose start = <pose>          # neutral | standing | plank
-  step "<Phase>" <Ns> <easing>:  # easing = linear | ease-in | ease-out | ease-in-out
+  pose start = <pose>          # neutral | standing | plank | supine | prone | seated
+  step "<Phase>" <Ns> <mode>:  # mode = flow | settle | drive | snap | linear
     <joint>: <action> <degrees>
     ground-lock: <effectors>   # hands and/or feet pinned to the floor
     cue "<short coaching cue>"

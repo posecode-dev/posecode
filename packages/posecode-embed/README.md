@@ -22,10 +22,10 @@ the movement as an animated 3D figure, right where a share link would have gone.
 posecode exercise "Lateral raise"
   rig humanoid
   pose start = standing
-  step "Raise" 1.4s ease-out:
+  step "Raise" 1.4s settle:
     shoulders: abduct 90
     elbows: flex 10
-  step "Lower" 1.6s ease-in:
+  step "Lower" 1.6s flow:
     shoulders: abduct 0
     elbows: flex 0
   repeat 8
