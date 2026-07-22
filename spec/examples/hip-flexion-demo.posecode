@@ -9,7 +9,8 @@ posecode stretch "Hip flexion (ROM demo)"
 
   step "Lower" 2.5s settle:
     hip_right: flex 0
-    ground-lock: feet
+    ground-lock: foot_left
+    reach: foot_right floor
     cue "Lower the leg back under the hip"
 
   repeat 4

@@ -9,7 +9,8 @@ posecode exercise "Standing hip abduction"
 
   step "Lower" 1.6s settle:
     hip_right: abduct 0
-    ground-lock: feet
+    ground-lock: foot_left
+    reach: foot_right floor
     cue "Lower the leg back to the midline"
 
   repeat 10
