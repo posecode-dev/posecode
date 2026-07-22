@@ -1607,19 +1607,12 @@ select:hover {
     grid-row: 2;
     min-height: 42px;
   }
-  /* Motion-export buttons: one full-width row, split into two equal halves so
-     they read as a balanced pair instead of hugging the left of the grid. */
+  /* Motion export (BVH / glTF) is a desktop-pipeline action — a downloaded
+     .bvh/.glb is only useful in Blender, a Three.js project, or a game engine,
+     none of which live on the phone. Hide it on mobile to keep the toolbar to
+     the two rows that matter (movement + primary CTA); it stays on desktop. */
   .tb-downloads {
-    display: flex;
-    grid-column: 1 / -1;
-    grid-row: 3;
-    gap: 6px;
-  }
-  .tb-downloads > .btn {
-    flex: 1 1 0;
-    min-width: 0;
-    min-height: 42px;
-    justify-content: center;
+    display: none;
   }
   .intro { padding-left: 12px; padding-right: 12px; }
   .layout { grid-template-columns: 1fr; }
