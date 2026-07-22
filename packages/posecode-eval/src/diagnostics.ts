@@ -214,21 +214,21 @@ export function createClipDiagnosticsCollector(sampleRateHz: number): ClipDiagno
       }
       state.supportedSamples++;
       const location = { timeSec: frame.timeSec, phaseName: frame.phaseName };
-      state.minToeHeightMeters = Math.min(state.minToeHeightMeters ?? Infinity, foot.toeHeight);
-      state.maxToeHeightMeters = Math.max(state.maxToeHeightMeters ?? -Infinity, foot.toeHeight);
-      if (Math.abs(foot.toeHeight) > state.worstToeAbs) {
-        state.worstToeAbs = Math.abs(foot.toeHeight);
-        state.worstToe = location;
-      }
-      // Flat-sole grounding checks only apply when a flat foot is expected: the
-      // ankle is not plantarflexed AND the shin stands near-vertical. A foot on
-      // its ball with the shin laid down (plank, knee-drive) legitimately shows
-      // a steep sole and lifted heel, so measuring it as a failed flat plant
-      // fabricates warnings.
+      // Flat-foot grounding checks (heel/toe height, sole tilt) only apply when a
+      // flat foot is expected: the ankle is not plantarflexed AND the shin stands
+      // near-vertical. A foot on its ball with the shin laid down (plank,
+      // knee-drive) legitimately shows a lifted heel/toe and a steep sole, so
+      // measuring it as a failed flat plant fabricates warnings.
       const shinDeg = shinFromVerticalDeg(m, side);
       const expectedFlat =
         foot.plantigrade && (shinDeg === null || shinDeg <= FLAT_SOLE_SHIN_MAX_DEG);
       if (expectedFlat) {
+        state.minToeHeightMeters = Math.min(state.minToeHeightMeters ?? Infinity, foot.toeHeight);
+        state.maxToeHeightMeters = Math.max(state.maxToeHeightMeters ?? -Infinity, foot.toeHeight);
+        if (Math.abs(foot.toeHeight) > state.worstToeAbs) {
+          state.worstToeAbs = Math.abs(foot.toeHeight);
+          state.worstToe = location;
+        }
         state.plantigradeSamples++;
         state.minHeelHeightMeters = Math.min(state.minHeelHeightMeters ?? Infinity, foot.heelHeight);
         state.maxHeelHeightMeters = Math.max(state.maxHeelHeightMeters ?? -Infinity, foot.heelHeight);
