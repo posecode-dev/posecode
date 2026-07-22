@@ -1,5 +1,12 @@
 # posecode-render
 
+## 0.4.2
+
+### Patch Changes
+
+- 094d453: Carry the body to its authored travel waypoints in gait moves. A floor foot-pin in a clip that travels and alternates both feet is now solved as a stance foot (leg IK to the fixed plant) while the travelled root stays put, instead of translating the whole body back onto the plant and cancelling the travel. Same-foot travel pins and vertical supports keep the body-translate behaviour.
+- 94399be: Add motion export. `exportBVH(ir, options?)` bakes a movement's authored joint motion and root travel/turn into a standard Biovision Hierarchy (`.bvh`) file, and `exportGLTF(ir, options?)` / `buildAnimatedRig(ir, options?)` export the mannequin rig plus a baked `AnimationClip` as a glTF/GLB asset that loads with Three.js `GLTFLoader`. Both sample the timeline headlessly (no WebGL) at a configurable frame rate and bake the full looped runtime; they export authored motion, not the contact/IK-solved motion.
+
 ## 0.4.1
 
 ## 0.4.0
