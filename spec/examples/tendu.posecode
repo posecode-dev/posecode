@@ -18,7 +18,8 @@ posecode exercise "Tendu"
     ankle_right: plantarflex 0
     shoulders: abduct 0
     elbows: flex 0
-    ground-lock: feet
+    ground-lock: foot_left
+    reach: foot_right floor
     cue "Draw the foot back to first position, heel down"
 
   repeat 4

@@ -14,7 +14,8 @@ posecode exercise "Box step taps"
     hip_right: flex 0
     knee_right: flex 0
     ankle_right: plantarflex 0
-    ground-lock: feet
+    ground-lock: foot_left
+    reach: foot_right floor
     cue "Return the right foot to the floor"
 
   step "Left tap" 0.6s settle:
@@ -28,7 +29,8 @@ posecode exercise "Box step taps"
     hip_left: flex 0
     knee_left: flex 0
     ankle_left: plantarflex 0
-    ground-lock: feet
+    ground-lock: foot_right
+    reach: foot_left floor
     cue "Back to the floor: keep a light, quick rhythm"
 
   repeat 6

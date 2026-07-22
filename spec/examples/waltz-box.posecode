@@ -28,7 +28,8 @@ posecode stretch "Waltz box step"
     knee_left: flex 0
     ankles: plantarflex 0
     travel: -0.2 0.2
-    ground-lock: feet
+    reach: foot_left floor
+    reach: foot_right floor
     cue "Close the right foot to the left and lower softly through count three"
 
   step "4 - left foot back" 0.95s flow:
@@ -57,7 +58,8 @@ posecode stretch "Waltz box step"
     shoulders: abduct 0
     elbows: flex 0
     travel: 0 0
-    ground-lock: feet
+    reach: foot_left floor
+    reach: foot_right floor
     cue "Close the left foot and lower with control to complete the six-count box"
 
   repeat 3

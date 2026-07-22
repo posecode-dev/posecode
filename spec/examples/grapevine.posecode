@@ -72,7 +72,8 @@ posecode exercise "Grapevine"
     hip_right: abduct 0
     shoulders: abduct 0
     travel: 0 0
-    ground-lock: feet
+    reach: foot_left floor
+    reach: foot_right floor
     cue "Close the left foot under the body and settle the phrase"
 
   repeat 3
