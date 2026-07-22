@@ -53,6 +53,8 @@ const floorGuideTravel = $<HTMLSpanElement>("floor-guide-travel");
 const floorGuideReset = $<HTMLSpanElement>("floor-guide-reset");
 const copyBtn = $<HTMLButtonElement>("copy-prompt");
 const shareBtn = $<HTMLButtonElement>("share");
+const downloadBvhBtn = $<HTMLButtonElement>("download-bvh");
+const downloadGltfBtn = $<HTMLButtonElement>("download-gltf");
 const tabEditor = $<HTMLButtonElement>("tab-editor");
 const tabViewer = $<HTMLButtonElement>("tab-viewer");
 
@@ -291,6 +293,7 @@ function recompile(): void {
     viewer.load(ir);
     updateFloorGuideKey();
     viewer.setLoop(loop.checked);
+    viewer.setSpeed(Number(speed.value));
     viewer.play();
     setPlaying(true);
     const tl = viewer.getTimeline();
@@ -543,7 +546,31 @@ scrub.addEventListener("change", () => {
   scrubbing = false;
 });
 loop.addEventListener("change", () => viewer?.setLoop(loop.checked));
-speed.addEventListener("change", () => viewer?.setSpeed(Number(speed.value)));
+
+// Playback speed persists across reloads so an author who prefers slow-motion
+// scrubbing does not have to re-select it every visit.
+const SPEED_STORAGE_KEY = "posecode.playbackSpeed";
+function restoreSpeed() {
+  try {
+    const saved = localStorage.getItem(SPEED_STORAGE_KEY);
+    // Only honour a saved value the current <select> actually offers, so a
+    // dropped option can never leave the control on a phantom value.
+    if (saved && [...speed.options].some((o) => o.value === saved)) {
+      speed.value = saved;
+    }
+  } catch {
+    // localStorage may be unavailable (private mode, disabled cookies).
+  }
+}
+restoreSpeed();
+speed.addEventListener("change", () => {
+  viewer?.setSpeed(Number(speed.value));
+  try {
+    localStorage.setItem(SPEED_STORAGE_KEY, speed.value);
+  } catch {
+    // Non-fatal: persistence is a convenience, not a requirement.
+  }
+});
 
 // --- Button label feedback ---
 // Swap a button's label (the inner `.lbl` span when present, else the button
@@ -617,6 +644,77 @@ async function shareLink(): Promise<void> {
   }
 }
 shareBtn.addEventListener("click", shareLink);
+
+// --- BVH export ---
+// Bake the current movement's authored motion into a .bvh file and hand it to
+// the browser as a download. The renderer chunk (Three.js) is loaded lazily on
+// demand, mirroring how the viewer itself boots, so this stays off the initial
+// critical path.
+function slugifyName(name: string): string {
+  const slug = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return slug || "movement";
+}
+
+async function downloadBvh(): Promise<void> {
+  if (!editorApi) return; // editor still loading
+  const source = editorApi.getValue();
+  const { ir, errors } = parse(source);
+  if (!ir || errors.length > 0) {
+    flash(downloadBvhBtn, "Fix errors first", "error");
+    return;
+  }
+  flash(downloadBvhBtn, "Exporting…", "pending", 0);
+  try {
+    const { exportBVH } = await import("posecode-render");
+    const bvh = exportBVH(ir);
+    const blob = new Blob([bvh], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${slugifyName(ir.name)}.bvh`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    flash(downloadBvhBtn, "Downloaded ✓", "success");
+  } catch {
+    flash(downloadBvhBtn, "Export failed", "error");
+  }
+}
+downloadBvhBtn.addEventListener("click", downloadBvh);
+
+// --- glTF / GLB export ---
+// Bake the current movement into a GLB (rig + animation clip) and download it.
+async function downloadGltf(): Promise<void> {
+  if (!editorApi) return;
+  const source = editorApi.getValue();
+  const { ir, errors } = parse(source);
+  if (!ir || errors.length > 0) {
+    flash(downloadGltfBtn, "Fix errors first", "error");
+    return;
+  }
+  flash(downloadGltfBtn, "Exporting…", "pending", 0);
+  try {
+    const { exportGLTF } = await import("posecode-render");
+    const glb = (await exportGLTF(ir, { binary: true })) as ArrayBuffer;
+    const blob = new Blob([glb], { type: "model/gltf-binary" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${slugifyName(ir.name)}.glb`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    flash(downloadGltfBtn, "Downloaded ✓", "success");
+  } catch {
+    flash(downloadGltfBtn, "Export failed", "error");
+  }
+}
+downloadGltfBtn.addEventListener("click", downloadGltf);
 
 // --- Slide-over panels (how-to, movement library) sharing one scrim ---
 const howto = $<HTMLElement>("howto");

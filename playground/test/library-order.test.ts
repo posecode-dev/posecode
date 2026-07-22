@@ -31,13 +31,20 @@ describe("movement library ordering", () => {
     expect(prioritizeFeaturedMovement(movements)).toEqual(movements);
   });
 
-  it("places the ready Dance category immediately after Performance", () => {
-    const readyDomains = [
-      ...new Set(PRESETS.filter((preset) => preset.status === "ready").map((preset) => preset.domain)),
-    ];
-    const performanceIndex = readyDomains.indexOf("Performance");
+  it("keeps the unreviewed ballet examples experimental", () => {
+    // The ballet examples are unreviewed and must not surface as launch-ready
+    // until a dancer signs off on turnout, naming (Relevé vs Elevé), and step
+    // mechanics (see #91 / #103). Ballroom steps (box step, grapevine, waltz
+    // box) are separate and remain ready, so the Dance domain still appears in
+    // the launch-ready gallery.
+    const byId = new Map(PRESETS.map((preset) => [preset.id, preset]));
+    for (const balletId of ["demi-plie", "releve", "tendu", "chasse"]) {
+      expect(byId.get(balletId)?.status).toBe("experimental");
+    }
 
-    expect(performanceIndex).toBeGreaterThanOrEqual(0);
-    expect(readyDomains[performanceIndex + 1]).toBe("Dance");
+    const readyDomains = new Set(
+      PRESETS.filter((preset) => preset.status === "ready").map((preset) => preset.domain),
+    );
+    expect(readyDomains.has("Dance")).toBe(true);
   });
 });
