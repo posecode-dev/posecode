@@ -67,7 +67,8 @@ posecode exercise "Chassé"
     shoulders: abduct 0
     elbows: flex 0
     travel: 0 0
-    ground-lock: feet
+    reach: foot_left floor
+    reach: foot_right floor
     cue "Close home over both feet and let the momentum resolve"
 
   repeat 4
