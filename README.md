@@ -523,6 +523,34 @@ if (!ir || errors.length > 0) {
 
 The `#viewer` element is an HTML `<canvas>`.
 
+### Exporting motion (BVH)
+
+`posecode-render` can bake a movement into a [Biovision Hierarchy](https://en.wikipedia.org/wiki/Biovision_Hierarchy)
+(`.bvh`) file for import into Blender and other animation tools. In the
+playground, use the **Download BVH** button; programmatically:
+
+```ts
+import { parse } from "posecode-parser";
+import { exportBVH } from "posecode-render";
+
+const { ir } = parse(source);
+const bvh = exportBVH(ir!, { fps: 30 }); // string, ready to write to disk
+```
+
+Options: `fps` (default 30), `scale` (default 1 = metres; pass `100` for
+centimetres), `includeFingers` (default false), and `proportions` for a
+calibrated rig.
+
+- **Coordinate system:** right-handed, **Y-up**, figure faces **+Z** in the
+  rest pose (identical to the renderer and Three.js). Enable Blender's "Y up"
+  BVH import option.
+- **Units:** metres by default.
+- **Rotation channels:** `Zrotation Xrotation Yrotation` (Euler order `ZXY`).
+- **Scope:** this exports the *authored* joint motion plus root travel/turn. It
+  does not yet re-run the renderer's contact/IK solve, so IK-dependent movements
+  (e.g. `reach: hand_left floor`) export the authored pose rather than the
+  solved one. See [issue #63](https://github.com/posecode-dev/posecode/issues/63).
+
 ---
 
 ## How Posecode Stays Honest

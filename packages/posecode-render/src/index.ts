@@ -1546,3 +1546,4 @@ export {
   type FootContactMeasurement,
 } from "./contacts.js";
 export type { PhaseSegment } from "./timeline.js";
+export { exportBVH, type BvhExportOptions } from "./bvh.js";

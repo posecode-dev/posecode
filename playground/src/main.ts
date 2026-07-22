@@ -53,6 +53,7 @@ const floorGuideTravel = $<HTMLSpanElement>("floor-guide-travel");
 const floorGuideReset = $<HTMLSpanElement>("floor-guide-reset");
 const copyBtn = $<HTMLButtonElement>("copy-prompt");
 const shareBtn = $<HTMLButtonElement>("share");
+const downloadBvhBtn = $<HTMLButtonElement>("download-bvh");
 const tabEditor = $<HTMLButtonElement>("tab-editor");
 const tabViewer = $<HTMLButtonElement>("tab-viewer");
 
@@ -642,6 +643,47 @@ async function shareLink(): Promise<void> {
   }
 }
 shareBtn.addEventListener("click", shareLink);
+
+// --- BVH export ---
+// Bake the current movement's authored motion into a .bvh file and hand it to
+// the browser as a download. The renderer chunk (Three.js) is loaded lazily on
+// demand, mirroring how the viewer itself boots, so this stays off the initial
+// critical path.
+function slugifyName(name: string): string {
+  const slug = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return slug || "movement";
+}
+
+async function downloadBvh(): Promise<void> {
+  if (!editorApi) return; // editor still loading
+  const source = editorApi.getValue();
+  const { ir, errors } = parse(source);
+  if (!ir || errors.length > 0) {
+    flash(downloadBvhBtn, "Fix errors first", "error");
+    return;
+  }
+  flash(downloadBvhBtn, "Exporting…", "pending", 0);
+  try {
+    const { exportBVH } = await import("posecode-render");
+    const bvh = exportBVH(ir);
+    const blob = new Blob([bvh], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${slugifyName(ir.name)}.bvh`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    flash(downloadBvhBtn, "Downloaded ✓", "success");
+  } catch {
+    flash(downloadBvhBtn, "Export failed", "error");
+  }
+}
+downloadBvhBtn.addEventListener("click", downloadBvh);
 
 // --- Slide-over panels (how-to, movement library) sharing one scrim ---
 const howto = $<HTMLElement>("howto");

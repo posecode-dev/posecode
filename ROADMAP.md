@@ -122,7 +122,10 @@ Each prop is a small scene object + an anchor type; movements then reference it
 - Self-collision is a bounded corrective pass over selected body pairs, not a
   comprehensive physics system. It exposes residuals for those sampled pairs,
   but does not detect every possible body-body collision.
-- There is no glTF/GLB or BVH motion export yet.
+- BVH motion export bakes the **authored** joint motion and root choreography
+  (travel/turn); it does not yet re-run the renderer's contact/IK solve, so
+  IK-dependent movements export their authored pose rather than the solved one.
+  There is no glTF/GLB export yet.
 - A **starter** prop set (chair / wall / bar / box / dip bars): no bench,
   rings, bands, or loaded implements yet, and props sit at fixed default
   placements.
