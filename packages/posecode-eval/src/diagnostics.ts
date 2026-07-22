@@ -180,7 +180,10 @@ export interface ClipDiagnosticsCollector {
   finish(): ClipDiagnostics;
 }
 
-export function createClipDiagnosticsCollector(sampleRateHz: number): ClipDiagnosticsCollector {
+export function createClipDiagnosticsCollector(
+  sampleRateHz: number,
+  isLocomotion = false,
+): ClipDiagnosticsCollector {
   const rate = Math.max(
     1,
     Math.min(120, Number.isFinite(sampleRateHz) ? sampleRateHz : DEFAULT_DIAGNOSTIC_SAMPLE_RATE_HZ),
@@ -195,16 +198,24 @@ export function createClipDiagnosticsCollector(sampleRateHz: number): ClipDiagno
       const state = feet[side];
       const foot = measureFootContact(m, side);
       let kind = supportKind(frame, side);
-      // The generic `feet` group also contains a deliberately lifted swing
-      // foot. Match ground-lock's own near-floor selection so that swing height
-      // is not mislabeled as a failed planted contact; an explicit foot lock or
-      // floor pin is always evaluated.
+      // A supported foot whose sole is well off the floor is mid-swing, not
+      // planted. Skip it in two cases: (1) the generic `feet` group's lifted
+      // swing foot, and (2) any airborne foot in a locomotion clip — at a step
+      // transition the stance pin alternates a beat before the landing foot is
+      // actually down, so the descending foot is swinging, not a failed plant.
+      // The endpoint contact-position check still catches a pin left airborne.
+      const airborne =
+        kind !== null
+        && foot !== null
+        && !isGroundLockFootPlanted(floorContactHeight(m, `foot_${side}`) ?? NaN);
       if (
-        kind === "ground-lock"
-        && frame.groundLock.includes("feet")
-        && !frame.groundLock.includes(`foot_${side}`)
-        && foot
-        && !isGroundLockFootPlanted(floorContactHeight(m, `foot_${side}`) ?? NaN)
+        airborne
+        && (
+          (kind === "ground-lock"
+            && frame.groundLock.includes("feet")
+            && !frame.groundLock.includes(`foot_${side}`))
+          || isLocomotion
+        )
       ) kind = null;
       if (!kind || !foot) {
         state.supportKind = null;
@@ -220,8 +231,19 @@ export function createClipDiagnosticsCollector(sampleRateHz: number): ClipDiagno
       // knee-drive) legitimately shows a lifted heel/toe and a steep sole, so
       // measuring it as a failed flat plant fabricates warnings.
       const shinDeg = shinFromVerticalDeg(m, side);
+      // A stance foot in a locomotion clip rolls onto its ball as the body
+      // travels over it — the toe stays planted while the heel lifts (push-off).
+      // That roll is correct gait, not a failed flat plant, so it is exempt from
+      // the flat-foot checks. A fully airborne foot (toe also lifted) is not a
+      // roll and stays measured; static clips keep the strict flat-foot bar.
+      const pushOffRoll =
+        isLocomotion
+        && Math.abs(foot.toeHeight) <= FOOT_CONTACT_HEIGHT_MAX
+        && foot.heelHeight > FOOT_CONTACT_HEIGHT_MAX;
       const expectedFlat =
-        foot.plantigrade && (shinDeg === null || shinDeg <= FLAT_SOLE_SHIN_MAX_DEG);
+        foot.plantigrade
+        && !pushOffRoll
+        && (shinDeg === null || shinDeg <= FLAT_SOLE_SHIN_MAX_DEG);
       if (expectedFlat) {
         state.minToeHeightMeters = Math.min(state.minToeHeightMeters ?? Infinity, foot.toeHeight);
         state.maxToeHeightMeters = Math.max(state.maxToeHeightMeters ?? -Infinity, foot.toeHeight);
