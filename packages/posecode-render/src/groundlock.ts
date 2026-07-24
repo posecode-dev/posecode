@@ -33,7 +33,8 @@
 
 import * as THREE from "three";
 import type { Mannequin } from "./mannequin.js";
-import { floorTargetForEffector } from "./contacts.js";
+import { floorTargetForEffector, measureFootContact } from "./contacts.js";
+import { solveReachToPoint } from "./reach.js";
 
 const ROOT_X = new THREE.Vector3(1, 0, 0);
 
@@ -170,6 +171,35 @@ export function applyGroundLock(
     // anchoring the bone itself left the visible foot sunk into the floor.
     dropFeetToFloor(m, feet);
     if (anchors) plantFeetHorizontally(m, feet, anchors);
+    // A grouped `feet` lock can begin while one foot is still descending from
+    // the preceding single-support phase. One floating root translation cannot
+    // put unequal-height soles on the floor: following the lower foot leaves
+    // the landing foot hovering, while following the higher one drives the
+    // established support through the floor. Keep the root on the established
+    // support and let the landing leg reach its captured floor plant.
+    if (anchors && active.includes("feet")) {
+      for (const id of feet) {
+        const node = m.bones.get(id);
+        const anchor = anchors.get(id);
+        if (!node || !anchor) continue;
+        const box = new THREE.Box3().setFromObject(node);
+        const side = id.endsWith("_left") ? "left" : "right";
+        const contact = measureFootContact(m, side);
+        if (
+          !Number.isFinite(box.min.y)
+          || !contact
+          || Math.max(contact.heelHeight, contact.toeHeight) <= 0.02
+        ) continue;
+        for (let refinement = 0; refinement < 3; refinement++) {
+          const refinedBox = new THREE.Box3().setFromObject(node);
+          const ankle = node.getWorldPosition(new THREE.Vector3());
+          // Recompute from the current visible surface after every CCD pass;
+          // leg rotation changes the ankle-to-sole vertical offset.
+          const target = ankle.clone().setY(ankle.y - refinedBox.min.y);
+          solveReachToPoint(m, `foot_${side}`, "floor", target, 1);
+        }
+      }
+    }
   }
 }
 

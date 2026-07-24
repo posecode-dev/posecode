@@ -115,6 +115,98 @@ describe("clip-wide constraint diagnostics", () => {
   const fixtures = loadFixtures(examplesDir);
   const source = (name: string) => fixtures.find((fixture) => fixture.movement === name)!.source;
 
+  it("keeps the alternating support foot planted through a short 360-degree turn", () => {
+    const turn = probeMovement([
+      'posecode exercise "Turn in Place with Steps"',
+      "  rig humanoid",
+      "  pose start = standing",
+      "",
+      '  step "Step 1 - left foot, quarter turn" 0.6s ease-in-out:',
+      "    hip_left: flex 22",
+      "    knee_left: flex 38",
+      "    ankle_left: dorsiflex 8",
+      "    shoulder_right: flex 18",
+      "    shoulder_left: extend 12",
+      "    turn: 90",
+      "    ground-lock: foot_right",
+      "",
+      '  step "Step 2 - right foot, half turn" 0.6s ease-in-out:',
+      "    hip_left: flex 0",
+      "    knee_left: flex 0",
+      "    ankle_left: dorsiflex 0",
+      "    hip_right: flex 22",
+      "    knee_right: flex 38",
+      "    ankle_right: dorsiflex 8",
+      "    shoulder_right: extend 12",
+      "    shoulder_left: flex 18",
+      "    turn: 180",
+      "    ground-lock: foot_left",
+      "",
+      '  step "Step 3 - left foot, three-quarter turn" 0.6s ease-in-out:',
+      "    hip_right: flex 0",
+      "    knee_right: flex 0",
+      "    ankle_right: dorsiflex 0",
+      "    hip_left: flex 22",
+      "    knee_left: flex 38",
+      "    ankle_left: dorsiflex 8",
+      "    shoulder_right: flex 18",
+      "    shoulder_left: extend 12",
+      "    turn: 270",
+      "    ground-lock: foot_right",
+      "",
+      '  step "Step 4 - right foot, complete turn" 0.6s ease-in-out:',
+      "    hip_left: flex 0",
+      "    knee_left: flex 0",
+      "    ankle_left: dorsiflex 0",
+      "    hip_right: flex 22",
+      "    knee_right: flex 38",
+      "    ankle_right: dorsiflex 8",
+      "    shoulder_right: extend 12",
+      "    shoulder_left: flex 18",
+      "    turn: 360",
+      "    ground-lock: foot_left",
+      "",
+      '  step "Finish standing" 0.4s ease-out:',
+      "    hip_right: flex 0",
+      "    knee_right: flex 0",
+      "    ankle_right: dorsiflex 0",
+      "    shoulders: flex 0",
+      "    ground-lock: feet",
+      "",
+      "  repeat 1",
+    ].join("\n"), undefined, undefined, { diagnosticSampleRateHz: 60 });
+
+    expect(turn.ok).toBe(true);
+    expect(turn.diagnostics.feet.right.maxHeelHeightMeters).toBeLessThanOrEqual(0.02);
+    expect(turn.diagnostics.feet.right.maxToeHeightMeters).toBeLessThanOrEqual(0.02);
+    expect(turn.diagnostics.feet.left.maxHeelHeightMeters).toBeLessThanOrEqual(0.02);
+    expect(turn.diagnostics.feet.left.maxToeHeightMeters).toBeLessThanOrEqual(0.02);
+  });
+
+  it("replants both soles when single-foot support hands off to a feet lock", () => {
+    const result = probeMovement([
+      'posecode exercise "Support handoff"',
+      "  rig humanoid",
+      "  pose start = standing",
+      '  step "Lift right" 0.3s ease-in-out:',
+      "    hip_right: flex 22",
+      "    knee_right: flex 38",
+      "    ankle_right: dorsiflex 8",
+      "    ground-lock: foot_left",
+      '  step "Land right" 0.3s ease-out:',
+      "    hip_right: flex 0",
+      "    knee_right: flex 0",
+      "    ankle_right: dorsiflex 0",
+      "    ground-lock: feet",
+    ].join("\n"), undefined, undefined, { diagnosticSampleRateHz: 60 });
+
+    expect(result.ok).toBe(true);
+    for (const side of ["left", "right"] as const) {
+      expect(result.diagnostics.feet[side].maxHeelHeightMeters).toBeLessThanOrEqual(0.02);
+      expect(result.diagnostics.feet[side].maxToeHeightMeters).toBeLessThanOrEqual(0.02);
+    }
+  });
+
   it("keeps the deadlift heels planted through the hinge and still flags the demi-plié lift", () => {
     const deadlift = probeMovement(source("deadlift"));
     const plie = probeMovement(source("demi-plie"));

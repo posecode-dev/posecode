@@ -866,6 +866,24 @@ export function createViewer(
         mannequin.root.position.y -= box.min.y;
         mannequin.root.updateMatrixWorld(true);
       }
+      // The whole-figure safety clamp above follows the lowest mesh point,
+      // which can be the transitioning swing foot. In a per-side ground-lock
+      // that rescue must not lift the declared stance foot: the contact is the
+      // hard constraint, while an unrelated penetration remains diagnostic.
+      // Replant after every renderer-authored joint mutation and the global
+      // clamp so phase handoffs cannot pull the support off the floor.
+      if (
+        info.groundLock.length > 0
+        && info.reaches.length === 0
+        && (propScene?.colliders.length ?? 0) === 0
+      ) {
+        levelPlantedFeet(mannequin, info.groundLock);
+        applyGroundLockTo(
+          mannequin,
+          info.groundLock,
+          frameAnchors(info.rootYaw, info.rootOffset),
+        );
+      }
       refreshReachResiduals();
       refreshConstraintDiagnostics(info);
       // Root/contact solvers can translate X/Z beyond the authored travel

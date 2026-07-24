@@ -794,6 +794,18 @@ export function probeMovement(
       m.root.position.y -= box.min.y;
       m.root.updateMatrixWorld(true);
     }
+    // Ground-lock is the hard support promise. The global floor clamp may
+    // follow a lower swing-foot mesh during a support-side handoff and lift
+    // that declared support, so replant after all joint mutations and safety
+    // reconciliation exactly as the viewer does.
+    if (
+      info.groundLock.length > 0
+      && info.reaches.length === 0
+      && propScene.colliders.length === 0
+    ) {
+      levelPlantedFeet(m, info.groundLock);
+      applyGroundLock(m, info.groundLock, anchors);
+    }
     // Production visible-rig path: retarget the solved driver, then reconcile
     // the exact skinned surface with the floor exactly as Viewer.frame does.
     if (character) {
@@ -930,6 +942,14 @@ export function probeMovement(
       if (box.min.y < 0 || (floorBound && box.min.y > 0)) {
         m.root.position.y -= box.min.y;
         m.root.updateMatrixWorld(true);
+      }
+      if (
+        info.groundLock.length > 0
+        && info.reaches.length === 0
+        && propScene.colliders.length === 0
+      ) {
+        levelPlantedFeet(m, info.groundLock);
+        applyGroundLock(m, info.groundLock, anchors);
       }
       diagnosticsCollector.record(m, {
         timeSec: sampleTime,
