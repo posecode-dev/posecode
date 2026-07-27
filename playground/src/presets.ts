@@ -32,6 +32,9 @@ import shoulderRolls from "../../spec/examples/shoulder-rolls.posecode?raw";
 import neckSideStretch from "../../spec/examples/neck-side-stretch.posecode?raw";
 import chestOpener from "../../spec/examples/chest-opener.posecode?raw";
 import overheadReach from "../../spec/examples/overhead-reach-reset.posecode?raw";
+import seatedTorsoTwist from "../../spec/examples/seated-torso-twist.posecode?raw";
+import shoulderBladeRetraction from "../../spec/examples/shoulder-blade-retraction.posecode?raw";
+import wristForearmRolls from "../../spec/examples/wrist-forearm-rolls.posecode?raw";
 
 // Sports / martial arts / warm-up.
 import frontKick from "../../spec/examples/front-kick.posecode?raw";
@@ -129,9 +132,10 @@ export const PRESETS: Preset[] = [
   { id: "squat", label: "Body-weight squat", domain: "Fitness", bodyPart: "Upper legs", target: "Quadriceps", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: squat },
   { id: "superhero-landing", label: "Superhero three-point landing", domain: "Performance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Advanced", status: "ready", source: superheroLanding },
   { id: "dance-phrase", label: "Dance phrase (8-count)", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Intermediate", status: "experimental", source: dancePhrase },
-  // Keep one ready Dance entry here so first-seen domain grouping places Dance
-  // immediately after Performance even when experimental previews are hidden.
-  { id: "demi-plie", label: "Demi-plié", domain: "Dance", bodyPart: "Upper legs", target: "Quadriceps", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: demiPlie },
+  // Ballet examples are experimental until reviewed by someone with dance
+  // knowledge (see #91 / #103): turnout, naming (Relevé vs Elevé), and step
+  // mechanics need domain sign-off before they can be presented as launch-ready.
+  { id: "demi-plie", label: "Demi-plié", domain: "Dance", bodyPart: "Upper legs", target: "Quadriceps", equipment: "Body weight", difficulty: "Beginner", status: "experimental", source: demiPlie },
   { id: "deadlift", label: "Deadlift (hip hinge)", domain: "Fitness", bodyPart: "Back", target: "Hamstrings & glutes", equipment: "Body weight", difficulty: "Intermediate", status: "ready", source: deadlift },
   { id: "shoulder-abduction", label: "Shoulder abduction (ROM)", domain: "Education", bodyPart: "Shoulders", target: "Deltoids", equipment: "Body weight", difficulty: "Beginner", status: "experimental", source: shoulderAbduction },
   { id: "front-kick", label: "Front kick", domain: "Martial arts", bodyPart: "Upper legs", target: "Hip flexors", equipment: "Body weight", difficulty: "Intermediate", status: "ready", source: frontKick },
@@ -173,6 +177,9 @@ export const PRESETS: Preset[] = [
   { id: "shoulder-rolls", label: "Shoulder rolls", domain: "Desk & posture", bodyPart: "Shoulders", target: "Trapezius", equipment: "Body weight", difficulty: "Beginner", status: "experimental", source: shoulderRolls },
   { id: "neck-side-stretch", label: "Neck side stretch", domain: "Desk & posture", bodyPart: "Neck", target: "Neck", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: neckSideStretch },
   { id: "overhead-reach", label: "Overhead reach reset", domain: "Desk & posture", bodyPart: "Shoulders", target: "Deltoids", equipment: "Body weight", difficulty: "Beginner", status: "experimental", source: overheadReach },
+  { id: "seated-torso-twist", label: "Seated torso twist", domain: "Desk & posture", bodyPart: "Core", target: "Obliques", equipment: "Chair", difficulty: "Beginner", status: "ready", source: seatedTorsoTwist },
+  { id: "shoulder-blade-retraction", label: "Shoulder blade retractions", domain: "Desk & posture", bodyPart: "Upper back", target: "Rhomboids", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: shoulderBladeRetraction },
+  { id: "wrist-forearm-rolls", label: "Wrist & forearm rolls", domain: "Desk & posture", bodyPart: "Forearms", target: "Forearm flexors", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: wristForearmRolls },
 
   // --- Sports / martial arts / warm-up ---
   { id: "jab-cross", label: "Jab-cross", domain: "Martial arts", bodyPart: "Full body", target: "Shoulders", equipment: "Body weight", difficulty: "Intermediate", status: "ready", source: jabCross },
@@ -182,8 +189,8 @@ export const PRESETS: Preset[] = [
   { id: "high-knee-march", label: "High-knee march", domain: "Warm-up", bodyPart: "Full body", target: "Hip flexors", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: highKneeMarch },
 
   // --- Dance / choreography (flagship) ---
-  { id: "releve", label: "Relevé", domain: "Dance", bodyPart: "Lower legs", target: "Calves", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: releve },
-  { id: "tendu", label: "Tendu", domain: "Dance", bodyPart: "Upper legs", target: "Hip flexors", equipment: "Body weight", difficulty: "Intermediate", status: "ready", source: tendu },
+  { id: "releve", label: "Relevé", domain: "Dance", bodyPart: "Lower legs", target: "Calves", equipment: "Body weight", difficulty: "Beginner", status: "experimental", source: releve },
+  { id: "tendu", label: "Tendu", domain: "Dance", bodyPart: "Upper legs", target: "Hip flexors", equipment: "Body weight", difficulty: "Intermediate", status: "experimental", source: tendu },
   { id: "port-de-bras", label: "Port de bras", domain: "Dance", bodyPart: "Shoulders", target: "Deltoids", equipment: "Body weight", difficulty: "Beginner", status: "experimental", source: portDeBras },
 
   // --- More fitness / mobility / yoga ---
@@ -220,7 +227,7 @@ export const PRESETS: Preset[] = [
   { id: "box-step", label: "Box step (travels)", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: boxStep },
   { id: "grapevine", label: "Grapevine (travels)", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: grapevine },
   { id: "waltz-box", label: "Waltz box step", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: waltzBox },
-  { id: "chasse", label: "Chassé (travels)", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Intermediate", status: "ready", source: chasse },
+  { id: "chasse", label: "Chassé (travels)", domain: "Dance", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Intermediate", status: "experimental", source: chasse },
   { id: "walk-cycle", label: "Walk & turn", domain: "Locomotion", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: walkCycle },
   { id: "quarter-turns", label: "Quarter turns", domain: "Locomotion", bodyPart: "Full body", target: "Full body", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: quarterTurns },
 ];

@@ -846,7 +846,7 @@ export function probeMovement(
   // Endpoint probes above power semantic movement checks. Separately sample
   // the solved clip between endpoints so a heel lift or collision that appears
   // only mid-transition cannot hide behind two valid terminal poses.
-  const diagnosticsCollector = createClipDiagnosticsCollector(diagnosticSampleRateHz);
+  const diagnosticsCollector = createClipDiagnosticsCollector(diagnosticSampleRateHz, clipHasTravel);
   for (let phaseIndex = 0; phaseIndex < tl.segments.length; phaseIndex++) {
     const seg = tl.segments[phaseIndex]!;
     const steps = Math.max(1, Math.ceil((seg.end - seg.start) * diagnosticSampleRateHz));

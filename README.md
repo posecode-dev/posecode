@@ -409,6 +409,24 @@ npm run build
 
 ---
 
+### Editor support
+
+A VS Code extension provides syntax highlighting, ROM diagnostics, and
+completion for `.posecode` files — see
+[`editors/vscode`](editors/vscode/README.md). Until it is published, you can
+get basic highlighting immediately by associating `.posecode` files with
+Markdown:
+
+```json
+"files.associations": {
+  "*.posecode": "markdown"
+}
+```
+
+See the [editor guide](editors/vscode/README.md#file-association-before-the-extension-is-installed)
+for VS Code, Cursor, Sublime Text, and Neovim instructions.
+
+---
 
 ## MCP Server
 
@@ -504,6 +522,64 @@ if (!ir || errors.length > 0) {
 ```
 
 The `#viewer` element is an HTML `<canvas>`.
+
+### Exporting motion (BVH)
+
+`posecode-render` can bake a movement into a [Biovision Hierarchy](https://en.wikipedia.org/wiki/Biovision_Hierarchy)
+(`.bvh`) file for import into Blender and other animation tools. In the
+playground, use the **Download BVH** button; programmatically:
+
+```ts
+import { parse } from "posecode-parser";
+import { exportBVH } from "posecode-render";
+
+const { ir } = parse(source);
+const bvh = exportBVH(ir!, { fps: 30 }); // string, ready to write to disk
+```
+
+Options: `fps` (default 30), `scale` (default 1 = metres; pass `100` for
+centimetres), `includeFingers` (default false), and `proportions` for a
+calibrated rig.
+
+- **Coordinate system:** right-handed, **Y-up**, figure faces **+Z** in the
+  rest pose (identical to the renderer and Three.js). Enable Blender's "Y up"
+  BVH import option.
+- **Units:** metres by default.
+- **Rotation channels:** `Zrotation Xrotation Yrotation` (Euler order `ZXY`).
+- **Scope:** this exports the *authored* joint motion plus root travel/turn. It
+  does not yet re-run the renderer's contact/IK solve, so IK-dependent movements
+  (e.g. `reach: hand_left floor`) export the authored pose rather than the
+  solved one. See [issue #63](https://github.com/posecode-dev/posecode/issues/63).
+
+### Exporting motion (glTF / GLB)
+
+For web animation pipelines, `posecode-render` can export the rig **and** a
+baked animation clip as a glTF/GLB asset. In the playground, use **Download
+glTF**; programmatically:
+
+```ts
+import { parse } from "posecode-parser";
+import { exportGLTF } from "posecode-render";
+
+const { ir } = parse(source);
+const glb = await exportGLTF(ir!);            // GLB ArrayBuffer (default)
+const gltf = await exportGLTF(ir!, { binary: false }); // glTF JSON object
+```
+
+The result loads with Three.js [`GLTFLoader`](https://threejs.org/docs/#GLTFLoader.load),
+and the clip plays on the included rig:
+
+```ts
+const gltf = await new GLTFLoader().loadAsync(url);
+const mixer = new THREE.AnimationMixer(gltf.scene);
+mixer.clipAction(gltf.animations[0]).play();
+```
+
+- Joint nodes are named by Posecode bone id; the animated root is `posecode_root`.
+- **Limitations:** exports the procedural mannequin rig, not a humanoid/Mixamo
+  skeleton, so there is **no retargeting** onto external rigs yet, and (as with
+  BVH) it bakes the authored motion, not the contact/IK-solved motion. See
+  [issue #90](https://github.com/posecode-dev/posecode/issues/90).
 
 ---
 

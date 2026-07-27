@@ -23,7 +23,8 @@ posecode exercise "Front kick"
   step "Return" 0.6s settle:
     hip_right: flex 0
     knee_right: flex 0
-    ground-lock: feet
+    ground-lock: foot_left
+    reach: foot_right floor
     cue "Set the foot back down to a fighting stance"
 
   repeat 5

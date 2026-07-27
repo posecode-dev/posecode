@@ -54,10 +54,10 @@ describe("format-first product positioning", () => {
     expect(readme).toContain("Posecode keeps those decisions in readable source.");
   });
 
-  it("opens the showcase movement and keeps both clip exports visible", () => {
+  it("opens the showcase movement and keeps both motion exports visible", () => {
     expect(home).toContain('href="/play/superhero-landing"');
     expect(playgroundMain).toContain('p.id === "superhero-landing"');
-    expect(playground).toContain('id="export-gif"');
-    expect(playground).toContain('id="export-video"');
+    expect(playground).toContain('id="download-bvh"');
+    expect(playground).toContain('id="download-gltf"');
   });
 });

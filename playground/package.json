@@ -19,7 +19,6 @@
     "@codemirror/view": "^6.36.1",
     "@lezer/highlight": "^1.2.1",
     "@vercel/analytics": "^2.0.1",
-    "gifenc": "^1.0.3",
     "posecode-language": "0.2.2",
     "posecode-parser": "0.4.1",
     "posecode-render": "0.4.1",

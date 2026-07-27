@@ -1,0 +1,29 @@
+posecode stretch "Seated torso twist"
+  rig humanoid
+  pose start = seated
+
+  step "Twist right" 2.6s flow:
+    spine: twist-right 35
+    chest: twist-right 30
+    neck: twist-right 40
+    shoulders: abduct 30
+    elbows: flex 45
+    cue "Sit tall, then rotate the ribs and gaze to the right"
+
+  step "Twist left" 3s flow:
+    spine: twist-left 35
+    chest: twist-left 30
+    neck: twist-left 40
+    shoulders: abduct 30
+    elbows: flex 45
+    cue "Pass through center and rotate to the left"
+
+  step "Center" 1.8s settle:
+    spine: twist-left 0
+    chest: twist-left 0
+    neck: twist-left 0
+    shoulders: abduct 0
+    elbows: flex 0
+    cue "Unwind back to a tall, neutral seat"
+
+  repeat 3

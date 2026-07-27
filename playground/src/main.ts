@@ -8,8 +8,16 @@
  */
 
 import { parse, type ParseError, type Warning } from "posecode-parser";
-import { inject } from "@vercel/analytics";
 import type { ConstraintDiagnostic, Viewer } from "posecode-render";
+import {
+  trackUsageEvent,
+  UsageSession,
+  USAGE_EVENT_NAMES,
+  type DocumentKind,
+  type PresetOpenSource,
+  type RenderTrigger,
+} from "./analytics.js";
+import { initializeAnalytics } from "./vercel-analytics.js";
 import {
   buildNicePlayPath,
   buildNiceShareHash,
@@ -20,7 +28,6 @@ import type { PosecodeEditor } from "./editor.js";
 import { ANIMATION_PROGRESS_MESSAGE, PRESETS } from "./presets.js";
 import { prioritizeFeaturedMovement } from "./library-order.js";
 import { SHOWCASE_CLIPS } from "./clips.js";
-import { exportGif, exportVideo } from "./export.js";
 
 // Open on a deterministic, fully procedural movement. Mocap-backed or
 // Experimental presets should never be the product's first impression.
@@ -29,7 +36,8 @@ const DEFAULT_PRESET =
 import { renderWarnings } from "./warnings.js";
 import llmPrompt from "../../spec/llm-authoring.md?raw";
 
-inject();
+initializeAnalytics();
+const usageSession = new UsageSession();
 
 const $ = <T extends HTMLElement>(id: string): T =>
   document.getElementById(id) as T;
@@ -55,8 +63,8 @@ const floorGuideTravel = $<HTMLSpanElement>("floor-guide-travel");
 const floorGuideReset = $<HTMLSpanElement>("floor-guide-reset");
 const copyBtn = $<HTMLButtonElement>("copy-prompt");
 const shareBtn = $<HTMLButtonElement>("share");
-const exportGifBtn = $<HTMLButtonElement>("export-gif");
-const exportVideoBtn = $<HTMLButtonElement>("export-video");
+const downloadBvhBtn = $<HTMLButtonElement>("download-bvh");
+const downloadGltfBtn = $<HTMLButtonElement>("download-gltf");
 const tabEditor = $<HTMLButtonElement>("tab-editor");
 const tabViewer = $<HTMLButtonElement>("tab-viewer");
 
@@ -68,8 +76,6 @@ let viewer: Viewer | null = null;
 let scrubbing = false;
 let repeat = 1;
 let rep = 1;
-let movementName = DEFAULT_PRESET.label;
-let exporting = false;
 // Maps each phase index → the 1-based line range of its `step` block, so the
 // editor can highlight the lines driving the currently-animating phase.
 let phaseRanges: Array<{ from: number; to: number }> = [];
@@ -78,6 +84,13 @@ let lastRomWarnings: Warning[] = [];
 let lastContactSignature = "";
 let lastContactRefresh = 0;
 let scrubDiagnosticsRefresh = 0;
+let documentRevision = 1;
+let pendingRenderTrigger: RenderTrigger = "initial";
+
+function documentKind(): DocumentKind {
+  if (currentPresetId) return "preset";
+  return initialDocumentWasShared ? "shared" : "custom";
+}
 
 /** Merge live solver residuals with source diagnostics without repainting each frame. */
 function refreshContactDiagnostics(force = false): void {
@@ -259,9 +272,16 @@ function scheduleRecompile(): void {
 }
 
 /** Keep the address bar and library label in sync with editor changes. */
-function handleEditorChange(source: string): void {
+function handleEditorChange(source: string, userInitiated: boolean): void {
+  const editedDocumentKind = documentKind();
   const preset = PRESETS.find((p) => p.source === source);
   currentPresetId = preset?.id ?? null;
+  if (userInitiated) {
+    usageSession.trackFirstEdit(editedDocumentKind);
+    initialDocumentWasShared = false;
+    documentRevision++;
+    pendingRenderTrigger = "editor_change";
+  }
   setCurrentPresetLabel(
     preset,
     source.trim() ? "Custom movement" : "New movement",
@@ -294,10 +314,15 @@ function recompile(): void {
   // Before the renderer finishes loading, we still parse + surface warnings;
   // the viewer-dependent work re-runs once `boot()` calls recompile() again.
   if (ir && viewer) {
-    movementName = ir.name;
     viewer.load(ir);
     updateFloorGuideKey();
+    usageSession.trackSuccessfulRender(
+      documentRevision,
+      pendingRenderTrigger,
+      documentKind(),
+    );
     viewer.setLoop(loop.checked);
+    viewer.setSpeed(Number(speed.value));
     viewer.play();
     setPlaying(true);
     const tl = viewer.getTimeline();
@@ -497,6 +522,13 @@ function loadPreset(id: string): void {
   const preset = PRESETS.find((p) => p.id === id);
   if (!preset) return;
   currentPresetId = preset.id;
+  initialDocumentWasShared = false;
+  documentRevision++;
+  pendingRenderTrigger = "preset_open";
+  trackUsageEvent(USAGE_EVENT_NAMES.presetOpened, {
+    source: "library",
+    preset_id: preset.id,
+  });
   setCurrentPresetLabel(preset, preset.label);
   editorApi?.setValue(preset.source);
   history.replaceState(null, "", buildNicePlayPath(preset.source));
@@ -516,6 +548,7 @@ renderLibraryList();
 // overwriting a preset by hand-selecting its text first.
 $<HTMLButtonElement>("new-doc").addEventListener("click", () => {
   currentPresetId = null;
+  initialDocumentWasShared = false;
   setCurrentPresetLabel(undefined, "New movement");
   editorApi?.setValue("");
   history.replaceState(null, "", "/play");
@@ -549,52 +582,31 @@ scrub.addEventListener("change", () => {
   scrubbing = false;
 });
 loop.addEventListener("change", () => viewer?.setLoop(loop.checked));
-speed.addEventListener("change", () => viewer?.setSpeed(Number(speed.value)));
 
-// --- Export: one complete loop as a GIF or WebM video -----------------------
-function setExportProgress(
-  activeButton: HTMLButtonElement,
-  label: string | null,
-): void {
-  exporting = label !== null;
-  exportGifBtn.disabled = exporting;
-  exportVideoBtn.disabled = exporting;
-  const activeLabel = activeButton.querySelector<HTMLElement>(".lbl");
-  if (activeLabel) {
-    activeLabel.textContent =
-      label ?? activeButton.dataset.defaultLabel ?? activeLabel.textContent;
+// Playback speed persists across reloads so an author who prefers slow-motion
+// scrubbing does not have to re-select it every visit.
+const SPEED_STORAGE_KEY = "posecode.playbackSpeed";
+function restoreSpeed() {
+  try {
+    const saved = localStorage.getItem(SPEED_STORAGE_KEY);
+    // Only honour a saved value the current <select> actually offers, so a
+    // dropped option can never leave the control on a phantom value.
+    if (saved && [...speed.options].some((o) => o.value === saved)) {
+      speed.value = saved;
+    }
+  } catch {
+    // localStorage may be unavailable (private mode, disabled cookies).
   }
 }
-
-function runExport(kind: "gif" | "video", button: HTMLButtonElement): void {
-  if (!viewer || exporting) return;
-  const label = button.querySelector<HTMLElement>(".lbl");
-  if (label && !button.dataset.defaultLabel) {
-    button.dataset.defaultLabel = label.textContent ?? "";
+restoreSpeed();
+speed.addEventListener("change", () => {
+  viewer?.setSpeed(Number(speed.value));
+  try {
+    localStorage.setItem(SPEED_STORAGE_KEY, speed.value);
+  } catch {
+    // Non-fatal: persistence is a convenience, not a requirement.
   }
-  const context = {
-    viewer,
-    sourceCanvas: canvas,
-    name: () => movementName,
-    caption: () => ({
-      phase: phaseEl.textContent ?? "",
-      cue: cueEl.textContent ?? "",
-    }),
-    onProgress: (progress: string | null) =>
-      setExportProgress(button, progress),
-  };
-  const task = kind === "gif" ? exportGif(context) : exportVideo(context);
-  task.catch((error) => {
-    console.error("export failed", error);
-    setExportProgress(button, null);
-    flash(button, "Export failed", "error");
-  });
-}
-
-exportGifBtn.addEventListener("click", () => runExport("gif", exportGifBtn));
-exportVideoBtn.addEventListener("click", () =>
-  runExport("video", exportVideoBtn),
-);
+});
 
 // --- Button label feedback ---
 // Swap a button's label (the inner `.lbl` span when present, else the button
@@ -656,6 +668,9 @@ async function shareLink(): Promise<void> {
     const url = `${location.origin}${path}${hash}`;
     history.replaceState(null, "", `${path}${hash}`);
     await navigator.clipboard.writeText(url);
+    trackUsageEvent(USAGE_EVENT_NAMES.shareCreated, {
+      share_kind: path === "/play" ? "encoded" : "preset",
+    });
     flash(shareBtn, "Link copied ✓", "success");
   } catch (err) {
     const message =
@@ -668,6 +683,77 @@ async function shareLink(): Promise<void> {
   }
 }
 shareBtn.addEventListener("click", shareLink);
+
+// --- BVH export ---
+// Bake the current movement's authored motion into a .bvh file and hand it to
+// the browser as a download. The renderer chunk (Three.js) is loaded lazily on
+// demand, mirroring how the viewer itself boots, so this stays off the initial
+// critical path.
+function slugifyName(name: string): string {
+  const slug = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return slug || "movement";
+}
+
+async function downloadBvh(): Promise<void> {
+  if (!editorApi) return; // editor still loading
+  const source = editorApi.getValue();
+  const { ir, errors } = parse(source);
+  if (!ir || errors.length > 0) {
+    flash(downloadBvhBtn, "Fix errors first", "error");
+    return;
+  }
+  flash(downloadBvhBtn, "Exporting…", "pending", 0);
+  try {
+    const { exportBVH } = await import("posecode-render");
+    const bvh = exportBVH(ir);
+    const blob = new Blob([bvh], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${slugifyName(ir.name)}.bvh`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    flash(downloadBvhBtn, "Downloaded ✓", "success");
+  } catch {
+    flash(downloadBvhBtn, "Export failed", "error");
+  }
+}
+downloadBvhBtn.addEventListener("click", downloadBvh);
+
+// --- glTF / GLB export ---
+// Bake the current movement into a GLB (rig + animation clip) and download it.
+async function downloadGltf(): Promise<void> {
+  if (!editorApi) return;
+  const source = editorApi.getValue();
+  const { ir, errors } = parse(source);
+  if (!ir || errors.length > 0) {
+    flash(downloadGltfBtn, "Fix errors first", "error");
+    return;
+  }
+  flash(downloadGltfBtn, "Exporting…", "pending", 0);
+  try {
+    const { exportGLTF } = await import("posecode-render");
+    const glb = (await exportGLTF(ir, { binary: true })) as ArrayBuffer;
+    const blob = new Blob([glb], { type: "model/gltf-binary" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${slugifyName(ir.name)}.glb`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    flash(downloadGltfBtn, "Downloaded ✓", "success");
+  } catch {
+    flash(downloadGltfBtn, "Export failed", "error");
+  }
+}
+downloadGltfBtn.addEventListener("click", downloadGltf);
 
 // --- Slide-over panels (how-to, movement library) sharing one scrim ---
 const howto = $<HTMLElement>("howto");
@@ -719,6 +805,7 @@ $<HTMLButtonElement>("intro-dismiss").addEventListener("click", () => {
 // over the default preset, opening exactly like a library selection.
 const sharedSource =
   resolveSharedSource(window.location.hash) ?? resolveSharedPath(window.location.pathname);
+let initialDocumentWasShared = Boolean(sharedSource);
 let initialDoc: string;
 if (sharedSource) {
   const preset = PRESETS.find((p) => p.source === sharedSource);
@@ -726,10 +813,45 @@ if (sharedSource) {
   setCurrentPresetLabel(preset, "↗ Shared link");
   initialDoc = sharedSource;
   intro.hidden = true;
+  pendingRenderTrigger = window.location.hash ? "shared_link" : "initial";
+  if (preset) {
+    let source: PresetOpenSource = window.location.hash
+      ? "shared_link"
+      : "direct_url";
+    try {
+      const referrer = new URL(document.referrer);
+      if (
+        !window.location.hash &&
+        referrer.origin === location.origin &&
+        referrer.pathname === "/"
+      ) {
+        source = "landing_cta";
+      }
+    } catch {
+      // Missing or external referrer: keep the direct/shared classification.
+    }
+    trackUsageEvent(USAGE_EVENT_NAMES.presetOpened, {
+      source,
+      preset_id: preset.id,
+    });
+  }
 } else {
   initialDoc = DEFAULT_PRESET.source;
   currentPresetId = DEFAULT_PRESET.id;
   setCurrentPresetLabel(DEFAULT_PRESET, DEFAULT_PRESET.label);
+  let source: PresetOpenSource = "direct_url";
+  try {
+    const referrer = new URL(document.referrer);
+    if (referrer.origin === location.origin && referrer.pathname === "/") {
+      source = "landing_cta";
+    }
+  } catch {
+    // Direct visits have no usable referrer.
+  }
+  trackUsageEvent(USAGE_EVENT_NAMES.presetOpened, {
+    source,
+    preset_id: DEFAULT_PRESET.id,
+  });
 }
 
 // Boot the two heavyweights (CodeMirror editor + Three.js renderer) after the

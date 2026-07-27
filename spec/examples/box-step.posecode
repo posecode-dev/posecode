@@ -44,7 +44,8 @@ posecode exercise "Box step"
     ankle_right: plantarflex 0
     shoulders: flex 0
     travel: 0 0
-    ground-lock: feet
+    reach: foot_left floor
+    reach: foot_right floor
     cue "Close the left foot and settle over both feet, completing the square"
 
   repeat 4

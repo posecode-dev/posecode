@@ -5,7 +5,12 @@
  * `posecode-language` (shared with the LSP), so the editor never reimplements them.
  */
 
-import { EditorState, StateEffect, StateField } from "@codemirror/state";
+import {
+  EditorState,
+  StateEffect,
+  StateField,
+  Transaction,
+} from "@codemirror/state";
 import {
   EditorView,
   keymap,
@@ -301,7 +306,7 @@ export interface PosecodeEditor {
 
 export interface PosecodeEditorOptions {
   doc: string;
-  onChange: (value: string) => void;
+  onChange: (value: string, userInitiated: boolean) => void;
 }
 
 export function createPosecodeEditor(
@@ -341,7 +346,13 @@ export function createPosecodeEditor(
           indentWithTab,
         ]),
         EditorView.updateListener.of((u) => {
-          if (u.docChanged) opts.onChange(u.state.doc.toString());
+          if (u.docChanged) {
+            const userInitiated = u.transactions.some(
+              (transaction) =>
+                transaction.annotation(Transaction.userEvent) !== undefined,
+            );
+            opts.onChange(u.state.doc.toString(), userInitiated);
+          }
         }),
       ],
     }),

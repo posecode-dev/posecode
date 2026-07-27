@@ -1,0 +1,26 @@
+posecode stretch "Shoulder blade retractions"
+  rig humanoid
+  pose start = standing
+
+  step "Reach forward" 1.8s flow:
+    shoulders: flex 80
+    elbows: flex 20
+    chest: flex 6
+    ground-lock: feet
+    cue "Reach both arms forward at shoulder height, rounding the upper back slightly"
+
+  step "Squeeze back" 2s flow:
+    shoulders: extend 15
+    elbows: flex 95
+    chest: extend 12
+    ground-lock: feet
+    cue "Draw the elbows back and pinch the shoulder blades together"
+
+  step "Reset" 1.6s settle:
+    shoulders: flex 0
+    elbows: flex 0
+    chest: flex 0
+    ground-lock: feet
+    cue "Release to a tall, neutral posture"
+
+  repeat 6
