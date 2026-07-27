@@ -35,4 +35,11 @@ describe("product integration page", () => {
   it("provides an integration-specific contact action", () => {
     expect(page).toContain("mailto:hello@posecode.org?subject=Posecode%20product%20integration");
   });
+
+  it("wires real embed documentation and install command actions", () => {
+    expect(page).toContain("data-embed-docs");
+    expect(page).toContain('data-copy-command="embed"');
+    expect(page).toContain('data-copy-command="packages"');
+    expect(page).toContain('data-copy-command="mcp"');
+  });
 });
