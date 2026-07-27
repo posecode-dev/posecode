@@ -16,14 +16,15 @@ posecode exercise "High-knee march"
     hip_left: flex 90
     knee_left: flex 90
     shoulder_right: flex 40
-    pin: foot_right floor
+    reach: foot_right floor
     cue "Plant and drive the left knee up"
 
   step "Down" 0.6s settle:
     hip_left: flex 0
     knee_left: flex 0
     shoulder_right: flex 0
-    ground-lock: feet
+    reach: foot_left floor
+    reach: foot_right floor
     cue "Return to a tall, ready stance"
 
   repeat 6

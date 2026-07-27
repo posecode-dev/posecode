@@ -1,0 +1,33 @@
+posecode stretch "Standing wrist & forearm rolls"
+  rig humanoid
+  pose start = standing
+
+  step "Arms out, palms down" 1.6s flow:
+    shoulders: flex 70
+    elbows: flex 15
+    forearms: pronate 80
+    wrists: flex 0
+    ground-lock: feet
+    cue "Extend the arms forward at shoulder height with the palms facing down"
+
+  step "Curl the wrists down" 1.4s flow:
+    wrists: flex 60
+    forearms: pronate 80
+    ground-lock: feet
+    cue "Roll the knuckles down and under, bending at the wrists"
+
+  step "Turn palms up, lift wrists" 1.8s flow:
+    forearms: supinate 80
+    wrists: extend 55
+    ground-lock: feet
+    cue "Rotate the forearms so the palms face up, then lift the wrists"
+
+  step "Reset" 1.4s settle:
+    shoulders: flex 0
+    elbows: flex 0
+    forearms: supinate 0
+    wrists: extend 0
+    ground-lock: feet
+    cue "Lower the arms and shake out the hands"
+
+  repeat 4

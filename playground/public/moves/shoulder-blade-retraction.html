@@ -3,16 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Relevé: Posecode Movement Example | Posecode</title>
+    <title>Shoulder blade retractions: Posecode Movement Example | Posecode</title>
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="description" content="Relevé is a beginner-level dance Posecode example with 2 inspectable phases and a link to live 3D playback." />
-    <link rel="canonical" href="https://www.posecode.org/moves/releve.html" />
+    <meta name="description" content="Shoulder blade retractions is a beginner-level desk &amp; posture Posecode example with 3 inspectable phases and a link to live 3D playback." />
+    <link rel="canonical" href="https://www.posecode.org/moves/shoulder-blade-retraction.html" />
     <meta name="theme-color" content="#0a0d12" />
-    <meta property="og:title" content="Relevé: Posecode Movement Example | Posecode" />
-    <meta property="og:description" content="Relevé is a beginner-level dance Posecode example with 2 inspectable phases and a link to live 3D playback." />
+    <meta property="og:title" content="Shoulder blade retractions: Posecode Movement Example | Posecode" />
+    <meta property="og:description" content="Shoulder blade retractions is a beginner-level desk &amp; posture Posecode example with 3 inspectable phases and a link to live 3D playback." />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://www.posecode.org/moves/releve.html" />
+    <meta property="og:url" content="https://www.posecode.org/moves/shoulder-blade-retraction.html" />
     <meta property="og:site_name" content="Posecode" />
     <meta property="og:image" content="https://www.posecode.org/og.png" />
     <meta name="twitter:image" content="https://www.posecode.org/og.png" />
@@ -97,7 +97,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 @media(max-width:600px){.wrap{padding:0 18px}}
 </style>
     <link rel="stylesheet" href="/content-theme.css" />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Relevé: a Posecode movement example","description":"Relevé is a beginner-level dance Posecode example with 2 inspectable phases and a link to live 3D playback."}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Shoulder blade retractions: a Posecode movement example","description":"Shoulder blade retractions is a beginner-level desk & posture Posecode example with 3 inspectable phases and a link to live 3D playback."}</script>
     <script>
       window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
     </script>
@@ -119,65 +119,71 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     </header>
     <main class="wrap">
       
-      <p class="eyebrow">Dance · Lower legs</p>
-      <h1>Relevé</h1>
-      <p class="meta-line"><b>Target</b> Calves &nbsp;·&nbsp; <b>Equipment</b> Body weight
-        &nbsp;·&nbsp; <b>Level</b> Beginner &nbsp;·&nbsp; <b>Reps</b> 5</p>
-      <p>Relevé is a beginner-level dance movement targeting the
-        calves, written in <a href="/">Posecode</a>, a small open-source language
+      <p class="eyebrow">Desk &amp; posture · Upper back</p>
+      <h1>Shoulder blade retractions</h1>
+      <p class="meta-line"><b>Target</b> Rhomboids &nbsp;·&nbsp; <b>Equipment</b> Body weight
+        &nbsp;·&nbsp; <b>Level</b> Beginner &nbsp;·&nbsp; <b>Reps</b> 6</p>
+      <p>Shoulder blade retractions is a beginner-level desk &amp; posture movement targeting the
+        rhomboids, written in <a href="/">Posecode</a>, a small open-source language
         that capable language models can use to describe human movement as text.
         Authored joint targets and reach-IK solves are constrained to Posecode's configured
         per-axis bounds. Those bounds constrain the visualization, but they do not certify
         that a complete movement is safe or clinically correct.
         This page documents a code example; it is not exercise instruction.</p>
 
-      <a class="btn" href="/play/releve">▶ Open Relevé in the playground →</a>
+      <a class="btn" href="/play/shoulder-blade-retraction">▶ Open Shoulder blade retractions in the playground →</a>
 
       <h2>Movement phases</h2>
       <p>Phase cues are display-only coaching text. The executable joint and
         contact directives in the source below determine the animation.</p>
       <ol class="steps">
 <li>
-          <span class="step-name">Rise<span class="step-dur">1.8s · settle</span></span>
-          <span class="step-cue">Turn out and rise onto the balls of the feet: lengthen up tall</span>
+          <span class="step-name">Reach forward<span class="step-dur">1.8s · flow</span></span>
+          <span class="step-cue">Reach both arms forward at shoulder height, rounding the upper back slightly</span>
         </li>
 <li>
-          <span class="step-name">Lower<span class="step-dur">2s · settle</span></span>
-          <span class="step-cue">Lower the heels with control, staying lifted through the spine</span>
+          <span class="step-name">Squeeze back<span class="step-dur">2s · flow</span></span>
+          <span class="step-cue">Draw the elbows back and pinch the shoulder blades together</span>
+        </li>
+<li>
+          <span class="step-name">Reset<span class="step-dur">1.6s · settle</span></span>
+          <span class="step-cue">Release to a tall, neutral posture</span>
         </li>
       </ol>
 
       <h2>The .posecode source</h2>
       <p>This is the exact text used by the linked playground animation: phases and joint
         angles, not 3D transforms.</p>
-      <pre class="code-block"><code>posecode exercise &quot;Relevé&quot;
+      <pre class="code-block"><code>posecode stretch &quot;Shoulder blade retractions&quot;
   rig humanoid
   pose start = standing
 
-  step &quot;Rise&quot; 1.8s settle:
-    ankles: plantarflex 30
-    hips: rotate-out 25
-    knees: extend 0
-    shoulders: abduct 75
-    elbows: flex 12
-    spine: extend 4
+  step &quot;Reach forward&quot; 1.8s flow:
+    shoulders: flex 80
+    elbows: flex 20
+    chest: flex 6
     ground-lock: feet
-    cue &quot;Turn out and rise onto the balls of the feet: lengthen up tall&quot;
+    cue &quot;Reach both arms forward at shoulder height, rounding the upper back slightly&quot;
 
-  step &quot;Lower&quot; 2s settle:
-    ankles: plantarflex 0
-    hips: rotate-out 0
-    shoulders: abduct 0
+  step &quot;Squeeze back&quot; 2s flow:
+    shoulders: extend 15
+    elbows: flex 95
+    chest: extend 12
+    ground-lock: feet
+    cue &quot;Draw the elbows back and pinch the shoulder blades together&quot;
+
+  step &quot;Reset&quot; 1.6s settle:
+    shoulders: flex 0
     elbows: flex 0
-    spine: flex 0
+    chest: flex 0
     ground-lock: feet
-    cue &quot;Lower the heels with control, staying lifted through the spine&quot;
+    cue &quot;Release to a tall, neutral posture&quot;
 
-  repeat 5
+  repeat 6
 </code></pre>
 
-      <h2>More dance movements</h2>
-         <div class="chip-list"><a href="/moves/demi-plie.html">Demi-plié</a><a href="/moves/tendu.html">Tendu</a><a href="/moves/pirouette.html">Pirouette (full turn)</a><a href="/moves/box-step.html">Box step (travels)</a><a href="/moves/grapevine.html">Grapevine (travels)</a><a href="/moves/waltz-box.html">Waltz box step</a></div>
+      <h2>More desk &amp; posture movements</h2>
+         <div class="chip-list"><a href="/moves/chest-opener.html">Chest opener</a><a href="/moves/posture.html">Desk posture reset</a><a href="/moves/twist.html">Standing spinal twist</a><a href="/moves/neck-side-stretch.html">Neck side stretch</a><a href="/moves/seated-torso-twist.html">Seated torso twist</a><a href="/moves/wrist-forearm-rolls.html">Wrist &amp; forearm rolls</a></div>
     </main>
     <footer class="site-footer">
       <div class="wrap">
