@@ -18,7 +18,7 @@ describe("product integration page", () => {
   });
 
   it("includes canonical and social metadata", () => {
-    expect(page).toContain("<title>Use Posecode in Your Product");
+    expect(page).toContain("<title>Integrate Inspectable Movement");
     expect(page).toContain('rel="canonical" href="https://www.posecode.org/for-products"');
     expect(page).toContain('property="og:title"');
     expect(page).toContain('name="twitter:card"');

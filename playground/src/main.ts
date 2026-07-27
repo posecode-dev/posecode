@@ -4,7 +4,7 @@
  *
  * The text in the editor is the single source of truth. On every (debounced)
  * change we re-parse; clean docs reload the viewer, errors/warnings surface in
- * the side panel. This mirrors how an LLM-authored doc would be pasted in.
+ * the side panel. The same path works for hand-authored and agent-authored source.
  */
 
 import { parse, type ParseError, type Warning } from "posecode-parser";
@@ -504,10 +504,9 @@ libSearch.addEventListener("input", () => {
 renderLibraryFilters();
 renderLibraryList();
 
-// --- New movement: clear the editor into a paste target for LLM output ---
-// The core loop is "Copy LLM prompt → ask an AI for a movement → paste it
-// back"; without this, pasting meant overwriting a preset by hand-selecting
-// its text first.
+// --- New movement: clear the editor into a focused source document ---
+// A human can write directly or paste a draft from another tool without
+// overwriting a preset by hand-selecting its text first.
 $<HTMLButtonElement>("new-doc").addEventListener("click", () => {
   currentPresetId = null;
   setCurrentPresetLabel(undefined, "New movement");
@@ -580,7 +579,7 @@ function flash(
   flashTimers.set(btn, timer);
 }
 
-// --- Copy LLM prompt (topbar) ---
+// --- Copy optional agent authoring guide (topbar) ---
 async function copyPrompt(btn: HTMLButtonElement): Promise<void> {
   flash(btn, "Copying…", "pending", 0);
   try {

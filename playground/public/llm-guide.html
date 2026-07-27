@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>How to Teach an LLM to Write Posecode: The Authoring Guide</title>
+    <title>Posecode Agent Authoring Guide</title>
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="description" content="An authoring guide for capable language models: syntax, joints, phases, and worked examples for producing raw .posecode documents that the playground can validate." />
+    <meta name="description" content="An optional agent authoring guide with syntax, joints, phases, and worked examples for producing .posecode documents that the playground can validate." />
     <link rel="canonical" href="https://www.posecode.org/llm-guide.html" />
-    <meta name="theme-color" content="#0a0d12" />
-    <meta property="og:title" content="How to Teach an LLM to Write Posecode: The Authoring Guide" />
-    <meta property="og:description" content="An authoring guide for capable language models: syntax, joints, phases, and worked examples for producing raw .posecode documents that the playground can validate." />
+    <meta name="theme-color" content="#0b0c0d" />
+    <meta property="og:title" content="Posecode Agent Authoring Guide" />
+    <meta property="og:description" content="An optional agent authoring guide with syntax, joints, phases, and worked examples for producing .posecode documents that the playground can validate." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.posecode.org/llm-guide.html" />
     <meta property="og:site_name" content="Posecode" />
@@ -24,11 +24,11 @@
       rel="stylesheet"
     />
     <style>
-:root{--bg:#0a0d12;--panel:#0f141b;--panel-2:#141a23;--border:#1e2530;--border-2:#2a323f;
---text:#e9eef4;--text-2:#9aa6b4;--muted:#616d7c;--accent:#c6f24a;--accent-2:#a9e02f;
---accent-ink:#0a0d12;--accent-glow:rgba(198,242,74,.45);--accent-wash:rgba(198,242,74,.1);
---accent-line:rgba(198,242,74,.35);--mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
---sans:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;--radius:10px;}
+:root{--bg:#0b0c0d;--panel:#111315;--panel-2:#171a1d;--border:#292d30;--border-2:#3a3f43;
+--text:#f2f1eb;--text-2:#aaa9a2;--muted:#74746f;--accent:#d4ff3f;--accent-2:#d4ff3f;
+--accent-ink:#0b0c0d;--accent-glow:rgba(212,255,63,.28);--accent-wash:rgba(212,255,63,.1);
+--accent-line:rgba(212,255,63,.42);--mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+--sans:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;--radius:3px;}
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.6;
@@ -111,16 +111,16 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
           <a href="/play">Playground</a>
           <a href="/moves/">Movement library</a>
           <a href="/spec.html">Language spec</a>
-          <a href="/llm-guide.html">LLM guide</a>
+          <a href="/llm-guide.html">Agent authoring</a>
           <a href="mailto:hello@posecode.org?subject=Posecode%20Feedback">Feedback</a>
           <a href="https://github.com/posecode-dev/posecode" target="_blank" rel="noopener">GitHub</a>
         </nav>
       </div>
     </header>
     <main class="wrap">
-      <p class="eyebrow">For LLMs</p>
-<h1>Authoring <code>.posecode</code> with an LLM</h1>
-<p>Paste the prompt below into ChatGPT, Claude, or any capable model. Then ask for a movement (&quot;write a squat&quot;, &quot;show a hamstring stretch&quot;) and paste the reply into the Posecode playground.</p>
+      <p class="eyebrow">Optional agent authoring</p>
+<h1>Posecode agent authoring guide</h1>
+<p>Use this optional guide when you want ChatGPT, Claude, or another model to draft a movement. Paste the prompt below, ask for a movement (&quot;write a squat&quot;, &quot;show a hamstring stretch&quot;), then inspect the reply in the Posecode playground.</p>
 <p>This is the task-oriented, pasteable authoring guide. The <a href="https://posecode.org/spec.html" target="_blank" rel="noopener">published Posecode Protocol Specification</a> is the normative language and IR contract. This guide stays self-contained so a model does not need to follow a link, but the specification wins if the two ever disagree.</p>
 <hr>
 <p>You write <strong>Posecode</strong>, a small text language that describes one person's movement so a 3D figure can animate it.</p>

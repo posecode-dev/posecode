@@ -6,11 +6,11 @@
     <title>Posecode Language Specification: The .posecode Kinematic Motion DSL</title>
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="description" content="The full Posecode v0.3 grammar, timing modes, joints, actions, and configured range-of-motion tables for a text language capable LLMs can use to describe human movement." />
+    <meta name="description" content="The full Posecode v0.3 grammar, timing modes, joints, actions, and configured range-of-motion tables for inspectable human movement as text." />
     <link rel="canonical" href="https://www.posecode.org/spec.html" />
-    <meta name="theme-color" content="#0a0d12" />
+    <meta name="theme-color" content="#0b0c0d" />
     <meta property="og:title" content="Posecode Language Specification: The .posecode Kinematic Motion DSL" />
-    <meta property="og:description" content="The full Posecode v0.3 grammar, timing modes, joints, actions, and configured range-of-motion tables for a text language capable LLMs can use to describe human movement." />
+    <meta property="og:description" content="The full Posecode v0.3 grammar, timing modes, joints, actions, and configured range-of-motion tables for inspectable human movement as text." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.posecode.org/spec.html" />
     <meta property="og:site_name" content="Posecode" />
@@ -24,11 +24,11 @@
       rel="stylesheet"
     />
     <style>
-:root{--bg:#0a0d12;--panel:#0f141b;--panel-2:#141a23;--border:#1e2530;--border-2:#2a323f;
---text:#e9eef4;--text-2:#9aa6b4;--muted:#616d7c;--accent:#c6f24a;--accent-2:#a9e02f;
---accent-ink:#0a0d12;--accent-glow:rgba(198,242,74,.45);--accent-wash:rgba(198,242,74,.1);
---accent-line:rgba(198,242,74,.35);--mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
---sans:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;--radius:10px;}
+:root{--bg:#0b0c0d;--panel:#111315;--panel-2:#171a1d;--border:#292d30;--border-2:#3a3f43;
+--text:#f2f1eb;--text-2:#aaa9a2;--muted:#74746f;--accent:#d4ff3f;--accent-2:#d4ff3f;
+--accent-ink:#0b0c0d;--accent-glow:rgba(212,255,63,.28);--accent-wash:rgba(212,255,63,.1);
+--accent-line:rgba(212,255,63,.42);--mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+--sans:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;--radius:3px;}
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.6;
@@ -111,7 +111,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
           <a href="/play">Playground</a>
           <a href="/moves/">Movement library</a>
           <a href="/spec.html">Language spec</a>
-          <a href="/llm-guide.html">LLM guide</a>
+          <a href="/llm-guide.html">Agent authoring</a>
           <a href="mailto:hello@posecode.org?subject=Posecode%20Feedback">Feedback</a>
           <a href="https://github.com/posecode-dev/posecode" target="_blank" rel="noopener">GitHub</a>
         </nav>
@@ -121,9 +121,9 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <p class="eyebrow">Reference</p>
 <h1>Posecode Protocol Specification v0.3</h1>
 <p>Posecode is a small text language for describing a single person's <strong>kinematic movement</strong> so it can be rendered as an animated 3D figure in a web browser.</p>
-<p>This document is the <strong>normative language and IR contract</strong>. The <a href="https://posecode.org/llm-guide.html" target="_blank" rel="noopener">LLM authoring guide</a> is task-oriented and pasteable; it is intentionally self-contained, but it must not define syntax or behavior that differs from this specification.</p>
-<p>It is to human movement what Mermaid is to diagrams: an LLM (or a human) writes a compact, readable document; a client-side parser + renderer turns it into a moving mannequin. The model never produces 3D matrices: it expresses the *semantic phases* of a movement, which it already understands.</p>
-<ul><li><strong>Version keyword:</strong> documents declare nothing; this is <code>posecode 0.3</code>.</li><li><strong>Compatibility:</strong> v0.3 parsers continue to accept v0.2 documents and the v0.1 easing aliases.</li><li><strong>File extension:</strong> <code>.posecode</code></li><li><strong>Compute model:</strong> generation is pure text (server-cheap); all 3D math runs on the client (Three.js). See the project research §6.</li></ul>
+<p>This document is the <strong>normative language and IR contract</strong>. The <a href="https://posecode.org/llm-guide.html" target="_blank" rel="noopener">agent authoring guide</a> is an optional, task-oriented aid. It is self-contained, but it must not define syntax or behavior that differs from this specification.</p>
+<p>It is to human movement what Mermaid is to diagrams. A human, animation tool, or agent writes a compact document; a client-side parser and renderer turn it into a moving mannequin. The source describes semantic movement phases rather than 3D matrices.</p>
+<ul><li><strong>Version keyword:</strong> documents declare nothing; this is <code>posecode 0.3</code>.</li><li><strong>Compatibility:</strong> v0.3 parsers continue to accept v0.2 documents and the v0.1 easing aliases.</li><li><strong>File extension:</strong> <code>.posecode</code></li><li><strong>Compute model:</strong> parsing and all 3D math run on the client (Three.js). Authoring may be manual, tool-driven, or agent-assisted.</li></ul>
 <hr>
 <h2>1. Grammar</h2>
 <p>Posecode is line- and indentation-oriented. Comments start with <code>#</code> or <code>//</code>.</p>

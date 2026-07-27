@@ -114,8 +114,8 @@ async function main() {
       <p class="meta-line"><b>Target</b> ${esc(p.target)} &nbsp;·&nbsp; <b>Equipment</b> ${esc(p.equipment)}
         &nbsp;·&nbsp; <b>Level</b> ${esc(p.difficulty)} &nbsp;·&nbsp; <b>Reps</b> ${repeat}</p>
       <p>${esc(name)} is ${levelArticle} ${esc(p.difficulty.toLowerCase())}-level ${esc(p.domain.toLowerCase())} movement targeting the
-        ${esc(p.target.toLowerCase())}, written in <a href="/">Posecode</a>, a small open-source language
-        that capable language models can use to describe human movement as text.
+        ${esc(p.target.toLowerCase())}, written in <a href="/">Posecode</a>, an open-source,
+        inspectable movement format for animation tools, agents, and web products.
         Authored joint targets and reach-IK solves are constrained to Posecode's configured
         per-axis bounds. Those bounds constrain the visualization, but they do not certify
         that a complete movement is safe or clinically correct.
@@ -194,7 +194,7 @@ ${stepsHtml}
   const specHtml = pageShell({
     title: "Posecode Language Specification: The .posecode Kinematic Motion DSL",
     description:
-      "The full Posecode v0.3 grammar, timing modes, joints, actions, and configured range-of-motion tables for a text language capable LLMs can use to describe human movement.",
+      "The full Posecode v0.3 grammar, timing modes, joints, actions, and configured range-of-motion tables for inspectable human movement as text.",
     canonicalPath: "/spec.html",
     bodyHtml: `<p class="eyebrow">Reference</p>\n${renderMarkdown(specMd)}`,
   });
@@ -202,11 +202,11 @@ ${stepsHtml}
 
   const guideMd = await readFile(resolve(repoRoot, "spec/llm-authoring.md"), "utf8");
   const guideHtml = pageShell({
-    title: "How to Teach an LLM to Write Posecode: The Authoring Guide",
+    title: "Posecode Agent Authoring Guide",
     description:
-      "An authoring guide for capable language models: syntax, joints, phases, and worked examples for producing raw .posecode documents that the playground can validate.",
+      "An optional agent authoring guide with syntax, joints, phases, and worked examples for producing .posecode documents that the playground can validate.",
     canonicalPath: "/llm-guide.html",
-    bodyHtml: `<p class="eyebrow">For LLMs</p>\n${renderMarkdown(guideMd)}`,
+    bodyHtml: `<p class="eyebrow">Optional agent authoring</p>\n${renderMarkdown(guideMd)}`,
   });
   await writeFile(resolve(publicDir, "llm-guide.html"), guideHtml, "utf8");
 

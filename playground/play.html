@@ -17,7 +17,7 @@
     />
     <meta
       name="description"
-      content="Try Posecode live: paste a valid .posecode document from a capable model and watch it animate a 3D figure. Browse movements across fitness, physiotherapy, yoga, and dance."
+      content="Write, inspect, and validate a .posecode movement document beside its live 3D render. Browse examples across fitness, physiotherapy, yoga, and dance."
     />
     <link rel="canonical" href="https://www.posecode.org/play" />
     <meta name="theme-color" content="#0a0d12" />
@@ -83,7 +83,7 @@
           id="new-doc"
           class="btn ghost"
           aria-label="New movement"
-          title="Clear the editor so you can paste a movement from your AI chat"
+          title="Clear the editor and start a new movement"
         >
           <span class="ico-plus" aria-hidden="true"></span><span class="lbl">New</span>
         </button>
@@ -122,9 +122,9 @@
         <button
           id="copy-prompt"
           class="btn primary"
-          title="Copy a system prompt that teaches an LLM to write .posecode"
+          title="Copy the optional agent authoring guide"
         >
-          <span class="lbl">Copy LLM prompt</span>
+          <span class="lbl">Copy agent guide</span>
         </button>
       </div>
     </header>
@@ -230,25 +230,22 @@
           <li>
             <span class="step-n">1</span>
             <div>
-              <b>Copy the prompt.</b> Click <em>Copy LLM prompt</em> (top right). It teaches
-              a capable model how to write the Posecode language.
+              <b>Start with source.</b> Pick a movement from the library or clear the editor
+              and write a new <code>.posecode</code> document.
             </div>
           </li>
           <li>
             <span class="step-n">2</span>
             <div>
-              <b>Ask an LLM for a movement.</b> Paste the prompt, then ask for what you want:
-              <em>“write a deadlift”</em>, <em>“a hamstring stretch”</em>, <em>“cat-cow”</em>.
-              For a representable request, it should reply with only the raw
-              <code>.posecode</code> document.
+              <b>Edit beside the render.</b> Change phases, joints, timing, and contacts.
+              Valid source renders immediately; diagnostics stay below the editor.
             </div>
           </li>
           <li>
             <span class="step-n">3</span>
             <div>
-              <b>Paste it here.</b> Drop the raw <code>.posecode</code> text into the editor on
-              the left. Valid documents animate; parse errors, range clamps, and unresolved
-              reach targets appear below the editor.
+              <b>Use an agent if you want a draft.</b> Copy the optional agent guide from the
+              top bar, ask for a movement, then inspect and revise the returned source here.
             </div>
           </li>
         </ol>
@@ -257,8 +254,8 @@
           <h3 id="authoring-reference-title">Authoring reference</h3>
           <p>
             The <a href="/spec.html">language specification</a> is the normative
-            Posecode contract. The <a href="/llm-guide.html">LLM guide</a> is a
-            self-contained authoring aid built from that contract.
+            Posecode contract. The <a href="/llm-guide.html">agent authoring guide</a>
+            is an optional aid built from that contract.
           </p>
           <p>
             <code>ground-lock</code> preserves an existing floor support;
@@ -271,7 +268,7 @@
 
         <div class="prompt-block">
           <div class="prompt-head">
-            <span>The prompt you’ll paste into the LLM</span>
+            <span>Optional agent authoring guide</span>
             <button id="howto-copy" class="btn ghost sm">Copy</button>
           </div>
           <pre id="prompt-text"></pre>
