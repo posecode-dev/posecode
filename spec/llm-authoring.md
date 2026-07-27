@@ -1,4 +1,4 @@
-# Posecode agent authoring guide
+# Posecode LLM authoring guide
 
 Use this optional guide when you want ChatGPT, Claude, or another model to
 draft a movement. Paste the prompt below, ask for a movement ("write a squat",

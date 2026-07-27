@@ -115,7 +115,7 @@ async function main() {
         &nbsp;·&nbsp; <b>Level</b> ${esc(p.difficulty)} &nbsp;·&nbsp; <b>Reps</b> ${repeat}</p>
       <p>${esc(name)} is ${levelArticle} ${esc(p.difficulty.toLowerCase())}-level ${esc(p.domain.toLowerCase())} movement targeting the
         ${esc(p.target.toLowerCase())}, written in <a href="/">Posecode</a>, an open-source,
-        inspectable movement format for animation tools, agents, and web products.
+        inspectable movement format for animation tools, LLMs, and web products.
         Authored joint targets and reach-IK solves are constrained to Posecode's configured
         per-axis bounds. Those bounds constrain the visualization, but they do not certify
         that a complete movement is safe or clinically correct.
@@ -202,11 +202,11 @@ ${stepsHtml}
 
   const guideMd = await readFile(resolve(repoRoot, "spec/llm-authoring.md"), "utf8");
   const guideHtml = pageShell({
-    title: "Posecode Agent Authoring Guide",
+    title: "Posecode LLM Authoring Guide",
     description:
-      "An optional agent authoring guide with syntax, joints, phases, and worked examples for producing .posecode documents that the playground can validate.",
+      "An optional LLM authoring guide with syntax, joints, phases, and worked examples for producing .posecode documents that the playground can validate.",
     canonicalPath: "/llm-guide.html",
-    bodyHtml: `<p class="eyebrow">Optional agent authoring</p>\n${renderMarkdown(guideMd)}`,
+    bodyHtml: `<p class="eyebrow">Optional LLM authoring</p>\n${renderMarkdown(guideMd)}`,
   });
   await writeFile(resolve(publicDir, "llm-guide.html"), guideHtml, "utf8");
 

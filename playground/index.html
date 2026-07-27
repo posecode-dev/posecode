@@ -8,7 +8,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <meta
       name="description"
-      content="Posecode is an open-source, inspectable movement format for animation tools, agents, and web products. Write, validate, edit, and render human movement as text."
+      content="Posecode is an open-source, inspectable movement format for animation tools, LLMs, and web products. Write, validate, edit, and render human movement as text."
     />
     <meta
       name="keywords"
@@ -66,7 +66,7 @@
             "@id": "https://www.posecode.org/#website",
             "url": "https://www.posecode.org/",
             "name": "Posecode",
-            "description": "An open-source, inspectable movement format for animation tools, agents, and web products. Describe human movement as text, validate it, and render it in the browser."
+            "description": "An open-source, inspectable movement format for animation tools, LLMs, and web products. Describe human movement as text, validate it, and render it in the browser."
           },
           {
             "@type": "SoftwareApplication",
@@ -75,11 +75,11 @@
             "url": "https://www.posecode.org/",
             "applicationCategory": "DeveloperApplication",
             "operatingSystem": "Any (web browser)",
-            "description": "Posecode is a small, readable format for single-person movement. Humans or agents can author it; the browser validates a closed vocabulary, constrains joint targets to configured ranges, and renders an inspectable animated 3D figure.",
+            "description": "Posecode is a small, readable format for single-person movement. Humans or LLMs can author it; the browser validates a closed vocabulary, constrains joint targets to configured ranges, and renders an inspectable animated 3D figure.",
             "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
             "license": "https://github.com/posecode-dev/posecode/blob/main/docs/legal/LICENSING.md",
             "sameAs": ["https://github.com/posecode-dev/posecode"],
-            "keywords": "movement format, kinematic motion, editable animation, 3D animation, animation tools, agents, web products, open source"
+            "keywords": "movement format, kinematic motion, editable animation, 3D animation, animation tools, LLMs, web products, open source"
           },
           {
             "@type": "FAQPage",
@@ -98,7 +98,7 @@
                 "name": "Does Posecode require an AI model?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "No. Posecode documents can be written by hand, produced by an animation tool, or drafted by an agent. Parsing, validation, editing, and rendering are deterministic and do not require an AI model."
+                  "text": "No. Posecode documents can be written by hand, produced by an animation tool, or drafted by an LLM. Parsing, validation, editing, and rendering are deterministic and do not require an AI model."
                 }
               },
               {
@@ -138,7 +138,7 @@
         <a href="/for-products">For products</a>
         <a href="https://github.com/posecode-dev/posecode" target="_blank" rel="noopener">GitHub</a>
       </nav>
-      <a class="btn primary nav-cta" href="/play">Try it live&nbsp;→</a>
+      <a class="btn primary nav-cta" href="/play/superhero-landing">Try it live&nbsp;→</a>
     </header>
 
     <main>
@@ -150,62 +150,74 @@
           </div>
           <div class="hero-support reveal">
             <p class="subhead">
-              Posecode turns human movement into structured, editable text for animation tools, agents, and web
+              Posecode turns human movement into structured, editable text for animation tools, LLMs, and web
               products. Change the source, validate it, and render the same motion in the browser.
             </p>
             <div class="hero-cta">
-              <a class="btn primary lg" href="/play">Open source + motion&nbsp;→</a>
+              <a class="btn primary lg" href="/play/superhero-landing">Open source + motion&nbsp;→</a>
               <a class="btn ghost lg" href="./spec.html">Read the format</a>
             </div>
             <div class="hero-meta" aria-label="Project highlights">
               <span>Open source</span>
               <span>Deterministic</span>
-              <span>Human or agent authored</span>
+              <span>Human or LLM authored</span>
             </div>
           </div>
         </div>
 
         <div class="hero-stage reveal" aria-label="Posecode source beside its validated live 3D motion">
           <div class="studio">
-            <div class="studio-bar" aria-hidden="true">
-              <span class="studio-kicker">posecode 0.3</span>
-              <span class="studio-title">superhero-landing.posecode</span>
-              <span class="studio-live"><i></i>valid document</span>
+            <div class="studio-bar">
+              <span class="studio-kicker" aria-hidden="true"></span>
+              <span class="studio-title"><b>Source beside motion.</b> The same document opens in the playground.</span>
+              <a href="/play/superhero-landing">Open it&nbsp;→</a>
             </div>
             <div class="studio-workspace">
               <div class="source-pane">
                 <div class="pane-label">
-                  <span>Readable source</span>
-                  <span>4 phases</span>
+                  <span>superhero-landing.posecode</span>
+                  <span class="studio-live"><i></i>live</span>
                 </div>
                 <pre class="hero-source" aria-label="Posecode source excerpt"><code><span class="source-line"><i>01</i><b class="t-kw">posecode</b> posture <em class="t-str">"Superhero landing"</em></span>
 <span class="source-line"><i>02</i>  <b class="t-kw">rig</b> humanoid</span>
 <span class="source-line"><i>03</i>  <b class="t-kw">pose start</b> = standing</span>
 <span class="source-line source-gap"><i>04</i></span>
-<span class="source-line active"><i>05</i>  <b class="t-kw">step</b> <em class="t-str">"Drop into the landing"</em> <strong class="t-num">0.55s</strong> flow:</span>
-<span class="source-line"><i>06</i>    pelvis: hinge <strong class="t-num">45</strong></span>
-<span class="source-line"><i>07</i>    spine: flex <strong class="t-num">50</strong></span>
-<span class="source-line"><i>08</i>    hip_right: flex <strong class="t-num">84</strong></span>
-<span class="source-line"><i>09</i>    knee_right: flex <strong class="t-num">123</strong></span>
-<span class="source-line"><i>10</i>    <b class="t-kw">ground-lock:</b> foot_right</span>
-<span class="source-line"><i>11</i>    <b class="t-kw">reach:</b> knee_left floor</span>
-<span class="source-line"><i>12</i>    <b class="t-kw">reach:</b> fist_left floor</span></code></pre>
+<span class="source-line phase-source-line active active-first"><i>05</i>  <b class="t-kw">step</b> <em class="t-str">"Drop into the landing"</em> <strong class="t-num">0.55s</strong> flow:</span>
+<span class="source-line phase-source-line active"><i>06</i>    pelvis: hinge <strong class="t-num">45</strong></span>
+<span class="source-line phase-source-line active"><i>07</i>    spine: flex <strong class="t-num">50</strong></span>
+<span class="source-line phase-source-line active"><i>08</i>    hip_right: flex <strong class="t-num">84</strong></span>
+<span class="source-line phase-source-line active"><i>09</i>    knee_right: flex <strong class="t-num">123</strong></span>
+<span class="source-line phase-source-line active"><i>10</i>    <b class="t-kw">ground-lock:</b> foot_right</span>
+<span class="source-line phase-source-line active"><i>11</i>    <b class="t-kw">reach:</b> knee_left floor</span>
+<span class="source-line phase-source-line active active-last"><i>12</i>    <b class="t-kw">reach:</b> fist_left floor</span></code></pre>
+                <div class="source-status" aria-hidden="true">
+                  <i>✓</i> source valid; live constraint checks active
+                </div>
               </div>
               <div class="viewer-pane">
-                <div class="pane-label">
-                  <span>Live render</span>
-                  <span>Three.js</span>
+                <div class="viewer-stage">
+                  <canvas id="hero-canvas"></canvas>
+                  <div class="studio-hud">
+                    <span id="hero-phase">Drop into the landing</span>
+                    <small id="hero-cue">Drop over the planted right foot as the left knee and fist descend</small>
+                  </div>
                 </div>
-                <canvas id="hero-canvas"></canvas>
-                <div class="studio-hud"><span id="hero-phase">Drop into the landing</span></div>
+                <div class="studio-ribbon" aria-hidden="true">
+                  <span class="active">Drop into the landing</span>
+                  <span>Make three-point contact</span>
+                  <span>Hold the landing</span>
+                  <span>Recover to standing</span>
+                </div>
+                <div class="studio-transport" aria-hidden="true">
+                  <span class="studio-play">Ⅱ</span>
+                  <span class="studio-scrub"><i></i></span>
+                  <span class="studio-clock">0.4s</span>
+                  <span class="studio-loop"><i></i>loop</span>
+                  <span class="studio-speed">1×</span>
+                  <span class="studio-export">GIF</span>
+                  <span class="studio-export">Video</span>
+                </div>
               </div>
-            </div>
-            <div class="studio-status" aria-hidden="true">
-              <span>source text</span>
-              <i>→</i>
-              <span>typed IR</span>
-              <i>→</i>
-              <span>validated motion</span>
             </div>
           </div>
         </div>
@@ -222,7 +234,7 @@
         </article>
         <article class="proof-item reveal">
           <span class="proof-n">03</span>
-          <div><strong>Built to integrate</strong><p>Parser, renderer, embed, and agent tools.</p></div>
+          <div><strong>Built to integrate</strong><p>Parser, renderer, embed, and LLM tools.</p></div>
         </article>
       </section>
 
@@ -252,10 +264,10 @@
 
       <section class="authoring">
         <div class="authoring-copy reveal">
-          <p class="eyebrow">AI is optional</p>
-          <h2>Write Posecode directly or start with an agent draft.</h2>
+          <p class="eyebrow">LLM authoring is optional</p>
+          <h2>Write Posecode directly or start with an LLM draft.</h2>
           <p>
-            A human can author the source, an animation tool can emit it, or an agent can draft it. The result is
+            A human can author the source, an animation tool can emit it, or an LLM can draft it. The result is
             still a small document you can read, edit, diff, validate, and render without model inference.
           </p>
         </div>
@@ -267,9 +279,9 @@
           </article>
           <article>
             <span>02 / assisted</span>
-            <h3>Draft with an agent</h3>
-            <p>Give an agent the authoring guide, then inspect and revise its output.</p>
-            <button class="text-action" data-copy-prompt><span class="lbl">Copy agent authoring guide&nbsp;→</span></button>
+            <h3>Draft with an LLM</h3>
+            <p>Give an LLM the authoring guide, then inspect and revise its output.</p>
+            <button class="text-action" data-copy-prompt><span class="lbl">Copy LLM authoring guide&nbsp;→</span></button>
           </article>
         </div>
       </section>
@@ -307,7 +319,7 @@
           </a>
           <a class="dev-card reveal" href="/for-products#integrate">
             <span class="dev-kind">Integrate</span>
-            <h3>Embed + agent tools <span>→</span></h3>
+            <h3>Embed + LLM tools <span>→</span></h3>
             <p>Add inspectable movement to a web product or workflow.</p>
           </a>
         </div>
@@ -318,7 +330,7 @@
         <h2>Keep the movement as readable source.</h2>
         <p>Open the source beside the movement, change one instruction, and see exactly what changed.</p>
         <div class="hero-cta">
-          <a class="btn primary lg" href="/play">Start with the playground&nbsp;→</a>
+          <a class="btn primary lg" href="/play/superhero-landing">Start with the playground&nbsp;→</a>
           <a class="btn ghost lg" href="/for-products">Explore integrations&nbsp;→</a>
         </div>
       </section>
@@ -334,7 +346,7 @@
         <nav class="footer-links" aria-label="Footer">
           <a href="./moves/">Movements</a>
           <a href="./spec.html">Spec</a>
-          <a href="./llm-guide.html">Agent authoring</a>
+          <a href="./llm-guide.html">LLM authoring</a>
           <a href="/for-products">For products</a>
           <a href="mailto:hello@posecode.org?subject=Posecode%20Feedback">Feedback</a>
           <a href="https://github.com/posecode-dev/posecode" target="_blank" rel="noopener">Source</a>

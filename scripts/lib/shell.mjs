@@ -142,7 +142,7 @@ export function pageShell({ title, description, canonicalPath, jsonLd, bodyHtml,
           <a href="/play">Playground</a>
           <a href="/moves/">Movement library</a>
           <a href="/spec.html">Language spec</a>
-          <a href="/llm-guide.html">Agent authoring</a>
+          <a href="/llm-guide.html">LLM authoring</a>
           <a href="mailto:hello@posecode.org?subject=Posecode%20Feedback">Feedback</a>
           <a href="https://github.com/posecode-dev/posecode" target="_blank" rel="noopener">GitHub</a>
         </nav>

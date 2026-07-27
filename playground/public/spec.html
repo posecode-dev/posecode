@@ -111,7 +111,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
           <a href="/play">Playground</a>
           <a href="/moves/">Movement library</a>
           <a href="/spec.html">Language spec</a>
-          <a href="/llm-guide.html">Agent authoring</a>
+          <a href="/llm-guide.html">LLM authoring</a>
           <a href="mailto:hello@posecode.org?subject=Posecode%20Feedback">Feedback</a>
           <a href="https://github.com/posecode-dev/posecode" target="_blank" rel="noopener">GitHub</a>
         </nav>
@@ -121,9 +121,9 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <p class="eyebrow">Reference</p>
 <h1>Posecode Protocol Specification v0.3</h1>
 <p>Posecode is a small text language for describing a single person's <strong>kinematic movement</strong> so it can be rendered as an animated 3D figure in a web browser.</p>
-<p>This document is the <strong>normative language and IR contract</strong>. The <a href="https://posecode.org/llm-guide.html" target="_blank" rel="noopener">agent authoring guide</a> is an optional, task-oriented aid. It is self-contained, but it must not define syntax or behavior that differs from this specification.</p>
-<p>It is to human movement what Mermaid is to diagrams. A human, animation tool, or agent writes a compact document; a client-side parser and renderer turn it into a moving mannequin. The source describes semantic movement phases rather than 3D matrices.</p>
-<ul><li><strong>Version keyword:</strong> documents declare nothing; this is <code>posecode 0.3</code>.</li><li><strong>Compatibility:</strong> v0.3 parsers continue to accept v0.2 documents and the v0.1 easing aliases.</li><li><strong>File extension:</strong> <code>.posecode</code></li><li><strong>Compute model:</strong> parsing and all 3D math run on the client (Three.js). Authoring may be manual, tool-driven, or agent-assisted.</li></ul>
+<p>This document is the <strong>normative language and IR contract</strong>. The <a href="https://posecode.org/llm-guide.html" target="_blank" rel="noopener">LLM authoring guide</a> is an optional, task-oriented aid. It is self-contained, but it must not define syntax or behavior that differs from this specification.</p>
+<p>It is to human movement what Mermaid is to diagrams. A human, animation tool, or an LLM writes a compact document; a client-side parser and renderer turn it into a moving mannequin. The source describes semantic movement phases rather than 3D matrices.</p>
+<ul><li><strong>Version keyword:</strong> documents declare nothing; this is <code>posecode 0.3</code>.</li><li><strong>Compatibility:</strong> v0.3 parsers continue to accept v0.2 documents and the v0.1 easing aliases.</li><li><strong>File extension:</strong> <code>.posecode</code></li><li><strong>Compute model:</strong> parsing and all 3D math run on the client (Three.js). Authoring may be manual, tool-driven, or LLM-assisted.</li></ul>
 <hr>
 <h2>1. Grammar</h2>
 <p>Posecode is line- and indentation-oriented. Comments start with <code>#</code> or <code>//</code>.</p>

@@ -3,7 +3,7 @@
 <p align="center">
   <b>Kinematic motion as text.</b>
   <br />
-  An inspectable, editable movement format for animation tools, agents, and web products.
+  An inspectable, editable movement format for animation tools, LLMs, and web products.
 </p>
 
 <p align="center">
@@ -41,7 +41,7 @@
 
 Animation clips and generated trajectories can show movement, but they often hide the semantic decisions that produced it.
 
-Posecode keeps those decisions in readable source. A human can write the document, an animation tool can emit it, or an agent can draft it. Parsing, validation, editing, and rendering do not require an AI model.
+Posecode keeps those decisions in readable source. A human can write the document, an animation tool can emit it, or an LLM can draft it. Parsing, validation, editing, and rendering do not require an AI model.
 
 
 <p align="center">
@@ -769,7 +769,7 @@ Feedback and contributions are welcome.
 
 ---
 <p align="center">
-  <b>Animation tools, agents, and web products need movement they can inspect.</b>
+  <b>Animation tools, LLMs, and web products need movement they can inspect.</b>
   <br />
   <b>Posecode makes movement readable source.</b>
 </p>

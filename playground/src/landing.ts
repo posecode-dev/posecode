@@ -34,8 +34,22 @@ function initHero(): void {
       showProceduralWhileLoading: false,
     });
     const phaseEl = document.getElementById("hero-phase");
-    viewer.onPhase(({ phaseName }) => {
+    const cueEl = document.getElementById("hero-cue");
+    const ribbonItems = Array.from(
+      document.querySelectorAll<HTMLElement>(".studio-ribbon span"),
+    );
+    const sourcePhaseLines = Array.from(
+      document.querySelectorAll<HTMLElement>(".phase-source-line"),
+    );
+    viewer.onPhase(({ phaseIndex, phaseName, cue }) => {
       if (phaseEl) phaseEl.textContent = phaseName === "reset" ? "" : phaseName;
+      if (cueEl) cueEl.textContent = phaseName === "reset" ? "" : cue ?? "";
+      ribbonItems.forEach((item, index) =>
+        item.classList.toggle("active", index === phaseIndex),
+      );
+      sourcePhaseLines.forEach((line) =>
+        line.classList.toggle("active", phaseIndex === 0),
+      );
     });
     // The launch hero is procedural. The visible chip is a contact-phase
     // excerpt from the preset source driving the XBot, with no hidden mocap.

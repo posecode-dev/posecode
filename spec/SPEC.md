@@ -4,12 +4,12 @@ Posecode is a small text language for describing a single person's **kinematic
 movement** so it can be rendered as an animated 3D figure in a web browser.
 
 This document is the **normative language and IR contract**. The
-[agent authoring guide](https://posecode.org/llm-guide.html) is an optional,
+[LLM authoring guide](https://posecode.org/llm-guide.html) is an optional,
 task-oriented aid. It is self-contained, but it must not define syntax or
 behavior that differs from this specification.
 
 It is to human movement what Mermaid is to diagrams. A human, animation tool,
-or agent writes a compact document; a client-side parser and renderer turn it
+or an LLM writes a compact document; a client-side parser and renderer turn it
 into a moving mannequin. The source describes semantic movement phases rather
 than 3D matrices.
 
@@ -18,7 +18,7 @@ than 3D matrices.
   v0.1 easing aliases.
 - **File extension:** `.posecode`
 - **Compute model:** parsing and all 3D math run on the client (Three.js).
-  Authoring may be manual, tool-driven, or agent-assisted.
+  Authoring may be manual, tool-driven, or LLM-assisted.
 
 ---
 

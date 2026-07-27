@@ -122,9 +122,9 @@
         <button
           id="copy-prompt"
           class="btn primary"
-          title="Copy the optional agent authoring guide"
+          title="Copy the optional LLM authoring guide"
         >
-          <span class="lbl">Copy agent guide</span>
+          <span class="lbl">Copy LLM guide</span>
         </button>
       </div>
     </header>
@@ -214,6 +214,24 @@
               </select>
             </div>
           </label>
+          <div class="export-actions" aria-label="Export one loop">
+            <button
+              id="export-gif"
+              class="btn-export"
+              type="button"
+              title="Download one loop as a GIF"
+            >
+              <span class="lbl">GIF</span>
+            </button>
+            <button
+              id="export-video"
+              class="btn-export"
+              type="button"
+              title="Download one loop as a WebM video"
+            >
+              <span class="lbl">Video</span>
+            </button>
+          </div>
         </div>
       </section>
     </main>
@@ -244,7 +262,7 @@
           <li>
             <span class="step-n">3</span>
             <div>
-              <b>Use an agent if you want a draft.</b> Copy the optional agent guide from the
+              <b>Use an LLM if you want a draft.</b> Copy the optional LLM guide from the
               top bar, ask for a movement, then inspect and revise the returned source here.
             </div>
           </li>
@@ -254,7 +272,7 @@
           <h3 id="authoring-reference-title">Authoring reference</h3>
           <p>
             The <a href="/spec.html">language specification</a> is the normative
-            Posecode contract. The <a href="/llm-guide.html">agent authoring guide</a>
+            Posecode contract. The <a href="/llm-guide.html">LLM authoring guide</a>
             is an optional aid built from that contract.
           </p>
           <p>
@@ -268,7 +286,7 @@
 
         <div class="prompt-block">
           <div class="prompt-head">
-            <span>Optional agent authoring guide</span>
+            <span>Optional LLM authoring guide</span>
             <button id="howto-copy" class="btn ghost sm">Copy</button>
           </div>
           <pre id="prompt-text"></pre>

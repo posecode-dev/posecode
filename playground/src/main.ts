@@ -4,7 +4,7 @@
  *
  * The text in the editor is the single source of truth. On every (debounced)
  * change we re-parse; clean docs reload the viewer, errors/warnings surface in
- * the side panel. The same path works for hand-authored and agent-authored source.
+ * the side panel. The same path works for hand-authored and LLM-authored source.
  */
 
 import { parse, type ParseError, type Warning } from "posecode-parser";
@@ -20,10 +20,12 @@ import type { PosecodeEditor } from "./editor.js";
 import { ANIMATION_PROGRESS_MESSAGE, PRESETS } from "./presets.js";
 import { prioritizeFeaturedMovement } from "./library-order.js";
 import { SHOWCASE_CLIPS } from "./clips.js";
+import { exportGif, exportVideo } from "./export.js";
 
 // Open on a deterministic, fully procedural movement. Mocap-backed or
 // Experimental presets should never be the product's first impression.
-const DEFAULT_PRESET = PRESETS.find((p) => p.id === "squat") ?? PRESETS[0]!;
+const DEFAULT_PRESET =
+  PRESETS.find((p) => p.id === "superhero-landing") ?? PRESETS[0]!;
 import { renderWarnings } from "./warnings.js";
 import llmPrompt from "../../spec/llm-authoring.md?raw";
 
@@ -53,6 +55,8 @@ const floorGuideTravel = $<HTMLSpanElement>("floor-guide-travel");
 const floorGuideReset = $<HTMLSpanElement>("floor-guide-reset");
 const copyBtn = $<HTMLButtonElement>("copy-prompt");
 const shareBtn = $<HTMLButtonElement>("share");
+const exportGifBtn = $<HTMLButtonElement>("export-gif");
+const exportVideoBtn = $<HTMLButtonElement>("export-video");
 const tabEditor = $<HTMLButtonElement>("tab-editor");
 const tabViewer = $<HTMLButtonElement>("tab-viewer");
 
@@ -64,6 +68,8 @@ let viewer: Viewer | null = null;
 let scrubbing = false;
 let repeat = 1;
 let rep = 1;
+let movementName = DEFAULT_PRESET.label;
+let exporting = false;
 // Maps each phase index → the 1-based line range of its `step` block, so the
 // editor can highlight the lines driving the currently-animating phase.
 let phaseRanges: Array<{ from: number; to: number }> = [];
@@ -288,6 +294,7 @@ function recompile(): void {
   // Before the renderer finishes loading, we still parse + surface warnings;
   // the viewer-dependent work re-runs once `boot()` calls recompile() again.
   if (ir && viewer) {
+    movementName = ir.name;
     viewer.load(ir);
     updateFloorGuideKey();
     viewer.setLoop(loop.checked);
@@ -544,6 +551,51 @@ scrub.addEventListener("change", () => {
 loop.addEventListener("change", () => viewer?.setLoop(loop.checked));
 speed.addEventListener("change", () => viewer?.setSpeed(Number(speed.value)));
 
+// --- Export: one complete loop as a GIF or WebM video -----------------------
+function setExportProgress(
+  activeButton: HTMLButtonElement,
+  label: string | null,
+): void {
+  exporting = label !== null;
+  exportGifBtn.disabled = exporting;
+  exportVideoBtn.disabled = exporting;
+  const activeLabel = activeButton.querySelector<HTMLElement>(".lbl");
+  if (activeLabel) {
+    activeLabel.textContent =
+      label ?? activeButton.dataset.defaultLabel ?? activeLabel.textContent;
+  }
+}
+
+function runExport(kind: "gif" | "video", button: HTMLButtonElement): void {
+  if (!viewer || exporting) return;
+  const label = button.querySelector<HTMLElement>(".lbl");
+  if (label && !button.dataset.defaultLabel) {
+    button.dataset.defaultLabel = label.textContent ?? "";
+  }
+  const context = {
+    viewer,
+    sourceCanvas: canvas,
+    name: () => movementName,
+    caption: () => ({
+      phase: phaseEl.textContent ?? "",
+      cue: cueEl.textContent ?? "",
+    }),
+    onProgress: (progress: string | null) =>
+      setExportProgress(button, progress),
+  };
+  const task = kind === "gif" ? exportGif(context) : exportVideo(context);
+  task.catch((error) => {
+    console.error("export failed", error);
+    setExportProgress(button, null);
+    flash(button, "Export failed", "error");
+  });
+}
+
+exportGifBtn.addEventListener("click", () => runExport("gif", exportGifBtn));
+exportVideoBtn.addEventListener("click", () =>
+  runExport("video", exportVideoBtn),
+);
+
 // --- Button label feedback ---
 // Swap a button's label (the inner `.lbl` span when present, else the button
 // text) to a transient message, then restore it.
@@ -579,7 +631,7 @@ function flash(
   flashTimers.set(btn, timer);
 }
 
-// --- Copy optional agent authoring guide (topbar) ---
+// --- Copy optional LLM authoring guide (topbar) ---
 async function copyPrompt(btn: HTMLButtonElement): Promise<void> {
   flash(btn, "Copying…", "pending", 0);
   try {
