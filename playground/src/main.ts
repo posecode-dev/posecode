@@ -8,8 +8,16 @@
  */
 
 import { parse, type ParseError, type Warning } from "posecode-parser";
-import { inject } from "@vercel/analytics";
 import type { ConstraintDiagnostic, Viewer } from "posecode-render";
+import {
+  trackUsageEvent,
+  UsageSession,
+  USAGE_EVENT_NAMES,
+  type DocumentKind,
+  type PresetOpenSource,
+  type RenderTrigger,
+} from "./analytics.js";
+import { initializeAnalytics } from "./vercel-analytics.js";
 import {
   buildNicePlayPath,
   buildNiceShareHash,
@@ -27,7 +35,8 @@ const DEFAULT_PRESET = PRESETS.find((p) => p.id === "squat") ?? PRESETS[0]!;
 import { renderWarnings } from "./warnings.js";
 import llmPrompt from "../../spec/llm-authoring.md?raw";
 
-inject();
+initializeAnalytics();
+const usageSession = new UsageSession();
 
 const $ = <T extends HTMLElement>(id: string): T =>
   document.getElementById(id) as T;
@@ -72,6 +81,13 @@ let lastRomWarnings: Warning[] = [];
 let lastContactSignature = "";
 let lastContactRefresh = 0;
 let scrubDiagnosticsRefresh = 0;
+let documentRevision = 1;
+let pendingRenderTrigger: RenderTrigger = "initial";
+
+function documentKind(): DocumentKind {
+  if (currentPresetId) return "preset";
+  return initialDocumentWasShared ? "shared" : "custom";
+}
 
 /** Merge live solver residuals with source diagnostics without repainting each frame. */
 function refreshContactDiagnostics(force = false): void {
@@ -253,9 +269,16 @@ function scheduleRecompile(): void {
 }
 
 /** Keep the address bar and library label in sync with editor changes. */
-function handleEditorChange(source: string): void {
+function handleEditorChange(source: string, userInitiated: boolean): void {
+  const editedDocumentKind = documentKind();
   const preset = PRESETS.find((p) => p.source === source);
   currentPresetId = preset?.id ?? null;
+  if (userInitiated) {
+    usageSession.trackFirstEdit(editedDocumentKind);
+    initialDocumentWasShared = false;
+    documentRevision++;
+    pendingRenderTrigger = "editor_change";
+  }
   setCurrentPresetLabel(
     preset,
     source.trim() ? "Custom movement" : "New movement",
@@ -290,6 +313,11 @@ function recompile(): void {
   if (ir && viewer) {
     viewer.load(ir);
     updateFloorGuideKey();
+    usageSession.trackSuccessfulRender(
+      documentRevision,
+      pendingRenderTrigger,
+      documentKind(),
+    );
     viewer.setLoop(loop.checked);
     viewer.play();
     setPlaying(true);
@@ -490,6 +518,13 @@ function loadPreset(id: string): void {
   const preset = PRESETS.find((p) => p.id === id);
   if (!preset) return;
   currentPresetId = preset.id;
+  initialDocumentWasShared = false;
+  documentRevision++;
+  pendingRenderTrigger = "preset_open";
+  trackUsageEvent(USAGE_EVENT_NAMES.presetOpened, {
+    source: "library",
+    preset_id: preset.id,
+  });
   setCurrentPresetLabel(preset, preset.label);
   editorApi?.setValue(preset.source);
   history.replaceState(null, "", buildNicePlayPath(preset.source));
@@ -510,6 +545,7 @@ renderLibraryList();
 // its text first.
 $<HTMLButtonElement>("new-doc").addEventListener("click", () => {
   currentPresetId = null;
+  initialDocumentWasShared = false;
   setCurrentPresetLabel(undefined, "New movement");
   editorApi?.setValue("");
   history.replaceState(null, "", "/play");
@@ -605,6 +641,9 @@ async function shareLink(): Promise<void> {
     const url = `${location.origin}${path}${hash}`;
     history.replaceState(null, "", `${path}${hash}`);
     await navigator.clipboard.writeText(url);
+    trackUsageEvent(USAGE_EVENT_NAMES.shareCreated, {
+      share_kind: path === "/play" ? "encoded" : "preset",
+    });
     flash(shareBtn, "Link copied ✓", "success");
   } catch (err) {
     const message =
@@ -668,6 +707,7 @@ $<HTMLButtonElement>("intro-dismiss").addEventListener("click", () => {
 // over the default preset, opening exactly like a library selection.
 const sharedSource =
   resolveSharedSource(window.location.hash) ?? resolveSharedPath(window.location.pathname);
+let initialDocumentWasShared = Boolean(sharedSource);
 let initialDoc: string;
 if (sharedSource) {
   const preset = PRESETS.find((p) => p.source === sharedSource);
@@ -675,10 +715,45 @@ if (sharedSource) {
   setCurrentPresetLabel(preset, "↗ Shared link");
   initialDoc = sharedSource;
   intro.hidden = true;
+  pendingRenderTrigger = window.location.hash ? "shared_link" : "initial";
+  if (preset) {
+    let source: PresetOpenSource = window.location.hash
+      ? "shared_link"
+      : "direct_url";
+    try {
+      const referrer = new URL(document.referrer);
+      if (
+        !window.location.hash &&
+        referrer.origin === location.origin &&
+        referrer.pathname === "/"
+      ) {
+        source = "landing_cta";
+      }
+    } catch {
+      // Missing or external referrer: keep the direct/shared classification.
+    }
+    trackUsageEvent(USAGE_EVENT_NAMES.presetOpened, {
+      source,
+      preset_id: preset.id,
+    });
+  }
 } else {
   initialDoc = DEFAULT_PRESET.source;
   currentPresetId = DEFAULT_PRESET.id;
   setCurrentPresetLabel(DEFAULT_PRESET, DEFAULT_PRESET.label);
+  let source: PresetOpenSource = "direct_url";
+  try {
+    const referrer = new URL(document.referrer);
+    if (referrer.origin === location.origin && referrer.pathname === "/") {
+      source = "landing_cta";
+    }
+  } catch {
+    // Direct visits have no usable referrer.
+  }
+  trackUsageEvent(USAGE_EVENT_NAMES.presetOpened, {
+    source,
+    preset_id: DEFAULT_PRESET.id,
+  });
 }
 
 // Boot the two heavyweights (CodeMirror editor + Three.js renderer) after the
