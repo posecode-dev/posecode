@@ -72,6 +72,8 @@ const jointSelection = $<HTMLDivElement>("joint-selection");
 const jointSelectionName = $<HTMLElement>("joint-selection-name");
 const copyBtn = $<HTMLButtonElement>("copy-prompt");
 const shareBtn = $<HTMLButtonElement>("share");
+const exportMenuButton = $<HTMLButtonElement>("export-menu-button");
+const exportMenu = $<HTMLDivElement>("export-menu");
 const downloadBvhBtn = $<HTMLButtonElement>("download-bvh");
 const downloadGltfBtn = $<HTMLButtonElement>("download-gltf");
 const tabEditor = $<HTMLButtonElement>("tab-editor");
@@ -729,10 +731,10 @@ async function downloadBvh(): Promise<void> {
   const source = editorApi.getValue();
   const { ir, errors } = parse(source);
   if (!ir || errors.length > 0) {
-    flash(downloadBvhBtn, "Fix errors first", "error");
+    flash(exportMenuButton, "Fix errors first", "error");
     return;
   }
-  flash(downloadBvhBtn, "Exporting…", "pending", 0);
+  flash(exportMenuButton, "Exporting…", "pending", 0);
   try {
     const { exportBVH } = await import("posecode-render");
     const bvh = exportBVH(ir);
@@ -745,12 +747,11 @@ async function downloadBvh(): Promise<void> {
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-    flash(downloadBvhBtn, "Downloaded ✓", "success");
+    flash(exportMenuButton, "Downloaded ✓", "success");
   } catch {
-    flash(downloadBvhBtn, "Export failed", "error");
+    flash(exportMenuButton, "Export failed", "error");
   }
 }
-downloadBvhBtn.addEventListener("click", downloadBvh);
 
 // --- glTF / GLB export ---
 // Bake the current movement into a GLB (rig + animation clip) and download it.
@@ -759,10 +760,10 @@ async function downloadGltf(): Promise<void> {
   const source = editorApi.getValue();
   const { ir, errors } = parse(source);
   if (!ir || errors.length > 0) {
-    flash(downloadGltfBtn, "Fix errors first", "error");
+    flash(exportMenuButton, "Fix errors first", "error");
     return;
   }
-  flash(downloadGltfBtn, "Exporting…", "pending", 0);
+  flash(exportMenuButton, "Exporting…", "pending", 0);
   try {
     const { exportGLTF } = await import("posecode-render");
     const glb = (await exportGLTF(ir, { binary: true })) as ArrayBuffer;
@@ -775,12 +776,45 @@ async function downloadGltf(): Promise<void> {
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-    flash(downloadGltfBtn, "Downloaded ✓", "success");
+    flash(exportMenuButton, "Downloaded ✓", "success");
   } catch {
-    flash(downloadGltfBtn, "Export failed", "error");
+    flash(exportMenuButton, "Export failed", "error");
   }
 }
-downloadGltfBtn.addEventListener("click", downloadGltf);
+
+// --- Export menu ---
+function setExportMenu(open: boolean): void {
+  exportMenu.hidden = !open;
+  exportMenuButton.setAttribute("aria-expanded", String(open));
+  if (open) downloadBvhBtn.focus();
+}
+exportMenuButton.addEventListener("click", () => {
+  setExportMenu(exportMenu.hasAttribute("hidden"));
+});
+downloadBvhBtn.addEventListener("click", () => {
+  setExportMenu(false);
+  exportMenuButton.focus();
+  void downloadBvh();
+});
+downloadGltfBtn.addEventListener("click", () => {
+  setExportMenu(false);
+  exportMenuButton.focus();
+  void downloadGltf();
+});
+document.addEventListener("click", (event) => {
+  if (!(event.target instanceof Element) || !event.target.closest(".tb-downloads")) {
+    setExportMenu(false);
+  }
+});
+exportMenu.addEventListener("keydown", (event) => {
+  const options = [downloadBvhBtn, downloadGltfBtn];
+  const index = options.indexOf(document.activeElement as HTMLButtonElement);
+  if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+    event.preventDefault();
+    const direction = event.key === "ArrowDown" ? 1 : -1;
+    options[(index + direction + options.length) % options.length]?.focus();
+  }
+});
 
 // --- Slide-over panels (how-to, movement library) sharing one scrim ---
 const howto = $<HTMLElement>("howto");
@@ -815,7 +849,13 @@ $<HTMLButtonElement>("howto-copy").addEventListener("click", (e) =>
   copyPrompt(e.currentTarget as HTMLButtonElement),
 );
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") closePanels();
+  if (e.key === "Escape") {
+    closePanels();
+    if (!exportMenu.hidden) {
+      setExportMenu(false);
+      exportMenuButton.focus();
+    }
+  }
 });
 
 // --- Intro strip ---

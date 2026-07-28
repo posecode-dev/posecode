@@ -301,12 +301,60 @@ select:hover {
   align-items: center;
 }
 
-/* The two motion-export buttons are grouped so mobile can lay them out as one
-   balanced row. On desktop the wrapper is transparent (`display: contents`),
-   so the buttons stay direct children of the flex toolbar and the desktop row
-   is unchanged. */
+/* Desktop motion export lives behind one compact menu; mobile hides the whole
+   desktop-pipeline action below. */
 .tb-downloads {
-  display: contents;
+  position: relative;
+}
+.export-caret {
+  width: 7px;
+  height: 7px;
+  margin-left: 2px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 0.16s var(--ease);
+}
+#export-menu-button[aria-expanded="true"] .export-caret {
+  transform: translateY(2px) rotate(225deg);
+}
+.export-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 30;
+  width: 260px;
+  padding: 6px;
+  background:
+    var(--sheen),
+    var(--panel-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-float);
+}
+.export-option {
+  display: grid;
+  width: 100%;
+  gap: 2px;
+  padding: 10px 11px;
+  color: var(--text);
+  text-align: left;
+  font: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.export-option:hover,
+.export-option:focus-visible {
+  background: var(--panel-3);
+}
+.export-option > span {
+  font-weight: 700;
+}
+.export-option small {
+  color: var(--text-2);
+  font-size: 11px;
 }
 
 /* Movement-library trigger — the one content control in the topbar. Reads like
