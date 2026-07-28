@@ -11,6 +11,6 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "posecode-parser": "0.4.1"
+    "posecode-parser": "0.4.2"
   }
 }
