@@ -979,6 +979,7 @@ select:hover {
   color: var(--muted);
   user-select: none;
 }
+
 .loop input {
   appearance: none;
   -webkit-appearance: none;

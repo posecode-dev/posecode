@@ -17,11 +17,11 @@ export function esc(s) {
 }
 
 const BASE_CSS = `
-:root{--bg:#0a0d12;--panel:#0f141b;--panel-2:#141a23;--border:#1e2530;--border-2:#2a323f;
---text:#e9eef4;--text-2:#9aa6b4;--muted:#616d7c;--accent:#c6f24a;--accent-2:#a9e02f;
---accent-ink:#0a0d12;--accent-glow:rgba(198,242,74,.45);--accent-wash:rgba(198,242,74,.1);
---accent-line:rgba(198,242,74,.35);--mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
---sans:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;--radius:10px;}
+:root{--bg:#0b0c0d;--panel:#111315;--panel-2:#171a1d;--border:#292d30;--border-2:#3a3f43;
+--text:#f2f1eb;--text-2:#aaa9a2;--muted:#74746f;--accent:#d4ff3f;--accent-2:#d4ff3f;
+--accent-ink:#0b0c0d;--accent-glow:rgba(212,255,63,.28);--accent-wash:rgba(212,255,63,.1);
+--accent-line:rgba(212,255,63,.42);--mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+--sans:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;--radius:3px;}
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.6;
@@ -112,7 +112,7 @@ export function pageShell({ title, description, canonicalPath, jsonLd, bodyHtml,
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <meta name="description" content="${safeDesc}" />
     <link rel="canonical" href="${canonical}" />
-    <meta name="theme-color" content="#0a0d12" />
+    <meta name="theme-color" content="#0b0c0d" />
     <meta property="og:title" content="${safeTitle}" />
     <meta property="og:description" content="${safeDesc}" />
     <meta property="og:type" content="website" />
@@ -142,7 +142,7 @@ export function pageShell({ title, description, canonicalPath, jsonLd, bodyHtml,
           <a href="/play">Playground</a>
           <a href="/moves/">Movement library</a>
           <a href="/spec.html">Language spec</a>
-          <a href="/llm-guide.html">LLM guide</a>
+          <a href="/llm-guide.html">LLM authoring</a>
           <a href="mailto:hello@posecode.org?subject=Posecode%20Feedback">Feedback</a>
           <a href="https://github.com/posecode-dev/posecode" target="_blank" rel="noopener">GitHub</a>
         </nav>

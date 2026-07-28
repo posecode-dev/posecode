@@ -4,7 +4,7 @@
  *
  * The text in the editor is the single source of truth. On every (debounced)
  * change we re-parse; clean docs reload the viewer, errors/warnings surface in
- * the side panel. This mirrors how an LLM-authored doc would be pasted in.
+ * the side panel. The same path works for hand-authored and LLM-authored source.
  */
 
 import { parse, type ParseError, type Warning } from "posecode-parser";
@@ -31,7 +31,8 @@ import { SHOWCASE_CLIPS } from "./clips.js";
 
 // Open on a deterministic, fully procedural movement. Mocap-backed or
 // Experimental presets should never be the product's first impression.
-const DEFAULT_PRESET = PRESETS.find((p) => p.id === "squat") ?? PRESETS[0]!;
+const DEFAULT_PRESET =
+  PRESETS.find((p) => p.id === "superhero-landing") ?? PRESETS[0]!;
 import { renderWarnings } from "./warnings.js";
 import llmPrompt from "../../spec/llm-authoring.md?raw";
 
@@ -542,10 +543,9 @@ libSearch.addEventListener("input", () => {
 renderLibraryFilters();
 renderLibraryList();
 
-// --- New movement: clear the editor into a paste target for LLM output ---
-// The core loop is "Copy LLM prompt → ask an AI for a movement → paste it
-// back"; without this, pasting meant overwriting a preset by hand-selecting
-// its text first.
+// --- New movement: clear the editor into a focused source document ---
+// A human can write directly or paste a draft from another tool without
+// overwriting a preset by hand-selecting its text first.
 $<HTMLButtonElement>("new-doc").addEventListener("click", () => {
   currentPresetId = null;
   initialDocumentWasShared = false;
@@ -643,7 +643,7 @@ function flash(
   flashTimers.set(btn, timer);
 }
 
-// --- Copy LLM prompt (topbar) ---
+// --- Copy optional LLM authoring guide (topbar) ---
 async function copyPrompt(btn: HTMLButtonElement): Promise<void> {
   flash(btn, "Copying…", "pending", 0);
   try {

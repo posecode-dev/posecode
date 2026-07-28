@@ -1,8 +1,8 @@
-# Authoring `.posecode` with an LLM
+# Posecode LLM authoring guide
 
-Paste the prompt below into ChatGPT, Claude, or any capable model. Then ask for
-a movement ("write a squat", "show a hamstring stretch") and paste the reply
-into the Posecode playground.
+Use this optional guide when you want ChatGPT, Claude, or another model to
+draft a movement. Paste the prompt below, ask for a movement ("write a squat",
+"show a hamstring stretch"), then inspect the reply in the Posecode playground.
 
 This is the task-oriented, pasteable authoring guide. The
 [published Posecode Protocol Specification](https://posecode.org/spec.html) is the normative language and IR

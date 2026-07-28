@@ -3,15 +3,13 @@
 <p align="center">
   <b>Kinematic motion as text.</b>
   <br />
-  Mermaid gave LLMs a way to draw diagrams.
-  <br />
-  Posecode gives them a way to show movement.
+  An inspectable, editable movement format for animation tools, LLMs, and web products.
 </p>
 
 <p align="center">
-  A human-readable spatial DSL for describing, validating, and rendering
+  Like Mermaid for movement: small text documents for describing, validating, and rendering
   <br />
-  exercises, physiotherapy movements, posture, dance, and human motion.
+  deterministic human motion without hiding the source inside a black box.
 </p>
 
 <p align="center">
@@ -41,7 +39,9 @@
 
 ## Why Posecode?
 
-Ask an LLM to explain physical movement and it usually returns unstructured prose or a static diagram.
+Animation clips and generated trajectories can show movement, but they often hide the semantic decisions that produced it.
+
+Posecode keeps those decisions in readable source. A human can write the document, an animation tool can emit it, or an LLM can draft it. Parsing, validation, editing, and rendering do not require an AI model.
 
 
 <p align="center">
@@ -75,14 +75,14 @@ A human may understand that instruction, but a renderer cannot reliably determin
 - in what sequence,
 - or within which physical limits.
 
-Large language models can often reason about the components of human movement, but they lack a standardized syntax for expressing that reasoning in a renderable and testable form.
+Humans, tools, and language models all need a shared syntax for expressing movement in a renderable and testable form.
 
 Posecode provides that missing representation.
 
 ### See Posecode in 28 seconds
 
-From an LLM prompt to editable Posecode, validated 3D rendering, MCP tools,
-and a one-script web embed.
+From readable movement source to validated 3D rendering, MCP tools, and a
+one-script web embed.
 
 <p align="center">
   <a href="docs/launch-media/posecode-cut2-builder-16x9.mp4">
@@ -845,7 +845,7 @@ Feedback and contributions are welcome.
 
 ---
 <p align="center">
-  <b>LLMs already have languages for software, data, and interfaces.</b>
+  <b>Animation tools, LLMs, and web products need movement they can inspect.</b>
   <br />
-  <b>Posecode gives them a language for movement.</b>
+  <b>Posecode makes movement readable source.</b>
 </p>
