@@ -1,6 +1,6 @@
 {
   "name": "posecode-mcp",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Model Context Protocol server for Posecode: let any LLM agent validate, ROM-check, and get a render link for a .posecode movement, natively.",
   "mcpName": "io.github.posecode-dev/posecode-mcp",
   "license": "AGPL-3.0-only",
@@ -46,8 +46,8 @@
   ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",
-    "posecode-parser": "0.4.1",
-    "posecode-share": "0.4.1",
+    "posecode-parser": "0.4.2",
+    "posecode-share": "0.4.2",
     "zod": "^4.4.3"
   },
   "devDependencies": {

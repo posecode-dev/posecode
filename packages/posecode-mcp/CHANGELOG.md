@@ -1,5 +1,12 @@
 # posecode-mcp
 
+## 0.4.2
+
+### Patch Changes
+
+- posecode-parser@0.4.2
+- posecode-share@0.4.2
+
 ## 0.4.1
 
 ### Patch Changes
