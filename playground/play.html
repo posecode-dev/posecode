@@ -101,12 +101,12 @@
         </a>
         <a
           id="feedback"
-          href="https://github.com/posecode-dev/posecode/issues/new"
+          href="https://github.com/posecode-dev/posecode"
           class="btn ghost"
           target="_blank"
           rel="noreferrer"
-          aria-label="Report an issue on GitHub"
-          title="Report an issue on GitHub"
+          aria-label="Open the Posecode repository on GitHub"
+          title="Open the Posecode repository on GitHub"
         >
           <span class="ico-github" aria-hidden="true"></span><span class="lbl">GitHub</span>
         </a>
@@ -121,21 +121,38 @@
         </button>
         <div class="tb-downloads">
           <button
-            id="download-bvh"
+            id="export-menu-button"
             class="btn ghost"
-            aria-label="Download BVH"
-            title="Download the movement as a .bvh motion file for Blender and other tools"
+            type="button"
+            aria-haspopup="menu"
+            aria-expanded="false"
+            aria-controls="export-menu"
           >
-            <span class="lbl" aria-live="polite">Download BVH</span>
+            <span class="lbl" aria-live="polite">Export</span>
+            <span class="export-caret" aria-hidden="true"></span>
           </button>
-          <button
-            id="download-gltf"
-            class="btn ghost"
-            aria-label="Download glTF"
-            title="Download the movement as a .glb glTF asset (rig + animation) for Three.js and web pipelines"
-          >
-            <span class="lbl" aria-live="polite">Download glTF</span>
-          </button>
+          <div id="export-menu" class="export-menu" role="menu" hidden>
+            <button
+              id="download-bvh"
+              class="export-option"
+              type="button"
+              role="menuitem"
+              title="Download the movement as a .bvh motion file for Blender and other tools"
+            >
+              <span>BVH</span>
+              <small>For Blender and animation tools</small>
+            </button>
+            <button
+              id="download-gltf"
+              class="export-option"
+              type="button"
+              role="menuitem"
+              title="Download the movement as a .glb glTF asset (rig + animation) for Three.js and web pipelines"
+            >
+              <span>glTF / GLB</span>
+              <small>For Three.js and web pipelines</small>
+            </button>
+          </div>
         </div>
         <button
           id="copy-prompt"
