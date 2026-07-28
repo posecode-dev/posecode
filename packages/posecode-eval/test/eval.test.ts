@@ -17,6 +17,7 @@ import {
   palmFloorAngleDeg,
   phaseMaxLandmarkSpeed,
   spineCurlDeg,
+  withinDisplayedContactTolerance,
 } from "../src/index.js";
 
 const examplesDir = resolve(
@@ -25,6 +26,11 @@ const examplesDir = resolve(
 );
 
 describe("probe", () => {
+  it("judges contact residuals at the millimetre precision shown in reports", () => {
+    expect(withinDisplayedContactTolerance(0.03049, 0.03)).toBe(true);
+    expect(withinDisplayedContactTolerance(0.03051, 0.03)).toBe(false);
+  });
+
   it("reports parse errors instead of throwing", () => {
     const r = probeMovement("not posecode at all");
     expect(r.ok).toBe(false);

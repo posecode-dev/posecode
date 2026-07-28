@@ -56,7 +56,13 @@ export {
   torsoForwardPitchDeg,
   torsoPitchDeg,
 } from "./metrics.js";
-export { CONTACT_ERROR_MAX, genericChecks, phaseCheck, MOVEMENT_CHECKS } from "./checks.js";
+export {
+  CONTACT_ERROR_MAX,
+  genericChecks,
+  phaseCheck,
+  withinDisplayedContactTolerance,
+  MOVEMENT_CHECKS,
+} from "./checks.js";
 export type { CheckOutcome, MovementChecks } from "./checks.js";
 export { runEval, renderReport } from "./report.js";
 export type { EvalOptions, EvalReport, MovementReport, MovementSource } from "./report.js";
