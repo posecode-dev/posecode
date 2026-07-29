@@ -29,6 +29,13 @@ import { ANIMATION_PROGRESS_MESSAGE, PRESETS } from "./presets.js";
 import { prioritizeFeaturedMovement } from "./library-order.js";
 import { SHOWCASE_CLIPS } from "./clips.js";
 
+// During source-only typechecks the playground resolves posecode-render's last
+// built declaration bundle. Keep the local extension explicit until the normal
+// package build regenerates that bundle from the source Viewer interface.
+type InteractiveViewer = Viewer & {
+  selectBones(boneIds: readonly string[]): void;
+};
+
 // Open on a deterministic, fully procedural movement. Mocap-backed or
 // Experimental presets should never be the product's first impression.
 const DEFAULT_PRESET =
@@ -61,6 +68,8 @@ const cueEl = $<HTMLDivElement>("cue");
 const floorGuideKey = $<HTMLDivElement>("floor-guide-key");
 const floorGuideTravel = $<HTMLSpanElement>("floor-guide-travel");
 const floorGuideReset = $<HTMLSpanElement>("floor-guide-reset");
+const jointSelection = $<HTMLDivElement>("joint-selection");
+const jointSelectionName = $<HTMLElement>("joint-selection-name");
 const copyBtn = $<HTMLButtonElement>("copy-prompt");
 const shareBtn = $<HTMLButtonElement>("share");
 const downloadBvhBtn = $<HTMLButtonElement>("download-bvh");
@@ -72,7 +81,7 @@ const tabViewer = $<HTMLButtonElement>("tab-viewer");
 // *after* the editor shell paints (dynamic import → its own chunk) so first
 // paint and interactivity aren't blocked by it. Until `boot()` resolves the
 // import, `viewer` is null and viewer-dependent work is skipped/deferred.
-let viewer: Viewer | null = null;
+let viewer: InteractiveViewer | null = null;
 let scrubbing = false;
 let repeat = 1;
 let rep = 1;
@@ -86,6 +95,24 @@ let lastContactRefresh = 0;
 let scrubDiagnosticsRefresh = 0;
 let documentRevision = 1;
 let pendingRenderTrigger: RenderTrigger = "initial";
+let selectedBoneIds: readonly string[] = [];
+
+/** Keep the source selection and its live 3D joint markers in sync. */
+function handleJointSelect(
+  joint: string | null,
+  boneIds: readonly string[],
+): void {
+  selectedBoneIds = boneIds;
+  viewer?.selectBones(boneIds);
+  jointSelection.hidden = joint === null;
+  if (joint) {
+    const readable = joint.replaceAll("_", " ");
+    jointSelectionName.textContent =
+      boneIds.length > 1 ? `${readable} · ${boneIds.length} bones` : readable;
+  } else {
+    jointSelectionName.textContent = "";
+  }
+}
 
 function documentKind(): DocumentKind {
   if (currentPresetId) return "preset";
@@ -864,6 +891,7 @@ void import("./editor.js").then(({ createPosecodeEditor }) => {
   editorApi = createPosecodeEditor($("editor"), {
     doc: initialDoc,
     onChange: handleEditorChange,
+    onJointSelect: handleJointSelect,
   });
   recompile();
 });
@@ -895,7 +923,8 @@ void import("posecode-render").then(({ createViewer }) => {
     // never slows the default page. Disabled with the classic figure, which has
     // no skinned mesh to retarget onto.
     ...(classicFigure || groundingAuditMode ? {} : { clips: SHOWCASE_CLIPS }),
-  });
+  }) as InteractiveViewer;
+  viewer.selectBones(selectedBoneIds);
   // Exposed for capture/e2e tooling (frame capture drives README GIFs).
   (window as unknown as Record<string, unknown>).__posecodeViewer = viewer;
   if (import.meta.env.DEV) {

@@ -596,6 +596,42 @@ select:hover {
   background: linear-gradient(180deg, rgba(8, 10, 14, 0.6), transparent);
 }
 
+.joint-selection {
+  position: absolute;
+  z-index: 2;
+  top: 18px;
+  left: 50%;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  max-width: min(42vw, 360px);
+  padding: 6px 9px;
+  transform: translateX(-50%);
+  border: 1px solid rgba(212, 255, 63, 0.42);
+  border-radius: 3px;
+  color: var(--text);
+  background: rgba(11, 12, 13, 0.82);
+  backdrop-filter: blur(8px);
+  font-family: var(--mono);
+  pointer-events: none;
+}
+.joint-selection[hidden] {
+  display: none;
+}
+.joint-selection span {
+  color: var(--accent);
+  font-size: 9px;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+}
+.joint-selection strong {
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .hud {
   position: absolute;
   top: 18px;

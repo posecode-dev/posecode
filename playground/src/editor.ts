@@ -21,6 +21,7 @@ import {
   hoverTooltip,
   placeholder,
   Decoration,
+  WidgetType,
   type DecorationSet,
 } from "@codemirror/view";
 import {
@@ -61,7 +62,15 @@ import {
   MOVEMENT_KINDS,
   PROP_TYPES,
   START_POSE_NAMES,
+  expandJoint,
 } from "posecode-parser";
+import {
+  angleRangeFor,
+  angleTargetAt,
+  findAngleTargets,
+  normalizeAngle,
+  type AngleTarget,
+} from "./direct-manipulation.js";
 
 // --- Syntax highlighting ----------------------------------------------------
 
@@ -254,6 +263,81 @@ const posecodeTheme = EditorView.theme(
       color: "var(--text-2)",
     },
     ".cm-posecode-hover strong": { color: "var(--text)" },
+    ".cm-joint-link": {
+      cursor: "pointer",
+      borderBottom: "1px dotted rgba(192, 167, 255, 0.72)",
+      borderRadius: "2px",
+      transition: "color 120ms ease, background-color 120ms ease",
+    },
+    ".cm-joint-link:hover": {
+      color: "#dfd2ff",
+      backgroundColor: "rgba(192, 167, 255, 0.12)",
+    },
+    ".cm-joint-selected": {
+      color: "var(--accent)",
+      backgroundColor: "rgba(212, 255, 63, 0.11)",
+      borderBottomColor: "var(--accent)",
+    },
+    ".cm-angle-control": {
+      cursor: "pointer",
+      color: "#ffb184",
+      borderBottom: "1px dotted rgba(255, 157, 107, 0.78)",
+      borderRadius: "2px",
+    },
+    ".cm-angle-control:hover": {
+      color: "#ffd1b7",
+      backgroundColor: "rgba(255, 157, 107, 0.12)",
+    },
+    ".cm-angle-spinner": {
+      display: "inline-flex",
+      alignItems: "center",
+      verticalAlign: "middle",
+      margin: "0 2px",
+      height: "25px",
+      color: "var(--text)",
+      backgroundColor: "var(--panel-3)",
+      border: "1px solid var(--accent)",
+      borderRadius: "3px",
+      boxShadow: "0 0 0 2px rgba(212, 255, 63, 0.08)",
+      overflow: "hidden",
+    },
+    ".cm-angle-input": {
+      width: "5.2ch",
+      height: "100%",
+      padding: "0 2px 0 5px",
+      border: "0",
+      outline: "0",
+      color: "var(--text)",
+      backgroundColor: "transparent",
+      fontFamily: "var(--mono)",
+      fontSize: "12.5px",
+      textAlign: "right",
+    },
+    ".cm-angle-degree": {
+      paddingRight: "3px",
+      color: "var(--text-2)",
+      fontSize: "11px",
+    },
+    ".cm-angle-step": {
+      width: "22px",
+      height: "100%",
+      padding: "0",
+      border: "0",
+      borderRadius: "0",
+      color: "var(--text-2)",
+      backgroundColor: "transparent",
+      fontFamily: "var(--mono)",
+      fontSize: "14px",
+      cursor: "pointer",
+    },
+    ".cm-angle-step:hover": {
+      color: "var(--bg)",
+      backgroundColor: "var(--accent)",
+    },
+    ".cm-angle-step:focus-visible, .cm-angle-input:focus-visible": {
+      outline: "1px solid var(--text)",
+      outlineOffset: "-2px",
+    },
     ".cm-tooltip-autocomplete > ul > li[aria-selected]": {
       backgroundColor: "var(--accent-veil)",
       color: "var(--text)",
@@ -294,6 +378,223 @@ const phaseHighlightField = StateField.define<DecorationSet>({
   provide: (f) => EditorView.decorations.from(f),
 });
 
+// --- Direct manipulation ---------------------------------------------------
+// Joint names and authored degree values are live controls rather than inert
+// syntax. Clicking a joint selects its concrete bones in the viewer; clicking
+// the angle replaces only that number with a compact, ROM-aware spinner.
+
+const setSelectedJoint = StateEffect.define<string | null>();
+const setActiveAngle = StateEffect.define<AngleTarget | null>();
+
+const selectedJointField = StateField.define<string | null>({
+  create: () => null,
+  update(selected, tr) {
+    for (const effect of tr.effects) {
+      if (effect.is(setSelectedJoint)) selected = effect.value;
+    }
+    if (
+      selected &&
+      tr.docChanged &&
+      !findAngleTargets(tr.state.doc.toString()).some(
+        (target) => target.joint === selected,
+      )
+    ) {
+      return null;
+    }
+    return selected;
+  },
+});
+
+const activeAngleField = StateField.define<AngleTarget | null>({
+  create: () => null,
+  update(active, tr) {
+    if (active && tr.docChanged) {
+      const mapped = tr.changes.mapPos(active.angleFrom, 1);
+      active = angleTargetAt(tr.state.doc.toString(), mapped, "angle");
+    }
+    for (const effect of tr.effects) {
+      if (effect.is(setActiveAngle)) active = effect.value;
+    }
+    return active;
+  },
+});
+
+function replaceActiveAngle(view: EditorView, requested: number): void {
+  const active = view.state.field(activeAngleField);
+  if (!active || !Number.isFinite(requested)) return;
+  const range = angleRangeFor(active.joint, active.action);
+  if (!range) return;
+  const insert = normalizeAngle(requested, range);
+  const current = view.state.doc.sliceString(active.angleFrom, active.angleTo);
+  if (insert === current) return;
+  view.dispatch({
+    changes: {
+      from: active.angleFrom,
+      to: active.angleTo,
+      insert,
+    },
+    effects: setActiveAngle.of({
+      ...active,
+      degrees: Number(insert),
+      angleTo: active.angleFrom + insert.length,
+    }),
+    annotations: Transaction.userEvent.of("input"),
+  });
+}
+
+class AngleSpinnerWidget extends WidgetType {
+  constructor(
+    readonly target: AngleTarget,
+    readonly min: number,
+    readonly max: number,
+  ) {
+    super();
+  }
+
+  eq(other: AngleSpinnerWidget): boolean {
+    return (
+      other.target.joint === this.target.joint &&
+      other.target.action === this.target.action &&
+      other.target.degrees === this.target.degrees &&
+      other.min === this.min &&
+      other.max === this.max
+    );
+  }
+
+  toDOM(view: EditorView): HTMLElement {
+    const control = document.createElement("span");
+    control.className = "cm-angle-spinner";
+    control.title = `Safe range: ${this.min}–${this.max}°`;
+
+    const minus = document.createElement("button");
+    minus.type = "button";
+    minus.className = "cm-angle-step";
+    minus.textContent = "−";
+    minus.setAttribute("aria-label", `Decrease ${this.target.joint} angle`);
+
+    const input = document.createElement("input");
+    input.type = "number";
+    input.className = "cm-angle-input";
+    input.min = String(this.min);
+    input.max = String(this.max);
+    input.step = "1";
+    input.value = String(this.target.degrees);
+    input.setAttribute(
+      "aria-label",
+      `${this.target.joint} ${this.target.action} angle in degrees; safe range ${this.min} to ${this.max}`,
+    );
+
+    const degree = document.createElement("span");
+    degree.className = "cm-angle-degree";
+    degree.textContent = "°";
+    degree.setAttribute("aria-hidden", "true");
+
+    const plus = document.createElement("button");
+    plus.type = "button";
+    plus.className = "cm-angle-step";
+    plus.textContent = "+";
+    plus.setAttribute("aria-label", `Increase ${this.target.joint} angle`);
+
+    const step = (delta: number): void => {
+      const current = Number(input.value);
+      replaceActiveAngle(
+        view,
+        (Number.isFinite(current) ? current : this.target.degrees) + delta,
+      );
+    };
+    minus.addEventListener("click", () => step(-1));
+    plus.addEventListener("click", () => step(1));
+    input.addEventListener("input", () => {
+      if (input.value !== "") replaceActiveAngle(view, Number(input.value));
+    });
+    input.addEventListener("change", () => {
+      if (input.value === "") input.value = String(this.target.degrees);
+    });
+    input.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      view.dispatch({ effects: setActiveAngle.of(null) });
+      view.focus();
+    });
+
+    control.append(minus, input, degree, plus);
+    window.setTimeout(() => {
+      input.focus();
+      input.select();
+    }, 0);
+    return control;
+  }
+
+  updateDOM(dom: HTMLElement): boolean {
+    const input = dom.querySelector<HTMLInputElement>(".cm-angle-input");
+    if (!input) return false;
+    input.min = String(this.min);
+    input.max = String(this.max);
+    if (document.activeElement !== input) {
+      input.value = String(this.target.degrees);
+    }
+    dom.title = `Safe range: ${this.min}–${this.max}°`;
+    return true;
+  }
+
+  ignoreEvent(): boolean {
+    return true;
+  }
+}
+
+const directManipulationDecorations = EditorView.decorations.compute(
+  ["doc", selectedJointField, activeAngleField],
+  (state) => {
+    const selected = state.field(selectedJointField);
+    const active = state.field(activeAngleField);
+    const marks = [];
+    for (const target of findAngleTargets(state.doc.toString())) {
+      marks.push(
+        Decoration.mark({
+          class: `cm-joint-link${
+            selected === target.joint ? " cm-joint-selected" : ""
+          }`,
+          attributes: {
+            "data-posecode-joint": target.joint,
+            title: `Select ${target.joint} in the 3D viewer`,
+          },
+        }).range(target.jointFrom, target.jointTo),
+      );
+      if (
+        !active ||
+        active.angleFrom !== target.angleFrom ||
+        active.angleTo !== target.angleTo
+      ) {
+        marks.push(
+          Decoration.mark({
+            class: "cm-angle-control",
+            attributes: {
+              "data-posecode-angle": "true",
+              title: `Adjust ${target.joint} ${target.action}`,
+            },
+          }).range(target.angleFrom, target.angleTo),
+        );
+      }
+    }
+    return Decoration.set(marks, true);
+  },
+);
+
+const angleSpinnerDecoration = EditorView.decorations.compute(
+  [activeAngleField],
+  (state) => {
+    const active = state.field(activeAngleField);
+    if (!active) return Decoration.none;
+    const range = angleRangeFor(active.joint, active.action);
+    if (!range) return Decoration.none;
+    return Decoration.set([
+      Decoration.replace({
+        widget: new AngleSpinnerWidget(active, range.min, range.max),
+      }).range(active.angleFrom, active.angleTo),
+    ]);
+  },
+);
+
 // --- Public API -------------------------------------------------------------
 
 export interface PosecodeEditor {
@@ -307,6 +608,7 @@ export interface PosecodeEditor {
 export interface PosecodeEditorOptions {
   doc: string;
   onChange: (value: string, userInitiated: boolean) => void;
+  onJointSelect?: (joint: string | null, boneIds: readonly string[]) => void;
 }
 
 export function createPosecodeEditor(
@@ -328,6 +630,10 @@ export function createPosecodeEditor(
         new LanguageSupport(posecodeStream),
         syntaxHighlighting(posecodeHighlight),
         phaseHighlightField,
+        selectedJointField,
+        activeAngleField,
+        directManipulationDecorations,
+        angleSpinnerDecoration,
         autocompletion({ override: [posecodeCompletions], icons: false }),
         posecodeLinter,
         lintGutter(),
@@ -338,6 +644,46 @@ export function createPosecodeEditor(
           'Paste a movement from your AI chat here, or start typing:\nposecode exercise "My movement"',
         ),
         EditorView.lineWrapping,
+        EditorView.domEventHandlers({
+          click(event, targetView) {
+            const element = (event.target as Element | null)?.closest<HTMLElement>(
+              "[data-posecode-joint], [data-posecode-angle]",
+            );
+            if (!element || !targetView.dom.contains(element)) {
+              targetView.dispatch({
+                effects: [
+                  setSelectedJoint.of(null),
+                  setActiveAngle.of(null),
+                ],
+              });
+              opts.onJointSelect?.(null, []);
+              return false;
+            }
+
+            const part = element.dataset.posecodeAngle ? "angle" : "joint";
+            const position = targetView.posAtDOM(element, 0);
+            const target = angleTargetAt(
+              targetView.state.doc.toString(),
+              position,
+              part,
+            );
+            if (!target) return false;
+
+            const selectionFrom =
+              part === "angle" ? target.angleFrom : target.jointFrom;
+            const selectionTo =
+              part === "angle" ? target.angleTo : target.jointTo;
+            targetView.dispatch({
+              selection: { anchor: selectionFrom, head: selectionTo },
+              effects: [
+                setSelectedJoint.of(target.joint),
+                setActiveAngle.of(part === "angle" ? target : null),
+              ],
+            });
+            opts.onJointSelect?.(target.joint, expandJoint(target.joint));
+            return true;
+          },
+        }),
         keymap.of([
           ...closeBracketsKeymap,
           ...defaultKeymap,
@@ -368,7 +714,12 @@ export function createPosecodeEditor(
     setValue: (doc: string) => {
       view.dispatch({
         changes: { from: 0, to: view.state.doc.length, insert: doc },
+        effects: [
+          setSelectedJoint.of(null),
+          setActiveAngle.of(null),
+        ],
       });
+      opts.onJointSelect?.(null, []);
     },
     focus: () => view.focus(),
     highlightPhase: (from: number | null, to?: number) => {
