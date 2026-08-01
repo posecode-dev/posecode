@@ -27,6 +27,16 @@ export interface AngleRange {
   max: number;
 }
 
+interface SourceLineRange {
+  from: number;
+  to: number;
+}
+
+interface PreviewSegment {
+  start: number;
+  end: number;
+}
+
 // Keep this deliberately stricter than syntax highlighting. Only complete,
 // parser-valid joint target lines become controls; comments, turn/travel
 // numbers, and half-written source remain ordinary editable text.
@@ -106,4 +116,25 @@ export function angleRangeFor(joint: string, action: string): AngleRange | null 
 export function normalizeAngle(value: number, range: AngleRange): string {
   const clamped = Math.min(range.max, Math.max(range.min, value));
   return String(Math.round(clamped * 10) / 10);
+}
+
+/**
+ * Resolve a directly edited source line to the key pose it controls. Joint
+ * targets in a start-pose override preview at time zero; targets in a step
+ * preview just inside that phase's endpoint so the looping sampler cannot wrap.
+ */
+export function previewTimeForLine(
+  line: number,
+  phaseRanges: readonly SourceLineRange[],
+  segments: readonly PreviewSegment[],
+): number | null {
+  const firstPhase = phaseRanges[0];
+  if (firstPhase && line < firstPhase.from) return 0;
+
+  const phaseIndex = phaseRanges.findIndex(
+    (range) => line >= range.from && line <= range.to,
+  );
+  const segment = phaseIndex < 0 ? undefined : segments[phaseIndex];
+  if (!segment) return null;
+  return Math.max(segment.start, segment.end - 1e-3);
 }
