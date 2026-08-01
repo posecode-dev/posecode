@@ -111,6 +111,11 @@ export interface Viewer {
   getConstraintDiagnostics(): readonly ConstraintDiagnostic[];
   /** Precise visible world bounds; intended for audits and deterministic export. */
   getVisibleBounds(): THREE.Box3;
+  /**
+   * Highlight canonical bone ids at their live joint positions. Unknown ids
+   * are ignored; pass an empty list to clear the selection.
+   */
+  selectBones(boneIds: readonly string[]): void;
   getMannequin(): any;
   getCharacter(): any;
   /**
@@ -178,6 +183,46 @@ export function createViewer(
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x0c0f15);
   scene.fog = new THREE.Fog(0x0c0f15, 9, 18);
+
+  // Text-editor selection overlay. Markers live outside the mannequin and
+  // character trees so they never affect grounding, camera framing, bounds,
+  // exports, or contact diagnostics.
+  const boneSelection = new THREE.Group();
+  boneSelection.name = "posecode-bone-selection";
+  scene.add(boneSelection);
+  const selectionDotGeometry = new THREE.SphereGeometry(0.018, 16, 12);
+  const selectionRingGeometry = new THREE.TorusGeometry(0.055, 0.006, 8, 32);
+  const selectionDotMaterial = new THREE.MeshBasicMaterial({
+    color: 0xd4ff3f,
+    transparent: true,
+    opacity: 0.96,
+    depthTest: false,
+    depthWrite: false,
+  });
+  const selectionRingMaterial = new THREE.MeshBasicMaterial({
+    color: 0xd4ff3f,
+    transparent: true,
+    opacity: 0.82,
+    depthTest: false,
+    depthWrite: false,
+  });
+  let selectedBoneIds: string[] = [];
+  let selectionMarkers: THREE.Group[] = [];
+
+  function rebuildBoneSelection(): void {
+    boneSelection.clear();
+    selectionMarkers = selectedBoneIds.map(() => {
+      const marker = new THREE.Group();
+      marker.renderOrder = 1000;
+      const dot = new THREE.Mesh(selectionDotGeometry, selectionDotMaterial);
+      dot.renderOrder = 1000;
+      const ring = new THREE.Mesh(selectionRingGeometry, selectionRingMaterial);
+      ring.renderOrder = 1000;
+      marker.add(dot, ring);
+      boneSelection.add(marker);
+      return marker;
+    });
+  }
 
   // Image-based environment light: soft bounced light that gives the matte
   // figure materials realistic shading gradients instead of flat CG plastic.
@@ -911,6 +956,23 @@ export function createViewer(
     // geometry; a segmented skin can have a different lowest point as limbs
     // rotate. Reconcile the actual skinned surface after every animation layer.
     if (character && solvedInfo && isFloorBound(solvedInfo)) character.reconcileFloor();
+    // Follow the visible rig (including mocap and its final floor correction)
+    // when available; the congruent procedural driver is the fallback.
+    for (let i = 0; i < selectedBoneIds.length; i++) {
+      const boneId = selectedBoneIds[i]!;
+      const marker = selectionMarkers[i]!;
+      const position =
+        character?.getJointWorldPosition(boneId) ??
+        mannequin.bones.get(boneId)?.getWorldPosition(new THREE.Vector3()) ??
+        null;
+      marker.visible = position !== null;
+      if (position) {
+        marker.position.copy(position);
+        // The torus is a screen-facing selection ring; the centre dot remains
+        // spherical, so copying the camera frame works for both children.
+        marker.quaternion.copy(camera.quaternion);
+      }
+    }
     frameDt = 0;
     if (easeCamera) {
       controls.target.lerp(desiredTarget, 0.07);
@@ -1242,6 +1304,12 @@ export function createViewer(
     getVisibleBounds() {
       return character?.getBounds() ?? new THREE.Box3().setFromObject(mannequin.root);
     },
+    selectBones(boneIds) {
+      selectedBoneIds = [...new Set(boneIds)].filter((id) =>
+        mannequin.bones.has(id),
+      );
+      rebuildBoneSelection();
+    },
     getMannequin() {
       return mannequin;
     },
@@ -1267,6 +1335,10 @@ export function createViewer(
       clipLayer?.dispose();
       character?.dispose();
       floorGuide?.dispose();
+      selectionDotGeometry.dispose();
+      selectionRingGeometry.dispose();
+      selectionDotMaterial.dispose();
+      selectionRingMaterial.dispose();
       renderer.dispose();
     },
   };
