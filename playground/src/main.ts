@@ -28,6 +28,7 @@ import type { PosecodeEditor } from "./editor.js";
 import { ANIMATION_PROGRESS_MESSAGE, PRESETS } from "./presets.js";
 import { prioritizeFeaturedMovement } from "./library-order.js";
 import { SHOWCASE_CLIPS } from "./clips.js";
+import { previewTimeForLine } from "./direct-manipulation.js";
 
 // During source-only typechecks the playground resolves posecode-render's last
 // built declaration bundle. Keep the local extension explicit until the normal
@@ -98,6 +99,7 @@ let scrubDiagnosticsRefresh = 0;
 let documentRevision = 1;
 let pendingRenderTrigger: RenderTrigger = "initial";
 let selectedBoneIds: readonly string[] = [];
+let pendingPreviewLine: number | null = null;
 
 /** Keep the source selection and its live 3D joint markers in sync. */
 function handleJointSelect(
@@ -295,13 +297,18 @@ function computePhaseRanges(
 }
 
 let debounce = 0;
-function scheduleRecompile(): void {
+function scheduleRecompile(previewLine?: number): void {
   window.clearTimeout(debounce);
+  pendingPreviewLine = previewLine ?? null;
   debounce = window.setTimeout(recompile, 250);
 }
 
 /** Keep the address bar and library label in sync with editor changes. */
-function handleEditorChange(source: string, userInitiated: boolean): void {
+function handleEditorChange(
+  source: string,
+  userInitiated: boolean,
+  context?: { previewLine: number },
+): void {
   const editedDocumentKind = documentKind();
   const preset = PRESETS.find((p) => p.source === source);
   currentPresetId = preset?.id ?? null;
@@ -316,7 +323,7 @@ function handleEditorChange(source: string, userInitiated: boolean): void {
     source.trim() ? "Custom movement" : "New movement",
   );
   history.replaceState(null, "", buildNicePlayPath(source));
-  scheduleRecompile();
+  scheduleRecompile(context?.previewLine);
 }
 
 function recompile(): void {
@@ -352,8 +359,6 @@ function recompile(): void {
     );
     viewer.setLoop(loop.checked);
     viewer.setSpeed(Number(speed.value));
-    viewer.play();
-    setPlaying(true);
     const tl = viewer.getTimeline();
     repeat = tl?.repeat ?? 1;
     rep = 1;
@@ -364,6 +369,26 @@ function recompile(): void {
       tl?.segments.length ?? 0,
     );
     ed.highlightPhase(null); // next onPhase paints the active block
+
+    const previewTime =
+      pendingPreviewLine !== null && tl
+        ? previewTimeForLine(pendingPreviewLine, phaseRanges, tl.segments)
+        : null;
+    pendingPreviewLine = null;
+    if (previewTime !== null && tl) {
+      // Direct manipulation is a pose inspection workflow: hold the affected
+      // keyframe so even a fast phase visibly responds to a one-degree edit.
+      viewer.seek(previewTime);
+      viewer.pause();
+      setPlaying(false);
+      scrub.value = String(Math.round((previewTime / (tl.duration || 1)) * 1000));
+      paintScrub();
+      clock.textContent = `${previewTime.toFixed(1)}s`;
+      scheduleScrubDiagnosticsRefresh();
+    } else {
+      viewer.play();
+      setPlaying(true);
+    }
   }
 }
 

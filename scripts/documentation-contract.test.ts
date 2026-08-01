@@ -8,6 +8,7 @@ import {
   PROP_TYPES,
   RIG_NAMES,
   START_POSE_NAMES,
+  parse,
 } from "../packages/posecode-parser/src/index.js";
 
 const specification = readFileSync(resolve(import.meta.dirname, "../spec/SPEC.md"), "utf8");
@@ -26,6 +27,34 @@ const closedVocabulary = [
 ];
 
 describe("authoring documentation contract", () => {
+  it("keeps every Posecode example in the LLM guide parseable and warning-free", () => {
+    const fences = [...authoringGuide.matchAll(/^([ \t]*)```posecode[ \t]*\n([\s\S]*?)^\1```[ \t]*$/gm)];
+    expect(fences.length).toBeGreaterThan(0);
+
+    for (const [index, fence] of fences.entries()) {
+      const indent = fence[1] ?? "";
+      const source = (fence[2] ?? "")
+        .split("\n")
+        .map((line) => line.startsWith(indent) ? line.slice(indent.length) : line)
+        .join("\n");
+      const documentSource = source.trimStart().startsWith("posecode ")
+        ? source
+        : [
+            'posecode posture "Guide snippet"',
+            "  rig humanoid",
+            "  pose start = standing",
+            "",
+            ...source.split("\n").map((line) => `  ${line}`),
+            "",
+            "  repeat 1",
+          ].join("\n");
+      const { ir, errors, warnings } = parse(documentSource);
+      expect({ example: index + 1, errors }).toEqual({ example: index + 1, errors: [] });
+      expect({ example: index + 1, warnings }).toEqual({ example: index + 1, warnings: [] });
+      expect(ir).not.toBeNull();
+    }
+  });
+
   it.each([
     ["the normative specification", specification],
     ["the pasteable LLM guide", authoringGuide],

@@ -4,6 +4,7 @@ import {
   angleTargetAt,
   findAngleTargets,
   normalizeAngle,
+  previewTimeForLine,
 } from "../src/direct-manipulation.js";
 
 describe("direct angle manipulation", () => {
@@ -50,5 +51,21 @@ describe("direct angle manipulation", () => {
     expect(normalizeAngle(80.04, range)).toBe("80");
     expect(normalizeAngle(80.06, range)).toBe("80.1");
     expect(normalizeAngle(999, range)).toBe("154");
+  });
+
+  it("previews the endpoint of the phase containing a direct angle edit", () => {
+    const ranges = [
+      { from: 5, to: 9 },
+      { from: 11, to: 15 },
+    ];
+    const segments = [
+      { start: 0, end: 0.5 },
+      { start: 0.5, end: 0.85 },
+    ];
+
+    expect(previewTimeForLine(7, ranges, segments)).toBeCloseTo(0.499);
+    expect(previewTimeForLine(13, ranges, segments)).toBeCloseTo(0.849);
+    expect(previewTimeForLine(3, ranges, segments)).toBe(0);
+    expect(previewTimeForLine(20, ranges, segments)).toBeNull();
   });
 });

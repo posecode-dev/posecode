@@ -607,7 +607,11 @@ export interface PosecodeEditor {
 
 export interface PosecodeEditorOptions {
   doc: string;
-  onChange: (value: string, userInitiated: boolean) => void;
+  onChange: (
+    value: string,
+    userInitiated: boolean,
+    context?: { previewLine: number },
+  ) => void;
   onJointSelect?: (joint: string | null, boneIds: readonly string[]) => void;
 }
 
@@ -697,7 +701,25 @@ export function createPosecodeEditor(
               (transaction) =>
                 transaction.annotation(Transaction.userEvent) !== undefined,
             );
-            opts.onChange(u.state.doc.toString(), userInitiated);
+            // Spinner edits are different from ordinary source typing: the
+            // author is manipulating one key pose and expects to see that pose
+            // immediately. Pass its resulting source line to the playground;
+            // main.ts will seek there after rebuilding the timeline.
+            const directAngleEdit = u.transactions.some((transaction) =>
+              transaction.effects.some(
+                (effect) => effect.is(setActiveAngle) && effect.value !== null,
+              ),
+            );
+            const activeAngle = directAngleEdit
+              ? u.state.field(activeAngleField)
+              : null;
+            opts.onChange(
+              u.state.doc.toString(),
+              userInitiated,
+              activeAngle
+                ? { previewLine: u.state.doc.lineAt(activeAngle.angleFrom).number }
+                : undefined,
+            );
           }
         }),
       ],

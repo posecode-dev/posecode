@@ -26,6 +26,84 @@ arbitrary equipment, exact sign language, or detailed scapular/facial motion—d
 not fabricate a convincing-sounding document. Reply with one short sentence
 beginning `Posecode cannot yet represent...` and name the missing capability.
 
+## Product mental model
+
+Posecode is an inspectable movement source format, not natural-language stage
+direction and not a physics simulator. The product parses the document in the
+browser, validates its closed vocabulary and configured range of motion, builds
+one key pose per `step`, interpolates between those poses, then applies declared
+contact solvers. The editor text remains the source of truth.
+
+This has several consequences that must shape every generated document:
+
+- A joint number is the **absolute target at the end of that step**, measured
+  from the rig's reference pose. It is not a relative “add 20 degrees” command.
+- All targets inside one step happen concurrently during that step. Source line
+  order inside the step is not a choreography sequence.
+- Omitted joint channels carry forward. Contacts do not: repeat every active
+  `ground-lock`, `reach`, `pin`, or `grip` in every phase that needs it.
+- A step duration is travel time to the next key pose, not time spent holding
+  it. A visible hold is a separate unchanged step.
+- `reach`, `pin`, `grip`, floor correction, and ground locking can adjust the
+  final rendered pose after forward-kinematic joint targets are applied. Do not
+  author contradictory FK and contact goals.
+- An out-of-range angle is clamped and produces a warning. Two different bad
+  requests can therefore render identically if both clamp to the same limit.
+- A fatal syntax/validation error produces no new movement IR, so a live viewer
+  may keep showing the last valid document. “The viewer did not change” can
+  mean the new source is invalid; generate source that passes diagnostics.
+- A document loops from its last phase back to its composed start pose. Author
+  an intentional recovery when that reset should not be visible.
+- A host may support `clip "name"`, but clip names are host-provided assets and
+  are not portable Posecode choreography. Do not emit `clip` unless the user or
+  host explicitly supplies a supported clip name; phases must still fully
+  describe the motion.
+
+## Non-negotiable output contract
+
+When Posecode can represent the request, obey all of these rules:
+
+1. Return raw Posecode only. Do not add a Markdown fence, explanation,
+   validation report, title outside the document, or trailing notes.
+2. Emit exactly one header, one `rig humanoid`, one `pose start`, one or more
+   steps, and one positive-integer `repeat`.
+3. Use a quoted, non-empty document name and quoted, non-empty step names.
+4. Put `:` after every `step` header and after `pose start` only when it opens an
+   override block. Put `:` after joint names, `ground-lock`, `reach`, `pin`,
+   `grip`, `turn`, and `travel`; do **not** put `:` after `cue`.
+5. Give every duration a positive number followed immediately by `s`, such as
+   `0.5s` or `2s`. Angles are bare numbers: write `90`, never `90°` or `90deg`.
+6. Use non-negative magnitudes with the correct directional action. Write
+   `shoulder_right: extend 20`, not `flex -20`.
+7. Put one directive on each line. Do not combine joint targets with commas,
+   semicolons, braces, bullets, JSON, YAML, or prose.
+8. Use canonical `thing_left` / `thing_right` names. Never invent `left_knee`,
+   `right-foot`, `leg_left`, or an approximate synonym.
+9. Use two-space indentation for top-level declarations and four spaces for
+   children of a step or start-pose override, following the template exactly.
+10. Prefer 2–6 meaningful phases. Add more only when each new phase creates a
+    distinct key pose, contact change, direction change, or deliberate hold.
+
+Minimal valid shape:
+
+```posecode
+posecode exercise "Movement name"
+  rig humanoid
+  pose start = standing
+
+  step "Reach the key pose" 1s settle:
+    shoulders: flex 90
+    ground-lock: feet
+    cue "Raise both arms while both feet remain planted"
+
+  step "Return" 1s settle:
+    shoulders: flex 0
+    ground-lock: feet
+    cue "Lower both arms to the starting position"
+
+  repeat 1
+```
+
 ## Grammar
 
 ```
@@ -73,6 +151,69 @@ built-in pose; they do not consume time or create a phase. Omitted channels keep
 the built-in value, and the composed pose is restored when the animation loops.
 Do not put contacts, cues, turn, or travel inside a start-pose block.
 Write exactly one `pose start` declaration; duplicate declarations are errors.
+
+## Closed-vocabulary quick reference
+
+Do not infer new words from anatomy or English. Use only these canonical names.
+
+### Document and timing words
+
+- Kinds: `exercise | stretch | posture`
+- Rig: `humanoid`
+- Start poses: `neutral | standing | first-position | plank | supine | prone | seated`
+- Timing modes: `flow | settle | drive | snap | linear`
+- Props: `chair | wall | bar | box | dip-bars`
+
+### Joint/action compatibility
+
+| Joint names | Allowed actions |
+| --- | --- |
+| `shoulders`, `shoulder_left`, `shoulder_right` | `flex extend abduct adduct rotate-in rotate-out` |
+| `elbows`, `forearms`, `elbow_left`, `elbow_right` | `flex extend supinate pronate` |
+| `wrists`, `wrist_left`, `wrist_right` | `flex extend abduct adduct` |
+| `hips`, `hip_left`, `hip_right` | `flex extend abduct adduct rotate-in rotate-out` |
+| `knees`, `knee_left`, `knee_right` | `flex extend` |
+| `ankles`, `ankle_left`, `ankle_right` | `dorsiflex plantarflex` |
+| `pelvis` | `hinge` |
+| `spine` | `flex extend abduct adduct twist-left twist-right` |
+| `chest` | `flex extend twist-left twist-right` |
+| `neck`, `head` | `flex extend abduct adduct twist-left twist-right` |
+| `fingers`, `fingers_left`, `fingers_right`, `index_*`, `middle_*`, `ring_*`, `pinky_*` | `flex extend` |
+| `thumb_left`, `thumb_right` | `flex extend abduct adduct` |
+
+`hold neutral` is valid on any recognized joint/group and resets every channel
+of that joint. The compatibility parser still reads older axial
+`rotate-in`/`rotate-out`, but new documents must use `twist-left`/`twist-right`.
+
+### Contacts, effectors, targets, and anchors
+
+- `ground-lock` accepts `hands | hand_left | hand_right | forearms |
+  elbow_left | elbow_right | feet | foot_left | foot_right | back`.
+- `reach` accepts grouped effectors `hands | fists | forearms | knees | feet`
+  and side-specific `hand_* | fist_* | elbow_* | knee_* | foot_*`.
+- `pin` accepts the same effectors plus `pelvis`.
+- `grip` accepts only `hands | hand_left | hand_right`.
+- A `reach` target may be `floor`, a declared prop anchor, or one of these body
+  landmarks: `pelvis spine chest neck head shoulder_* elbow_* wrist_* hip_*
+  knee_* ankle_* thumb_* index_* middle_* ring_* pinky_*`.
+- In that compact list, `*` means the literal suffix `left` or `right`; never
+  emit an asterisk in a Posecode document.
+- A `pin` anchor may be only `floor` or a declared prop anchor. Never pin to a
+  body landmark; it moves with the same body root.
+
+Prop declarations expose only these anchors:
+
+| Declaration | Available anchors | Typical use |
+| --- | --- | --- |
+| `prop chair` | `seat` | sit, touch, or pin to the seat |
+| `prop wall` | `wall` | reach or pin to the wall surface |
+| `prop bar` | `bar`, `bar_left`, `bar_right` | overhead hand contact |
+| `prop box` | `box` | step-up foot contact |
+| `prop dip-bars` | `bars`, `bars_left`, `bars_right` | rail support |
+
+For grouped grips use the bare paired anchor: `grip: hands bar` or
+`grip: hands bars`. For one hand, use the matching side on both effector and
+anchor, such as `grip: hand_left bar_left`.
 
 ## Joints
 
@@ -152,6 +293,49 @@ Before returning the document, privately run this final check:
   leave the target outside the limb's workspace.
 - The final hold and recovery are explicit, warning-free, and do not rely on
   an undeclared prop or unsupported physics.
+
+## Draft, validate, and repair privately
+
+Use this internal sequence before returning any document:
+
+1. **Choose the representation.** Confirm it is one person, kinematic,
+   floor-bound, and uses only supported props and coarse hand articulation.
+2. **Write the support ledger.** For every phase, list which surfaces carry
+   weight and which new endpoint must arrive at a target. This determines
+   `ground-lock` vs `reach` vs `pin` vs `grip` before joint angles are written.
+3. **Write key poses.** Describe the opening pose and each phase endpoint in
+   plain language privately. Keep lead/trail sides fixed.
+4. **Translate to absolute channels.** Add only compatible joint/action pairs,
+   using positive in-range magnitudes and explicit zero/neutral recovery.
+5. **Check inheritance.** Verify every omitted joint is meant to hold its last
+   value; verify every still-active contact is repeated.
+6. **Check cues against execution.** Delete any cue claim that is not encoded by
+   a joint, root directive, or contact in that phase.
+7. **Simulate the loop.** Compare the last key pose with the composed start
+   pose. Add a recovery when an automatic reset would pop.
+8. **Lint the text.** Check colons, quotes, indentation, `s` duration suffixes,
+   canonical names, declared prop anchors, one primary root solver per phase,
+   and a positive integer repeat.
+
+### Common invalid output and the exact repair
+
+| Invalid or misleading output | Repair |
+| --- | --- |
+| ``step "Lift" 1 settle:`` | Add the duration suffix: ``1s``. |
+| ``cue: "Keep the foot down"`` | Remove the colon and encode the contact: ``ground-lock: foot_left`` plus ``cue "..."``. |
+| ``knees: bend 90`` | Use the closed action: ``knees: flex 90``. |
+| ``knee: flex 90`` or ``left_knee: flex 90`` | Use ``knees`` or ``knee_left``. |
+| ``shoulder_right: flex -20`` | Use the directional action: ``shoulder_right: extend 20``. |
+| ``ankles: flex 20`` | Use ``dorsiflex`` or ``plantarflex`` within ankle ROM. |
+| ``pelvis: flex 60`` | Use ``pelvis: hinge 60`` for a hip hinge, or pose the `hips` for thigh flexion. |
+| ``ground-lock: knee_left`` | Knees are not ground-lock contacts; use ``reach: knee_left floor`` while approaching, then ``pin: knee_left floor`` when it carries the body. |
+| ``reach: pelvis floor`` | `pelvis` is not a reach effector; use ``pin: pelvis floor``. |
+| ``pin: hand_left knee_right`` | A body landmark is not a fixed anchor; use ``reach: hand_left knee_right``. |
+| ``grip: hands bar`` without a prop | Add top-level ``prop bar``. |
+| ``ground-lock: feet`` and ``pin: knee_left floor`` in one step | Keep one root solver; use one primary support plus compatible `reach` constraints. |
+| A hold expressed only as ``cue "Hold"`` | Add a separate unchanged `linear` step and repeat its contacts. |
+| A cue says “right” while targets use `_left` | Make the phase name, targets, contacts, and cue use the same side. |
+| A final bent pose followed by looping | Add an explicit recovery to the start pose. |
 
 ## Timing modes
 
