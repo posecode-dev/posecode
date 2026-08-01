@@ -9,6 +9,8 @@ export const USAGE_EVENT_NAMES = {
   presetOpened: "preset_opened",
   editorChanged: "editor_changed",
   renderSucceeded: "render_succeeded",
+  promptCopied: "prompt_copied",
+  movementAttempted: "movement_attempted",
   shareCreated: "share_created",
   embedDocsClicked: "embed_docs_clicked",
   installCommandCopied: "install_command_copied",
@@ -26,12 +28,15 @@ export type RenderTrigger =
   | "shared_link"
   | "editor_change";
 export type ShareKind = "preset" | "encoded";
+export type PromptLocation = "landing" | "playground";
 export type InstallCommand = "embed" | "packages" | "mcp";
 
 export interface UsageEventMap {
   preset_opened: { source: PresetOpenSource; preset_id: string };
   editor_changed: { document_kind: DocumentKind };
   render_succeeded: { trigger: RenderTrigger; document_kind: DocumentKind };
+  prompt_copied: { location: PromptLocation };
+  movement_attempted: Record<string, never>;
   share_created: { share_kind: ShareKind };
   embed_docs_clicked: { location: "for_products" };
   install_command_copied: {
@@ -70,6 +75,35 @@ export function trackUsageEvent<Name extends UsageEventName>(
 export class UsageSession {
   private firstEditTracked = false;
   private renderedRevisions = new Set<number>();
+  private funnelEvents = new Set<
+    "prompt_copied" | "movement_attempted" | "share_created"
+  >();
+
+  private trackFunnelEventOnce<Name extends
+    | "prompt_copied"
+    | "movement_attempted"
+    | "share_created">(
+    name: Name,
+    properties: UsageEventMap[Name],
+  ): void {
+    if (this.funnelEvents.has(name)) return;
+    this.funnelEvents.add(name);
+    trackUsageEvent(name, properties);
+  }
+
+  trackPromptCopied(location: PromptLocation): void {
+    this.trackFunnelEventOnce(USAGE_EVENT_NAMES.promptCopied, { location });
+  }
+
+  trackFirstValidCustomMovement(): void {
+    this.trackFunnelEventOnce(USAGE_EVENT_NAMES.movementAttempted, {});
+  }
+
+  trackSuccessfulShare(shareKind: ShareKind): void {
+    this.trackFunnelEventOnce(USAGE_EVENT_NAMES.shareCreated, {
+      share_kind: shareKind,
+    });
+  }
 
   trackFirstEdit(documentKind: DocumentKind): void {
     if (this.firstEditTracked) return;
