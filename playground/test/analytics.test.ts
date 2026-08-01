@@ -20,6 +20,8 @@ describe("product usage analytics", () => {
       presetOpened: "preset_opened",
       editorChanged: "editor_changed",
       renderSucceeded: "render_succeeded",
+      promptCopied: "prompt_copied",
+      movementAttempted: "movement_attempted",
       shareCreated: "share_created",
       embedDocsClicked: "embed_docs_clicked",
       installCommandCopied: "install_command_copied",
@@ -44,6 +46,23 @@ describe("product usage analytics", () => {
     session.trackSuccessfulRender(5, "preset_open", "preset");
 
     expect(sink).toHaveBeenCalledTimes(2);
+  });
+
+  it("deduplicates each confirmed funnel outcome per page session", () => {
+    const session = new UsageSession();
+
+    session.trackPromptCopied("landing");
+    session.trackPromptCopied("playground");
+    session.trackFirstValidCustomMovement();
+    session.trackFirstValidCustomMovement();
+    session.trackSuccessfulShare("encoded");
+    session.trackSuccessfulShare("preset");
+
+    expect(sink.mock.calls).toEqual([
+      ["prompt_copied", { location: "landing" }],
+      ["movement_attempted", {}],
+      ["share_created", { share_kind: "encoded" }],
+    ]);
   });
 
   it("does not let a blocked provider break product behavior", () => {

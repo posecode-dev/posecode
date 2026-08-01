@@ -352,6 +352,13 @@ function recompile(): void {
   if (ir && viewer) {
     viewer.load(ir);
     updateFloorGuideKey();
+    if (
+      errors.length === 0 &&
+      pendingRenderTrigger === "editor_change" &&
+      documentKind() === "custom"
+    ) {
+      usageSession.trackFirstValidCustomMovement();
+    }
     usageSession.trackSuccessfulRender(
       documentRevision,
       pendingRenderTrigger,
@@ -702,6 +709,7 @@ async function copyPrompt(btn: HTMLButtonElement): Promise<void> {
   flash(btn, "Copying…", "pending", 0);
   try {
     await navigator.clipboard.writeText(llmPrompt);
+    usageSession.trackPromptCopied("playground");
     flash(btn, "Copied ✓", "success");
   } catch {
     flash(btn, "Copy failed", "error");
@@ -722,9 +730,9 @@ async function shareLink(): Promise<void> {
     const url = `${location.origin}${path}${hash}`;
     history.replaceState(null, "", `${path}${hash}`);
     await navigator.clipboard.writeText(url);
-    trackUsageEvent(USAGE_EVENT_NAMES.shareCreated, {
-      share_kind: path === "/play" ? "encoded" : "preset",
-    });
+    usageSession.trackSuccessfulShare(
+      path === "/play" ? "encoded" : "preset",
+    );
     flash(shareBtn, "Link copied ✓", "success");
   } catch (err) {
     const message =

@@ -6,15 +6,19 @@
  */
 
 import { parse } from "posecode-parser";
-import { inject } from "@vercel/analytics";
+import { UsageSession } from "./analytics.js";
+import { initializeAnalytics } from "./vercel-analytics.js";
 import { PRESETS } from "./presets.js";
 import llmPrompt from "../../spec/llm-authoring.md?raw";
 
-inject();
+const usageSession = new UsageSession();
 
 // Preserve permalinks shared before the tool moved from `/` to `/play`.
 if (location.hash.startsWith("#doc=")) {
   location.replace(`/play${location.hash}`);
+} else {
+  // The redirect target records the visit; do not double-count the legacy URL.
+  initializeAnalytics();
 }
 
 const prefersReducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -155,6 +159,7 @@ for (const copyBtn of document.querySelectorAll<HTMLButtonElement>("[data-copy-p
     lbl.textContent = "Copying…";
     try {
       await writeClipboard(llmPrompt);
+      usageSession.trackPromptCopied("landing");
       lbl.textContent = "Copied ✓";
     } catch {
       lbl.textContent = "Copy failed";
