@@ -12,6 +12,10 @@ export const USAGE_EVENT_NAMES = {
   promptCopied: "prompt_copied",
   movementAttempted: "movement_attempted",
   shareCreated: "share_created",
+  guidedEditShown: "guided_edit_shown",
+  guidedEditStarted: "guided_edit_started",
+  guidedEditCompleted: "guided_edit_completed",
+  guidedEditDismissed: "guided_edit_dismissed",
   embedDocsClicked: "embed_docs_clicked",
   installCommandCopied: "install_command_copied",
 } as const;
@@ -30,6 +34,8 @@ export type RenderTrigger =
 export type ShareKind = "preset" | "encoded";
 export type PromptLocation = "landing" | "playground";
 export type InstallCommand = "embed" | "packages" | "mcp";
+export type GuidedEditSurface = "desktop" | "mobile";
+export type GuidedEditStage = "edit" | "success";
 
 export interface UsageEventMap {
   preset_opened: { source: PresetOpenSource; preset_id: string };
@@ -38,6 +44,16 @@ export interface UsageEventMap {
   prompt_copied: { location: PromptLocation };
   movement_attempted: Record<string, never>;
   share_created: { share_kind: ShareKind };
+  guided_edit_shown: { experiment: "superhero_first_edit_v1" };
+  guided_edit_started: {
+    experiment: "superhero_first_edit_v1";
+    surface: GuidedEditSurface;
+  };
+  guided_edit_completed: { experiment: "superhero_first_edit_v1" };
+  guided_edit_dismissed: {
+    experiment: "superhero_first_edit_v1";
+    stage: GuidedEditStage;
+  };
   embed_docs_clicked: { location: "for_products" };
   install_command_copied: {
     command: InstallCommand;

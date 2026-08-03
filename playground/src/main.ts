@@ -29,6 +29,11 @@ import { ANIMATION_PROGRESS_MESSAGE, PRESETS } from "./presets.js";
 import { prioritizeFeaturedMovement } from "./library-order.js";
 import { SHOWCASE_CLIPS } from "./clips.js";
 import { previewTimeForLine } from "./direct-manipulation.js";
+import {
+  GUIDED_FIRST_EDIT_TARGET,
+  GuidedFirstEditSession,
+  shouldOfferGuidedFirstEdit,
+} from "./guided-first-edit.js";
 
 // During source-only typechecks the playground resolves posecode-render's last
 // built declaration bundle. Keep the local extension explicit until the normal
@@ -79,6 +84,12 @@ const downloadBvhBtn = $<HTMLButtonElement>("download-bvh");
 const downloadGltfBtn = $<HTMLButtonElement>("download-gltf");
 const tabEditor = $<HTMLButtonElement>("tab-editor");
 const tabViewer = $<HTMLButtonElement>("tab-viewer");
+const guidedFirstEditCard = $<HTMLElement>("guided-first-edit");
+const guidedFirstEditTitle = $<HTMLElement>("guided-first-edit-title");
+const guidedFirstEditMessage = $<HTMLElement>("guided-first-edit-message");
+const guidedFirstEditStart = $<HTMLButtonElement>("guided-first-edit-start");
+const guidedFirstEditShare = $<HTMLButtonElement>("guided-first-edit-share");
+const guidedFirstEditDismiss = $<HTMLButtonElement>("guided-first-edit-dismiss");
 
 // Three.js is heavy (~530 kB). Like the landing page, we load the renderer
 // *after* the editor shell paints (dynamic import → its own chunk) so first
@@ -100,6 +111,8 @@ let documentRevision = 1;
 let pendingRenderTrigger: RenderTrigger = "initial";
 let selectedBoneIds: readonly string[] = [];
 let pendingPreviewLine: number | null = null;
+let guidedFirstEditSession: GuidedFirstEditSession | null = null;
+let pendingGuidedAngleFocus = false;
 
 /** Keep the source selection and its live 3D joint markers in sync. */
 function handleJointSelect(
@@ -313,6 +326,7 @@ function handleEditorChange(
   const preset = PRESETS.find((p) => p.source === source);
   currentPresetId = preset?.id ?? null;
   if (userInitiated) {
+    guidedFirstEditSession?.noteUserEdit(source, true);
     usageSession.trackFirstEdit(editedDocumentKind);
     initialDocumentWasShared = false;
     documentRevision++;
@@ -358,6 +372,9 @@ function recompile(): void {
       documentKind() === "custom"
     ) {
       usageSession.trackFirstValidCustomMovement();
+      if (guidedFirstEditSession?.confirmValidCustomRender(source)) {
+        renderGuidedFirstEdit();
+      }
     }
     usageSession.trackSuccessfulRender(
       documentRevision,
@@ -582,6 +599,7 @@ function renderLibraryList(): void {
 function loadPreset(id: string): void {
   const preset = PRESETS.find((p) => p.id === id);
   if (!preset) return;
+  dismissGuidedFirstEdit();
   currentPresetId = preset.id;
   initialDocumentWasShared = false;
   documentRevision++;
@@ -608,6 +626,7 @@ renderLibraryList();
 // A human can write directly or paste a draft from another tool without
 // overwriting a preset by hand-selecting its text first.
 $<HTMLButtonElement>("new-doc").addEventListener("click", () => {
+  dismissGuidedFirstEdit();
   currentPresetId = null;
   initialDocumentWasShared = false;
   setCurrentPresetLabel(undefined, "New movement");
@@ -627,6 +646,48 @@ function setMobileView(view: "editor" | "viewer"): void {
 tabEditor.addEventListener("click", () => setMobileView("editor"));
 tabViewer.addEventListener("click", () => setMobileView("viewer"));
 setMobileView("viewer");
+
+function renderGuidedFirstEdit(): void {
+  const stage = guidedFirstEditSession?.stage ?? "idle";
+  guidedFirstEditCard.hidden = stage === "idle" || stage === "dismissed";
+  if (guidedFirstEditCard.hidden) return;
+  guidedFirstEditCard.dataset.stage = stage;
+  const succeeded = stage === "success";
+  guidedFirstEditTitle.textContent = succeeded
+    ? "Nice — your edit rendered."
+    : "Bend the right knee a little less.";
+  guidedFirstEditMessage.textContent = succeeded
+    ? "The source is valid and the figure updated."
+    : `Change knee_right: flex ${GUIDED_FIRST_EDIT_TARGET.initialDegrees} to ${GUIDED_FIRST_EDIT_TARGET.suggestedDegrees}°.`;
+  guidedFirstEditStart.hidden = succeeded;
+  guidedFirstEditShare.hidden = !succeeded;
+  guidedFirstEditDismiss.setAttribute(
+    "aria-label",
+    succeeded ? "Dismiss edit success" : "Dismiss quick edit",
+  );
+}
+
+function dismissGuidedFirstEdit(): void {
+  if (guidedFirstEditSession?.dismiss()) renderGuidedFirstEdit();
+}
+
+function focusGuidedAngleControl(): void {
+  const session = guidedFirstEditSession;
+  if (!session) return;
+  const surface = matchMedia("(max-width: 860px)").matches
+    ? "mobile"
+    : "desktop";
+  const request = session.begin(surface);
+  if (!request) return;
+  if (request.switchToEditor) setMobileView("editor");
+  pendingGuidedAngleFocus = true;
+  if (editorApi?.focusAngleControl(request.joint, request.action)) {
+    pendingGuidedAngleFocus = false;
+  }
+}
+
+guidedFirstEditStart.addEventListener("click", focusGuidedAngleControl);
+guidedFirstEditDismiss.addEventListener("click", dismissGuidedFirstEdit);
 
 // --- Transport ---
 playpause.addEventListener("click", () => {
@@ -720,9 +781,9 @@ copyBtn.addEventListener("click", () => copyPrompt(copyBtn));
 // --- Share (permalink) ---
 // Snapshot the current document into a URL hash, reflect it in the address bar
 // (so it's bookmarkable), and copy the full link to the clipboard.
-async function shareLink(): Promise<void> {
+async function shareLink(feedbackButton = shareBtn): Promise<void> {
   if (!editorApi) return; // editor still loading; nothing to snapshot yet
-  flash(shareBtn, "Copying…", "pending", 0);
+  flash(feedbackButton, "Copying…", "pending", 0);
   try {
     const source = editorApi.getValue();
     const path = buildNicePlayPath(source);
@@ -733,7 +794,7 @@ async function shareLink(): Promise<void> {
     usageSession.trackSuccessfulShare(
       path === "/play" ? "encoded" : "preset",
     );
-    flash(shareBtn, "Link copied ✓", "success");
+    flash(feedbackButton, "Link copied ✓", "success");
   } catch (err) {
     const message =
       err instanceof TypeError
@@ -741,10 +802,13 @@ async function shareLink(): Promise<void> {
         : err instanceof RangeError
           ? "Too long to link"
           : "Copy failed";
-    flash(shareBtn, message, "error");
+    flash(feedbackButton, message, "error");
   }
 }
-shareBtn.addEventListener("click", shareLink);
+shareBtn.addEventListener("click", () => void shareLink());
+guidedFirstEditShare.addEventListener("click", () =>
+  void shareLink(guidedFirstEditShare),
+);
 
 // --- BVH export ---
 // Bake the current movement's authored motion into a .bvh file and hand it to
@@ -954,6 +1018,18 @@ if (sharedSource) {
   });
 }
 
+if (
+  shouldOfferGuidedFirstEdit(
+    window.location.pathname,
+    window.location.hash,
+    initialDoc,
+  )
+) {
+  guidedFirstEditSession = new GuidedFirstEditSession();
+  guidedFirstEditSession.offer();
+  renderGuidedFirstEdit();
+}
+
 // Boot the two heavyweights (CodeMirror editor + Three.js renderer) after the
 // shell paints, each in its own lazy chunk, so neither is on the critical path.
 // They load independently; recompile() self-guards until both are ready, and
@@ -966,6 +1042,12 @@ void import("./editor.js").then(({ createPosecodeEditor }) => {
     onChange: handleEditorChange,
     onJointSelect: handleJointSelect,
   });
+  if (pendingGuidedAngleFocus) {
+    pendingGuidedAngleFocus = !editorApi.focusAngleControl(
+      GUIDED_FIRST_EDIT_TARGET.joint,
+      GUIDED_FIRST_EDIT_TARGET.action,
+    );
+  }
   recompile();
 });
 

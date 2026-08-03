@@ -1479,6 +1479,51 @@ select:hover {
   box-shadow: 0 4px 14px -6px var(--accent-glow);
 }
 
+/* --- Guided first edit ---------------------------------------------------- */
+.guided-first-edit {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 10px 20px;
+  color: var(--text-2);
+  background: #121512;
+  border-bottom: 1px solid var(--accent-line);
+}
+.guided-first-edit-copy {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 12.5px;
+}
+.guided-first-edit-kicker {
+  flex: none;
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+}
+.guided-first-edit-copy strong {
+  flex: none;
+  color: var(--text);
+}
+.guided-first-edit-copy code {
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 11.5px;
+}
+.guided-first-edit-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.guided-first-edit[data-stage="success"] {
+  background: rgba(212, 255, 63, .07);
+}
+
 /* --- Responsive ----------------------------------------------------------- */
 @media (max-width: 860px) {
   body {
@@ -1700,6 +1745,29 @@ select:hover {
     display: none;
   }
   .intro { padding-left: 12px; padding-right: 12px; }
+  .guided-first-edit {
+    align-items: flex-start;
+    gap: 10px;
+    padding: 11px 12px;
+  }
+  .guided-first-edit-copy {
+    flex: 1;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 2px;
+    line-height: 1.4;
+  }
+  .guided-first-edit-kicker {
+    margin-bottom: 2px;
+  }
+  .guided-first-edit-actions {
+    flex: none;
+    align-items: flex-start;
+  }
+  .guided-first-edit-actions .btn {
+    white-space: normal;
+    text-align: center;
+  }
   .layout { grid-template-columns: 1fr; }
   .floor-guide-key {
     /* Clear the phase plus a two-line coaching cue instead of overlaying it. */

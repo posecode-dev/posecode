@@ -183,6 +183,35 @@
       </button>
     </nav>
 
+    <aside
+      id="guided-first-edit"
+      class="guided-first-edit"
+      aria-labelledby="guided-first-edit-title"
+      hidden
+    >
+      <div class="guided-first-edit-copy">
+        <span class="guided-first-edit-kicker">Quick edit</span>
+        <strong id="guided-first-edit-title">Bend the right knee a little less.</strong>
+        <span id="guided-first-edit-message" aria-live="polite">
+          Change <code>knee_right: flex 123</code> to <code>115°</code>.
+        </span>
+      </div>
+      <div class="guided-first-edit-actions">
+        <button id="guided-first-edit-start" class="btn primary sm" type="button">
+          Adjust knee angle
+        </button>
+        <button id="guided-first-edit-share" class="btn primary sm" type="button" hidden>
+          Share movement
+        </button>
+        <button
+          id="guided-first-edit-dismiss"
+          class="x"
+          type="button"
+          aria-label="Dismiss quick edit"
+        >×</button>
+      </div>
+    </aside>
+
     <main class="layout">
       <section class="editor-pane">
         <div class="pane-head">
