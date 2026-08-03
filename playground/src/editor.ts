@@ -601,6 +601,8 @@ export interface PosecodeEditor {
   getValue(): string;
   setValue(doc: string): void;
   focus(): void;
+  /** Reveal and focus a direct angle spinner for the requested joint action. */
+  focusAngleControl(joint: string, action: string): boolean;
   /** Highlight an inclusive 1-based line range as the active phase; null clears. */
   highlightPhase(from: number | null, to?: number): void;
 }
@@ -744,6 +746,23 @@ export function createPosecodeEditor(
       opts.onJointSelect?.(null, []);
     },
     focus: () => view.focus(),
+    focusAngleControl: (joint: string, action: string) => {
+      const target = findAngleTargets(view.state.doc.toString()).find(
+        (candidate) =>
+          candidate.joint === joint && candidate.action === action,
+      );
+      if (!target) return false;
+      view.dispatch({
+        selection: { anchor: target.angleFrom, head: target.angleTo },
+        effects: [
+          setSelectedJoint.of(target.joint),
+          setActiveAngle.of(target),
+          EditorView.scrollIntoView(target.angleFrom, { y: "center" }),
+        ],
+      });
+      opts.onJointSelect?.(target.joint, expandJoint(target.joint));
+      return true;
+    },
     highlightPhase: (from: number | null, to?: number) => {
       view.dispatch({
         effects: setPhaseHighlight.of(

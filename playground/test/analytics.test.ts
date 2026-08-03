@@ -23,6 +23,10 @@ describe("product usage analytics", () => {
       promptCopied: "prompt_copied",
       movementAttempted: "movement_attempted",
       shareCreated: "share_created",
+      guidedEditShown: "guided_edit_shown",
+      guidedEditStarted: "guided_edit_started",
+      guidedEditCompleted: "guided_edit_completed",
+      guidedEditDismissed: "guided_edit_dismissed",
       embedDocsClicked: "embed_docs_clicked",
       installCommandCopied: "install_command_copied",
     });
