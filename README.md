@@ -1,3 +1,5 @@
+[![MCP Toplist](https://mcptoplist.com/badge/io.github.posecode-dev%2Fposecode-mcp.svg)](https://mcptoplist.com/server/io.github.posecode-dev%2Fposecode-mcp)
+
 <h1 align="center">Posecode</h1>
 
 <p align="center">
