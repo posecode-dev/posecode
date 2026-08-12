@@ -33,6 +33,23 @@ describe("parse", () => {
     expect(ir!.phases).toHaveLength(2);
   });
 
+  it.each(["humanoid", "avatar1", "avatar2", "avatar3"])(
+    "accepts rig %s",
+    (rig) => {
+      const { ir, errors } = parse(
+        [
+          'posecode exercise "X"',
+          `  rig ${rig}`,
+          "  pose start = standing",
+          '  step "Raise" 1s flow:',
+          "    shoulders: abduct 45",
+        ].join("\n"),
+      );
+      expect(errors).toEqual([]);
+      expect(ir!.rig).toBe(rig);
+    },
+  );
+
   it("expands symmetric joints and resolves rotation axes", () => {
     const { ir } = parse(PUSHUP);
     const lower = ir!.phases[0]!;

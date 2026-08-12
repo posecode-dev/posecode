@@ -8,6 +8,7 @@
 import {
   KINDS,
   POSES,
+  RIGS,
   EFFECTORS,
   REACH_EFFECTORS,
   PIN_EFFECTORS,
@@ -25,6 +26,7 @@ export type CompletionKind =
   | "keyword"
   | "kind"
   | "pose"
+  | "rig"
   | "easing"
   | "joint"
   | "action"
@@ -39,6 +41,7 @@ export interface CompletionItem {
 type Context =
   | "kind"
   | "pose"
+  | "rig"
   | "easing"
   | "effector"
   | "reach-effector"
@@ -68,6 +71,7 @@ function contextFor(
   const atDocumentIndent =
     enclosingBlock === null && indent > 0 && (documentIndent === null || indent === documentIndent);
   if (atDocumentIndent && /^\s*pose\s+start\s*=\s*[\w-]*$/.test(prefix)) return "pose";
+  if (atDocumentIndent && /^\s*rig\s+[\w-]*$/.test(prefix)) return "rig";
   if (atDocumentIndent && /^\s*step\s+"[^"]*"\s+[0-9.]+s\s+[\w-]*$/.test(prefix)) return "easing";
   const isActualChild = enclosingBlock !== null && indent > enclosingBlock.indent;
   if (isActualChild && enclosingBlock.kind === "start-pose") {
@@ -145,6 +149,8 @@ export function getCompletions(
       return KINDS.map((k) => item(k, "kind"));
     case "pose":
       return POSES.map((p) => item(p, "pose"));
+    case "rig":
+      return RIGS.map((r) => item(r, "rig"));
     case "easing":
       return MODES.map((e) => item(e, "easing"));
     case "effector":

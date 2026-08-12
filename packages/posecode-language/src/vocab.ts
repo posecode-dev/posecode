@@ -17,6 +17,7 @@ import {
   MOVEMENT_KINDS,
   START_POSE_NAMES,
   PROP_TYPES,
+  RIG_NAMES,
   actionsForJoint,
 } from "posecode-parser";
 
@@ -34,6 +35,9 @@ export const KINDS: string[] = [...MOVEMENT_KINDS];
 
 /** Recognised start poses (`pose start = ...`). */
 export const POSES: string[] = [...START_POSE_NAMES];
+
+/** Recognised rigs (`rig ...`). */
+export const RIGS: string[] = [...RIG_NAMES];
 
 /** Floor contacts that can be ground-locked. */
 export const EFFECTORS = [...GROUND_LOCK_EFFECTOR_NAMES];
@@ -53,7 +57,7 @@ export const CHILD_KEYWORDS = ["ground-lock", "reach", "pin", "grip", "turn", "t
 /** Short docs surfaced on hover and as completion detail. */
 export const KEYWORD_DOCS: Record<string, string> = {
   posecode: 'Document header: `posecode <kind> "<name>"`.',
-  rig: "Selects the rig (currently `humanoid`).",
+  rig: "Selects the rig: `humanoid` | `avatar1` | `avatar2` | `avatar3`.",
   prop: "Adds a scene object: `prop chair | wall | bar | box | dip-bars`. Supplies declared reach, pin, and grip anchors.",
   pose: "Sets the starting pose. Add a trailing `:` and indented joint targets to sparsely override a built-in pose.",
   start: "Used in `pose start = <pose>` or the custom form `pose start = <pose>:` followed by joint overrides.",

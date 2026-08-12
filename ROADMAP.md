@@ -28,7 +28,7 @@ These are the unlocks, roughly in order of leverage:
 
 1. ~~**Hip / waist hinge primitive**~~:  **shipped (v0.1).** `pelvis: hinge <deg>`
    tips the torso forward over the hips while the legs stay planted (the renderer
-   counter-rotates the hips). Powers `deadlift`, `bent-over-row`, `good-morning`,
+   counter-rotates the hips). Powers `deadlift`, `bent-over-row`, `good-morning`,rig
    and `bow`. Next: hinge with a loaded-bar prop.
 2. ~~**Reach-IK (reach a world target)**~~:  **shipped, now ROM-constrained.**
    `reach: <effector> <target>` drives a hand/foot to a body landmark, the

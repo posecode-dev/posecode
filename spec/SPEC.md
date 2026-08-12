@@ -31,7 +31,7 @@ document   = header { directive } ;
 header     = "posecode" kind STRING ;
 kind       = "exercise" | "stretch" | "posture" ;
 directive  = rig | prop | pose | clip | step | repeat ;
-rig        = "rig" "humanoid" ;
+rig        = "rig" ("humanoid"|"avatar1"|"avatar2"|"avatar3") ;
 prop       = "prop" ("chair"|"wall"|"bar"|"box"|"dip-bars") ;
 pose       = "pose" "start" "=" startPose [ ":" { startOverride } ] ;
 startOverride = jointTarget ;                         (* indented; sparse overlay, not a phase *)
@@ -330,7 +330,7 @@ interface PosecodeIR {
   version: string;          // "0.3"
   kind: string;             // "exercise" | "stretch" | "posture"
   name: string;
-  rig: string;              // "humanoid"
+  rig: string;              // "humanoid" | "avatar1" | "avatar2" | "avatar3"
   startPose?: string;       // "plank" | "standing" | ...
   startPoseOverrides?: {    // sparse, ROM-clamped overlay on startPose
     boneId: string;

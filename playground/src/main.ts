@@ -7,7 +7,7 @@
  * the side panel. The same path works for hand-authored and LLM-authored source.
  */
 
-import { parse, type ParseError, type Warning } from "posecode-parser";
+import { parse, RIG_NAMES, type ParseError, type RigName, type Warning } from "posecode-parser";
 import type { ConstraintDiagnostic, Viewer } from "posecode-render";
 import {
   trackUsageEvent,
@@ -46,6 +46,14 @@ type InteractiveViewer = Viewer & {
 // Experimental presets should never be the product's first impression.
 const DEFAULT_PRESET =
   PRESETS.find((p) => p.id === "superhero-landing") ?? PRESETS[0]!;
+
+// Skinned character per `rig` directive: a loaded document's `rig humanoid` /
+// `rig avatar1` / ... picks its GLB here (see requestCharacter in
+// posecode-render). Keep every RIG_NAMES entry mapped so no rig silently
+// falls back to the procedural figure.
+const CHARACTER_URLS: Record<RigName, string> = Object.fromEntries(
+  RIG_NAMES.map((name) => [name, name === "humanoid" ? "/models/xbot.glb" : `/models/${name}.glb`]),
+) as Record<RigName, string>;
 import { renderWarnings } from "./warnings.js";
 import llmPrompt from "../../spec/llm-authoring.md?raw";
 
@@ -1067,7 +1075,10 @@ void import("posecode-render").then(({ createViewer }) => {
     ...(classicFigure
       ? {}
       : {
-          characterUrl: "/models/xbot.glb",
+          // Rig-driven: each loaded document's `rig` directive picks its
+          // character from CHARACTER_URLS (see requestCharacter in
+          // posecode-render's Viewer).
+          characterUrls: CHARACTER_URLS,
           // Avoid flashing the procedural/classic figure while the default
           // mannequin asset loads. It still appears if the GLB genuinely fails.
           showProceduralWhileLoading: false,

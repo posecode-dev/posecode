@@ -3,7 +3,7 @@
 export const MOVEMENT_KINDS = ["exercise", "stretch", "posture"] as const;
 export type MovementKind = (typeof MOVEMENT_KINDS)[number];
 
-export const RIG_NAMES = ["humanoid"] as const;
+export const RIG_NAMES = ["humanoid", "avatar1", "avatar2", "avatar3"] as const;
 export type RigName = (typeof RIG_NAMES)[number];
 
 export const START_POSE_NAMES = [

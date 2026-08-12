@@ -819,6 +819,52 @@ The hosted playground currently uses an Adobe Mixamo character and one showcase 
 
 The renderer also includes a zero-asset procedural figure and accepts compatible humanoid GLB characters through `characterUrl`.
 
+### Multiple rigs (`rig humanoid` / `avatar1` / `avatar2` / `avatar3`)
+
+A `.posecode` document's `rig` directive isn't just `humanoid` — `avatar1`,
+`avatar2`, and `avatar3` are also valid rig names (see
+[`spec/SPEC.md`](spec/SPEC.md)). Pass `characterUrls` (a rig name → GLB URL
+map) to `createViewer` instead of a single `characterUrl`, and each loaded
+document's `rig` value picks its character automatically — switching
+documents, or editing one to declare a different `rig`, swaps the visible
+character. A rig with no entry in the map (or any load failure) falls back to
+the procedural figure, same as an unset `characterUrl`. See
+[`packages/posecode-render/README.md`](packages/posecode-render/README.md#usage)
+for the option, and `packages/posecode-embed`'s `character` attribute docs for
+the same behavior in the web component (absent by default; set an explicit URL
+to pin one character regardless of `rig`).
+
+### Bringing your own character rig
+
+Pass a `characterUrl` (fixed) or `characterUrls` (per-rig, see above) pointing
+to a skinned GLB to replace the bundled Mixamo character. Requirements:
+
+- **Format:** glTF binary (`.glb`) containing a `THREE.SkinnedMesh`.
+- **Rest pose:** T-pose.
+- **Bone naming:** Mixamo convention. Names may carry the `mixamorig:` /
+  `mixamorigN:` namespace prefix — it's stripped automatically. These bones
+  must all be present:
+  - Torso/head: `Hips`, `Spine`, `Spine2`, `Neck`, `Head`
+  - Arms: `LeftArm`, `LeftForeArm`, `LeftHand`, `RightArm`, `RightForeArm`, `RightHand`
+  - Legs: `LeftUpLeg`, `LeftLeg`, `LeftFoot`, `RightUpLeg`, `RightLeg`, `RightFoot`
+  - Fingers (first phalanx only): `LeftHandThumb1`, `LeftHandIndex1`,
+    `LeftHandMiddle1`, `LeftHandRing1`, `LeftHandPinky1`, and the
+    `RightHand*1` equivalents
+
+If any required bone is missing, loading the character rejects and the
+viewer silently falls back to the zero-asset procedural figure — a bad rig
+never breaks the scene.
+
+The simplest way to source a compatible rig is [mixamo.com](https://www.mixamo.com):
+export a character in T-pose with "skin with skeleton," then convert
+FBX → GLB (e.g. with Blender's glTF exporter or `FBX2glTF`). Bone names come
+out Mixamo-compatible automatically.
+
+The bone map and retarget/calibration logic live in
+[`packages/posecode-render/src/character.ts`](packages/posecode-render/src/character.ts).
+Supporting a different naming convention (e.g. VRM humanoid bones) means
+editing the `BONE_MAP` table and `plainName()` prefix-stripping there.
+
 ---
 
 ## Licensing
