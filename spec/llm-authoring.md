@@ -159,7 +159,8 @@ Do not infer new words from anatomy or English. Use only these canonical names.
 ### Document and timing words
 
 - Kinds: `exercise | stretch | posture`
-- Rig: `humanoid | avatar1 | avatar2 | avatar3`
+- Rig: `humanoid`
+- Optional avatar appearance: `avatar1 | avatar2 | avatar3`
 - Start poses: `neutral | standing | first-position | plank | supine | prone | seated`
 - Timing modes: `flow | settle | drive | snap | linear`
 - Props: `chair | wall | bar | box | dip-bars`

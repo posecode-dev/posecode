@@ -55,6 +55,7 @@ import {
 } from "posecode-language";
 import {
   ACTION_NAMES,
+  AVATAR_NAMES,
   EFFECTOR_NAMES,
   GROUND_LOCK_EFFECTOR_NAMES,
   JOINT_NAMES,
@@ -78,6 +79,7 @@ import {
 const KEYWORDS = new Set([
   "posecode",
   "rig",
+  "avatar",
   "prop",
   "pose",
   "start",
@@ -104,6 +106,7 @@ const ATOMS = new Set([
   ...PROP_TYPES,
   ...EFFECTOR_NAMES,
   ...GROUND_LOCK_EFFECTOR_NAMES,
+  ...AVATAR_NAMES,
   ...RIG_NAMES,
 ]);
 const JOINTS = new Set<string>(JOINT_NAMES);
@@ -175,6 +178,7 @@ const CM_TYPE: Record<CompletionKind, string> = {
   keyword: "keyword",
   kind: "type",
   pose: "constant",
+  avatar: "constant",
   rig: "constant",
   easing: "constant",
   joint: "variable",

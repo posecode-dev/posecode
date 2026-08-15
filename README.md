@@ -819,24 +819,24 @@ The hosted playground currently uses an Adobe Mixamo character and one showcase 
 
 The renderer also includes a zero-asset procedural figure and accepts compatible humanoid GLB characters through `characterUrl`.
 
-### Multiple rigs (`rig humanoid` / `avatar1` / `avatar2` / `avatar3`)
+### Multiple character appearances (`avatar avatar1` / `avatar2` / `avatar3`)
 
-A `.posecode` document's `rig` directive isn't just `humanoid` — `avatar1`,
-`avatar2`, and `avatar3` are also valid rig names (see
-[`spec/SPEC.md`](spec/SPEC.md)). Pass `characterUrls` (a rig name → GLB URL
-map) to `createViewer` instead of a single `characterUrl`, and each loaded
-document's `rig` value picks its character automatically — switching
-documents, or editing one to declare a different `rig`, swaps the visible
-character. A rig with no entry in the map (or any load failure) falls back to
-the procedural figure, same as an unset `characterUrl`. See
+All built-in characters use the same `rig humanoid` skeleton topology. An
+optional `avatar` directive selects appearance without redefining that rig (see
+[`spec/SPEC.md`](spec/SPEC.md)). Pass `characterUrls` (selector → GLB URL map)
+to `createViewer` instead of a single `characterUrl`; `ir.avatar` is used when
+present and `ir.rig` supplies the default selector otherwise. Switching
+documents, or editing the `avatar` directive, swaps the visible character. A
+selector with no entry in the map (or any load failure) falls back to the
+procedural figure. See
 [`packages/posecode-render/README.md`](packages/posecode-render/README.md#usage)
 for the option, and `packages/posecode-embed`'s `character` attribute docs for
 the same behavior in the web component (absent by default; set an explicit URL
-to pin one character regardless of `rig`).
+to pin one character regardless of `avatar`).
 
 ### Bringing your own character rig
 
-Pass a `characterUrl` (fixed) or `characterUrls` (per-rig, see above) pointing
+Pass a `characterUrl` (fixed) or `characterUrls` (per-selector, see above) pointing
 to a skinned GLB to replace the bundled Mixamo character. Requirements:
 
 - **Format:** glTF binary (`.glb`) containing a `THREE.SkinnedMesh`.

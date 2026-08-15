@@ -10,14 +10,15 @@ describe("parseOptions", () => {
   it("returns sensible defaults for an element with no attributes", () => {
     expect(parseOptions({})).toEqual(DEFAULT_OPTIONS);
     expect(DEFAULT_CHARACTER_URL).toBe("https://posecode.org/models/xbot.glb");
-    // No explicit `character` attribute: rig-driven, not pinned to one URL.
+    // No explicit `character` attribute: document-driven, not pinned to one URL.
     expect(DEFAULT_OPTIONS.characterUrl).toBe("");
     expect(DEFAULT_OPTIONS.characterDisabled).toBe(false);
     expect(DEFAULT_OPTIONS.characterUrls).toBe(DEFAULT_CHARACTER_URLS);
     expect(DEFAULT_CHARACTER_URLS.humanoid).toBe(DEFAULT_CHARACTER_URL);
+    expect(DEFAULT_CHARACTER_URLS.avatar1).toBe(DEFAULT_CHARACTER_URL);
   });
 
-  it("pins an explicit character URL and disables rig-driven selection", () => {
+  it("pins an explicit character URL and disables document-driven selection", () => {
     const o = parseOptions({ character: "https://example.com/me.glb" });
     expect(o.characterUrl).toBe("https://example.com/me.glb");
     expect(o.characterDisabled).toBe(false);

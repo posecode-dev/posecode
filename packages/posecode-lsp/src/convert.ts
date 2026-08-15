@@ -42,6 +42,7 @@ const KIND_MAP: Record<CompletionKind, CompletionItemKind> = {
   keyword: CompletionItemKind.Keyword,
   kind: CompletionItemKind.TypeParameter,
   pose: CompletionItemKind.Constant,
+  avatar: CompletionItemKind.Constant,
   rig: CompletionItemKind.Constant,
   easing: CompletionItemKind.Constant,
   joint: CompletionItemKind.Variable,
