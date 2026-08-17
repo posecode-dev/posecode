@@ -29,12 +29,12 @@
     "gifs": "node scripts/capture-gifs.mjs"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.31.0",
-    "@remotion/cli": "4.0.499",
+    "@changesets/cli": "^3.0.0",
+    "@remotion/cli": "4.0.509",
     "@vitest/coverage-v8": "^4.1.10",
     "gifenc": "^1.0.3",
     "playwright-core": "^1.61.1",
-    "remotion": "4.0.499",
+    "remotion": "4.0.509",
     "tsx": "^4.19.2",
     "typescript": "^7.0.2",
     "vitest": "^4.1.10"
