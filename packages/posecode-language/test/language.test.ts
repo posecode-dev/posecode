@@ -107,8 +107,12 @@ describe("getCompletions", () => {
   });
 
   it("suggests rig names after `rig `", () => {
-    expect(onLine("  rig ", 6)).toEqual(
-      expect.arrayContaining(["humanoid", "avatar1", "avatar2", "avatar3"]),
+    expect(onLine("  rig ", 6)).toEqual(["humanoid"]);
+  });
+
+  it("suggests character appearances after `avatar `", () => {
+    expect(onLine("  avatar ", 9)).toEqual(
+      expect.arrayContaining(["avatar1", "avatar2", "avatar3"]),
     );
   });
 

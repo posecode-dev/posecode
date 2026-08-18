@@ -32,14 +32,13 @@ const viewer = createViewer(canvas, {
   // Optional: realistic skinned character (Mixamo bone naming). Omit both
   // characterUrl and characterUrls for the zero-asset procedural figure.
   characterUrl: "https://posecode.org/models/xbot.glb",
-  // Alternative to characterUrl: pick the character from each loaded
-  // document's `rig` directive instead of pinning one. `rig avatar1` in a
-  // .posecode document swaps to this URL on load(); a rig absent from the map
-  // (or any load failure) falls back to the procedural figure. Ignored when
-  // characterUrl is set.
+  // Alternative to characterUrl: pick from the optional `avatar` directive.
+  // Documents without one use the `humanoid` entry. A selector absent from the
+  // map (or any load failure) falls back to the procedural figure. Ignored
+  // when characterUrl is set.
   // characterUrls: {
   //   humanoid: "https://posecode.org/models/xbot.glb",
-  //   avatar1: "https://posecode.org/models/avatar1.glb",
+  //   avatar1: "https://posecode.org/models/xbot.glb",
   //   avatar2: "https://posecode.org/models/avatar2.glb",
   //   avatar3: "https://posecode.org/models/avatar3.glb",
   // },

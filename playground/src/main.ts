@@ -7,7 +7,7 @@
  * the side panel. The same path works for hand-authored and LLM-authored source.
  */
 
-import { parse, RIG_NAMES, type ParseError, type RigName, type Warning } from "posecode-parser";
+import { parse, type AvatarName, type ParseError, type Warning } from "posecode-parser";
 import type { ConstraintDiagnostic, Viewer } from "posecode-render";
 import {
   trackUsageEvent,
@@ -47,13 +47,15 @@ type InteractiveViewer = Viewer & {
 const DEFAULT_PRESET =
   PRESETS.find((p) => p.id === "superhero-landing") ?? PRESETS[0]!;
 
-// Skinned character per `rig` directive: a loaded document's `rig humanoid` /
-// `rig avatar1` / ... picks its GLB here (see requestCharacter in
-// posecode-render). Keep every RIG_NAMES entry mapped so no rig silently
-// falls back to the procedural figure.
-const CHARACTER_URLS: Record<RigName, string> = Object.fromEntries(
-  RIG_NAMES.map((name) => [name, name === "humanoid" ? "/models/xbot.glb" : `/models/${name}.glb`]),
-) as Record<RigName, string>;
+// Character appearance is independent of skeleton topology. Documents without
+// an `avatar` directive use the humanoid default; avatar1 deliberately reuses
+// XBot instead of committing a duplicate binary.
+const CHARACTER_URLS: Record<AvatarName | "humanoid", string> = {
+  humanoid: "/models/xbot.glb",
+  avatar1: "/models/xbot.glb",
+  avatar2: "/models/avatar2.glb",
+  avatar3: "/models/avatar3.glb",
+};
 import { renderWarnings } from "./warnings.js";
 import llmPrompt from "../../spec/llm-authoring.md?raw";
 
@@ -1075,9 +1077,8 @@ void import("posecode-render").then(({ createViewer }) => {
     ...(classicFigure
       ? {}
       : {
-          // Rig-driven: each loaded document's `rig` directive picks its
-          // character from CHARACTER_URLS (see requestCharacter in
-          // posecode-render's Viewer).
+          // Document-driven: an optional `avatar` directive picks from this
+          // map; otherwise the humanoid default is used.
           characterUrls: CHARACTER_URLS,
           // Avoid flashing the procedural/classic figure while the default
           // mannequin asset loads. It still appears if the GLB genuinely fails.

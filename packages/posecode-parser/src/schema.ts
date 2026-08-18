@@ -12,6 +12,7 @@ import type { ParseError, TimingMode } from "./types.js";
 import type { AstDoc } from "./parser.js";
 import {
   MOVEMENT_KINDS,
+  AVATAR_NAMES,
   PROP_TYPES,
   RIG_NAMES,
   START_POSE_NAMES,
@@ -80,6 +81,7 @@ const docSchema = z.object({
   kind: z.enum(MOVEMENT_KINDS),
   name: z.string().min(1),
   rig: z.enum(RIG_NAMES),
+  avatar: z.enum(AVATAR_NAMES).optional(),
   startPose: z.enum(START_POSE_NAMES).optional(),
   startPoseOverrides: z.array(jointTargetSchema),
   props: z.array(z.enum(PROP_TYPES)),
