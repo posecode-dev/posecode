@@ -31,7 +31,8 @@ export interface PlayerOptions {
   /**
    * Document selector (`avatar` when present, otherwise `rig`) → GLB URL,
    * applied when `characterUrl` is unset and the character isn't disabled.
-   * Defaults to the hosted character choices and the humanoid default.
+   * The built-in map only contains assets with documented provenance;
+   * selectors absent from it use the renderer's procedural fallback.
    */
   characterUrls: Record<string, string>;
 }
@@ -39,12 +40,10 @@ export interface PlayerOptions {
 /** The character the hosted playground uses, served from the same origin. */
 export const DEFAULT_CHARACTER_URL = "https://posecode.org/models/xbot.glb";
 
-/** Hosted character per built-in selector. Avatar1 intentionally reuses XBot. */
+/** Hosted characters with documented provenance. Avatar1 intentionally reuses XBot. */
 export const DEFAULT_CHARACTER_URLS: Record<string, string> = {
   humanoid: DEFAULT_CHARACTER_URL,
   avatar1: DEFAULT_CHARACTER_URL,
-  avatar2: "https://posecode.org/models/avatar2.glb",
-  avatar3: "https://posecode.org/models/avatar3.glb",
 };
 
 export const DEFAULT_OPTIONS: PlayerOptions = {

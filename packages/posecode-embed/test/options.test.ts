@@ -16,6 +16,8 @@ describe("parseOptions", () => {
     expect(DEFAULT_OPTIONS.characterUrls).toBe(DEFAULT_CHARACTER_URLS);
     expect(DEFAULT_CHARACTER_URLS.humanoid).toBe(DEFAULT_CHARACTER_URL);
     expect(DEFAULT_CHARACTER_URLS.avatar1).toBe(DEFAULT_CHARACTER_URL);
+    expect(DEFAULT_CHARACTER_URLS.avatar2).toBeUndefined();
+    expect(DEFAULT_CHARACTER_URLS.avatar3).toBeUndefined();
   });
 
   it("pins an explicit character URL and disables document-driven selection", () => {

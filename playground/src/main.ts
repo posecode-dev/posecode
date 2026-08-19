@@ -47,14 +47,13 @@ type InteractiveViewer = Viewer & {
 const DEFAULT_PRESET =
   PRESETS.find((p) => p.id === "superhero-landing") ?? PRESETS[0]!;
 
-// Character appearance is independent of skeleton topology. Documents without
-// an `avatar` directive use the humanoid default; avatar1 deliberately reuses
-// XBot instead of committing a duplicate binary.
-const CHARACTER_URLS: Record<AvatarName | "humanoid", string> = {
+// Character appearance is independent of skeleton topology. Only assets with
+// documented redistribution provenance are mapped here. Documents without an
+// `avatar` directive use the humanoid default; avatar1 deliberately reuses
+// XBot, while unmapped selectors fall back to the procedural figure.
+const CHARACTER_URLS: Partial<Record<AvatarName | "humanoid", string>> = {
   humanoid: "/models/xbot.glb",
   avatar1: "/models/xbot.glb",
-  avatar2: "/models/avatar2.glb",
-  avatar3: "/models/avatar3.glb",
 };
 import { renderWarnings } from "./warnings.js";
 import llmPrompt from "../../spec/llm-authoring.md?raw";

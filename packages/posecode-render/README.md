@@ -39,8 +39,8 @@ const viewer = createViewer(canvas, {
   // characterUrls: {
   //   humanoid: "https://posecode.org/models/xbot.glb",
   //   avatar1: "https://posecode.org/models/xbot.glb",
-  //   avatar2: "https://posecode.org/models/avatar2.glb",
-  //   avatar3: "https://posecode.org/models/avatar3.glb",
+  //   avatar2: "https://assets.example.com/licensed-avatar2.glb",
+  //   avatar3: "https://assets.example.com/licensed-avatar3.glb",
   // },
 });
 

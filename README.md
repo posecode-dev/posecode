@@ -821,8 +821,8 @@ The renderer also includes a zero-asset procedural figure and accepts compatible
 
 ### Multiple character appearances (`avatar avatar1` / `avatar2` / `avatar3`)
 
-All built-in characters use the same `rig humanoid` skeleton topology. An
-optional `avatar` directive selects appearance without redefining that rig (see
+All avatar selectors use the same `rig humanoid` skeleton topology. An optional
+`avatar` directive selects appearance without redefining that rig (see
 [`spec/SPEC.md`](spec/SPEC.md)). Pass `characterUrls` (selector → GLB URL map)
 to `createViewer` instead of a single `characterUrl`; `ir.avatar` is used when
 present and `ir.rig` supplies the default selector otherwise. Switching
@@ -831,8 +831,10 @@ selector with no entry in the map (or any load failure) falls back to the
 procedural figure. See
 [`packages/posecode-render/README.md`](packages/posecode-render/README.md#usage)
 for the option, and `packages/posecode-embed`'s `character` attribute docs for
-the same behavior in the web component (absent by default; set an explicit URL
-to pin one character regardless of `avatar`).
+the same behavior in the web component. The built-in map currently serves XBot
+for `humanoid` and `avatar1`; `avatar2` and `avatar3` intentionally use the
+procedural fallback until assets with documented redistribution rights are
+provided. Set an explicit URL to pin one character regardless of `avatar`.
 
 ### Bringing your own character rig
 
@@ -859,6 +861,10 @@ The simplest way to source a compatible rig is [mixamo.com](https://www.mixamo.c
 export a character in T-pose with "skin with skeleton," then convert
 FBX → GLB (e.g. with Blender's glTF exporter or `FBX2glTF`). Bone names come
 out Mixamo-compatible automatically.
+
+Before publishing or committing a character, verify that its license permits
+redistribution of the asset itself. Compatibility with a Mixamo rig does not
+by itself grant redistribution rights.
 
 The bone map and retarget/calibration logic live in
 [`packages/posecode-render/src/character.ts`](packages/posecode-render/src/character.ts).
