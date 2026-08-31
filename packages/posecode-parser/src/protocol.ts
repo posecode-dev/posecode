@@ -6,6 +6,10 @@ export type MovementKind = (typeof MOVEMENT_KINDS)[number];
 export const RIG_NAMES = ["humanoid"] as const;
 export type RigName = (typeof RIG_NAMES)[number];
 
+/** Hosted-character choices are appearance, not skeleton topology. */
+export const AVATAR_NAMES = ["avatar1", "avatar2", "avatar3"] as const;
+export type AvatarName = (typeof AVATAR_NAMES)[number];
+
 export const START_POSE_NAMES = [
   "neutral",
   "standing",
@@ -35,6 +39,10 @@ export function isMovementKind(value: string): value is MovementKind {
 
 export function isRigName(value: string): value is RigName {
   return (RIG_NAMES as readonly string[]).includes(value);
+}
+
+export function isAvatarName(value: string): value is AvatarName {
+  return (AVATAR_NAMES as readonly string[]).includes(value);
 }
 
 export function isStartPoseName(value: string): value is StartPoseName {

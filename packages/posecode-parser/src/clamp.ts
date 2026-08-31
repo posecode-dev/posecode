@@ -95,6 +95,7 @@ export function resolve(ast: AstDoc): ResolveResult {
     kind: ast.kind,
     name: ast.name,
     rig: ast.rig,
+    ...(ast.avatar ? { avatar: ast.avatar } : {}),
     ...(ast.startPose ? { startPose: ast.startPose } : {}),
     ...(startOverridePhase.targets.length > 0
       ? { startPoseOverrides: startOverridePhase.targets }

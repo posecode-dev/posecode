@@ -1,4 +1,4 @@
-# Posecode Protocol Specification v0.3
+# Posecode Protocol Specification v0.4
 
 Posecode is a small text language for describing a single person's **kinematic
 movement** so it can be rendered as an animated 3D figure in a web browser.
@@ -13,9 +13,9 @@ or an LLM writes a compact document; a client-side parser and renderer turn it
 into a moving mannequin. The source describes semantic movement phases rather
 than 3D matrices.
 
-- **Version keyword:** documents declare nothing; this is `posecode 0.3`.
-- **Compatibility:** v0.3 parsers continue to accept v0.2 documents and the
-  v0.1 easing aliases.
+- **Version keyword:** documents declare nothing; this is `posecode 0.4`.
+- **Compatibility:** v0.4 parsers continue to accept v0.3/v0.2 documents and
+  the v0.1 easing aliases.
 - **File extension:** `.posecode`
 - **Compute model:** parsing and all 3D math run on the client (Three.js).
   Authoring may be manual, tool-driven, or LLM-assisted.
@@ -30,8 +30,9 @@ Posecode is line- and indentation-oriented. Comments start with `#` or `//`.
 document   = header { directive } ;
 header     = "posecode" kind STRING ;
 kind       = "exercise" | "stretch" | "posture" ;
-directive  = rig | prop | pose | clip | step | repeat ;
+directive  = rig | avatar | prop | pose | clip | step | repeat ;
 rig        = "rig" "humanoid" ;
+avatar     = "avatar" ("avatar1"|"avatar2"|"avatar3") ;
 prop       = "prop" ("chair"|"wall"|"bar"|"box"|"dip-bars") ;
 pose       = "pose" "start" "=" startPose [ ":" { startOverride } ] ;
 startOverride = jointTarget ;                         (* indented; sparse overlay, not a phase *)
@@ -327,10 +328,11 @@ angles are in **degrees**.
 
 ```ts
 interface PosecodeIR {
-  version: string;          // "0.3"
+  version: string;          // "0.4"
   kind: string;             // "exercise" | "stretch" | "posture"
   name: string;
   rig: string;              // "humanoid"
+  avatar?: string;          // "avatar1" | "avatar2" | "avatar3"
   startPose?: string;       // "plank" | "standing" | ...
   startPoseOverrides?: {    // sparse, ROM-clamped overlay on startPose
     boneId: string;

@@ -106,6 +106,16 @@ describe("getCompletions", () => {
     expect(onLine("  pose start = ", 15)).toContain("standing");
   });
 
+  it("suggests rig names after `rig `", () => {
+    expect(onLine("  rig ", 6)).toEqual(["humanoid"]);
+  });
+
+  it("suggests character appearances after `avatar `", () => {
+    expect(onLine("  avatar ", 9)).toEqual(
+      expect.arrayContaining(["avatar1", "avatar2", "avatar3"]),
+    );
+  });
+
   it("offers only joint targets inside a scoped start-pose override", () => {
     const text = [
       'posecode posture "Custom"',

@@ -12,17 +12,19 @@ import { normalizeMode, MODES } from "./schema.js";
 import { GROUND_LOCK_EFFECTOR_NAMES } from "./joints.js";
 import {
   MOVEMENT_KINDS,
+  AVATAR_NAMES,
   PROP_TYPES,
   RIG_NAMES,
   START_POSE_NAMES,
   isMovementKind,
+  isAvatarName,
   isPropType,
   isRigName,
   isStartPoseName,
 } from "./protocol.js";
 
 const GROUND_LOCK_EFFECTORS = new Set<string>(GROUND_LOCK_EFFECTOR_NAMES);
-const TOP_LEVEL_HEADS = new Set(["rig", "prop", "clip", "pose", "repeat", "step"]);
+const TOP_LEVEL_HEADS = new Set(["rig", "avatar", "prop", "clip", "pose", "repeat", "step"]);
 
 export interface AstJointTarget {
   joint: string;
@@ -66,6 +68,8 @@ export interface AstDoc {
   kind: string;
   name: string;
   rig: string;
+  /** Optional hosted-character appearance, independent of the skeleton rig. */
+  avatar?: string;
   startPose?: string;
   /** Sparse joint targets layered over the selected built-in start pose. */
   startPoseOverrides: AstJointTarget[];
@@ -238,6 +242,20 @@ export function parseToAst(source: string): ParseAstResult {
           });
         }
         else doc.rig = r;
+        break;
+      }
+      case "avatar": {
+        const avatar = word(t[1]);
+        if (t.length !== 2 || !avatar) {
+          errors.push({ line: ln.line, message: "expected `avatar <name>`" });
+        } else if (!isAvatarName(avatar)) {
+          errors.push({
+            line: ln.line,
+            message: `unknown avatar "${avatar}"; expected one of ${AVATAR_NAMES.join(", ")}`,
+          });
+        } else {
+          doc.avatar = avatar;
+        }
         break;
       }
       case "prop": {

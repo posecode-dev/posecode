@@ -227,7 +227,11 @@ export class PosecodePlayerElement extends HTMLElement {
       const { createViewer } = await import("posecode-render");
       const viewer = createViewer(this.#canvas, {
         autoRotate: opts.autoRotate && !reduceMotion,
-        ...(opts.characterUrl ? { characterUrl: opts.characterUrl } : {}),
+        ...(opts.characterDisabled
+          ? {}
+          : opts.characterUrl
+            ? { characterUrl: opts.characterUrl }
+            : { characterUrls: opts.characterUrls }),
       });
       this.#viewer = viewer;
       viewer.onPhase(({ phaseName }) => {

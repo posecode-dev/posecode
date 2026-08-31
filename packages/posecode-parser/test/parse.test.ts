@@ -33,6 +33,35 @@ describe("parse", () => {
     expect(ir!.phases).toHaveLength(2);
   });
 
+  it.each(["avatar1", "avatar2", "avatar3"])(
+    "accepts avatar %s independently of the humanoid rig",
+    (avatar) => {
+      const { ir, errors } = parse(
+        [
+          'posecode exercise "X"',
+          "  rig humanoid",
+          `  avatar ${avatar}`,
+          "  pose start = standing",
+          '  step "Raise" 1s flow:',
+          "    shoulders: abduct 45",
+        ].join("\n"),
+      );
+      expect(errors).toEqual([]);
+      expect(ir!.rig).toBe("humanoid");
+      expect(ir!.avatar).toBe(avatar);
+    },
+  );
+
+  it("rejects an avatar name in the rig directive", () => {
+    const { errors } = parse([
+      'posecode posture "Wrong selector"',
+      "  rig avatar2",
+      '  step "Hold" 1s linear:',
+      "    spine: hold neutral",
+    ].join("\n"));
+    expect(errors[0]?.message).toContain('unknown rig "avatar2"');
+  });
+
   it("expands symmetric joints and resolves rotation axes", () => {
     const { ir } = parse(PUSHUP);
     const lower = ir!.phases[0]!;

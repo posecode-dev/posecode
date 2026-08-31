@@ -55,12 +55,14 @@ import {
 } from "posecode-language";
 import {
   ACTION_NAMES,
+  AVATAR_NAMES,
   EFFECTOR_NAMES,
   GROUND_LOCK_EFFECTOR_NAMES,
   JOINT_NAMES,
   MODES,
   MOVEMENT_KINDS,
   PROP_TYPES,
+  RIG_NAMES,
   START_POSE_NAMES,
   expandJoint,
 } from "posecode-parser";
@@ -77,6 +79,7 @@ import {
 const KEYWORDS = new Set([
   "posecode",
   "rig",
+  "avatar",
   "prop",
   "pose",
   "start",
@@ -103,7 +106,8 @@ const ATOMS = new Set([
   ...PROP_TYPES,
   ...EFFECTOR_NAMES,
   ...GROUND_LOCK_EFFECTOR_NAMES,
-  "humanoid",
+  ...AVATAR_NAMES,
+  ...RIG_NAMES,
 ]);
 const JOINTS = new Set<string>(JOINT_NAMES);
 
@@ -174,6 +178,8 @@ const CM_TYPE: Record<CompletionKind, string> = {
   keyword: "keyword",
   kind: "type",
   pose: "constant",
+  avatar: "constant",
+  rig: "constant",
   easing: "constant",
   joint: "variable",
   action: "function",

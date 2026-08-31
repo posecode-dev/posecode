@@ -38,6 +38,7 @@ import {
   type ClipLayer,
   type ClipSource,
 } from "./clips.js";
+import { createLatestResourceLoader } from "./latest-resource-loader.js";
 import { depenetrate } from "./depenetrate.js";
 import {
   measureConstraintDiagnostics,
@@ -145,8 +146,20 @@ export interface ViewerOptions {
    * it fails — the viewer shows the procedural figure, so a missing or slow
    * asset can never blank the scene. All solving still runs on the driver
    * skeleton, rebuilt to the character's exact proportions (see character.ts).
+   *
+   * Fixed for the viewer's lifetime: it wins over `characterUrls` regardless of
+   * a loaded document's `avatar` value, so callers that only ever want one
+   * character can ignore `characterUrls` entirely.
    */
   characterUrl?: string;
+  /**
+   * Character selector → GLB URL. `load(ir)` uses `ir.avatar` when present and
+   * otherwise falls back to `ir.rig`, so hosts can map `humanoid` to their
+   * default character while `avatar avatar2` selects a different appearance.
+   * A selector absent from this map — or any load failure — falls back to the
+   * procedural figure.
+   */
+  characterUrls?: Partial<Record<string, string>>;
   /**
    * Mocap clip library: clip name (as written in a document's `clip "<name>"`
    * directive) → FBX/GLB asset URL. When a loaded document names a clip found
@@ -284,11 +297,11 @@ export function createViewer(
   enableShadows(mannequin.root);
   scene.add(mannequin.root);
 
-  // When a skinned character is requested and the caller opted out of the
-  // procedural fallback during load, hide the procedural meshes up front so the
-  // crude figure never flashes for the character's fetch time on a page load.
-  // The skeleton still drives animation and grounding; only the meshes hide
-  // (same as the post-load swap). Revealed again if the character fails to load.
+  // A fixed character URL is known immediately, so callers can hide the
+  // procedural meshes up front to avoid a flash while it loads. A
+  // document-driven URL is hidden later, in requestCharacter(), once load(ir)
+  // has actually selected a mapped asset. Either path reveals the fallback if
+  // loading fails.
   const deferProceduralMeshes =
     Boolean(opts.characterUrl) && opts.showProceduralWhileLoading === false;
   if (deferProceduralMeshes) setMeshVisibility(mannequin.root, false);
@@ -299,6 +312,84 @@ export function createViewer(
   // (they keep feeding the bounding-box grounding), and the character mirrors it
   // every frame.
   let character: Character | null = null;
+
+  /** Install a newly loaded character and re-solve the current document. */
+  function installCharacter(char: Character): void {
+    scene.remove(mannequin.root);
+    disposeTree(mannequin.root);
+    mannequin = buildMannequin(undefined, char.proportions);
+    setMeshVisibility(mannequin.root, false);
+    scene.add(mannequin.root);
+    if (character) {
+      scene.remove(character.group);
+      character.dispose();
+    }
+    scene.add(char.group);
+    character = char;
+    clipLayer?.dispose();
+    clipLayer = null;
+    clipLayerName = null;
+    clipWeight = 0;
+    clipTargetWeight = 0;
+    // The life layer's mesh handles died with the old procedural figure.
+    eyes = [];
+    ribcage = undefined;
+    ribcageRestScale = null;
+    if (lastIR) api.load(lastIR);
+    else char.sync(mannequin);
+  }
+
+  /** Drop the active character (if any) and go back to the procedural figure. */
+  function revertToProcedural(): void {
+    clipLayer?.dispose();
+    clipLayer = null;
+    clipLayerName = null;
+    clipWeight = 0;
+    clipTargetWeight = 0;
+    if (character) {
+      scene.remove(character.group);
+      character.dispose();
+      character = null;
+      scene.remove(mannequin.root);
+      disposeTree(mannequin.root);
+      mannequin = buildMannequin();
+      enableShadows(mannequin.root);
+      scene.add(mannequin.root);
+    }
+    setMeshVisibility(mannequin.root, true);
+    eyes = ["eye_left", "eye_right"]
+      .map((n) => mannequin.root.getObjectByName(n))
+      .filter((o): o is THREE.Object3D => Boolean(o));
+    ribcage = mannequin.root.getObjectByName("ribcage");
+    ribcageRestScale = ribcage ? ribcage.scale.clone() : null;
+  }
+
+  const characterLoader = createLatestResourceLoader<Character>({
+    load: loadCharacter,
+    activate: installCharacter,
+    fallback: revertToProcedural,
+    onError(error) {
+      console.warn("Posecode character load failed; using procedural fallback", error);
+    },
+  });
+
+  /**
+   * Resolve which character (if any) this document should show and
+   * switch to it. No-ops when the caller pinned a fixed `characterUrl` (that
+   * always wins over any document's `avatar`).
+   */
+  function requestCharacter(ir: PosecodeIR): void {
+    if (opts.characterUrl) return;
+    const selector = ir.avatar ?? ir.rig;
+    const url = opts.characterUrls?.[selector] ?? null;
+    // Unlike a fixed URL, a document-driven URL is unknown until `load(ir)`.
+    // Hide only once that request actually starts, so a viewer that has not
+    // loaded a document can never sit blank indefinitely.
+    if (url && !character && opts.showProceduralWhileLoading === false) {
+      setMeshVisibility(mannequin.root, false);
+    }
+    characterLoader.request(url);
+  }
 
   // Mocap-clip layer (optional, character-only). When the loaded document
   // names a clip present in opts.clips, the asset is fetched once, retargeted
@@ -1015,6 +1106,7 @@ export function createViewer(
   const api: Viewer = {
     load(ir: PosecodeIR) {
       lastIR = ir;
+      requestCharacter(ir);
       timeline = buildTimeline(ir);
       floorGuideData = buildFloorGuideData(ir, timeline);
       const pinnedFootSides = new Set<string>();
@@ -1331,6 +1423,7 @@ export function createViewer(
     },
     dispose() {
       cancelAnimationFrame(raf);
+      characterLoader.dispose();
       controls.dispose();
       clipLayer?.dispose();
       character?.dispose();
@@ -1343,38 +1436,9 @@ export function createViewer(
     },
   };
 
-  // Kick off the character load (if requested). On success, swap the driver
-  // skeleton for one congruent with the character, hide the procedural meshes
-  // (still feeding the bounding-box grounding), and re-solve the current
-  // document against the new proportions. On failure, the procedural figure
-  // simply remains: the scene is never blank.
-  if (opts.characterUrl) {
-    void loadCharacter(opts.characterUrl)
-      .then((char) => {
-        scene.remove(mannequin.root);
-        disposeTree(mannequin.root);
-        mannequin = buildMannequin(undefined, char.proportions);
-        setMeshVisibility(mannequin.root, false);
-        scene.add(mannequin.root);
-        scene.add(char.group);
-        character = char;
-        // The life layer's mesh handles died with the procedural figure.
-        eyes = [];
-        ribcage = undefined;
-        ribcageRestScale = null;
-        if (lastIR) api.load(lastIR);
-        else char.sync(mannequin);
-      })
-      .catch((error: unknown) => {
-        // Character failed (offline embed, blocked/404 CDN): reveal the
-        // procedural figure we may have hidden, so the scene degrades to the
-        // working fallback instead of staying blank. Keep a developer-facing
-        // diagnostic because malformed or incompatible rigs otherwise look
-        // exactly like a network fallback and are impossible to calibrate.
-        console.warn("Posecode character load failed; using procedural fallback", error);
-        if (deferProceduralMeshes) setMeshVisibility(mannequin.root, true);
-      });
-  }
+  // Kick off a fixed character load when the caller pinned one. Otherwise
+  // `load(ir)` resolves from `characterUrls` using the document selector.
+  if (opts.characterUrl) characterLoader.request(opts.characterUrl);
 
   return api;
 }

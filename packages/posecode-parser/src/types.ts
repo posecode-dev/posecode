@@ -8,7 +8,7 @@
  */
 
 /** Version of the parsed Posecode language/IR contract. */
-export const POSECODE_VERSION = "0.3";
+export const POSECODE_VERSION = "0.4";
 
 export type Axis = "x" | "y" | "z";
 
@@ -103,6 +103,8 @@ export interface PosecodeIR {
   kind: string;
   name: string;
   rig: string;
+  /** Optional character appearance, independent of the skeleton topology. */
+  avatar?: string;
   startPose?: string;
   /** Sparse, ROM-clamped joint channels layered over the built-in start pose. */
   startPoseOverrides?: JointTarget[];

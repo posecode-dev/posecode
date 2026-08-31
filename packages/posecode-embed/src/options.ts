@@ -19,16 +19,33 @@ export interface PlayerOptions {
   /** Playback speed multiplier (0.1–4). */
   speed: number;
   /**
-   * Realistic skinned figure: a GLB URL, the default hosted character when
-   * absent, or `""` (attribute `character="off"`) for the procedural figure.
-   * Load failures fall back to the procedural figure, so an offline page
-   * degrades instead of blanking.
+   * Realistic skinned figure pinned to one GLB URL, from an explicit
+   * `character="<url>"` attribute. `""` when the attribute is absent (the host
+   * picks the character from `characterUrls` instead) or the character is
+   * disabled. Load failures fall back to the procedural figure, so an offline
+   * page degrades instead of blanking.
    */
   characterUrl: string;
+  /** True when `character="off"` (or another falsey word) explicitly disables any skinned character. */
+  characterDisabled: boolean;
+  /**
+   * Document selector (`avatar` when present, otherwise `rig`) → GLB URL,
+   * applied when `characterUrl` is unset and the character isn't disabled.
+   * Defaults to the hosted character choices and the humanoid default.
+   */
+  characterUrls: Record<string, string>;
 }
 
 /** The character the hosted playground uses, served from the same origin. */
 export const DEFAULT_CHARACTER_URL = "https://posecode.org/models/xbot.glb";
+
+/** Hosted character per built-in selector. Avatar1 intentionally reuses XBot. */
+export const DEFAULT_CHARACTER_URLS: Record<string, string> = {
+  humanoid: DEFAULT_CHARACTER_URL,
+  avatar1: DEFAULT_CHARACTER_URL,
+  avatar2: "https://posecode.org/models/avatar2.glb",
+  avatar3: "https://posecode.org/models/avatar3.glb",
+};
 
 export const DEFAULT_OPTIONS: PlayerOptions = {
   autoplay: true,
@@ -36,7 +53,9 @@ export const DEFAULT_OPTIONS: PlayerOptions = {
   controls: true,
   autoRotate: true,
   speed: 1,
-  characterUrl: DEFAULT_CHARACTER_URL,
+  characterUrl: "",
+  characterDisabled: false,
+  characterUrls: DEFAULT_CHARACTER_URLS,
 };
 
 const SPEED_MIN = 0.1;
@@ -66,15 +85,13 @@ function clamp(n: number, lo: number, hi: number): number {
 
 export function parseOptions(attrs: RawAttributes): PlayerOptions {
   const speedRaw = attrs.speed != null ? Number(attrs.speed) : NaN;
-  // `character` accepts a GLB URL, a falsey word to opt out, or absent for
-  // the hosted default.
+  // `character` accepts a GLB URL (pinned regardless of the document's rig),
+  // a falsey word to disable any skinned character, or absent to let the
+  // document's optional `avatar` directive pick from characterUrls.
   const characterRaw = attrs.character?.trim();
-  const characterUrl =
-    characterRaw === undefined || characterRaw === null
-      ? DEFAULT_OPTIONS.characterUrl
-      : FALSEY.has(characterRaw.toLowerCase())
-        ? ""
-        : characterRaw;
+  const characterDisabled =
+    characterRaw !== undefined && characterRaw !== null && FALSEY.has(characterRaw.toLowerCase());
+  const characterUrl = characterRaw && !characterDisabled ? characterRaw : "";
   return {
     autoplay: boolAttr(attrs.autoplay, DEFAULT_OPTIONS.autoplay),
     loop: boolAttr(attrs.loop, DEFAULT_OPTIONS.loop),
@@ -84,5 +101,7 @@ export function parseOptions(attrs: RawAttributes): PlayerOptions {
       ? clamp(speedRaw, SPEED_MIN, SPEED_MAX)
       : DEFAULT_OPTIONS.speed,
     characterUrl,
+    characterDisabled,
+    characterUrls: DEFAULT_OPTIONS.characterUrls,
   };
 }
