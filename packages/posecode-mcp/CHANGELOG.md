@@ -1,5 +1,13 @@
 # posecode-mcp
 
+## 0.4.3
+
+### Patch Changes
+
+- 52c2000: Bump `@modelcontextprotocol/sdk` to ^1.30.0.
+- posecode-parser@0.4.3
+  - posecode-share@0.4.3
+
 ## 0.4.2
 
 ### Patch Changes

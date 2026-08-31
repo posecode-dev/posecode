@@ -1,5 +1,14 @@
 # posecode-embed
 
+## 0.4.3
+
+### Patch Changes
+
+- Updated dependencies [c955377]
+  - posecode-render@0.4.3
+  - posecode-parser@0.4.3
+  - posecode-share@0.4.3
+
 ## 0.4.2
 
 ### Patch Changes
