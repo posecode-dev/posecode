@@ -1,5 +1,20 @@
 # posecode-embed
 
+## 0.5.0
+
+### Minor Changes
+
+- 591dfec: Add an optional avatar selector separate from humanoid rig topology, safely hot-swap document-selected characters with procedural fallback, and add hosted avatar defaults.
+
+  Keep the renderer peer range compatible with the parser's additive language/IR update.
+
+### Patch Changes
+
+- Updated dependencies [591dfec]
+  - posecode-parser@0.5.0
+  - posecode-render@0.5.0
+  - posecode-share@0.5.0
+
 ## 0.4.3
 
 ### Patch Changes

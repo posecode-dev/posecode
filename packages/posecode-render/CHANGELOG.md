@@ -1,5 +1,13 @@
 # posecode-render
 
+## 0.5.0
+
+### Minor Changes
+
+- 591dfec: Add an optional avatar selector separate from humanoid rig topology, safely hot-swap document-selected characters with procedural fallback, and add hosted avatar defaults.
+
+  Keep the renderer peer range compatible with the parser's additive language/IR update.
+
 ## 0.4.3
 
 ### Patch Changes

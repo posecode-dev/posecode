@@ -1,5 +1,13 @@
 # posecode-mcp
 
+## 0.5.0
+
+### Patch Changes
+
+- Updated dependencies [591dfec]
+  - posecode-parser@0.5.0
+  - posecode-share@0.5.0
+
 ## 0.4.3
 
 ### Patch Changes
