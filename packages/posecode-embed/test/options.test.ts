@@ -1,10 +1,33 @@
 import { describe, it, expect } from "vitest";
-import { parseOptions, DEFAULT_CHARACTER_URL, DEFAULT_OPTIONS } from "../src/options.js";
+import {
+  parseOptions,
+  DEFAULT_CHARACTER_URL,
+  DEFAULT_CHARACTER_URLS,
+  DEFAULT_OPTIONS,
+} from "../src/options.js";
 
 describe("parseOptions", () => {
   it("returns sensible defaults for an element with no attributes", () => {
     expect(parseOptions({})).toEqual(DEFAULT_OPTIONS);
     expect(DEFAULT_CHARACTER_URL).toBe("https://posecode.org/models/xbot.glb");
+    // No explicit `character` attribute: document-driven, not pinned to one URL.
+    expect(DEFAULT_OPTIONS.characterUrl).toBe("");
+    expect(DEFAULT_OPTIONS.characterDisabled).toBe(false);
+    expect(DEFAULT_OPTIONS.characterUrls).toBe(DEFAULT_CHARACTER_URLS);
+    expect(DEFAULT_CHARACTER_URLS.humanoid).toBe(DEFAULT_CHARACTER_URL);
+    expect(DEFAULT_CHARACTER_URLS.avatar1).toBe(DEFAULT_CHARACTER_URL);
+  });
+
+  it("pins an explicit character URL and disables document-driven selection", () => {
+    const o = parseOptions({ character: "https://example.com/me.glb" });
+    expect(o.characterUrl).toBe("https://example.com/me.glb");
+    expect(o.characterDisabled).toBe(false);
+  });
+
+  it("disables the character entirely on a falsey word", () => {
+    const o = parseOptions({ character: "off" });
+    expect(o.characterUrl).toBe("");
+    expect(o.characterDisabled).toBe(true);
   });
 
   it("treats boolean attributes as present-means-true", () => {

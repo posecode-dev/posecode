@@ -17,7 +17,7 @@
     "three": "^0.185.1"
   },
   "peerDependencies": {
-    "posecode-parser": ">=0.2.2 <0.5.0"
+    "posecode-parser": ">=0.2.2 <0.6.0"
   },
   "devDependencies": {
     "@types/three": "^0.185.4"

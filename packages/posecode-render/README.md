@@ -29,9 +29,19 @@ const viewer = createViewer(canvas, {
   // Metric grid, load origin, live +Z facing arrow, and authored travel path.
   // Enabled by default; disable it for a clean presentation-only embed.
   floorGuide: true,
-  // Optional: realistic skinned character (Mixamo bone naming). Omit for the
-  // zero-asset procedural figure.
+  // Optional: realistic skinned character (Mixamo bone naming). Omit both
+  // characterUrl and characterUrls for the zero-asset procedural figure.
   characterUrl: "https://posecode.org/models/xbot.glb",
+  // Alternative to characterUrl: pick from the optional `avatar` directive.
+  // Documents without one use the `humanoid` entry. A selector absent from the
+  // map (or any load failure) falls back to the procedural figure. Ignored
+  // when characterUrl is set.
+  // characterUrls: {
+  //   humanoid: "https://posecode.org/models/xbot.glb",
+  //   avatar1: "https://posecode.org/models/xbot.glb",
+  //   avatar2: "https://posecode.org/models/avatar2.glb",
+  //   avatar3: "https://posecode.org/models/avatar3.glb",
+  // },
 });
 
 const { ir } = parse(myPosecodeSource);
