@@ -23,6 +23,6 @@ This is an engineering audit checklist, not legal advice. Resolve these points w
 
 ## Third-party materials
 
-- Recheck the current Adobe Mixamo terms for redistribution of `xbot.glb` and `jumping-jacks.fbx`, especially for npm, source archives, hosted demos, white-label offerings, and customer redistribution.
+- Recheck the current Adobe Mixamo terms for redistribution of `xbot.glb`, `avatar2.glb`, `avatar3.glb`, and `jumping-jacks.fbx`, especially for npm, source archives, hosted demos, white-label offerings, and customer redistribution.
 - Replace the remaining Mixamo-derived files with owned or clearly redistributable assets if the intended distribution is not covered.
 - Run a dependency and source-provenance audit for every release artifact, including bundled JavaScript, model files, fonts, images, and generated content. Preserve all required notices.
