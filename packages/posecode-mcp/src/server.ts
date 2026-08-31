@@ -21,7 +21,7 @@ export interface PosecodeServerOptions {
 }
 
 /** Package/server identity kept in sync by `version-packages`. */
-export const POSECODE_MCP_VERSION = "0.4.3";
+export const POSECODE_MCP_VERSION = "0.5.0";
 
 export function createPosecodeServer(opts: PosecodeServerOptions = {}): McpServer {
   const baseUrl = opts.baseUrl ?? DEFAULT_BASE_URL;
