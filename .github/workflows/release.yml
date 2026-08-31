@@ -38,11 +38,12 @@ jobs:
         id: changesets
         uses: changesets/action@v2
         with:
-          version: npm run version-packages
-          publish: npm run release
-          commit: "chore: release packages"
-          title: "chore: release packages"
-          createGithubReleases: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          version-script: npm run version-packages
+          publish-script: npm run release
+          commit-message: "chore: release packages"
+          pr-title: "chore: release packages"
+          create-github-releases: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
