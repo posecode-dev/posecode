@@ -1,5 +1,11 @@
 # posecode-render
 
+## 0.4.3
+
+### Patch Changes
+
+- c955377: Add `Viewer.selectBones()` to highlight canonical bones at their live joint positions without affecting bounds, grounding, exports, or diagnostics.
+
 ## 0.4.2
 
 ### Patch Changes
