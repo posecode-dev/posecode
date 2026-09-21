@@ -13,10 +13,10 @@
   "dependencies": {
     "posecode-parser": "0.5.0",
     "posecode-render": "0.5.0",
-    "three": "^0.185.1"
+    "three": "^0.186.0"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
-    "@types/three": "^0.185.4"
+    "@types/three": "^0.186.0"
   }
 }

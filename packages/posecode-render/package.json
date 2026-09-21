@@ -14,13 +14,13 @@
     }
   },
   "dependencies": {
-    "three": "^0.185.1"
+    "three": "^0.186.0"
   },
   "peerDependencies": {
     "posecode-parser": ">=0.2.2 <0.6.0"
   },
   "devDependencies": {
-    "@types/three": "^0.185.4"
+    "@types/three": "^0.186.0"
   },
   "repository": {
     "type": "git",
