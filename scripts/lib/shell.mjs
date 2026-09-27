@@ -141,6 +141,7 @@ export function pageShell({ title, description, canonicalPath, jsonLd, bodyHtml,
         <nav class="links" aria-label="Primary">
           <a href="/play">Playground</a>
           <a href="/moves/">Movement library</a>
+          <a href="/for-products">For products</a>
           <a href="/spec.html">Language spec</a>
           <a href="/llm-guide.html">LLM authoring</a>
           <a href="mailto:hello@posecode.org?subject=Posecode%20Feedback">Feedback</a>

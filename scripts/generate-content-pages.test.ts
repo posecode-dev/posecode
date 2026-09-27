@@ -7,6 +7,28 @@ import { esc } from "./lib/shell.mjs";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 describe("generated content pages", () => {
+  it("publishes the canonical product page in the sitemap", () => {
+    const sitemap = readFileSync(
+      resolve(root, "playground/public/sitemap.xml"),
+      "utf8",
+    );
+
+    expect(sitemap).toContain(
+      "<loc>https://www.posecode.org/for-products</loc>",
+    );
+    expect(sitemap).not.toContain("<loc>https://posecode.org/");
+  });
+
+  it("uses the current embed release in product integration docs", () => {
+    const page = readFileSync(
+      resolve(root, "playground/for-products.html"),
+      "utf8",
+    );
+
+    expect(page).toContain("posecode-embed@0.5.0");
+    expect(page).not.toContain("posecode-embed@0.2.2");
+  });
+
   it("embeds the canonical superhero landing source exactly", () => {
     const source = readFileSync(
       resolve(root, "spec/examples/superhero-landing.posecode"),

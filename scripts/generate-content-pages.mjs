@@ -71,6 +71,7 @@ async function main() {
     { loc: `${SITE}/`, priority: "1.0" },
     { loc: `${SITE}/play`, priority: "0.9" },
     { loc: `${SITE}/moves/`, priority: "0.8" },
+    { loc: `${SITE}/for-products`, priority: "0.7" },
     { loc: `${SITE}/spec.html`, priority: "0.6" },
     { loc: `${SITE}/llm-guide.html`, priority: "0.6" },
   ];
@@ -99,12 +100,12 @@ async function main() {
          <div class="chip-list">${related.map((o) => `<a href="/moves/${o.id}.html">${esc(o.label)}</a>`).join("")}</div>`
       : "";
 
-    const description = `${name} is ${levelArticle} ${p.difficulty.toLowerCase()}-level ${p.domain.toLowerCase()} Posecode example with ${steps.length} inspectable phases and a link to live 3D playback.`;
+    const description = `${name} rendered as an editable 3D animation from inspectable Posecode source, with ${steps.length} ${p.difficulty.toLowerCase()}-level ${p.domain.toLowerCase()} phases and live browser playback.`;
 
     const jsonLd = {
       "@context": "https://schema.org",
       "@type": "TechArticle",
-      headline: `${name}: a Posecode movement example`,
+      headline: `${name}: editable 3D animation and Posecode source`,
       description,
     };
 
@@ -139,7 +140,7 @@ ${stepsHtml}
     `.trimEnd();
 
     const html = pageShell({
-      title: `${name}: Posecode Movement Example | Posecode`,
+      title: `${name} 3D Animation & Editable Source | Posecode`,
       description,
       canonicalPath: url,
       jsonLd,
@@ -173,9 +174,9 @@ ${stepsHtml}
     .join("\n");
 
   const indexHtml = pageShell({
-    title: `${readyPresets.length} Launch-Ready Posecode Movement Examples | Posecode`,
+    title: `${readyPresets.length} Editable 3D Movement Examples | Posecode`,
     description:
-      `Browse ${readyPresets.length} launch-ready Posecode movement examples across fitness, physiotherapy, yoga, dance, and martial arts, each with inspectable source and a link to live 3D playback.`,
+      `Browse ${readyPresets.length} editable 3D movement examples across fitness, physiotherapy, yoga, dance, and martial arts, each with inspectable source and live browser playback.`,
     canonicalPath: "/moves/",
     bodyHtml: `
       <p class="eyebrow">Movement library</p>
