@@ -1,6 +1,6 @@
 # Posecode × UniMate: sparse key-pose bridge
 
-**Status:** implementable interchange boundary, with the rig-aware UniMate adapter proposed as the next joint step.
+**Status:** the Posecode manifest producer is merged. The rig-aware adapter is the next joint step and must use UniMate's official unseen-skeleton preprocessing path once it is released.
 
 Posecode should remain the editable source of truth for named phases, sparse key poses, root intent, and contact constraints. UniMate should generate only the motion between those authored anchors. This avoids treating a generated 60 FPS clip as the primary artifact and directly matches UniMate's existing `x1_known` / `keep_mask` replacement path.
 
@@ -29,13 +29,16 @@ flowchart LR
 
 The manifest intentionally does **not** claim to be UniMate's normalized `(T, J, 12)` tensor. That final encoding requires the chosen rig's rest hierarchy, global FK positions, and `dataset_stats.npy` from the selected checkpoint. The adapter must compute those values next to UniMate, where that context exists.
 
+For unseen skeletons, the official UniMate preprocessing implementation and unified-normalization checkpoint are the source of truth. The adapter must record the UniMate commit and checkpoint used, and must not duplicate canonicalization, joint pruning, facing selection, or normalization from an inferred contract.
+
 ## Smallest useful joint prototype
 
-1. Add a manifest importer to [UniMate-B3D](https://github.com/nopeburger/UniMate-B3D).
-2. Map each Posecode semantic bone to the selected Blender deform rig, apply every reference pose, then reuse B3D's `encode_pose` path.
-3. Build `x1_known` and `keep_mask` with channels `0:9` fixed at reference frames and channels `9:12` left free, matching B3D's current pose-reference behavior.
-4. Generate the gaps, then retain Posecode keyframes as hard anchors during retiming.
-5. Return an editable Blender Action plus machine-readable diagnostics.
+1. Pin an official UniMate commit that includes unseen-skeleton preprocessing and the matching unified-normalization checkpoint. Until that release exists, keep arbitrary-rig support experimental.
+2. Add a manifest importer to [UniMate-B3D](https://github.com/nopeburger/UniMate-B3D).
+3. Map each Posecode semantic bone to the selected Blender deform rig, apply every reference pose, then reuse B3D's `encode_pose` path.
+4. Build `x1_known` and `keep_mask` with channels `0:9` fixed at reference frames and channels `9:12` left free, matching B3D's current pose-reference behavior.
+5. Generate the gaps, then retain Posecode keyframes as hard anchors during retiming.
+6. Return an editable Blender Action plus machine-readable diagnostics and preprocessing provenance.
 
 ## Evaluation
 
@@ -48,8 +51,11 @@ Use the released 22-joint Mixamo checkpoint first, with 10 to 20 short movements
 | Planted-foot drift | under 2 cm during declared contacts |
 | ROM violations | none after validation/post-process |
 | Animator correction effort | fewer key edits than either baseline |
+| Preprocessing parity | preserve the rest body axis with the official text-only baseline |
 
-The most informative failure set is also small: quadruped rigs that rotate upright, rare topologies, opposing contact constraints, and phase references placed too close for a 60-frame generation window.
+For arbitrary rigs, run the official preprocessing path before comparing generation methods. `Tiger_rig.glb` from [UniMate issue #8](https://github.com/Friedrich-M/UniMate/issues/8) is a preprocessing-parity fixture: a community converter produced an upright tiger, while the UniMate maintainer reported a correct horizontal result from the same asset. Treat this as a pipeline mismatch to reproduce and eliminate, not as evidence of a model failure.
+
+The remaining model and bridge failure set is deliberately small: rare topologies after official preprocessing, opposing contact constraints, phase references placed too close for a 60-frame generation window, and anchors that preserve pose while producing implausible transitions.
 
 ## Contribution split and licensing
 
@@ -61,4 +67,4 @@ The new Posecode adapter is part of `posecode-render` and therefore AGPL-3.0-onl
 
 ## Acceptance test
 
-A bridge is complete when four Posecode-authored Mixamo key poses can be imported, used as fixed UniMate references, generated between, and exported as a Blender Action while preserving all four anchors and reporting contact/ROM residuals.
+A bridge is complete when four Posecode-authored Mixamo key poses can be imported, used as fixed UniMate references, generated between, and exported as a Blender Action while preserving all four anchors and reporting contact/ROM residuals. An arbitrary-rig result must also identify the official preprocessing commit, checkpoint, normalization statistics, and input rig used.
