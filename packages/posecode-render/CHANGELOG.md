@@ -1,5 +1,15 @@
 # posecode-render
 
+## 0.6.0
+
+### Minor Changes
+
+- 9283e1b: Add a deterministic UniMate constraint manifest exporter for sparse key-pose in-betweening workflows.
+
+### Patch Changes
+
+- posecode-parser@0.6.0
+
 ## 0.5.0
 
 ### Minor Changes
