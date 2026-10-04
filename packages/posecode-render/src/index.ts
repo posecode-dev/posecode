@@ -1684,3 +1684,14 @@ export {
 export type { PhaseSegment } from "./timeline.js";
 export { exportBVH, type BvhExportOptions } from "./bvh.js";
 export { exportGLTF, buildAnimatedRig, type GltfExportOptions } from "./gltf.js";
+export {
+  UNIMATE_CONSTRAINT_SCHEMA,
+  POSECODE_MIXAMO_BINDINGS,
+  buildUniMateConstraintManifest,
+  type UniMateBoneBinding,
+  type UniMateConstraintKeyframe,
+  type UniMateConstraintManifest,
+  type UniMateConstraintOptions,
+  type UniMateConstraintSet,
+  type UniMatePromptClip,
+} from "./unimate.js";

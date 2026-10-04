@@ -27,5 +27,6 @@ The repository root retains the canonical [`LICENSE`](../LICENSE) and [`NOTICE`]
 ## Development references
 
 - [Product usage analytics](product-analytics.md)
+- [Posecode × UniMate sparse key-pose bridge](integrations/unimate.md)
 - [Vercel agent notes](development/VERCEL_AGENTS.md)
 - [Pose diagnostics summary](diagnostics/pose-summary.json)

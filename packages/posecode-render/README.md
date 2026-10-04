@@ -73,6 +73,24 @@ bounded self-collision pairs. They measure the post-solver procedural driver,
 before optional skinned-character or mocap surface reconciliation, and report
 outcomes without changing the authored motion.
 
+## UniMate constraint interchange
+
+Use `buildUniMateConstraintManifest()` to turn a validated IR into a JSON-safe
+sparse key-pose schedule for a rig-aware UniMate adapter:
+
+```ts
+import { buildUniMateConstraintManifest } from "posecode-render";
+
+const manifest = buildUniMateConstraintManifest(ir, { fps: 30 });
+```
+
+The manifest preserves named phase endpoints, root intent, Mixamo bone
+bindings, and contact constraints. It deliberately stops before UniMate's
+normalized motion tensor because that conversion requires the destination
+rig's rest geometry and the selected checkpoint's normalization statistics.
+See the [integration note](https://github.com/posecode-dev/posecode/blob/main/docs/integrations/unimate.md)
+for the bridge boundary and acceptance test.
+
 No GPU, no diffusion model: generation is a fraction of a cent of text, and
 rendering is plain forward kinematics.
 
