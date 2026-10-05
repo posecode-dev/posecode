@@ -68,3 +68,15 @@ export { runEval, renderReport } from "./report.js";
 export type { EvalOptions, EvalReport, MovementReport, MovementSource } from "./report.js";
 export { loadFixtures } from "./generator.js";
 export type { MovementGenerator } from "./generator.js";
+export { translateLabanToPosecode } from "./laban.js";
+export type {
+  LabanDirection,
+  LabanLevel,
+  LabanSupportAction,
+  LabanGestureAction,
+  LabanTurnAction,
+  LabanScoreEvent,
+  LabanScore,
+  TranslationDiagnostic,
+  TranslationResult,
+} from "./laban.js";
