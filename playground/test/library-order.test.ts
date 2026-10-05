@@ -38,7 +38,7 @@ describe("movement library ordering", () => {
     // box) are separate and remain ready, so the Dance domain still appears in
     // the launch-ready gallery.
     const byId = new Map(PRESETS.map((preset) => [preset.id, preset]));
-    for (const balletId of ["demi-plie", "releve", "tendu", "chasse"]) {
+    for (const balletId of ["demi-plie", "eleve", "releve", "tendu", "chasse"]) {
       expect(byId.get(balletId)?.status).toBe("experimental");
     }
 

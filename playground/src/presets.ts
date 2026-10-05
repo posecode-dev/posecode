@@ -47,6 +47,7 @@ import superheroLanding from "../../spec/examples/superhero-landing.posecode?raw
 
 // Dance / choreography.
 import demiPlie from "../../spec/examples/demi-plie.posecode?raw";
+import eleve from "../../spec/examples/eleve.posecode?raw";
 import releve from "../../spec/examples/releve.posecode?raw";
 import tendu from "../../spec/examples/tendu.posecode?raw";
 import portDeBras from "../../spec/examples/port-de-bras.posecode?raw";
@@ -189,6 +190,7 @@ export const PRESETS: Preset[] = [
   { id: "high-knee-march", label: "High-knee march", domain: "Warm-up", bodyPart: "Full body", target: "Hip flexors", equipment: "Body weight", difficulty: "Beginner", status: "ready", source: highKneeMarch },
 
   // --- Dance / choreography (flagship) ---
+  { id: "eleve", label: "Elevé", domain: "Dance", bodyPart: "Lower legs", target: "Calves", equipment: "Body weight", difficulty: "Beginner", status: "experimental", source: eleve },
   { id: "releve", label: "Relevé", domain: "Dance", bodyPart: "Lower legs", target: "Calves", equipment: "Body weight", difficulty: "Beginner", status: "experimental", source: releve },
   { id: "tendu", label: "Tendu", domain: "Dance", bodyPart: "Upper legs", target: "Hip flexors", equipment: "Body weight", difficulty: "Intermediate", status: "experimental", source: tendu },
   { id: "port-de-bras", label: "Port de bras", domain: "Dance", bodyPart: "Shoulders", target: "Deltoids", equipment: "Body weight", difficulty: "Beginner", status: "experimental", source: portDeBras },

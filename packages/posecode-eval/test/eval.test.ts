@@ -184,7 +184,7 @@ describe("clip-wide constraint diagnostics", () => {
   });
 
   it("anchors intentional rises at the toe while retaining real planted drift", () => {
-    for (const movement of ["heel-raises", "releve"]) {
+    for (const movement of ["heel-raises", "releve", "eleve"]) {
       const result = probeMovement(source(movement));
       expect(result.diagnostics.warnings.some((warning) =>
         warning.kind === "foot-drift",
@@ -207,7 +207,7 @@ describe("clip-wide constraint diagnostics", () => {
       import.meta.url,
     ));
     try {
-      for (const movement of ["heel-raises", "releve"]) {
+      for (const movement of ["heel-raises", "releve", "eleve"]) {
         const result = probeMovement(source(movement), xbot.proportions, xbot);
         expect(result.diagnostics.warnings.some((warning) =>
           warning.kind === "foot-drift",

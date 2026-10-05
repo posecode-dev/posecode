@@ -1,0 +1,30 @@
+# Reference: Gail Grant, "Technical Manual and Dictionary of Classical Ballet" (Elevé: rise from straight legs)
+# Reference: Agrippina Vaganova, "Basic Principles of Classical Ballet"
+# Review status: Experimental (ballet UAT; pending peer review with dance-domain educator)
+# Biomechanical note: Elevé is a smooth rise directly from straight legs onto demi-pointe (balls of feet)
+# in first position without an intervening plié. Turnout (~30° hip external rotation) and upright
+# vertical spine are sustained throughout the rise and controlled lowering.
+
+posecode exercise "Elevé"
+  rig humanoid
+  pose start = first-position
+
+  step "Rise" 1.8s settle:
+    ankles: plantarflex 30
+    knees: extend 0
+    shoulders: abduct 70
+    elbows: flex 15
+    spine: extend 4
+    ground-lock: feet
+    cue "Rise onto the balls of the feet with heels pressing forward, maintaining turnout and tall spine"
+
+  step "Lower" 2s settle:
+    ankles: plantarflex 0
+    knees: extend 0
+    shoulders: abduct 70
+    elbows: flex 15
+    spine: extend 4
+    ground-lock: feet
+    cue "Lower the heels with control, sustaining turnout and vertical spine back to first position"
+
+  repeat 5

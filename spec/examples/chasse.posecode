@@ -1,74 +1,83 @@
+# Reference: Agrippina Vaganova, "Basic Principles of Classical Ballet" (Chassé à la seconde)
+# Reference: Royal Academy of Dance (RAD) Classical Ballet Syllabus
+# Review status: Experimental (ballet UAT; pending peer review with dance-domain educator)
+# Biomechanical note: Chassé (from French chasser, "to chase") is a traveling step-together-step
+# movement where one foot glides along the floor into demi-plié and the other foot chases and closes
+# into first position. First-position turnout is sustained throughout. Floor foot-pins act as stance-foot
+# anchors during gait travel while the opposite leg reaches into the step.
+
 posecode exercise "Chassé"
   rig humanoid
-  pose start = standing
+  pose start = first-position
 
   step "Right foot reaches" 0.65s flow:
     hip_right: abduct 20
     knee_right: flex 20
-    ankle_right: plantarflex 30
-    ankle_left: plantarflex 20
+    ankle_right: plantarflex 25
+    ankle_left: plantarflex 15
     shoulders: abduct 60
     elbows: flex 18
-    travel: 0.2 0
+    travel: 0.25 0
     pin: foot_left floor
     reach: foot_right floor
-    cue "Reach the right foot sideways and push away from the left leg"
+    cue "Demi-plié and glide right foot sideways along the floor, leading with the toes"
 
   step "Left foot chases" 0.5s flow:
     hip_right: abduct 0
-    knee_right: flex 0
+    knee_right: flex 15
     ankle_right: plantarflex 0
-    hip_left: abduct 18
-    knee_left: flex 22
-    ankle_left: plantarflex 30
-    travel: 0.2 0
+    hip_left: abduct 16
+    knee_left: flex 20
+    ankle_left: plantarflex 25
+    travel: 0.25 0
     pin: foot_right floor
-    cue "Let the left foot chase under the body without breaking the sideways flow"
+    cue "Left foot chases under the body to meet in first position demi-plié"
 
   step "Right foot reaches again" 0.65s flow:
     hip_left: abduct 0
-    knee_left: flex 0
-    ankle_left: plantarflex 18
+    knee_left: flex 15
+    ankle_left: plantarflex 15
     hip_right: abduct 20
     knee_right: flex 20
-    ankle_right: plantarflex 30
-    travel: 0.4 0
+    ankle_right: plantarflex 25
+    travel: 0.5 0
     pin: foot_left floor
     reach: foot_right floor
-    cue "Reach right once more and finish the outward chassé"
+    cue "Glide right foot out once more to complete the outward chassé travel"
 
   step "Left foot reaches back" 0.65s flow:
     hip_right: abduct 0
-    knee_right: flex 0
-    ankle_right: plantarflex 20
+    knee_right: flex 15
+    ankle_right: plantarflex 15
     hip_left: abduct 20
     knee_left: flex 20
-    ankle_left: plantarflex 30
-    travel: 0.2 0
+    ankle_left: plantarflex 25
+    travel: 0.25 0
     pin: foot_right floor
     reach: foot_left floor
-    cue "Reverse cleanly and reach the left foot back across the floor"
+    cue "Reverse smoothly and slide the left foot back toward the center"
 
   step "Right foot chases" 0.5s flow:
     hip_left: abduct 0
-    knee_left: flex 0
+    knee_left: flex 15
     ankle_left: plantarflex 0
-    hip_right: abduct 18
-    knee_right: flex 22
-    ankle_right: plantarflex 30
-    travel: 0.2 0
+    hip_right: abduct 16
+    knee_right: flex 20
+    ankle_right: plantarflex 25
+    travel: 0.25 0
     pin: foot_left floor
-    cue "Let the right foot chase under the body on the return"
+    cue "Right foot chases under the body to close in first position demi-plié"
 
   step "Left foot closes home" 0.7s settle:
     hip_right: abduct 0
     knee_right: flex 0
+    knee_left: flex 0
     ankles: plantarflex 0
-    shoulders: abduct 0
-    elbows: flex 0
+    shoulders: abduct 60
+    elbows: flex 18
     travel: 0 0
     reach: foot_left floor
     reach: foot_right floor
-    cue "Close home over both feet and let the momentum resolve"
+    cue "Close home in first position with tall posture and arms maintained in second"
 
   repeat 4

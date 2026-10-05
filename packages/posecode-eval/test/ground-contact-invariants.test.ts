@@ -53,10 +53,12 @@ describe("ground-contact invariants and ROM conflict reporting", () => {
   });
 
   it("distinguishes plantigrade contact from intentional ball-of-foot contact", () => {
-    const releve = probeMovement(load("releve"));
-    // Relevé explicitly plantarflexes onto the balls of the feet
-    // Toe stays grounded
-    expect(releve.diagnostics.feet.left.maxToeHeightMeters).toBeLessThan(0.01);
-    expect(releve.diagnostics.feet.right.maxToeHeightMeters).toBeLessThan(0.01);
+    for (const name of ["releve", "eleve"]) {
+      const probe = probeMovement(load(name));
+      // Relevé and Elevé explicitly plantarflex onto the balls of the feet
+      // Toe stays grounded
+      expect(probe.diagnostics.feet.left.maxToeHeightMeters).toBeLessThan(0.01);
+      expect(probe.diagnostics.feet.right.maxToeHeightMeters).toBeLessThan(0.01);
+    }
   });
 });
