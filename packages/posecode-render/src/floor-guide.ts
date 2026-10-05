@@ -22,6 +22,8 @@ export interface FloorGuidePoint {
 export interface FloorGuideInfo {
   /** Whether the guide was enabled when the viewer was created. */
   visible: boolean;
+  /** Whether author debug mode is active. */
+  debug?: boolean;
   /** Distance between the fine grid lines. */
   gridStepMetres: number;
   /** Length of the brighter ruler drawn beside the origin. */
@@ -34,7 +36,7 @@ export interface FloorGuideInfo {
   waypoints: readonly FloorGuidePoint[];
 }
 
-export interface FloorGuideData extends Omit<FloorGuideInfo, "visible"> {
+export interface FloorGuideData extends Omit<FloorGuideInfo, "visible" | "debug"> {
   /** Timeline-sampled authored path used for the solid curve. */
   path: readonly FloorGuidePoint[];
   /** Timeline-sampled implicit return to origin, rendered separately as dashes. */
@@ -46,6 +48,9 @@ export interface FloorGuideData extends Omit<FloorGuideInfo, "visible"> {
 export interface FloorGuideScene {
   group: THREE.Group;
   getInfo(visible: boolean): FloorGuideInfo;
+  setVisible(visible: boolean): void;
+  setDebug(debug: boolean): void;
+  isDebug(): boolean;
   /** Place the guide's load origin in world space. */
   setOrigin(x: number, z: number): void;
   /** Move and turn the live facing marker relative to the load origin. */
@@ -231,6 +236,94 @@ export function createFloorGuide(data: FloorGuideData): FloorGuideScene {
   ruler.renderOrder = 2;
   group.add(ruler);
 
+  // Concentric stage rings: circular orientation reference for turns and distance
+  const stageRingMaterial = new THREE.MeshBasicMaterial({
+    color: 0x6e7e91,
+    transparent: true,
+    opacity: 0.28,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+  });
+  const stageRing1m = new THREE.Mesh(
+    new THREE.RingGeometry(0.992, 1.008, 64),
+    stageRingMaterial,
+  );
+  stageRing1m.name = "floor-stage-ring-1m";
+  stageRing1m.rotation.x = -Math.PI / 2;
+  stageRing1m.position.y = GUIDE_Y + 0.001;
+  stageRing1m.renderOrder = 2;
+  group.add(stageRing1m);
+
+  if (data.gridRadiusMetres >= 2) {
+    const stageRing2m = new THREE.Mesh(
+      new THREE.RingGeometry(1.992, 2.008, 64),
+      stageRingMaterial,
+    );
+    stageRing2m.name = "floor-stage-ring-2m";
+    stageRing2m.rotation.x = -Math.PI / 2;
+    stageRing2m.position.y = GUIDE_Y + 0.001;
+    stageRing2m.renderOrder = 2;
+    group.add(stageRing2m);
+  }
+
+  // Cardinal orientation markers on the 1m stage ring (Front: +Z, Right: +X, Back: -Z, Left: -X)
+  const cardinalTickMaterial = new THREE.LineBasicMaterial({
+    color: 0xf2f1eb,
+    transparent: true,
+    opacity: 0.52,
+    depthWrite: false,
+  });
+  const cTick = 0.06;
+  const cardinalTicks = new THREE.LineSegments(
+    new THREE.BufferGeometry().setFromPoints([
+      // Front (+Z)
+      new THREE.Vector3(0, GUIDE_Y + 0.002, 1.0 - cTick),
+      new THREE.Vector3(0, GUIDE_Y + 0.002, 1.0 + cTick),
+      // Back (-Z)
+      new THREE.Vector3(0, GUIDE_Y + 0.002, -1.0 - cTick),
+      new THREE.Vector3(0, GUIDE_Y + 0.002, -1.0 + cTick),
+      // Right (+X)
+      new THREE.Vector3(1.0 - cTick, GUIDE_Y + 0.002, 0),
+      new THREE.Vector3(1.0 + cTick, GUIDE_Y + 0.002, 0),
+      // Left (-X)
+      new THREE.Vector3(-1.0 - cTick, GUIDE_Y + 0.002, 0),
+      new THREE.Vector3(-1.0 + cTick, GUIDE_Y + 0.002, 0),
+    ]),
+    cardinalTickMaterial,
+  );
+  cardinalTicks.name = "floor-stage-cardinal-ticks";
+  cardinalTicks.renderOrder = 2;
+  group.add(cardinalTicks);
+
+  // Author debug group (toggleable for dense diagnostics / axis markers)
+  const debugGroup = new THREE.Group();
+  debugGroup.name = "floor-guide-debug-group";
+  debugGroup.visible = false;
+  const debugAxisMaterial = new THREE.LineBasicMaterial({
+    color: 0x94a3b8,
+    transparent: true,
+    opacity: 0.6,
+    depthWrite: false,
+  });
+  const axisPoints: THREE.Vector3[] = [];
+  const maxRadius = Math.min(data.gridRadiusMetres, 6);
+  for (let r = 1; r <= maxRadius; r++) {
+    axisPoints.push(
+      new THREE.Vector3(-0.04, GUIDE_Y + 0.002, r), new THREE.Vector3(0.04, GUIDE_Y + 0.002, r),
+      new THREE.Vector3(-0.04, GUIDE_Y + 0.002, -r), new THREE.Vector3(0.04, GUIDE_Y + 0.002, -r),
+      new THREE.Vector3(r, GUIDE_Y + 0.002, -0.04), new THREE.Vector3(r, GUIDE_Y + 0.002, 0.04),
+      new THREE.Vector3(-r, GUIDE_Y + 0.002, -0.04), new THREE.Vector3(-r, GUIDE_Y + 0.002, 0.04),
+    );
+  }
+  const debugAxisTicks = new THREE.LineSegments(
+    new THREE.BufferGeometry().setFromPoints(axisPoints),
+    debugAxisMaterial,
+  );
+  debugAxisTicks.name = "floor-debug-axis-ticks";
+  debugAxisTicks.renderOrder = 2;
+  debugGroup.add(debugAxisTicks);
+  group.add(debugGroup);
+
   if (data.hasTravel && data.path.length > 1) {
     const curve = new THREE.CurvePath<THREE.Vector3>();
     for (let i = 1; i < data.path.length; i++) {
@@ -336,12 +429,22 @@ export function createFloorGuide(data: FloorGuideData): FloorGuideScene {
     getInfo(visible) {
       return {
         visible,
+        debug: debugGroup.visible,
         gridStepMetres: data.gridStepMetres,
         scaleBarMetres: data.scaleBarMetres,
         hasTravel: data.hasTravel,
         hasLoopReset: data.hasLoopReset,
         waypoints: data.waypoints.map((point) => ({ ...point })),
       };
+    },
+    setVisible(visible) {
+      group.visible = visible;
+    },
+    setDebug(debug) {
+      debugGroup.visible = debug;
+    },
+    isDebug() {
+      return debugGroup.visible;
     },
     setOrigin(x, z) {
       group.position.x = x;

@@ -39,8 +39,19 @@ describe("floor guide", () => {
     expect(guide.group.getObjectByName("floor-origin")).toBeDefined();
     expect(guide.group.getObjectByName("floor-facing-direction")).toBeDefined();
     expect(guide.group.getObjectByName("floor-scale-one-metre")).toBeDefined();
+    expect(guide.group.getObjectByName("floor-stage-ring-1m")).toBeDefined();
+    expect(guide.group.getObjectByName("floor-stage-cardinal-ticks")).toBeDefined();
     expect(guide.group.getObjectByName("floor-travel-path")).toBeUndefined();
     expect(guide.group.getObjectByName("floor-loop-reset-path")).toBeUndefined();
+
+    expect(guide.isDebug()).toBe(false);
+    guide.setDebug(true);
+    expect(guide.isDebug()).toBe(true);
+    expect(guide.getInfo(true).debug).toBe(true);
+
+    guide.setVisible(false);
+    expect(guide.group.visible).toBe(false);
+
     guide.dispose();
   });
 

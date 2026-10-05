@@ -27,6 +27,13 @@ describe("playground floor guide", () => {
     expect(main).toMatch(/viewer\.load\(ir\);\s*updateFloorGuideKey\(\);/);
   });
 
+  it("provides an interactive toggle button and G shortcut for author debug mode", () => {
+    expect(html).toContain('id="floor-guide-toggle"');
+    expect(main).toContain("viewer.toggleFloorGuideDebug()");
+    expect(main).toContain('e.key === "g" || e.key === "G"');
+    expect(css).toContain(".floor-guide-toggle");
+  });
+
   it("keeps the key compact at the mobile viewer breakpoint", () => {
     expect(css).toMatch(
       /@media \(max-width: 860px\)[\s\S]*?\.floor-guide-key\s*\{[\s\S]*?max-width:\s*calc\(100% - 24px\)/,

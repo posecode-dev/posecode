@@ -106,6 +106,12 @@ export interface Viewer {
   getTimeline(): TimelineInfo | null;
   /** Floor scale/orientation and authored root-path metadata for the loaded clip. */
   getFloorGuideInfo(): FloorGuideInfo | null;
+  /** Set or toggle visibility of the floor guide and orientation aids. */
+  setFloorGuideVisible(visible: boolean): void;
+  toggleFloorGuide(): boolean;
+  /** Set or toggle author debug mode (dense scale ticks, cardinal axes). */
+  setFloorGuideDebug(debug: boolean): void;
+  toggleFloorGuideDebug(): boolean;
   /** Diagnostics for every active reach, including missing/unreachable targets. */
   getReachResiduals(): readonly ReachResidual[];
   /** Procedural-driver grounding/collision outcomes, before optional skin/mocap reconciliation. */
@@ -1377,7 +1383,7 @@ export function createViewer(
     getFloorGuideInfo() {
       if (!floorGuideData) return null;
       return floorGuide
-        ? floorGuide.getInfo(true)
+        ? floorGuide.getInfo(floorGuide.group.visible)
         : {
             visible: false,
             gridStepMetres: floorGuideData.gridStepMetres,
@@ -1386,6 +1392,28 @@ export function createViewer(
             hasLoopReset: floorGuideData.hasLoopReset,
             waypoints: floorGuideData.waypoints.map((point) => ({ ...point })),
           };
+    },
+    setFloorGuideVisible(visible: boolean) {
+      if (floorGuide) {
+        floorGuide.setVisible(visible);
+      }
+    },
+    toggleFloorGuide() {
+      if (!floorGuide) return false;
+      const next = !floorGuide.group.visible;
+      floorGuide.setVisible(next);
+      return next;
+    },
+    setFloorGuideDebug(debug: boolean) {
+      if (floorGuide) {
+        floorGuide.setDebug(debug);
+      }
+    },
+    toggleFloorGuideDebug() {
+      if (!floorGuide) return false;
+      const next = !floorGuide.isDebug();
+      floorGuide.setDebug(next);
+      return next;
     },
     getReachResiduals() {
       return reachResiduals.map((residual) => ({ ...residual }));

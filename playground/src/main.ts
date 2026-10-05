@@ -84,6 +84,7 @@ const cueEl = $<HTMLDivElement>("cue");
 const floorGuideKey = $<HTMLDivElement>("floor-guide-key");
 const floorGuideTravel = $<HTMLSpanElement>("floor-guide-travel");
 const floorGuideReset = $<HTMLSpanElement>("floor-guide-reset");
+const floorGuideToggle = $<HTMLButtonElement>("floor-guide-toggle");
 const jointSelection = $<HTMLDivElement>("joint-selection");
 const jointSelectionName = $<HTMLElement>("joint-selection-name");
 const copyBtn = $<HTMLButtonElement>("copy-prompt");
@@ -232,9 +233,12 @@ function updateFloorGuideKey(): void {
   floorGuideKey.hidden = !info?.visible;
   floorGuideTravel.hidden = !info?.hasTravel;
   floorGuideReset.hidden = !info?.hasLoopReset;
-  const describedFeatures = ["load origin", "current facing", "one metre scale"];
+  floorGuideToggle.classList.toggle("is-active", Boolean(info?.debug));
+  floorGuideToggle.textContent = info?.debug ? "dense" : "debug";
+  const describedFeatures = ["load origin", "current facing", "one metre scale", "stage ring"];
   if (info?.hasTravel) describedFeatures.push("authored travel path");
   if (info?.hasLoopReset) describedFeatures.push("dashed loop reset");
+  if (info?.debug) describedFeatures.push("debug metre axes");
   floorGuideKey.setAttribute(
     "aria-label",
     `Floor guide: ${describedFeatures.join(", ")}`,
@@ -955,12 +959,32 @@ scrim.addEventListener("click", closePanels);
 $<HTMLButtonElement>("howto-copy").addEventListener("click", (e) =>
   copyPrompt(e.currentTarget as HTMLButtonElement),
 );
+floorGuideToggle.addEventListener("click", () => {
+  if (!viewer) return;
+  viewer.toggleFloorGuideDebug();
+  updateFloorGuideKey();
+});
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     closePanels();
     if (!exportMenu.hidden) {
       setExportMenu(false);
       exportMenuButton.focus();
+    }
+  } else if ((e.key === "g" || e.key === "G") && !e.metaKey && !e.ctrlKey) {
+    const target = e.target as HTMLElement | null;
+    const isEditing = Boolean(
+      target && (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.tagName === "SELECT" ||
+        target.isContentEditable ||
+        target.closest(".cm-editor") !== null
+      )
+    );
+    if (!isEditing && viewer) {
+      viewer.toggleFloorGuideDebug();
+      updateFloorGuideKey();
     }
   }
 });
