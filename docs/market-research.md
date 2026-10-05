@@ -99,26 +99,29 @@ on the roadmap.
   short, snappy, shareable clips: `front-kick`, `jab-cross`, `horse-stance`,
   `bow`, `arm-circles`, `high-knee-march`.
 
-#### Dance / choreography: the flagship bet
+#### Dance / choreography & movement pedagogy
 
-Dance is where the *editable-text* thesis is most magical: **you describe the
-movement in your head and watch it appear**, then nudge a beat, swap an arm
-position, extend the phrase, and re-share. It is inherently sequential,
-expressive, and social: exactly the content people share.
+Dance is where the *editable-text* and *visual-scrub* foundation provides unique utility:
+a dancer or instructor can **compose or tweak movement without specialized software**,
+scrub frame-by-frame through complex footwork, inspect alignment from any camera angle,
+and share an interactive 3D link. Note: **LLMs are strictly optional**—the language,
+deterministic parser, range-of-motion validator, and web renderer form the standalone
+product foundation (see [`research/dance-audience-validation.md`](./research/dance-audience-validation.md)).
 
-- **Customer:** choreographers drafting and notating phrases, dance teachers,
-  students learning vocabulary, social dancers.
-- **Aha use case:** "give me an 8-count: plié, port de bras, relevé" →
-  `dance-phrase` renders a real phrase you can scrub, loop, and link.
-- **Viral loop:** dancers share phrase links; teachers assign them; students
-  re-prompt variations; the gallery becomes a browsable vocabulary.
-- **Ships:** `demi-plie`, `releve`, `tendu`, `port-de-bras`, and the combined
-  `dance-phrase` centerpiece.
-- **Engine-fit:** ★★★☆☆ today (turnout, plié, relevé, port de bras all render);
-  precise foot placement, traveling steps, and partner work are future.
-- **Long game:** a **shareable, LLM-authorable choreography notation**: Labanotation
-  was never going to be typed into a chat box; a `.posecode` phrase is. If Posecode
-  becomes the way people sketch and pass around movement, dance is the wedge.
+- **Customer:** dance educators teaching technique, students analyzing alignment,
+  choreographers notating and archiving movement vocabulary, physical therapists.
+- **Aha use case:** "scrub and orbit around a demi-plié or pirouette" →
+  inspect knee tracking, heel contact, and arm lines from any 3D angle at 0.25x speed.
+- **Primary value drivers:**
+  - *Demonstration beyond physical limitations:* teachers with injuries or fatigue can demonstrate precise full-range movements.
+  - *Complex movement breakdown:* slow scrub and 3D rotation clarify mechanics obscured in 2D video.
+  - *Non-LLM authoring:* direct 3D manipulation, text editing in standard IDEs, and preset library composition.
+- **Status & review:** Ballet presets (`demi-plie`, `eleve`, `releve`, `pirouette`, `chasse`)
+  are validated with domain literature and kept experimental pending ongoing peer review.
+- **Engine-fit:** ★★★☆☆ today (turnout, plié, elevé, relevé, pirouette, and chassé render);
+  complex aerials (540, grand jeté) and partner work are future.
+- **Long game:** an **open, web-native movement specification**: unlike proprietary legacy tools
+  (e.g. DanceForms), Posecode documents are open text, git-diffable, and viewable in any browser.
 
 ## 4. Spread mechanics
 
