@@ -329,21 +329,26 @@
           <p>
             The <a href="/spec.html">language specification</a> is the normative
             Posecode contract. The <a href="/llm-guide.html">LLM authoring guide</a>
-            is an optional aid built from that contract.
+            is an optional aid built from that contract. Review
+            <a href="/llm-guide.html#what-posecode-is-not" id="limits-link">capabilities &amp; limitations</a>
+            before authoring complex movements.
           </p>
           <p>
-            <code>ground-lock</code> preserves an existing floor support;
-            <code>reach</code> moves a limb; <code>pin</code> moves the whole body
-            around one anchor; and <code>grip</code> solves hands onto a bar or
-            rails. A <code>cue</code> is display-only coaching text and never
-            changes the animation.
+            <strong>The golden rule:</strong> <code>pin</code> moves the body
+            (translates the floating root around one anchor); <code>reach</code> moves
+            a limb (CCD inverse kinematics toward a target without moving the root).
+            <code>ground-lock</code> preserves an existing floor support; and
+            <code>grip</code> solves hands onto a bar or rails. A <code>cue</code> is display-only coaching text and never changes the animation.
           </p>
         </section>
 
         <div class="prompt-block">
           <div class="prompt-head">
             <span>Optional LLM authoring guide</span>
-            <button id="howto-copy" class="btn ghost sm">Copy</button>
+            <div class="prompt-head-actions">
+              <a href="/llm-guide.html#what-posecode-is-not" class="link" title="Review language capabilities and limitations">Capabilities &amp; limits →</a>
+              <button id="howto-copy" class="btn ghost sm">Copy</button>
+            </div>
           </div>
           <pre id="prompt-text"></pre>
         </div>

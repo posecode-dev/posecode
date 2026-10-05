@@ -5,7 +5,9 @@ a validated, range-of-motion-clamped intermediate representation (IR).
 
 Part of [Posecode](https://posecode.org): a kinematic-motion protocol LLMs can
 write, rendered as an animated 3D figure in the browser. See the
-[language spec](https://posecode.org/spec.html) for the full grammar.
+[normative language specification](../../spec/SPEC.md) (or on the web at
+[posecode.org/spec.html](https://posecode.org/spec.html)) for the full grammar and contact semantics.
+For prompt drafting, see the [LLM authoring guide](../../spec/llm-authoring.md).
 
 ## Install
 

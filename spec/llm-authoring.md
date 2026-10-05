@@ -5,9 +5,10 @@ draft a movement. Paste the prompt below, ask for a movement ("write a squat",
 "show a hamstring stretch"), then inspect the reply in the Posecode playground.
 
 This is the task-oriented, pasteable authoring guide. The
-[published Posecode Protocol Specification](https://posecode.org/spec.html) is the normative language and IR
+[normative Posecode Protocol Specification](./SPEC.md) (or on the web at
+[posecode.org/spec.html](https://posecode.org/spec.html)) is the normative language and IR
 contract. This guide stays self-contained so a model does not need to follow a
-link, but the specification wins if the two ever disagree.
+link, but the normative specification wins if the two ever disagree.
 
 ---
 
@@ -127,7 +128,7 @@ posecode <kind> "<Name>"          # kind = exercise | stretch | posture
 ```
 
 ## Contact mechanisms
-
+ 
 | Directive | What moves | Use it for |
 | --- | --- | --- |
 | `ground-lock` | The solver preserves an existing floor support while the body moves. | A foot, hand, forearm, or the back is already planted. |
@@ -135,11 +136,72 @@ posecode <kind> "<Name>"          # kind = exercise | stretch | posture
 | `pin` | The whole body translates around one primary fixed anchor. | A knee on the floor, a foot on a box, or another single body-moving support. |
 | `grip` | The body translates, each arm solves to a bar/rail, and the fingers close. | One- or two-hand support on a declared `bar` or `dip-bars` prop. |
 
-Use only one of the root-solving families (`ground-lock`, `pin`, or `grip`) in
-a step. Add compatible secondary contacts with `reach`. For example,
-`ground-lock: foot_right` plus `reach: knee_left floor` is valid; adding
-`pin: knee_left floor` to that same step is a conflict and the parser rejects
-it.
+### The Rule: Pin Moves the Body; Reach Moves the Limb
+
+- **`pin` moves the body**: Translates the figure's floating root so that one primary effector contacts the anchor. The entire torso and pelvis translate with the root.
+- **`reach` moves the limb**: Solves inverse kinematics along the limb chain toward a target without moving the root. If the target cannot be reached within range-of-motion limits, the limb reaches as far as possible and generates a diagnostic residual.
+- **Visual comparison**: With `reach: hand_left floor` from a standing pose, the torso stays upright while the left arm reaches toward the floor (producing an unreachable residual if the waist doesn't bend). With `pin: hand_left floor`, the entire figure drops downward until the hand touches the floor.
+
+### Multi-Contact Constraints: Single Pin Invariant
+
+- A phase accepts **at most one `pin`** because each pin translates the single root.
+- **Handling two ground contacts**: When both feet are planted (e.g. squats or demi-plié), you MUST use `ground-lock: feet`, NOT two pins.
+- Use only one root-solving family (`ground-lock`, `pin`, or `grip`) in a step. Add compatible secondary contacts with `reach`. For example, `ground-lock: foot_right` plus `reach: knee_left floor` is valid; adding `pin: knee_left floor` to that same step is a conflict and the parser rejects it.
+
+### Minimal Valid and Conflicting Examples
+
+- **`ground-lock` valid:**
+  ```posecode
+  step "Hold support" 1s settle:
+    ground-lock: feet
+  ```
+- **`ground-lock` invalid:**
+  ```posecode-invalid
+  # Error: 'head' is not a floor contact
+  step "Bad contact" 1s settle:
+    ground-lock: head
+  ```
+- **`reach` valid:**
+  ```posecode
+  step "Reach floor" 1s flow:
+    reach: hand_left floor
+  ```
+- **`reach` invalid:**
+  ```posecode-invalid
+  # Error: 'box' anchor used without 'prop box' declaration
+  step "Undeclared anchor" 1s flow:
+    reach: hand_left box
+  ```
+- **`pin` valid:**
+  ```posecode
+  step "Kneel" 1s settle:
+    pin: knee_left floor
+  ```
+- **`pin` conflicting / invalid:**
+  ```posecode-invalid
+  # Error: a phase accepts at most one pin
+  step "Conflicting pins" 1s settle:
+    pin: knee_left floor
+    pin: knee_right floor
+  ```
+- **`grip` valid (requires declared prop):**
+  ```posecode
+  posecode exercise "Bar hang"
+    rig humanoid
+    prop bar
+    pose start = standing
+
+    step "Hang" 1s settle:
+      grip: hands bar
+
+    repeat 1
+  ```
+- **`grip` invalid:**
+  ```posecode-invalid
+  # Error: 'grip: hands bar' used without 'prop bar'
+  step "Missing prop" 1s settle:
+    grip: hands bar
+  ```
 
 `cue` is display-only coaching text. It may appear next to the current phase in
 a viewer, but it does not change joint targets, contacts, timing, validation,

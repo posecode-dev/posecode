@@ -9,6 +9,11 @@ Language support for the **Posecode** (`.posecode`) kinematic motion DSL:
 
 The smart features are provided by [`posecode-lsp`](../../packages/posecode-lsp), which shares its language logic ([`posecode-language`](../../packages/posecode-language)) with the web playground, so the editor and the playground always agree.
 
+## Language Specification and Documentation
+
+- **[Normative Protocol Specification](../../spec/SPEC.md)** (or [posecode.org/spec.html](https://posecode.org/spec.html)): The authoritative specification defining grammar, joint limits, contact semantics (`ground-lock`, `reach`, `pin`, `grip`), and IR.
+- **[LLM Authoring Guide](../../spec/llm-authoring.md)** (or [posecode.org/llm-guide.html](https://posecode.org/llm-guide.html)): Task-oriented prompt guide for drafting movements.
+
 ## File association (before the extension is installed)
 
 Until the full extension is published to the Marketplace, `.posecode` files

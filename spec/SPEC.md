@@ -1,12 +1,20 @@
 # Posecode Protocol Specification v0.4
 
+**Protocol Version:** 0.4  
+**Language Version:** 0.4  
+**Document Status:** Normative Specification  
+
 Posecode is a small text language for describing a single person's **kinematic
 movement** so it can be rendered as an animated 3D figure in a web browser.
 
-This document is the **normative language and IR contract**. The
-[LLM authoring guide](https://posecode.org/llm-guide.html) is an optional,
-task-oriented aid. It is self-contained, but it must not define syntax or
-behavior that differs from this specification.
+This document is the **normative language and IR contract** (protocol specification). The
+[LLM authoring guide](https://posecode.org/llm-guide.html) (or [`llm-authoring.md`](./llm-authoring.md))
+is an optional, task-oriented aid. It is self-contained, but it MUST NOT define syntax or
+behavior that differs from this normative specification.
+
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
+"SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be
+interpreted as described in RFC 2119 / BCP 14.
 
 It is to human movement what Mermaid is to diagrams. A human, animation tool,
 or an LLM writes a compact document; a client-side parser and renderer turn it
@@ -19,6 +27,18 @@ than 3D matrices.
 - **File extension:** `.posecode`
 - **Compute model:** parsing and all 3D math run on the client (Three.js).
   Authoring may be manual, tool-driven, or LLM-assisted.
+
+---
+
+## Table of Contents
+
+1. [Grammar](#1-grammar)
+2. [Bones and Joints](#2-bones-and-joints)
+3. [Actions](#3-actions)
+4. [Configured Range-of-Motion Limits](#4-configured-range-of-motion-limits)
+5. [Contact Semantics: ground-lock, reach, pin, and grip](#5-contact-semantics-ground-lock-reach-pin-and-grip)
+6. [Rendering and Kinematic Model](#6-rendering-and-kinematic-model)
+7. [Intermediate Representation (IR)](#7-intermediate-representation-ir)
 
 ---
 
@@ -232,7 +252,120 @@ newly authored channel when their composed local hip angle would exceed 135°.
 
 ---
 
-## 5. Rendering model
+## 5. Contact Semantics: ground-lock, reach, pin, and grip
+
+Posecode provides four distinct contact mechanisms. Choosing the correct mechanism is essential for predictable motion:
+
+| Mechanism | Syntax | Solver Action | What Moves | Typical Use Case |
+| --- | --- | --- | --- | --- |
+| `ground-lock` | `ground-lock: <contacts>` | Preserves existing floor contact; clamps foot/hand/back to floor | Body articulates over planted support | Squats, lunges, planks, push-ups |
+| `reach` | `reach: <effector> <target>` | CCD inverse kinematics over limb chain toward target | **Moves the limb** (root does not translate) | Reaching floor, touching ankle, touching prop |
+| `pin` | `pin: <effector> <anchor>` | Translates the figure's floating root so effector meets anchor | **Moves the body** (root translates) | Kneeling on floor, step up onto box |
+| `grip` | `grip: hands <anchor>` | Solves both arms to bar/rails, closes fingers, adjusts root | Root + arms conform to fixture | Pull-ups, chin-ups, bar hangs, dips |
+
+### The Fundamental Rule: Pin Moves the Body; Reach Moves the Limb
+
+1. **`pin` moves the body**: The solver translates the figure's entire floating root in 3D space so that the primary effector sits precisely on the target anchor. The rest of the body carries with this translation.
+2. **`reach` moves the limb**: The solver runs Cyclic Coordinate Descent (CCD) along the limb hierarchy (e.g. shoulder → elbow → wrist). The root position remains unmoved. If the target is beyond kinematic reach or would violate configured range-of-motion limits, the limb reaches as far as legal angles allow and records an explicit diagnostic residual.
+
+#### Visual Comparison: Reach vs. Pin on the Floor
+
+Consider a standing figure where you request the left hand to contact the floor:
+
+- **Under `reach: hand_left floor`**:
+  The figure's pelvis and stance remain upright in place. The left shoulder and elbow flex and extend toward the floor. Because a standing human cannot reach the floor without bending at the waist or knees, the hand reaches downward as far as legal joint angles allow. The body does **not** sink or drop to the floor. An unresolved reach residual diagnostic is produced if the floor cannot be contacted within configured ROM.
+- **Under `pin: hand_left floor`**:
+  The solver translates the entire figure downward and forward until the left hand rests on the floor anchor. The torso, pelvis, and legs translate downward along with the root.
+
+### Multi-Contact Constraints: Single Pin Invariant
+
+A `step` phase MUST NOT declare more than one `pin`. Because each `pin` computes an absolute world-space translation for the single floating root, declaring two pins creates an over-constrained, conflicting system with no well-defined root position.
+
+**Handling two simultaneous ground contacts:**
+- When both feet are planted on the floor during movement (e.g. squats or demi-plié), you MUST use `ground-lock: feet` (or `ground-lock: foot_left, foot_right`), NOT two pins.
+- To contact an anchor while another point is grounded or pinned, declare one primary support (`ground-lock` or `pin`) and add independent secondary contacts using `reach: <effector> <target>`.
+
+### Minimal Valid and Conflicting Examples
+
+#### 1. `ground-lock`
+- **Valid (minimal):**
+  ```posecode
+  step "Squat" 1.5s settle:
+    hips: flex 70
+    knees: flex 80
+    ground-lock: feet
+  ```
+- **Invalid / Conflicting:**
+  Declaring an unsupported contact name or pairing `ground-lock` with a conflicting `pin`:
+  ```posecode-invalid
+  # Error: 'head' is not a recognised ground-lock contact
+  ground-lock: head
+  # Error: conflicting root solvers in a single phase
+  ground-lock: feet
+  pin: knee_left floor
+  ```
+
+#### 2. `reach`
+- **Valid (minimal):**
+  ```posecode
+  step "Touch toe" 1s flow:
+    pelvis: hinge 70
+    reach: hand_left ankle_left
+  ```
+- **Invalid / Conflicting:**
+  Targeting an undeclared prop anchor:
+  ```posecode-invalid
+  # Error: 'box' anchor used but 'prop box' was not declared in header
+  reach: hand_right box
+  ```
+
+#### 3. `pin`
+- **Valid (minimal):**
+  ```posecode
+  step "Kneel" 1.2s settle:
+    knees: flex 90
+    pin: knee_left floor
+  ```
+- **Invalid / Conflicting:**
+  Declaring two pins in the same phase:
+  ```posecode-invalid
+  # Error: a phase accepts at most one pin
+  pin: knee_left floor
+  pin: knee_right floor
+  ```
+
+#### 4. `grip`
+- **Valid (minimal):**
+  ```posecode
+  posecode exercise "Bar hang"
+    rig humanoid
+    prop bar
+    pose start = standing
+
+    step "Hang" 2s settle:
+      shoulders: flex 170
+      grip: hands bar
+    repeat 1
+  ```
+- **Invalid / Conflicting:**
+  Using `grip` without declaring the required prop:
+  ```posecode-invalid
+  # Error: 'grip: hands bar' requires 'prop bar' directive
+  step "Hang" 1s settle:
+    grip: hands bar
+  ```
+
+### The `cue` Directive: Display-Only Coaching Text
+
+The `cue` directive provides human-readable coaching text (e.g. `cue "Keep knees aligned with toes"`).
+
+- **Display-only:** A `cue` is strictly visual, display-only coaching metadata and text rendered in viewers, logs, or UI cards.
+- **Zero kinematic effect:** A `cue` MUST NOT affect joint rotations, IK solvers, contact resolution, range-of-motion clamping, phase timing, or validation. Parsers and renderers ignore cues when calculating kinematics.
+- **Never infer motion from cues:** Movement authors and LLM prompt systems MUST NOT rely on cues to imply or fabricate motion; all joint and spatial behavior MUST be explicitly declared in the kinematics directives.
+
+---
+
+## 6. Rendering and Kinematic Model
 
 1. **Forward kinematics**: each phase sets joint angles; the renderer uses
    C1-continuous quaternion splines between keyframes, shaped by the destination
@@ -321,7 +454,7 @@ deferred (research §5.2, §6.2).
 
 ---
 
-## 6. Intermediate Representation (IR)
+## 7. Intermediate Representation (IR)
 
 `parse(source)` returns `{ ir, warnings, errors }`. The IR is renderer-agnostic;
 angles are in **degrees**.

@@ -6,6 +6,7 @@ Supporting project documentation lives here so the repository root stays focused
 
 - [Roadmap](../ROADMAP.md)
 - [Coverage gaps](coverage-gap.md)
+- [Growth book](growth-book.md)
 - [Market research](market-research.md)
 - [Brand assets](brand/README.md)
 

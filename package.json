@@ -27,7 +27,8 @@
     "video:cut2:still": "remotion still video/cut2/index.tsx PosecodeCut2 docs/launch-media/posecode-cut2-payoff.png --public-dir video/cut2/public --frame 825",
     "typecheck": "for p in packages/*/tsconfig.json playground/tsconfig.json editors/*/tsconfig.json; do tsc --noEmit -p \"$p\" || exit 1; done",
     "gifs": "node scripts/capture-gifs.mjs",
-    "monitor:site": "node scripts/check-site-health.mjs"
+    "monitor:site": "node scripts/check-site-health.mjs",
+    "video:editing-loop": "node scripts/capture-editing-loop.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.1",

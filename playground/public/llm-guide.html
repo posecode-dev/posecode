@@ -122,7 +122,7 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
       <p class="eyebrow">Optional LLM authoring</p>
 <h1>Posecode LLM authoring guide</h1>
 <p>Use this optional guide when you want ChatGPT, Claude, or another model to draft a movement. Paste the prompt below, ask for a movement (&quot;write a squat&quot;, &quot;show a hamstring stretch&quot;), then inspect the reply in the Posecode playground.</p>
-<p>This is the task-oriented, pasteable authoring guide. The <a href="https://posecode.org/spec.html" target="_blank" rel="noopener">published Posecode Protocol Specification</a> is the normative language and IR contract. This guide stays self-contained so a model does not need to follow a link, but the specification wins if the two ever disagree.</p>
+<p>This is the task-oriented, pasteable authoring guide. The <a href="./SPEC.md">normative Posecode Protocol Specification</a> (or on the web at <a href="https://posecode.org/spec.html" target="_blank" rel="noopener">posecode.org/spec.html</a>) is the normative language and IR contract. This guide stays self-contained so a model does not need to follow a link, but the normative specification wins if the two ever disagree.</p>
 <hr>
 <p>You write <strong>Posecode</strong>, a small text language that describes one person's movement so a 3D figure can animate it.</p>
 <p>When the request is representable, output ONLY the raw <code>.posecode</code> document: no Markdown fence and no prose. Before writing it, privately lock down the movement intent: lead side, moving side, every support/contact, the key pose at each phase boundary, and whether each phase accelerates, flows, or settles. Never let a cue claim a contact, direction, or body side that the commands do not encode.</p>
@@ -175,7 +175,47 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
 <tr><td><code>pin</code></td><td>The whole body translates around one primary fixed anchor.</td><td>A knee on the floor, a foot on a box, or another single body-moving support.</td></tr>
 <tr><td><code>grip</code></td><td>The body translates, each arm solves to a bar/rail, and the fingers close.</td><td>One- or two-hand support on a declared <code>bar</code> or <code>dip-bars</code> prop.</td></tr>
 </tbody></table></div>
-<p>Use only one of the root-solving families (<code>ground-lock</code>, <code>pin</code>, or <code>grip</code>) in a step. Add compatible secondary contacts with <code>reach</code>. For example, <code>ground-lock: foot_right</code> plus <code>reach: knee_left floor</code> is valid; adding <code>pin: knee_left floor</code> to that same step is a conflict and the parser rejects it.</p>
+<h3>The Rule: Pin Moves the Body; Reach Moves the Limb</h3>
+<ul><li><strong><code>pin</code> moves the body</strong>: Translates the figure's floating root so that one primary effector contacts the anchor. The entire torso and pelvis translate with the root.</li><li><strong><code>reach</code> moves the limb</strong>: Solves inverse kinematics along the limb chain toward a target without moving the root. If the target cannot be reached within range-of-motion limits, the limb reaches as far as possible and generates a diagnostic residual.</li><li><strong>Visual comparison</strong>: With <code>reach: hand_left floor</code> from a standing pose, the torso stays upright while the left arm reaches toward the floor (producing an unreachable residual if the waist doesn't bend). With <code>pin: hand_left floor</code>, the entire figure drops downward until the hand touches the floor.</li></ul>
+<h3>Multi-Contact Constraints: Single Pin Invariant</h3>
+<ul><li>A phase accepts <strong>at most one <code>pin</code></strong> because each pin translates the single root.</li><li><strong>Handling two ground contacts</strong>: When both feet are planted (e.g. squats or demi-plié), you MUST use <code>ground-lock: feet</code>, NOT two pins.</li><li>Use only one root-solving family (<code>ground-lock</code>, <code>pin</code>, or <code>grip</code>) in a step. Add compatible secondary contacts with <code>reach</code>. For example, <code>ground-lock: foot_right</code> plus <code>reach: knee_left floor</code> is valid; adding <code>pin: knee_left floor</code> to that same step is a conflict and the parser rejects it.</li></ul>
+<h3>Minimal Valid and Conflicting Examples</h3>
+<ul><li><strong><code>ground-lock</code> valid:</strong></li></ul>
+<pre class="code-block" data-lang="posecode"><code>step &quot;Hold support&quot; 1s settle:
+  ground-lock: feet</code></pre>
+<ul><li><strong><code>ground-lock</code> invalid:</strong></li></ul>
+<pre class="code-block" data-lang="posecode-invalid"><code># Error: 'head' is not a floor contact
+step &quot;Bad contact&quot; 1s settle:
+  ground-lock: head</code></pre>
+<ul><li><strong><code>reach</code> valid:</strong></li></ul>
+<pre class="code-block" data-lang="posecode"><code>step &quot;Reach floor&quot; 1s flow:
+  reach: hand_left floor</code></pre>
+<ul><li><strong><code>reach</code> invalid:</strong></li></ul>
+<pre class="code-block" data-lang="posecode-invalid"><code># Error: 'box' anchor used without 'prop box' declaration
+step &quot;Undeclared anchor&quot; 1s flow:
+  reach: hand_left box</code></pre>
+<ul><li><strong><code>pin</code> valid:</strong></li></ul>
+<pre class="code-block" data-lang="posecode"><code>step &quot;Kneel&quot; 1s settle:
+  pin: knee_left floor</code></pre>
+<ul><li><strong><code>pin</code> conflicting / invalid:</strong></li></ul>
+<pre class="code-block" data-lang="posecode-invalid"><code># Error: a phase accepts at most one pin
+step &quot;Conflicting pins&quot; 1s settle:
+  pin: knee_left floor
+  pin: knee_right floor</code></pre>
+<ul><li><strong><code>grip</code> valid (requires declared prop):</strong></li></ul>
+<pre class="code-block" data-lang="posecode"><code>posecode exercise &quot;Bar hang&quot;
+  rig humanoid
+  prop bar
+  pose start = standing
+
+  step &quot;Hang&quot; 1s settle:
+    grip: hands bar
+
+  repeat 1</code></pre>
+<ul><li><strong><code>grip</code> invalid:</strong></li></ul>
+<pre class="code-block" data-lang="posecode-invalid"><code># Error: 'grip: hands bar' used without 'prop bar'
+step &quot;Missing prop&quot; 1s settle:
+  grip: hands bar</code></pre>
 <p><code>cue</code> is display-only coaching text. It may appear next to the current phase in a viewer, but it does not change joint targets, contacts, timing, validation, or solver behavior. Never rely on a cue to create motion.</p>
 <p>Use a start-pose override block only when none of the built-ins is the exact opening shape. Its joint targets are ROM-clamped and layered sparsely over the built-in pose; they do not consume time or create a phase. Omitted channels keep the built-in value, and the composed pose is restored when the animation loops. Do not put contacts, cues, turn, or travel inside a start-pose block. Write exactly one <code>pose start</code> declaration; duplicate declarations are errors.</p>
 <h2>Closed-vocabulary quick reference</h2>

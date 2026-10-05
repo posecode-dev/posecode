@@ -15,7 +15,8 @@
 <p align="center">
   <a href="https://posecode.org/play"><b>Live Playground</b></a> ·
   <a href="https://posecode.org/moves/">Movement Library</a> ·
-  <a href="https://posecode.org/spec.html">Language Specification</a> ·
+  <a href="spec/SPEC.md"><b>Language Specification (SPEC.md)</b></a> ·
+  <a href="spec/llm-authoring.md">LLM Authoring Guide</a> ·
   <a href="spec/examples">Examples</a> ·
   <a href="packages/posecode-mcp">MCP Server</a>
 </p>
@@ -797,18 +798,21 @@ Posecode follows the design study:
 
 The project explores whether semantic, text-based movement programs can provide a controllable and inspectable alternative to black-box motion generation.
 
-The specification covers:
+## Language Specification and Contracts
 
-- DSL design,
-- biomechanical constraints,
-- client-side rendering,
-- agent integration,
-- and possible product applications.
+Posecode separates its normative protocol definition from optional prompt aids:
 
-See:
+- **[Normative Protocol Specification (`spec/SPEC.md`)](spec/SPEC.md)** (or on the web at [posecode.org/spec.html](https://posecode.org/spec.html)): The authoritative specification defining grammar, bones, joint actions, range-of-motion limits, contact semantics (`ground-lock`, `reach`, `pin`, `grip`), solver invariants, and intermediate representation (IR).
+- **[LLM Authoring Guide (`spec/llm-authoring.md`)](spec/llm-authoring.md)** (or on the web at [posecode.org/llm-guide.html](https://posecode.org/llm-guide.html)): A self-contained, task-oriented prompt guide for drafting `.posecode` documents with generative models.
 
-- [`spec/SPEC.md`](spec/SPEC.md)
-- [`spec/llm-authoring.md`](spec/llm-authoring.md)
+### Contact Semantics Quick Reference
+- **`pin moves the body`**: Translates the figure's floating root so an effector meets an anchor (`pin: knee_left floor`). A phase accepts at most one pin.
+- **`reach moves the limb`**: Directs inverse kinematics along the limb chain without translating the root (`reach: hand_left floor`).
+- **`ground-lock`**: Preserves existing planted support on the floor (`ground-lock: feet`). Multiple simultaneous ground contacts (such as both feet planted) must be handled by `ground-lock` or separate `reach` directives, never multiple pins.
+- **`grip`**: Two-hand support on a declared `bar` or `dip-bars` prop.
+- **`cue`**: Display-only coaching text; it never alters kinematics, constraints, or playback.
+
+See also:
 - [`docs/market-research.md`](docs/market-research.md)
 
 ---

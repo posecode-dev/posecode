@@ -82,4 +82,26 @@ describe("authoring documentation contract", () => {
     expect(document).toMatch(/sparse[^\n]*(overlay|joint)/i);
     expect(document).toMatch(/loop-reset|loops/i);
   });
+
+  it.each([
+    ["the normative specification", specification],
+    ["the pasteable LLM guide", authoringGuide],
+  ])("explicitly states the rule: pin moves the body, reach moves the limb in %s", (_label, document) => {
+    expect(document).toMatch(/pin\s+moves\s+the\s+body/i);
+    expect(document).toMatch(/reach\s+moves\s+the\s+limb/i);
+    expect(document).toMatch(/at\s+most\s+one\s+`?pin`?/i);
+  });
+
+  it("links the normative specification (spec/SPEC.md) from all entry points", () => {
+    const rootReadme = readFileSync(resolve(import.meta.dirname, "../README.md"), "utf8");
+    const parserReadme = readFileSync(resolve(import.meta.dirname, "../packages/posecode-parser/README.md"), "utf8");
+    const lspReadme = readFileSync(resolve(import.meta.dirname, "../packages/posecode-lsp/README.md"), "utf8");
+    const vscodeReadme = readFileSync(resolve(import.meta.dirname, "../editors/vscode/README.md"), "utf8");
+
+    expect(rootReadme).toContain("spec/SPEC.md");
+    expect(rootReadme).toContain("spec/llm-authoring.md");
+    expect(parserReadme).toContain("spec/SPEC.md");
+    expect(lspReadme).toContain("spec/SPEC.md");
+    expect(vscodeReadme).toContain("spec/SPEC.md");
+  });
 });

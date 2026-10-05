@@ -14,4 +14,14 @@ describe("playground authoring help", () => {
     expect(html).toContain('aria-label="Display-only coaching cue"');
     expect(html).toContain("A <code>cue</code> is display-only coaching text");
   });
+
+  it("links capabilities and limitations near the prompt action", () => {
+    expect(html).toContain('href="/llm-guide.html#what-posecode-is-not"');
+    expect(html).toContain("Capabilities &amp; limits →");
+  });
+
+  it("explains that pin moves the body and reach moves the limb", () => {
+    expect(html).toContain("<code>pin</code> moves the body");
+    expect(html).toContain("<code>reach</code> moves\n            a limb");
+  });
 });

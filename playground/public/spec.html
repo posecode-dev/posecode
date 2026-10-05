@@ -121,10 +121,15 @@ footer.site-footer p{font-size:12.5px;color:var(--muted);margin:0 0 6px;max-widt
     <main class="wrap">
       <p class="eyebrow">Reference</p>
 <h1>Posecode Protocol Specification v0.4</h1>
+<p><strong>Protocol Version:</strong> 0.4 <strong>Language Version:</strong> 0.4 <strong>Document Status:</strong> Normative Specification</p>
 <p>Posecode is a small text language for describing a single person's <strong>kinematic movement</strong> so it can be rendered as an animated 3D figure in a web browser.</p>
-<p>This document is the <strong>normative language and IR contract</strong>. The <a href="https://posecode.org/llm-guide.html" target="_blank" rel="noopener">LLM authoring guide</a> is an optional, task-oriented aid. It is self-contained, but it must not define syntax or behavior that differs from this specification.</p>
+<p>This document is the <strong>normative language and IR contract</strong> (protocol specification). The <a href="https://posecode.org/llm-guide.html" target="_blank" rel="noopener">LLM authoring guide</a> (or <a href="./llm-authoring.md"><code>llm-authoring.md</code></a>) is an optional, task-oriented aid. It is self-contained, but it MUST NOT define syntax or behavior that differs from this normative specification.</p>
+<p>The key words &quot;MUST&quot;, &quot;MUST NOT&quot;, &quot;REQUIRED&quot;, &quot;SHALL&quot;, &quot;SHALL NOT&quot;, &quot;SHOULD&quot;, &quot;SHOULD NOT&quot;, &quot;RECOMMENDED&quot;, &quot;MAY&quot;, and &quot;OPTIONAL&quot; in this document are to be interpreted as described in RFC 2119 / BCP 14.</p>
 <p>It is to human movement what Mermaid is to diagrams. A human, animation tool, or an LLM writes a compact document; a client-side parser and renderer turn it into a moving mannequin. The source describes semantic movement phases rather than 3D matrices.</p>
 <ul><li><strong>Version keyword:</strong> documents declare nothing; this is <code>posecode 0.4</code>.</li><li><strong>Compatibility:</strong> v0.4 parsers continue to accept v0.3/v0.2 documents and the v0.1 easing aliases.</li><li><strong>File extension:</strong> <code>.posecode</code></li><li><strong>Compute model:</strong> parsing and all 3D math run on the client (Three.js). Authoring may be manual, tool-driven, or LLM-assisted.</li></ul>
+<hr>
+<h2>Table of Contents</h2>
+<ol><li><a href="#1-grammar">Grammar</a></li><li><a href="#2-bones-and-joints">Bones and Joints</a></li><li><a href="#3-actions">Actions</a></li><li><a href="#4-configured-range-of-motion-limits">Configured Range-of-Motion Limits</a></li><li><a href="#5-contact-semantics-ground-lock-reach-pin-and-grip">Contact Semantics: ground-lock, reach, pin, and grip</a></li><li><a href="#6-rendering-and-kinematic-model">Rendering and Kinematic Model</a></li><li><a href="#7-intermediate-representation-ir">Intermediate Representation (IR)</a></li></ol>
 <hr>
 <h2>1. Grammar</h2>
 <p>Posecode is line- and indentation-oriented. Comments start with <code>#</code> or <code>//</code>.</p>
@@ -235,13 +240,79 @@ DURATION   = NUMBER &quot;s&quot; ;                                (* e.g. 2s, 1
 <p><strong>Note:</strong> These are general literature values, not medical advice. Consult a qualified professional for physiotherapy or exercise prescription.</p>
 <p>A pelvis hinge counter-rotates the hips in the renderer. The validator therefore also checks the <strong>combined</strong> hinge + carried hip-flexion result and clamps the newly authored channel when their composed local hip angle would exceed 135°.</p>
 <hr>
-<h2>5. Rendering model</h2>
+<h2>5. Contact Semantics: ground-lock, reach, pin, and grip</h2>
+<p>Posecode provides four distinct contact mechanisms. Choosing the correct mechanism is essential for predictable motion:</p>
+<div class="table-wrap"><table><thead><tr><th>Mechanism</th><th>Syntax</th><th>Solver Action</th><th>What Moves</th><th>Typical Use Case</th></tr></thead><tbody>
+<tr><td><code>ground-lock</code></td><td><code>ground-lock: &lt;contacts&gt;</code></td><td>Preserves existing floor contact; clamps foot/hand/back to floor</td><td>Body articulates over planted support</td><td>Squats, lunges, planks, push-ups</td></tr>
+<tr><td><code>reach</code></td><td><code>reach: &lt;effector&gt; &lt;target&gt;</code></td><td>CCD inverse kinematics over limb chain toward target</td><td><strong>Moves the limb</strong> (root does not translate)</td><td>Reaching floor, touching ankle, touching prop</td></tr>
+<tr><td><code>pin</code></td><td><code>pin: &lt;effector&gt; &lt;anchor&gt;</code></td><td>Translates the figure's floating root so effector meets anchor</td><td><strong>Moves the body</strong> (root translates)</td><td>Kneeling on floor, step up onto box</td></tr>
+<tr><td><code>grip</code></td><td><code>grip: hands &lt;anchor&gt;</code></td><td>Solves both arms to bar/rails, closes fingers, adjusts root</td><td>Root + arms conform to fixture</td><td>Pull-ups, chin-ups, bar hangs, dips</td></tr>
+</tbody></table></div>
+<h3>The Fundamental Rule: Pin Moves the Body; Reach Moves the Limb</h3>
+<ol><li><strong><code>pin</code> moves the body</strong>: The solver translates the figure's entire floating root in 3D space so that the primary effector sits precisely on the target anchor. The rest of the body carries with this translation.</li><li><strong><code>reach</code> moves the limb</strong>: The solver runs Cyclic Coordinate Descent (CCD) along the limb hierarchy (e.g. shoulder → elbow → wrist). The root position remains unmoved. If the target is beyond kinematic reach or would violate configured range-of-motion limits, the limb reaches as far as legal angles allow and records an explicit diagnostic residual.</li></ol>
+<h4>Visual Comparison: Reach vs. Pin on the Floor</h4>
+<p>Consider a standing figure where you request the left hand to contact the floor:</p>
+<ul><li><strong>Under <code>reach: hand_left floor</code></strong>: The figure's pelvis and stance remain upright in place. The left shoulder and elbow flex and extend toward the floor. Because a standing human cannot reach the floor without bending at the waist or knees, the hand reaches downward as far as legal joint angles allow. The body does <strong>not</strong> sink or drop to the floor. An unresolved reach residual diagnostic is produced if the floor cannot be contacted within configured ROM.</li><li><strong>Under <code>pin: hand_left floor</code></strong>: The solver translates the entire figure downward and forward until the left hand rests on the floor anchor. The torso, pelvis, and legs translate downward along with the root.</li></ul>
+<h3>Multi-Contact Constraints: Single Pin Invariant</h3>
+<p>A <code>step</code> phase MUST NOT declare more than one <code>pin</code>. Because each <code>pin</code> computes an absolute world-space translation for the single floating root, declaring two pins creates an over-constrained, conflicting system with no well-defined root position.</p>
+<p><strong>Handling two simultaneous ground contacts:</strong></p>
+<ul><li>When both feet are planted on the floor during movement (e.g. squats or demi-plié), you MUST use <code>ground-lock: feet</code> (or <code>ground-lock: foot_left, foot_right</code>), NOT two pins.</li><li>To contact an anchor while another point is grounded or pinned, declare one primary support (<code>ground-lock</code> or <code>pin</code>) and add independent secondary contacts using <code>reach: &lt;effector&gt; &lt;target&gt;</code>.</li></ul>
+<h3>Minimal Valid and Conflicting Examples</h3>
+<h4>1. <code>ground-lock</code></h4>
+<ul><li><strong>Valid (minimal):</strong></li></ul>
+<pre class="code-block" data-lang="posecode"><code>step &quot;Squat&quot; 1.5s settle:
+  hips: flex 70
+  knees: flex 80
+  ground-lock: feet</code></pre>
+<ul><li><strong>Invalid / Conflicting:</strong> Declaring an unsupported contact name or pairing <code>ground-lock</code> with a conflicting <code>pin</code>:</li></ul>
+<pre class="code-block" data-lang="posecode-invalid"><code># Error: 'head' is not a recognised ground-lock contact
+ground-lock: head
+# Error: conflicting root solvers in a single phase
+ground-lock: feet
+pin: knee_left floor</code></pre>
+<h4>2. <code>reach</code></h4>
+<ul><li><strong>Valid (minimal):</strong></li></ul>
+<pre class="code-block" data-lang="posecode"><code>step &quot;Touch toe&quot; 1s flow:
+  pelvis: hinge 70
+  reach: hand_left ankle_left</code></pre>
+<ul><li><strong>Invalid / Conflicting:</strong> Targeting an undeclared prop anchor:</li></ul>
+<pre class="code-block" data-lang="posecode-invalid"><code># Error: 'box' anchor used but 'prop box' was not declared in header
+reach: hand_right box</code></pre>
+<h4>3. <code>pin</code></h4>
+<ul><li><strong>Valid (minimal):</strong></li></ul>
+<pre class="code-block" data-lang="posecode"><code>step &quot;Kneel&quot; 1.2s settle:
+  knees: flex 90
+  pin: knee_left floor</code></pre>
+<ul><li><strong>Invalid / Conflicting:</strong> Declaring two pins in the same phase:</li></ul>
+<pre class="code-block" data-lang="posecode-invalid"><code># Error: a phase accepts at most one pin
+pin: knee_left floor
+pin: knee_right floor</code></pre>
+<h4>4. <code>grip</code></h4>
+<ul><li><strong>Valid (minimal):</strong></li></ul>
+<pre class="code-block" data-lang="posecode"><code>posecode exercise &quot;Bar hang&quot;
+  rig humanoid
+  prop bar
+  pose start = standing
+
+  step &quot;Hang&quot; 2s settle:
+    shoulders: flex 170
+    grip: hands bar
+  repeat 1</code></pre>
+<ul><li><strong>Invalid / Conflicting:</strong> Using <code>grip</code> without declaring the required prop:</li></ul>
+<pre class="code-block" data-lang="posecode-invalid"><code># Error: 'grip: hands bar' requires 'prop bar' directive
+step &quot;Hang&quot; 1s settle:
+  grip: hands bar</code></pre>
+<h3>The <code>cue</code> Directive: Display-Only Coaching Text</h3>
+<p>The <code>cue</code> directive provides human-readable coaching text (e.g. <code>cue &quot;Keep knees aligned with toes&quot;</code>).</p>
+<ul><li><strong>Display-only:</strong> A <code>cue</code> is strictly visual, display-only coaching metadata and text rendered in viewers, logs, or UI cards.</li><li><strong>Zero kinematic effect:</strong> A <code>cue</code> MUST NOT affect joint rotations, IK solvers, contact resolution, range-of-motion clamping, phase timing, or validation. Parsers and renderers ignore cues when calculating kinematics.</li><li><strong>Never infer motion from cues:</strong> Movement authors and LLM prompt systems MUST NOT rely on cues to imply or fabricate motion; all joint and spatial behavior MUST be explicitly declared in the kinematics directives.</li></ul>
+<hr>
+<h2>6. Rendering and Kinematic Model</h2>
 <ol><li><strong>Forward kinematics</strong>: each phase sets joint angles; the renderer uses C1-continuous quaternion splines between keyframes, shaped by the destination phase's timing mode.</li><li><strong>Grounding</strong>: the figure is dropped so its lowest point rests on the floor (a bounding-box drop), which grounds standing, plank, and the lying/seated poses alike.</li><li><strong>Ground-lock</strong>: contacts listed in <code>ground-lock</code> (<code>hands</code>, <code>forearms</code>, <code>feet</code>, or the per-side aliases <code>hand_left|hand_right</code>, <code>elbow_left|elbow_right</code>, <code>foot_left|foot_right</code>) stay planted while the body moves. <code>back</code> holds the pelvis-to-ribcage surface on the floor for supine work such as dead bugs. Unsupported contact names are line-anchored validation errors.</li><li><strong>Reach-IK</strong>: a <code>reach:</code> line drives an effector (<code>hand_*</code>, <code>fist_*</code>, <code>elbow_*</code>, <code>knee_*</code>, or <code>foot_*</code>, plus their supported groups) to a world <strong>target</strong> via Cyclic Coordinate Descent (CCD) over the arm/leg chain. A target is a body landmark bone (e.g. <code>ankle_left</code>), the keyword <code>floor</code>, or a prop anchor (<code>bar</code>, <code>seat</code>, <code>wall</code>). The solve is <strong>ROM-constrained</strong>: each iteration clamps every chain joint into its §4 configured range-of-motion limits (expressed as a per-axis box in the bone's local Euler frame), so a reach toward an unreachable target settles on the closest pose available within that configured joint-angle box; solved angles obey the same limits as authored ones. The viewer records a post-solve residual for every active reach. A reach target is not reported as reached merely because its syntax parsed: missing, unsupported, and geometrically unreachable reach targets remain explicit diagnostics. A palm or fist declared against the floor also presents its matching contact surface to the floor. For a palm, the solver may redistribute incompatible authored roll into a legal forearm/wrist frame; the explicit floor contact takes priority, and every adjusted joint remains inside the same configured ROM.</li><li><strong>Props</strong>: <code>prop chair|wall|bar|box|dip-bars</code> adds a scene object at a fixed default placement (chair/wall behind, bar overhead, box in front, dip bars either side); its named anchors (<code>seat</code>, <code>wall</code>, <code>bar</code>, <code>box</code>, <code>bars</code>) become reach, pin, or grip targets. Selected prop surfaces declare sampled blocking faces (the wall's surface, the chair's backrest and seat edge, the box's near face). A bounded contact pass reduces penetration, either by translating the whole figure out along the face normal (a wall-sit slides down the wall's *surface*, feet walking forward, instead of the torso hinging through the slab) or by bending the offending limb's hip clear, ROM-clamped like every other solve. Limbs pinned, gripped, or reached to a prop anchor are that phase's declared support and are exempt (a foot standing on the box top is not &quot;inside&quot; the box).</li><li><strong>Pins</strong>: <code>pin: &lt;effector&gt; &lt;anchor&gt;</code> translates the whole figure so one primary effector sits on the anchor. Where ground-lock preserves an already planted floor support and reach moves a limb to a target, a <strong>pin moves the body</strong>. Typical uses include <code>pin: knee_left floor</code>, <code>pin: foot_right box</code>, and <code>pin: pelvis floor</code>. A phase accepts one pin because each pin translates the same floating root; express additional simultaneous contacts with independent <code>reach</code> constraints. Use <code>grip</code> instead of hand pins for a two-handed bar or rail contact.</li><li><strong>Grips</strong>: <code>grip: hands bar|bars</code> is the dedicated two-hand contact for an overhead bar or dip rails; side-specific <code>hand_left</code> / <code>hand_right</code> forms are also available. A grip resolves independent left/right anchors, uses arm IK for each hand, orients the terminal contact, and closes the fingers. The matching prop must be declared. Use grips, rather than hand pins, for hangs, pull-ups, and dips.</li><li><strong>Spatial choreography</strong>: <code>turn: &lt;deg&gt;</code> rotates the figure's facing (yaw about vertical) and <code>travel: &lt;x&gt; &lt;z&gt;</code> moves it across the floor (world metres from the load spot). Both are <strong>absolute targets carried across phases</strong> (like joint angles) and both return home on the loop wrap, so a box-step traces a square back to start and a pirouette spins a full turn. They layer under grounding (feet still rest on the floor) and power pirouettes, grapevines, traveling combos, and walk cycles. <strong>Standing poses only</strong>: combining with lying/seated bases (whose root is already tilted) is out of scope.</li><li><strong>Looping</strong>: the timeline loops base → phases → base; <code>repeat</code> is the rep count surfaced to the UI.</li></ol>
 <p>When a mocap clip is active, the renderer selects the take containing the most actual bone motion (rather than blindly choosing the longest embedded take), retargets and blends it, then restores solved terminal contacts on the visible character. Mocap therefore cannot overwrite a planted sole or active grip.</p>
 <p><strong>Start poses:</strong> <code>neutral</code>, <code>standing</code>, <code>first-position</code> (ballet turnout), <code>plank</code>, <code>supine</code> (face-up), <code>prone</code> (face-down), <code>seated</code> (long-sit on the floor). Append <code>:</code> and indented joint targets to define a custom start pose as a sparse overlay on any of these built-ins.</p>
 <p><strong>IK note:</strong> Three.js's bundled <code>CCDIKSolver</code> targets <code>SkinnedMesh</code>; the Posecode mannequin is rigid capsule segments, so Posecode implements CCD directly over the Object3D bone hierarchy (<code>posecode-render/ik.ts</code>) for both ground-lock and reach. Selected limb-vs-body and body-vs-prop penetrations are reduced with sampled, bounded correction passes; this is not comprehensive collision detection or a physics simulation. Two-person/dual-IK and figure-vs-figure collision remain deferred (research §5.2, §6.2).</p>
 <hr>
-<h2>6. Intermediate Representation (IR)</h2>
+<h2>7. Intermediate Representation (IR)</h2>
 <p><code>parse(source)</code> returns <code>{ ir, warnings, errors }</code>. The IR is renderer-agnostic; angles are in <strong>degrees</strong>.</p>
 <pre class="code-block" data-lang="ts"><code>interface PosecodeIR {
   version: string;          // &quot;0.4&quot;
