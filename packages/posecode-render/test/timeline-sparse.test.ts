@@ -92,6 +92,44 @@ describe("sparse timeline targets", () => {
     }
   });
 
+  it("starts in ballet first position with domain-correct arm position without a visible transition from arms-at-sides", () => {
+    const result = parse([
+      'posecode exercise "Ballet prep"',
+      "  rig humanoid",
+      "  pose start = first-position:",
+      "    shoulders: flex 15",
+      "    shoulders: abduct 10",
+      "    elbows: flex 20",
+      '  step "Hold" 1s settle:',
+      "    ground-lock: feet",
+      "  repeat 1",
+    ].join("\n"));
+    expect(result.errors).toEqual([]);
+    const timeline = buildTimeline(result.ir!);
+    const mannequin = buildMannequin();
+
+    // Verify sample at t=0 has both ballet turnout and arm positions
+    timeline.sample(0, mannequin.bones);
+    const shoulderLeft = eulerDegrees(mannequin.bones.get("shoulder_left")!);
+    const shoulderRight = eulerDegrees(mannequin.bones.get("shoulder_right")!);
+    const elbowLeft = eulerDegrees(mannequin.bones.get("elbow_left")!);
+    const hipLeft = eulerDegrees(mannequin.bones.get("hip_left")!);
+    const hipRight = eulerDegrees(mannequin.bones.get("hip_right")!);
+
+    // Shoulders flex 15 (mapped to -15deg local X), abduct 10 (mirrored on left/right Z)
+    expect(shoulderLeft.x * DEG).toBeCloseTo(-15, 3);
+    expect(shoulderRight.x * DEG).toBeCloseTo(-15, 3);
+    expect(elbowLeft.x * DEG).toBeCloseTo(-20, 3);
+
+    // Turnout on hips preserved from first-position (+30 on left, -30 on right)
+    expect(hipLeft.y * DEG).toBeGreaterThan(20);
+    expect(hipRight.y * DEG).toBeLessThan(-20);
+
+    // Initial basePose matches sample(0) exactly
+    expect(timeline.basePose.joints?.shoulder_left?.[0]).toBeCloseTo(-15, 3);
+    expect(timeline.basePose.joints?.elbow_left?.[0]).toBeCloseTo(-20, 3);
+  });
+
   it("keeps cues as display-only metadata", () => {
     const source = (withCue: boolean) => [
       'posecode posture "Cue contract"',
