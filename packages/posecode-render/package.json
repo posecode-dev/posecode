@@ -14,7 +14,7 @@
     }
   },
   "dependencies": {
-    "three": "^0.185.1"
+    "three": "^0.186.1"
   },
   "peerDependencies": {
     "posecode-parser": ">=0.6.0"
